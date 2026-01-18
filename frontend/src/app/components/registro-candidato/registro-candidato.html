@@ -1,0 +1,101 @@
+<div class="container">
+    <div class="info-side">
+        <div class="info-content">
+            <img src="https://cdn-icons-png.flaticon.com/512/1063/1063376.png" alt="Icono CV" class="main-icon">
+            <h1>Impulsa tu Carrera</h1>
+            <p>Crea tu perfil profesional en minutos.</p>
+        </div>
+    </div>
+
+    <div class="form-side">
+        <h2>Registro Candidato</h2>
+        <p class="subtitle">Completa tus datos personales para empezar.</p>
+        
+        <form (submit)="registrar()">
+            <div class="row">
+                <div class="input-group">
+                    <label>NOMBRE</label>
+                    <input type="text" name="nombre" [(ngModel)]="nombre" placeholder="Ej: Juan" required>
+                </div>
+                <div class="input-group">
+                    <label>APELLIDO</label>
+                    <input type="text" name="apellido" [(ngModel)]="apellido" placeholder="Ej: Pérez" required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>CORREO ELECTRÓNICO</label>
+                <div class="email-wrapper">
+                    <input type="email" name="correo" [(ngModel)]="correo" placeholder="usuario@uteq.edu.ec" required>
+                    <button type="button" (click)="enviarCodigo()" [disabled]="enviandoCodigo">
+                        {{ enviandoCodigo ? 'Enviando...' : 'Enviar Código' }}
+                    </button>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>CÓDIGO DE VERIFICACIÓN</label>
+                <input type="text" name="codigo" [(ngModel)]="codigoVerificacion" 
+                       (input)="validarCodigoVisual()" maxlength="6"
+                       [class.is-valid]="codigoValido" [class.is-invalid]="codigoInvalido" required>
+            </div>
+
+            <div class="input-group">
+                <label>CONTRASEÑA</label>
+                <input type="password" name="pass" [(ngModel)]="contrasena" placeholder="********" required>
+            </div>
+
+            <div class="row">
+                <div class="input-group">
+                    <label>TELÉFONO</label>
+                    <input type="text" name="tel" [(ngModel)]="telefono" placeholder="099...">
+                </div>
+                <div class="input-group">
+                    <label>GÉNERO</label>
+                    <select name="gen" [(ngModel)]="genero">
+                        <option value="" disabled>Seleccione</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Femenino">Femenino</option>
+                    </select>
+                </div>
+            </div>
+
+
+           <div class="input-group">
+    <label>PROVINCIA</label>
+    <select name="provincia" [(ngModel)]="idProvinciaSeleccionada" (change)="onProvinciaChange()" required>
+    <option [ngValue]="null" disabled>Seleccione Provincia</option>
+    <option *ngFor="let p of provincias" [ngValue]="p.idProvincia">
+        {{ p.nombreProvincia }}
+    </option>
+</select>
+</div>
+
+<div class="input-group">
+    <label>CIUDAD</label>
+   <select name="ciudad" [(ngModel)]="idCiudadSeleccionada" [disabled]="!idProvinciaSeleccionada" required>
+    <option [ngValue]="null" disabled>Seleccione Ciudad</option>
+    <option *ngFor="let c of ciudades" [ngValue]="c.idCiudad">
+        {{ c.nombreCiudad }}
+    </option>
+</select>
+</div>
+
+            <div class="input-group">
+                <label>FECHA DE NACIMIENTO</label>
+                <input type="date" name="fechaNac" [(ngModel)]="fechaNac">
+            </div>
+
+
+            <button type="submit" class="btn-register" [disabled]="!correoVerificado">
+                Registrar
+            </button>
+
+            <div class="footer-links">
+                <p>¿Eres una empresa? <a routerLink="/registro-empresa">Regístrate aquí</a></p>
+                <p>¿Ya tienes una cuenta? <a routerLink="/login">Inicia Sesión</a></p>
+            </div>
+        </form>
+    </div>
+</div>
+

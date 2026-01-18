@@ -1,0 +1,190 @@
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f4f7f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    display: flex;
+    width: 900px;
+    background: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+/* Lado Azul */
+.info-side {
+    flex: 1;
+    background-color: #0056b3;
+    color: white;
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.main-icon {
+    width: 120px;
+    margin-bottom: 20px;
+    filter: brightness(0) invert(1);
+}
+
+.info-side h1 {
+    font-size: 2rem;
+    margin-bottom: 15px;
+}
+
+.info-side p {
+    font-size: 1rem;
+    line-height: 1.5;
+    opacity: 0.9;
+}
+
+/* Formulario */
+.form-side {
+    flex: 1.2;
+    padding: 40px;
+}
+
+.form-side h2 {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 25px;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.input-group input, 
+.input-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fafafa;
+    outline: none;
+    transition: all 0.3s;
+}
+
+/* ESTILOS NUEVOS PARA EL CORREO Y VALIDACIÓN */
+.email-wrapper {
+    display: flex;
+    gap: 10px;
+}
+
+#btnEnviarCodigo {
+    padding: 0 15px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+#btnEnviarCodigo:hover {
+    background-color: #218838;
+}
+
+#btnEnviarCodigo:disabled {
+    background-color: #ccc;
+}
+
+/* Clases de validación dinámica */
+.is-valid {
+    border: 2px solid #28a745 !important;
+    background-color: #f8fff9 !important;
+}
+
+.is-invalid {
+    border: 2px solid #dc3545 !important;
+    background-color: #fff8f8 !important;
+}
+
+/* Botón de registro deshabilitado */
+.btn-register:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+/* FIN ESTILOS NUEVOS */
+
+.input-group input:focus {
+    border-color: #0056b3;
+}
+
+.row {
+    display: flex;
+    gap: 15px;
+}
+
+.row .input-group {
+    flex: 1;
+}
+
+.btn-register {
+    width: 100%;
+    padding: 12px;
+    background-color: #0069d9;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.3s;
+}
+
+.btn-register:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+.footer-links {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+.footer-links a {
+    color: #0000cd;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        width: 95%;
+    }
+    .info-side {
+        padding: 20px;
+    }
+}
