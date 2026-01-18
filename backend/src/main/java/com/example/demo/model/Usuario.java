@@ -5,13 +5,13 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "usuario") 
+@Table(name = "usuario")
 @Data
 public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idusuario")
+    @Column(name = "id_usuario")
     private Long idUsuario;
 
    @ManyToOne
@@ -22,6 +22,7 @@ public class Usuario {
     @ManyToOne
     @JoinColumn(name = "idciudad")
     private Ciudad ciudad;
+
 
     private String nombre;
     private String apellido;
