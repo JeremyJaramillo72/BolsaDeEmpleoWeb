@@ -5,33 +5,34 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "documentacionacademica")
+@Table(name = "DocumentacionAcademica")
 @Data
 public class DocumentacionAcademica {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "iddocumentacion")
+    @Column(name = "IdDocumentacion")
     private Integer idDocumentacion;
 
     @ManyToOne
-    @JoinColumn(name = "idusuario")
+    @JoinColumn(name = "IdUsuario", nullable = false)
     private Usuario usuario;
 
-    @Column(name = "tituloacademico")
+    @Column(name = "TituloAcademico", nullable = false, columnDefinition = "VARCHAR(150)")
     private String tituloAcademico;
 
+    @Column(name = "Institucion", columnDefinition = "VARCHAR(100)")
     private String institucion;
 
-    @Column(name = "anograduacion")
-    private Integer anoGraduacion;
+    @Column(name = "AnioGraduacion", columnDefinition = "INTEGER")
+    private Integer anioGraduacion; // el año (4 dígitos) no requiere más que un Integer
 
-    @Column(name = "nivelestudios")
+    @Column(name = "NivelEstudios", columnDefinition = "VARCHAR(20)")
     private String nivelEstudios;
 
-    @Column(name = "archivotitulo")
-    private byte[] archivoTitulo; // Guardado como binario
+    @Column(name = "ArchivoTitulo", columnDefinition = "TEXT")
+    private String archivoTitulo; // Cambiado de byte[] a URL por eficiencia
 
-    @Column(name = "fecharegistro")
-    private LocalDate fechaRegistro = LocalDate.now();
+    @Column(name = "FechaRegistro", nullable = false, columnDefinition = "DATE DEFAULT CURRENT_DATE")
+    private LocalDate fechaRegistro ;
 }
