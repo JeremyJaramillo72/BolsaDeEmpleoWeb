@@ -160,7 +160,7 @@ body {
   color: #1a252f;
 }
 
-/* Responsivo */
+/* Responsivo dddddd*/
 @media (max-width: 768px) {
   .container { flex-direction: column; width: 90%; }
   .info-side { padding: 30px; }
