@@ -5,4 +5,15 @@ public interface IUsuarioCustomRepository {
 
     //Aquí defines el método que vas a programar en la carpeta Impl
     void registrarConProcedimiento(Usuario usuario);
+
+    void registrarEmpresaPro(
+            String correo,
+            String pass,
+            Integer idC,
+            String nombreE,
+            String desc,
+            String ruc,
+            String web
+    );
 }
+

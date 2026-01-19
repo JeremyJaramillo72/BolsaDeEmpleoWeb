@@ -2,17 +2,18 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
+import {RouterLink} from '@angular/router';
 
 @Component({
   selector: 'app-registro-candidato',
   standalone: true,
   // Importamos FormsModule para que [(ngModel)] funcione con tu HTML actual
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink, HttpClientModule],
   templateUrl: './registro-candidato.html',
   styleUrl: './registro-candidato.css'
 })
 export class RegistroCandidatoComponent implements OnInit {
-  
+
   // Variables para el flujo de validación de tu HTML
   enviandoCodigo: boolean = false;
   codigoValido: boolean = false;

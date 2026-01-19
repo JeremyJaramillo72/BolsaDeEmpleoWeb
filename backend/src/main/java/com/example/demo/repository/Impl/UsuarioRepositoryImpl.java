@@ -58,4 +58,29 @@ public class UsuarioRepositoryImpl implements IUsuarioCustomRepository {
         }
         query.execute();
     }
+
+    @Override
+    public void registrarEmpresaPro(String correo, String pass, Integer idC, String nombreE, String desc, String ruc, String web) {
+        StoredProcedureQuery query = entityManager.createStoredProcedureQuery("sp_registrar_empresa_completa");
+
+        // Registro de parámetros (Debe coincidir con el orden del SQL)
+        query.registerStoredProcedureParameter("p_correo", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("p_contrasena", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("p_idciudad", Integer.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("p_nombreempresa", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("p_descripcion", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("p_ruc", String.class, ParameterMode.IN);
+        query.registerStoredProcedureParameter("p_sitioweb", String.class, ParameterMode.IN);
+
+        // Seteo de valores
+        query.setParameter("p_correo", correo);
+        query.setParameter("p_contrasena", pass);
+        query.setParameter("p_idciudad", idC);
+        query.setParameter("p_nombreempresa", nombreE);
+        query.setParameter("p_descripcion", desc);
+        query.setParameter("p_ruc", ruc);
+        query.setParameter("p_sitioweb", web);
+
+        query.execute();
+    }
 }

@@ -10,7 +10,7 @@
     <div class="form-side">
         <h2>Registro Candidato</h2>
         <p class="subtitle">Completa tus datos personales para empezar.</p>
-        
+
         <form (submit)="registrar()">
             <div class="row">
                 <div class="input-group">
@@ -35,7 +35,7 @@
 
             <div class="input-group">
                 <label>CÓDIGO DE VERIFICACIÓN</label>
-                <input type="text" name="codigo" [(ngModel)]="codigoVerificacion" 
+                <input type="text" name="codigo" [(ngModel)]="codigoVerificacion"
                        (input)="validarCodigoVisual()" maxlength="6"
                        [class.is-valid]="codigoValido" [class.is-invalid]="codigoInvalido" required>
             </div>
@@ -61,25 +61,25 @@
             </div>
 
 
-           <div class="input-group">
-    <label>PROVINCIA</label>
-    <select name="provincia" [(ngModel)]="idProvinciaSeleccionada" (change)="onProvinciaChange()" required>
-    <option [ngValue]="null" disabled>Seleccione Provincia</option>
-    <option *ngFor="let p of provincias" [ngValue]="p.idProvincia">
-        {{ p.nombreProvincia }}
-    </option>
-</select>
-</div>
+          <div class="input-group">
+            <label>PROVINCIA</label>
+            <select name="provincia" [(ngModel)]="idProvinciaSeleccionada" (change)="onProvinciaChange()" required>
+              <option value="" disabled selected>Seleccione Provincia</option>
+              <option *ngFor="let p of provincias" [value]="p.idProvincia">
+                {{p.nombreProvincia}}
+              </option>
+            </select>
+          </div>
 
-<div class="input-group">
-    <label>CIUDAD</label>
-   <select name="ciudad" [(ngModel)]="idCiudadSeleccionada" [disabled]="!idProvinciaSeleccionada" required>
-    <option [ngValue]="null" disabled>Seleccione Ciudad</option>
-    <option *ngFor="let c of ciudades" [ngValue]="c.idCiudad">
-        {{ c.nombreCiudad }}
-    </option>
-</select>
-</div>
+        <div class="input-group">
+            <label>CIUDAD</label>
+           <select name="ciudad" [(ngModel)]="idCiudadSeleccionada" [disabled]="!idProvinciaSeleccionada" required>
+            <option [ngValue]="null" disabled>Seleccione Ciudad</option>
+            <option *ngFor="let c of ciudades" [ngValue]="c.idCiudad">
+                {{ c.nombreCiudad }}
+            </option>
+        </select>
+        </div>
 
             <div class="input-group">
                 <label>FECHA DE NACIMIENTO</label>

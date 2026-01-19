@@ -1,0 +1,56 @@
+<div class="container">
+  <div class="info-side">
+    <div class="info-content">
+      <img src="https://img.icons8.com/?size=100&id=72272&format=png&color=000000" alt="Icono Login" class="main-icon">
+      <h1>Bienvenido de Nuevo</h1>
+      <p>Accede a tu cuenta para gestionar tus postulaciones o publicar nuevas ofertas laborales.</p>
+    </div>
+  </div>
+
+  <div class="form-side">
+    <h2>Iniciar Sesión</h2>
+    <p class="subtitle">Ingresa tus credenciales para continuar.</p>
+
+    <form (ngSubmit)="onLogin()" #loginForm="ngForm">
+
+      <div class="input-group">
+        <label>CORREO ELECTRÓNICO</label>
+        <input
+          type="email"
+          name="correo"
+          [(ngModel)]="correo"
+          #email="ngModel"
+          placeholder="usuario@email.com"
+          required>
+      </div>
+
+      <div class="input-group">
+        <label>CONTRASEÑA</label>
+        <div class="password-wrapper">
+          <input
+            [type]="verPassword ? 'text' : 'password'"
+            name="contrasena"
+            [(ngModel)]="contrasena"
+            placeholder="********"
+            required>
+
+          <span class="toggle-password" (click)="togglePassword()">
+            {{ verPassword ? '🙈' : '👁️' }}
+          </span>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-login" [disabled]="!loginForm.form.valid">
+        Entrar
+      </button>
+    </form>
+
+    <div class="footer-links">
+      <p>¿Aún no te has registrado?
+        <a routerLink="/registro-candidato">Regístrate como Candidato</a> o
+        <a routerLink="/registro-empresa">como Empresa</a>
+      </p>
+      <p><a href="#">¿Olvidaste tu contraseña?</a></p>
+    </div>
+  </div>
+</div>

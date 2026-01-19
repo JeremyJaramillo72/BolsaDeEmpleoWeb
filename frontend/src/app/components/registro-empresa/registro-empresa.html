@@ -1,0 +1,91 @@
+<div class="container">
+  <div class="info-side">
+    <div class="info-content">
+      <img src="https://cdn-icons-png.flaticon.com/512/4091/4091968.png" alt="Icono Empresa" class="main-icon">
+      <h1>Encuentra el Mejor Talento</h1>
+      <p>Únete a nuestra red de empresas y conecta con miles de profesionales calificados.</p>
+    </div>
+  </div>
+
+  <div class="form-side">
+    <h2>Registro Empresa</h2>
+    <p class="subtitle">Crea una cuenta corporativa para tu organización.</p>
+
+    <form (submit)="registrar()">
+      <div class="input-group">
+        <label>CORREO CORPORATIVO</label>
+        <div class="email-wrapper">
+          <input type="email" name="correo" [(ngModel)]="correo" placeholder="rrhh@miempresa.com" required>
+          <button type="button" (click)="enviarCodigo()" [disabled]="enviandoCodigo">
+            {{ enviandoCodigo ? 'Enviando...' : 'Enviar Código' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>CÓDIGO DE VERIFICACIÓN</label>
+        <input type="text" name="codigo" [(ngModel)]="codigoVerificacion"
+               (input)="validarCodigoVisual()" maxlength="6"
+               [class.is-valid]="codigoValido" [class.is-invalid]="codigoInvalido" placeholder="6 dígitos" required>
+      </div>
+
+      <div class="input-group">
+        <label>CONTRASEÑA</label>
+        <input type="password" name="pass" [(ngModel)]="contrasena" placeholder="********" required>
+      </div>
+
+      <hr class="divider">
+
+      <div class="row">
+        <div class="input-group">
+          <label>PROVINCIA</label>
+          <select name="provincia" [(ngModel)]="idProvinciaSeleccionada" (change)="onProvinciaChange()" required>
+            <option value="" disabled selected>Seleccione Provincia</option>
+            <option *ngFor="let p of provincias" [value]="p.idProvincia">
+              {{p.nombreProvincia}}
+            </option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>CIUDAD</label>
+          <select name="ciudad" [(ngModel)]="idCiudad" [disabled]="!idProvinciaSeleccionada" required>
+            <option value="" disabled selected>Seleccione Ciudad</option>
+            <option *ngFor="let c of ciudades" [value]="c.idCiudad">
+              {{c.nombreCiudad}}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>NOMBRE DE LA EMPRESA</label>
+        <input type="text" name="nE" [(ngModel)]="nombreEmpresa" placeholder="Ej: Tech Solutions S.A." required>
+      </div>
+
+      <div class="row">
+        <div class="input-group">
+          <label>RUC</label>
+          <input type="text" name="ruc" [(ngModel)]="ruc" placeholder="1792..." required>
+        </div>
+        <div class="input-group">
+          <label>SITIO WEB</label>
+          <input type="url" name="web" [(ngModel)]="sitioWeb" placeholder="https://...">
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>DESCRIPCIÓN DE LA EMPRESA</label>
+        <textarea name="desc" [(ngModel)]="descripcion" rows="3" placeholder="Cuéntanos un poco sobre tu empresa..."></textarea>
+      </div>
+
+      <button type="submit" class="btn-register" [disabled]="!correoVerificado">
+        Registrar Empresa
+      </button>
+
+      <div class="footer-links">
+        <p>¿Buscas empleo? <a routerLink="/registro-candidato">Regístrate como Candidato</a></p>
+        <p><a routerLink="/login">Volver al Inicio de Sesión</a></p>
+      </div>
+    </form>
+  </div>
+</div>

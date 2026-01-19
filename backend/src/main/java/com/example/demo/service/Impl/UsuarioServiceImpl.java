@@ -1,10 +1,8 @@
-package com.example.demo.service.Impl;
+package com.example.demo.service.Impl; // Paquete en minúsculas por estándar
 
 import com.example.demo.model.Roles;
 import com.example.demo.model.Usuario;
-import com.example.demo.model.UsuarioEmpresa;
 import com.example.demo.repository.RolesRepository;
-import com.example.demo.repository.UsuarioEmpresaRepository;
 import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.service.IUsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,46 +18,41 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Autowired
     private RolesRepository rolesRepository;
 
-    @Autowired
-    private UsuarioEmpresaRepository empresaRepository;
-
     @Override
     @Transactional
     public void registrarUsuarioNormal(Usuario usuario) {
-        // 1. Buscamos el objeto Rol (Postulante)
+        // 1. Buscamos el objeto Rol (Postulante ID 3)
         Roles rolPostulante = rolesRepository.findById(3)
                 .orElseThrow(() -> new RuntimeException("Error: El Rol de Postulante no existe."));
 
-        // 2. Asignamos el objeto Rol completo al usuario
+        // 2. Asignamos el objeto Rol al usuario para que el Repositorio lo lea
         usuario.setRol(rolPostulante);
 
-        // 3. ¡AQUÍ USAS TU PROCEDIMIENTO ALMACENADO!
+        // 3. Ejecutamos el procedimiento de postulantes
         usuarioRepository.registrarConProcedimiento(usuario);
     }
 
     @Override
-    @Transactional // Crucial: si falla el guardado de la empresa, se deshace el usuario
+    @Transactional
     public void registrarEmpresaCompleta(Usuario usuario, String nombreEmp, String desc, String web, String ruc) {
-        // 1. Buscamos el objeto Rol de Empresa (ID 2)
-        Roles rolEmpresa = rolesRepository.findById(2)
-                .orElseThrow(() -> new RuntimeException("Error: El Rol de Empresa (ID 2) no existe en la base de datos."));
+        // En este método ya no necesitamos buscar el Rol ID 2 en Java,
+        // porque nuestro procedimiento 'sp_registrar_empresa_completa' lo asigna automáticamente.
 
-        // 2. Asignamos el rol al usuario y lo guardamos primero
-        usuario.setRol(rolEmpresa);
-        Usuario usuarioGuardado = usuarioRepository.save(usuario);
+        // Extraemos el ID de la ciudad para pasarlo al procedimiento
+        Integer idCiudad = null;
+        if (usuario.getCiudad() != null) {
+            idCiudad = usuario.getCiudad().getIdCiudad();
+        }
 
-        // 3. Creamos el objeto de la empresa y establecemos la relación 1:1
-        UsuarioEmpresa empresa = new UsuarioEmpresa();
-
-        // IMPORTANTE: Aquí usamos el objeto guardado para establecer la FK automáticamente
-        empresa.setUsuario(usuarioGuardado);
-
-        empresa.setNombreEmpresa(nombreEmp);
-        empresa.setDescripcion(desc);
-        empresa.setSitioWeb(web);
-        empresa.setRuc(ruc);
-
-        // 4. Guardamos en la tabla usuario_empresa
-        empresaRepository.save(empresa);
+        // LLAMADA AL NUEVO MÉTODO DEL REPOSITORIO
+        usuarioRepository.registrarEmpresaPro(
+                usuario.getCorreo(),
+                usuario.getContrasena(), // Ya viene encriptada desde el controlador
+                idCiudad,
+                nombreEmp,
+                desc,
+                ruc,
+                web
+        );
     }
 }
