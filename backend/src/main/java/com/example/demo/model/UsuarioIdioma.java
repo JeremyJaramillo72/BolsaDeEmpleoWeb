@@ -4,28 +4,29 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "usuarioidioma")
+@Table(name = "UsuarioIdioma")
 @Data
 public class UsuarioIdioma {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idusuarioidioma")
+    @Column(name = "IdUsuarioIdioma")
     private Integer idUsuarioIdioma;
 
     @ManyToOne
-    @JoinColumn(name = "ididioma")
+    @JoinColumn(name = "IdIdioma", nullable = false)
     private Idioma idioma;
 
     @ManyToOne
-    @JoinColumn(name = "idusuario")
+    @JoinColumn(name = "IdUsuario", nullable = false)
     private Usuario usuario;
 
-    private String nivel;
+    @Column(name = "Nivel", nullable = false, columnDefinition = "VARCHAR(30)")
+    private String nivel; // Ej: "A2 - Básico", "B2 - Intermedio", "C1 - Avanzado"
 
-    @Column(name = "archivocertificado")
-    private byte[] archivoCertificado; // Tipo Byte según tu diagrama
+    @Column(name = "ArchivoCertificado", columnDefinition = "TEXT")
+    private String archivoCertificado; // URL de Drive/S3 con el PDF del certificado
 
-    @Column(name = "codigocertificado")
-    private String codigoCertificado;
+    @Column(name = "CodigoCertificado", columnDefinition = "VARCHAR(50)")
+    private String codigoCertificado; // Código de verificación del examen (ej. TOEFL ID)
 }

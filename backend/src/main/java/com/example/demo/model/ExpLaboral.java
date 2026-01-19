@@ -5,37 +5,41 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "explaboral")
+@Table(name = "ExpLaboral")
 @Data
 public class ExpLaboral {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idexplaboral")
+    @Column(name = "IdExpLaboral")
     private Integer idExpLaboral;
 
     @ManyToOne
-    @JoinColumn(name = "idusuario")
+    @JoinColumn(name = "IdUsuario", nullable = false)
     private Usuario usuario;
 
     @ManyToOne
-    @JoinColumn(name = "idcargo")
+    @JoinColumn(name = "IdCargo", nullable = false)
     private Cargo cargo;
 
+    @Column(name = "Empresa", nullable = false, columnDefinition = "VARCHAR(70)")
     private String empresa;
 
-    @Column(name = "fechainicio")
+    @Column(name = "FechaInicio", nullable = false, columnDefinition = "DATE")
     private LocalDate fechaInicio;
 
-    @Column(name = "fechafin")
+    @Column(name = "FechaFin", columnDefinition = "DATE")
     private LocalDate fechaFin;
 
-    private String descripcion;
-    private String ubicacion;
+    @Column(name = "Descripcion", columnDefinition = "TEXT")
+    private String descripcion; // TEXT es vital aquí para detallar funciones y logros
 
-    @Column(name = "archivocomprobante")
-    private byte[] archivoComprobante; // Para certificados de trabajo
+    @Column(name = "Ubicacion", columnDefinition = "VARCHAR(80)")
+    private String ubicacion; // Ciudad, País (Ej: "Quito, Ecuador")
 
-    @Column(name = "fecharegistro")
-    private LocalDate fechaRegistro = LocalDate.now();
+    @Column(name = "ArchivoComprobante", columnDefinition = "TEXT")
+    private String archivoComprobante; // URL de Drive/Cloud para el certificado laboral
+
+    @Column(name = "FechaRegistro", nullable = false, columnDefinition = "DATE DEFAULT CURRENT_DATE")
+    private LocalDate fechaRegistro ;
 }

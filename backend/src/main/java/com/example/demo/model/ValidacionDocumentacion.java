@@ -5,28 +5,36 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "validaciondocumentacion")
+@Table(name = "ValidacionDocumentacion")
 @Data
 public class ValidacionDocumentacion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idvalidaciondoc")
+    @Column(name = "IdValidacionDoc")
     private Integer idValidacionDoc;
 
     @ManyToOne
-    @JoinColumn(name = "idpostulacion")
+    @JoinColumn(name = "IdPostulacion", nullable = false)
     private Postulacion postulacion;
 
     @ManyToOne
-    @JoinColumn(name = "iddocumentacion")
+    @JoinColumn(name = "IdDocumentacion", nullable = false)
     private DocumentacionAcademica documentacion;
 
-    @Column(name = "estadovalidacion")
-    private String estadoValidacion;
+    @Column(
+            name = "EstadoValidacion",
+            nullable = false,
+            columnDefinition = "VARCHAR(20) DEFAULT 'Pendiente'"
+    )
+    private String estadoValidacion = "Pendiente"; // Ej: "Validado", "Rechazado", "Incompleto"
 
-    private String observaciones;
+    @Column(name = "Observaciones", columnDefinition = "TEXT")
+    private String observaciones; // Para detallar inconsistencias en el título o institución
 
-    @Column(name = "fecharevision")
-    private LocalDate fechaRevision = LocalDate.now();
+    @Column(
+            name = "FechaRevision",
+            columnDefinition = "DATE DEFAULT CURRENT_DATE"
+    )
+    private LocalDate fechaRevision  ;
 }

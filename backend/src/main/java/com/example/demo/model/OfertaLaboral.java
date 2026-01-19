@@ -2,58 +2,65 @@ package com.example.demo.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "oferta_laboral")
+@Table(name = "OfertaLaboral")
 @Data
 public class OfertaLaboral {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_oferta")
+    @Column(name = "IdOferta")
     private Integer idOferta;
 
     // FK a Empresa
     @ManyToOne
-    @JoinColumn(name = "id_empresa")
+    @JoinColumn(name = "IdEmpresa", nullable = false)
     private UsuarioEmpresa empresa;
 
     // FK a Jornada
     @ManyToOne
-    @JoinColumn(name = "id_jornada")
+    @JoinColumn(name = "IdJornada", nullable = false)
     private JornadaOferta jornada;
 
     // FK a Modalidad
     @ManyToOne
-    @JoinColumn(name = "id_modalidad")
+    @JoinColumn(name = "IdModalidad", nullable = false)
     private ModalidadOferta modalidad;
 
     // FK a Categoría (La que faltaba)
     @ManyToOne
-    @JoinColumn(name = "id_categoria")
+    @JoinColumn(name = "IdCategoria", nullable = false)
     private CategoriaOferta categoria;
 
     @ManyToOne
-    @JoinColumn(name = "idciudad")
+    @JoinColumn(name = "IdCiudad", nullable = false)
     private Ciudad ciudad;
 
+    @Column(name = "Titulo", nullable = false, columnDefinition = "VARCHAR(150)")
     private String titulo; // Agregué título que suele ser necesario
-    private String descripcion;
-    private String requisitos;
-    
-    @Column(name = "tipocontrato")
-    private String tipoContrato;
-    
-    @Column(name = "sueldopromedio")
+
+    @Column(name = "Descripcion", columnDefinition = "TEXT")
+    private String descripcion; // TEXT para no limitar el detalle de la oferta
+
+    @Column(name = "Requisitos", columnDefinition = "TEXT")
+    private String requisitos; // TEXT para listas largas de habilidades requeridas
+
+    @Column(name = "TipoContrato",nullable = false, columnDefinition = "VARCHAR(20)")
+    private String tipoContrato; // Ej: "Indefinido", "Temporal"
+
+    @Column(name = "SueldoPromedio", columnDefinition = "DECIMAL(10,2)")
     private Double sueldoPromedio;
 
-    @Column(name = "fechapublicacion")
-    private LocalDate fechaPublicacion = LocalDate.now();
+    @Column(name = "FechaPublicacion", columnDefinition = "DATE DEFAULT CURRENT_DATE")
+    private LocalDate fechaPublicacion ;
 
-    @Column(name = "fechacierre")
+    @Column(name = "FechaCierre", columnDefinition = "DATE")
     private LocalDate fechaCierre;
 
-    @Column(name = "estadoofertalaboral")
-    private String estado = "Activa";
+    @Column(name = "EstadoOfertaLaboral", columnDefinition = "VARCHAR(12) DEFAULT 'Activa'")
+    private String estado;
 }

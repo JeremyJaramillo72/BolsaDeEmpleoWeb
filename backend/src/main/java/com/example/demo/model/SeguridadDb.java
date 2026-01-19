@@ -2,28 +2,28 @@ package com.example.demo.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "seguridaddb")
+@Table(name = "SeguridadDb")
 @Data
 public class SeguridadDb {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "pkidseguridad")
-    private Integer pkIdSeguridad;
+    @Column(name = "IdSeguridad")
+    private Integer IdSeguridad;
 
     @ManyToOne
-    @JoinColumn(name = "idusuario")
+    @JoinColumn(name = "IdUsuario", nullable = false)
     private Usuario usuario;
 
-    @Column(name = "dbloginname")
-    private String dbLoginName;
+    @Column(name = "DbLoginName", columnDefinition = "VARCHAR(60)")
+    private String dbLoginName; // Nombre de usuario en el sistema o BD
 
-    @Column(name = "tipoautenticacion")
+    @Column(name = "TipoAutenticacion", columnDefinition = "VARCHAR(30)")
     private String tipoAutenticacion;
 
-    @Column(name = "ultimoacceso")
-    private LocalDate ultimoAcceso;
+    @Column(name = "UltimoAcceso", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime ultimoAcceso = LocalDateTime.now();
 }

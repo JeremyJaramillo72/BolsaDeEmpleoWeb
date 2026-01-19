@@ -2,25 +2,30 @@ package com.example.demo.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "usuarioimagen")
+@Table(name = "UsuarioImagen")
 @Data
 public class UsuarioImagen {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idusuarioimagen")
+    @Column(name = "IdUsuarioImagen")
     private Integer idUsuarioImagen;
 
     @ManyToOne
-    @JoinColumn(name = "idusuario")
+    @JoinColumn(name = "IdUsuario", nullable = false)
     private Usuario usuario;
 
     @ManyToOne
-    @JoinColumn(name = "idimagen")
+    @JoinColumn(name = "IdImagen", nullable = false)
     private Imagen imagen;
 
-    @Column(name = "fecharegistro")
-    private LocalDate fechaRegistro = LocalDate.now();
+    // a esperas
+    // @Column(name = "TipoImagen", columnDefinition = "VARCHAR(30)")
+   //  private String tipoImagen; // Ej: "PERFIL", "PORTADA"
+
+    @Column(name = "FechaRegistro", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime fechaRegistro;
 }

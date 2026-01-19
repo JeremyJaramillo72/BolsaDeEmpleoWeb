@@ -4,14 +4,20 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "jornada_oferta")
+@Table(name = "JornadaOferta")
 @Data
 public class JornadaOferta {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_jornada")
+    @Column(name = "IdJornada")
     private Integer idJornada;
 
-    @Column(name = "nombrejornada")
-    private String nombrejornada;
+    @Column(
+            name = "NombreJornada",
+            nullable = false,
+            unique = true,
+            columnDefinition = "VARCHAR(30)"
+    )
+    private String nombreJornada;
 }

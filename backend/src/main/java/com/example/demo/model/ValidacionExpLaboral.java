@@ -5,28 +5,36 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "validacionexplaboral")
+@Table(name = "ValidacionExpLaboral")
 @Data
 public class ValidacionExpLaboral {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idvalidacionexp")
+    @Column(name = "IdValidacionExp")
     private Integer idValidacionExp;
 
     @ManyToOne
-    @JoinColumn(name = "idpostulacion") // Conecta con la postulación realizada
+    @JoinColumn(name = "IdPostulacion", nullable = false)
     private Postulacion postulacion;
 
     @ManyToOne
-    @JoinColumn(name = "idexplaboral")
+    @JoinColumn(name = "IdExpLaboral", nullable = false)
     private ExpLaboral expLaboral;
 
-    @Column(name = "estadovalidacion")
-    private String estadoValidacion;
+    @Column(
+            name = "EstadoValidacion",
+            nullable = false,
+            columnDefinition = "VARCHAR(30) DEFAULT 'Pendiente'"
+    )
+    private String estadoValidacion = "Pendiente"; // Ej: "Verificada", "Rechazada", "En Verificación"
 
-    private String observaciones;
+    @Column(name = "Observaciones", columnDefinition = "TEXT")
+    private String observaciones; // Detalle de por qué se acepta o rechaza la experiencia
 
-    @Column(name = "fecharevision")
-    private LocalDate fechaRevision = LocalDate.now();
+    @Column(
+            name = "FechaRevision",
+            columnDefinition = "DATE DEFAULT CURRENT_DATE"
+    )
+    private LocalDate fechaRevision  ;
 }

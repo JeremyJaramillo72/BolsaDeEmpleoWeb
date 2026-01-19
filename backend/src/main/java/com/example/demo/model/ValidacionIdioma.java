@@ -5,28 +5,36 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "validacionidioma")
+@Table(name = "ValidacionIdioma")
 @Data
 public class ValidacionIdioma {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idvalidacionidioma")
+    @Column(name = "IdValidacionIdioma")
     private Integer idValidacionIdioma;
 
     @ManyToOne
-    @JoinColumn(name = "idpostulacion")
+    @JoinColumn(name = "IdPostulacion", nullable = false)
     private Postulacion postulacion;
 
     @ManyToOne
-    @JoinColumn(name = "idusuarioidioma")
+    @JoinColumn(name = "IdUsuarioIdioma", nullable = false)
     private UsuarioIdioma usuarioIdioma;
 
-    @Column(name = "estadovalidacion")
-    private String estadoValidacion;
+    @Column(
+            name = "EstadoValidacion",
+            nullable = false,
+            columnDefinition = "VARCHAR(20) DEFAULT 'Pendiente'"
+    )
+    private String estadoValidacion = "Pendiente"; // Ej: "Certificado Válido", "Nivel Insuficiente", "Pendiente"
 
-    private String observaciones;
+    @Column(name = "Observaciones", columnDefinition = "TEXT")
+    private String observaciones; // Notas sobre la fluidez o validez del certificado
 
-    @Column(name = "fecharevision")
-    private LocalDate fechaRevision = LocalDate.now();
+    @Column(
+            name = "FechaRevision",
+            columnDefinition = "DATE DEFAULT CURRENT_DATE"
+    )
+    private LocalDate fechaRevision ;
 }

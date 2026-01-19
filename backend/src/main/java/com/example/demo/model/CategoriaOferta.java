@@ -12,6 +12,9 @@ public class CategoriaOferta {
     @Column(name = "IdCategoria")
     private Integer idCategoria;
 
-    @Column(name = "NombreCategoria")
+    @Column(name = "NombreCategoria" ,
+            nullable = false,
+            unique = true,
+            columnDefinition = "VARCHAR(40)")
     private String nombrecategoria;
 }
