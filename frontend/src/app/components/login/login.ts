@@ -7,7 +7,6 @@ import { Router, RouterModule } from '@angular/router';
 @Component({
   selector: 'app-login',
   standalone: true,
-  // Importamos lo necesario para que el HTML reconozca ngModel, routerLink y directivas como *ngIf
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './login.html',
   styleUrl: './login.css'
@@ -26,9 +25,6 @@ export class LoginComponent {
     private router: Router
   ) {}
 
-  /**
-   * Cambia la visibilidad de la contraseña en el campo de texto
-   */
   togglePassword(): void {
     this.verPassword = !this.verPassword;
   }
@@ -37,36 +33,50 @@ export class LoginComponent {
    * Envía las credenciales al backend de Spring Boot
    */
   onLogin() {
-    // Limpiamos mensajes de error previos
     this.errorMsg = '';
+    const loginData = { correo: this.correo, contrasena: this.contrasena };
 
-    const loginData = {
-      correo: this.correo,
-      contrasena: this.contrasena
-    };
-
-    // Petición al endpoint que configuramos en el AuthController
     this.http.post('http://localhost:8080/api/auth/login', loginData)
       .subscribe({
         next: (res: any) => {
-          console.log('Login exitoso:', res);
+          // DEBUG: Ver qué llega del backend
+          console.log('Respuesta completa del backend:', res);
+          console.log('res.rol:', res.rol);
 
-          // Guardamos la sesión en el localStorage para persistencia
-          localStorage.setItem('usuario', JSON.stringify(res));
+          // 1. GUARDAR DATOS INDIVIDUALES
+          localStorage.setItem('idUsuario', res.idUsuario);
+          localStorage.setItem('nombre', res.nombre);
 
-          alert(res.mensaje || '¡Bienvenido de nuevo!');
-
-          // Redirigir según el rol devuelto por la base de datos de la UTEQ
-          if (res.rol === 'EMPRESA') {
-            this.router.navigate(['/registro-empresa']); // Cambia esto por tu dashboard de empresa luego
+          // Extraer el nombre del rol correctamente
+          let rolNombre = '';
+          if (res.rol && typeof res.rol === 'object') {
+            // Si viene como objeto: { idRol: 3, nombreRol: "Postulante" }
+            rolNombre = res.rol.nombreRol || res.rol.nombre || '';
           } else {
-            this.router.navigate(['/registro-candidato']); // Cambia esto por el perfil del graduado luego
+            // Si viene como string directo
+            rolNombre = res.rol || '';
           }
+
+          // Guardar el rol en mayúsculas para consistencia
+          localStorage.setItem('rol', rolNombre.trim().toUpperCase());
+
+          // DEBUG: Ver qué se guardó
+          console.log('Guardado en localStorage:');
+          console.log('  idUsuario:', localStorage.getItem('idUsuario'));
+          console.log('  nombre:', localStorage.getItem('nombre'));
+          console.log('  rol:', localStorage.getItem('rol'));
+
+          // 2. NAVEGACIÓN
+          this.router.navigate(['/menu-principal']).then((success) => {
+            if (success) {
+              console.log('¡Navegación exitosa al menú!');
+            } else {
+              console.error('La navegación falló. Revisa app.routes.ts');
+            }
+          });
         },
         error: (err) => {
-          console.error('Error en el login:', err);
-          // Capturamos el mensaje de error que configuramos en el ResponseEntity del backend
-          this.errorMsg = err.error?.error || 'Error al iniciar sesión. Inténtelo más tarde.';
+          this.errorMsg = err.error?.error || 'Error de conexión con el servidor.';
         }
       });
   }

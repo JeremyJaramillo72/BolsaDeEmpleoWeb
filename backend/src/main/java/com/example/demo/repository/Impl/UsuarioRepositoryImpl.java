@@ -1,4 +1,4 @@
-package com.example.demo.repository.Impl;
+/*package com.example.demo.repository.Impl;
 // AQUÍ VAN LOS IMPORTS QUE TE PASÉ ARRIBA
 import com.example.demo.model.Usuario;
 import com.example.demo.repository.IUsuarioCustomRepository;
@@ -83,4 +83,4 @@ public class UsuarioRepositoryImpl implements IUsuarioCustomRepository {
 
         query.execute();
     }
-}
+}*/

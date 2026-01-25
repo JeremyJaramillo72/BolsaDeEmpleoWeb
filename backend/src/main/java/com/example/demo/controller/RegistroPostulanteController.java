@@ -11,6 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import com.example.demo.repository.UsuarioRepository;
+
 import java.time.LocalDate;
 import java.util.Map;
 
@@ -75,4 +79,60 @@ public class RegistroPostulanteController {
                     .body(Map.of("error", "Error en el controlador: " + e.getMessage()));
         }
     }
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+    @PutMapping("/actualizar/{id}")
+    public ResponseEntity<?> actualizarPostulante(
+            @PathVariable("id") Long id,            // Identificador del usuario a modificar
+            @RequestBody Map<String, Object> payload, // Datos enviados desde Angular
+            HttpServletRequest request,               // Requerimiento: Captura objeto request
+            HttpSession session                       // Requerimiento: Gestión de session
+    ) {
+        try {
+            // 1. GESTIÓN DE ÁMBITO (Request): Capturamos metadatos de la petición
+            String ipOrigen = request.getRemoteAddr();
+            System.out.println("Intento de actualización desde IP: " + ipOrigen);
+
+            // 2. Buscar usuario existente
+            Usuario postulante = usuarioRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
+
+            // 3. Actualización selectiva (Solo lo que venga en el payload)
+            if (payload.containsKey("Nombre")) postulante.setNombre((String) payload.get("Nombre"));
+            if (payload.containsKey("Apellido")) postulante.setApellido((String) payload.get("Apellido"));
+            if (payload.containsKey("Telefono")) postulante.setTelefono((String) payload.get("Telefono"));
+
+            // Manejo de la contraseña (si se desea cambiar)
+            if (payload.get("Contrasena") != null && !((String) payload.get("Contrasena")).isEmpty()) {
+                postulante.setContrasena(encoder.encode((String) payload.get("Contrasena")));
+            }
+
+            // 4. Actualización de Ciudad
+            if (payload.get("idCiudad") != null) {
+                Integer idCiudad = Integer.valueOf(payload.get("idCiudad").toString());
+                Ciudad ciudad = ciudadRepository.findById(idCiudad)
+                        .orElseThrow(() -> new RuntimeException("Ciudad no válida"));
+                postulante.setCiudad(ciudad);
+            }
+
+            // 5. Persistencia: JPA detecta el ID y ejecuta un UPDATE automáticamente
+            usuarioService.registrarUsuarioNormal(postulante); // Reutilizamos el service que ya tienes
+
+            // 6. GESTIÓN DE ÁMBITO (Session): Recuperar quién realizó el cambio
+            String editor = (String) session.getAttribute("nombre_usuario");
+            System.out.println("Cambio guardado por el usuario en sesión: " + editor);
+
+            return ResponseEntity.ok(Map.of(
+                    "mensaje", "Perfil actualizado con éxito",
+                    "editor_sesion", editor != null ? editor : "Sistema"
+            ));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al actualizar: " + e.getMessage()));
+        }
+    }
+
+
 }

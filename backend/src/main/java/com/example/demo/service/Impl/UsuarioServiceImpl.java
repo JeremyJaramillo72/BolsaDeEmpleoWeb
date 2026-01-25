@@ -1,4 +1,4 @@
-package com.example.demo.service.Impl; // Paquete en minúsculas por estándar
+package com.example.demo.service.Impl;
 
 import com.example.demo.model.Roles;
 import com.example.demo.model.Usuario;
@@ -8,6 +8,7 @@ import com.example.demo.service.IUsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.sql.Date;
 
 @Service
 public class UsuarioServiceImpl implements IUsuarioService {
@@ -19,36 +20,30 @@ public class UsuarioServiceImpl implements IUsuarioService {
     private RolesRepository rolesRepository;
 
     @Override
-    @Transactional
+    @Transactional // Requerido para ejecutar procedimientos
     public void registrarUsuarioNormal(Usuario usuario) {
-        // 1. Buscamos el objeto Rol (Postulante ID 3)
-        Roles rolPostulante = rolesRepository.findById(3)
-                .orElseThrow(() -> new RuntimeException("Error: El Rol de Postulante no existe."));
-
-        // 2. Asignamos el objeto Rol al usuario para que el Repositorio lo lea
-        usuario.setRol(rolPostulante);
-
-        // 3. Ejecutamos el procedimiento de postulantes
-        usuarioRepository.registrarConProcedimiento(usuario);
+        // 1. Mapeo de parámetros hacia el método @Procedure del repositorio
+        usuarioRepository.registrarPostulantePro(
+                usuario.getNombre(),
+                usuario.getApellido(),
+                usuario.getContrasena(),
+                usuario.getCorreo(),
+                usuario.getFechaNacimiento() != null ? Date.valueOf(usuario.getFechaNacimiento()) : null,
+                usuario.getGenero(),
+                usuario.getTelefono(),
+                usuario.getCiudad() != null ? usuario.getCiudad().getIdCiudad() : null,
+                3 // ID 3 quemado directamente para Postulantes
+        );
     }
 
     @Override
     @Transactional
     public void registrarEmpresaCompleta(Usuario usuario, String nombreEmp, String desc, String web, String ruc) {
-        // En este método ya no necesitamos buscar el Rol ID 2 en Java,
-        // porque nuestro procedimiento 'sp_registrar_empresa_completa' lo asigna automáticamente.
-
-        // Extraemos el ID de la ciudad para pasarlo al procedimiento
-        Integer idCiudad = null;
-        if (usuario.getCiudad() != null) {
-            idCiudad = usuario.getCiudad().getIdCiudad();
-        }
-
-        // LLAMADA AL NUEVO MÉTODO DEL REPOSITORIO
+        // 2. Llamada directa al procedimiento de empresa definido en la interfaz
         usuarioRepository.registrarEmpresaPro(
                 usuario.getCorreo(),
-                usuario.getContrasena(), // Ya viene encriptada desde el controlador
-                idCiudad,
+                usuario.getContrasena(),
+                usuario.getCiudad() != null ? usuario.getCiudad().getIdCiudad() : null,
                 nombreEmp,
                 desc,
                 ruc,
