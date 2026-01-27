@@ -27,10 +27,10 @@ public class ValidacionExpLaboral {
             nullable = false,
             columnDefinition = "VARCHAR(30) DEFAULT 'Pendiente'"
     )
-    private String estadoValidacion = "Pendiente"; // Ej: "Verificada", "Rechazada", "En Verificación"
+    private String estadoValidacion = "Pendiente";
 
     @Column(name = "Observaciones", columnDefinition = "TEXT")
-    private String observaciones; // Detalle de por qué se acepta o rechaza la experiencia
+    private String observaciones;
 
     @Column(
             name = "FechaRevision",
