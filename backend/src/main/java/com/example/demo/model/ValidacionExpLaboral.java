@@ -37,4 +37,6 @@ public class ValidacionExpLaboral {
             columnDefinition = "DATE DEFAULT CURRENT_DATE"
     )
     private LocalDate fechaRevision  ;
+
+
 }

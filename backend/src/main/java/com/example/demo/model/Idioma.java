@@ -4,17 +4,17 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "Idioma")
+@Table(name = "idioma")
 @Data
 public class Idioma {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdIdioma")
+    @Column(name = "id_idioma")
     private Integer idIdioma;
 
     @Column(
-            name = "NombreIdioma",
+            name = "nombre_idioma",
             nullable = false,
             unique = true,
             columnDefinition = "VARCHAR(15)"

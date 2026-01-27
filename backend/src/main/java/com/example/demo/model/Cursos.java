@@ -5,34 +5,34 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "Cursos")
+@Table(name = "cursos")
 @Data
 public class Cursos {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdCurso")
+    @Column(name = "id_curso")
     private Integer idCurso;
 
     @ManyToOne
-    @JoinColumn(name = "IdUsuario")
+    @JoinColumn(name = "id_usuario")
     private Usuario usuario;
 
-    @Column(name = "NombreCurso", nullable = false, columnDefinition = "VARCHAR(100)")
+    @Column(name = "nombre_curso", nullable = false, columnDefinition = "VARCHAR(100)")
     private String nombreCurso;
 
-    @Column(name = "Institucion", columnDefinition = "VARCHAR(100)")
+    @Column(name = "institucion", columnDefinition = "VARCHAR(100)")
     private String institucion;
 
-    @Column(name = "HoraDuracion", columnDefinition = "VARCHAR(5)") // por si dejan la h , 40h, 3.5h,
+    @Column(name = "hora_duracion", columnDefinition = "VARCHAR(5)") // por si dejan la h , 40h, 3.5h,
     private String horaDuracion;
 
-    @Column(name = "FechaFinalizacion", columnDefinition = "DATE")
+    @Column(name = "fecha_finalizacion", columnDefinition = "DATE")
     private LocalDate fechaFinalizacion;
 
-    @Column(name = "ArchivoCertificado", columnDefinition = "TEXT")
+    @Column(name = "archivo_certificado", columnDefinition = "TEXT")
     private String archivoCertificado; // URL de Drive/Cloudinary del PDF o imagen
 
-    @Column(name = "FechaRegistro", nullable = false, columnDefinition = "DATE DEFAULT CURRENT_DATE")
+    @Column(name = "fecha_registro", nullable = false, columnDefinition = "DATE DEFAULT CURRENT_DATE")
     private LocalDate fechaRegistro ;
 }

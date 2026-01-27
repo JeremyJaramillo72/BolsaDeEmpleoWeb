@@ -1,38 +1,36 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "DocumentacionAcademica")
 @Data
+@Entity
+@Table(name = "documentacion_academica")
 public class DocumentacionAcademica {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdDocumentacion")
+    @Column(name = "id_documentacion")
     private Integer idDocumentacion;
 
-    @ManyToOne
-    @JoinColumn(name = "IdUsuario", nullable = false)
-    private Usuario usuario;
+    @NotNull(message = "El perfil académico es obligatorio")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_perfil_academico", nullable = false)
+    private PerfilAcademico perfilAcademico;
 
-    @Column(name = "TituloAcademico", nullable = false, columnDefinition = "VARCHAR(150)")
-    private String tituloAcademico;
+    @Column(name = "fecha_registro")
+    private LocalDate fechaRegistro;
 
-    @Column(name = "Institucion", columnDefinition = "VARCHAR(100)")
-    private String institucion;
+    @Column(name = "archivo_titulo", columnDefinition = "TEXT")
+    private String archivoTitulo;
 
-    @Column(name = "AnioGraduacion", columnDefinition = "INTEGER")
-    private Integer anioGraduacion; // el año (4 dígitos) no requiere más que un Integer
-
-    @Column(name = "NivelEstudios", columnDefinition = "VARCHAR(20)")
-    private String nivelEstudios;
-
-    @Column(name = "ArchivoTitulo", columnDefinition = "TEXT")
-    private String archivoTitulo; // Cambiado de byte[] a URL por eficiencia
-
-    @Column(name = "FechaRegistro", nullable = false, columnDefinition = "DATE DEFAULT CURRENT_DATE")
-    private LocalDate fechaRegistro ;
+    @PrePersist
+    public void prePersist() {
+        if (this.fechaRegistro == null) {
+            this.fechaRegistro = LocalDate.now();
+        }
+    }
 }

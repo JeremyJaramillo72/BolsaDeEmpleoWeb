@@ -1,45 +1,66 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "ExpLaboral")
+@Table(name = "exp_laboral")
 @Data
 public class ExpLaboral {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdExpLaboral")
+    @Column(name = "id_exp_laboral")
     private Integer idExpLaboral;
 
-    @ManyToOne
-    @JoinColumn(name = "IdUsuario", nullable = false)
+
+    @NotNull(message = "El usuario es obligatorio")
+    @ManyToOne(fetch = FetchType.LAZY) // Lazy es mejor para rendimiento
+    @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    @ManyToOne
-    @JoinColumn(name = "IdCargo", nullable = false)
+    @NotNull(message = "El cargo es obligatorio")
+    @ManyToOne(fetch = FetchType.EAGER) // Eager para mostrar el nombre del cargo en el frontend
+    @JoinColumn(name = "id_cargo", nullable = false)
     private Cargo cargo;
 
-    @Column(name = "Empresa", nullable = false, columnDefinition = "VARCHAR(70)")
-    private String empresa;
+    @NotNull(message = "La empresa es obligatoria")
+    @ManyToOne(fetch = FetchType.EAGER) // Eager para mostrar el nombre de la empresa
+    @JoinColumn(name = "id_empresa_catalogo", nullable = false)
+    private CatalogoEmpresa catalogoEmpresa;
 
-    @Column(name = "FechaInicio", nullable = false, columnDefinition = "DATE")
+
+    @NotNull(message = "La fecha de inicio es obligatoria")
+    @Column(name = "fecha_inicio", nullable = false)
     private LocalDate fechaInicio;
 
-    @Column(name = "FechaFin", columnDefinition = "DATE")
+    @Column(name = "fecha_fin")
     private LocalDate fechaFin;
 
-    @Column(name = "Descripcion", columnDefinition = "TEXT")
-    private String descripcion; // TEXT es vital aquí para detallar funciones y logros
+    @NotBlank(message = "La descripción es obligatoria")
+    @Column(name = "descripcion", columnDefinition = "TEXT")
+    private String descripcion;
 
-    @Column(name = "Ubicacion", columnDefinition = "VARCHAR(80)")
-    private String ubicacion; // Ciudad, País (Ej: "Quito, Ecuador")
+    @NotBlank(message = "La ubicación es obligatoria")
+    @Size(max = 100, message = "La ubicación no puede exceder los 100 caracteres")
+    @Column(name = "ubicacion", length = 100)
+    private String ubicacion;
 
-    @Column(name = "ArchivoComprobante", columnDefinition = "TEXT")
-    private String archivoComprobante; // URL de Drive/Cloud para el certificado laboral
+    @Column(name = "archivo_comprobante", columnDefinition = "TEXT")
+    private String archivoComprobante;
 
-    @Column(name = "FechaRegistro", nullable = false, columnDefinition = "DATE DEFAULT CURRENT_DATE")
-    private LocalDate fechaRegistro ;
+    @Column(name = "fecha_registro")
+    private LocalDateTime fechaRegistro;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.fechaRegistro == null) {
+            this.fechaRegistro = LocalDateTime.now();
+        }
+    }
 }

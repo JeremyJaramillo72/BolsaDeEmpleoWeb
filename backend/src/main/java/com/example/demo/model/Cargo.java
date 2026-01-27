@@ -5,17 +5,17 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "Cargo")
+@Table(name = "cargo")
 @Data
 public class Cargo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "Idcargo")
+    @Column(name = "id_cargo")
     private Integer idCargo;
 
     @Column(
-            name = "NombreCargo",
+            name = "nombre_cargo",
             nullable = false,
             unique = true,
             columnDefinition = "VARCHAR(40)"
@@ -23,7 +23,7 @@ public class Cargo {
     private String nombreCargo;
 
     @Column(
-            name = "FechaRegistro",
+            name = "fecha_registro",
             nullable = false,
             columnDefinition = "DATE DEFAULT CURRENT_DATE"
     )

@@ -5,26 +5,35 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "Postulacion")
+@Table(name = "postulacion")
 @Data
-public class Postulacion {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdPostulacion")
-    private Integer idPostulacion;
+public class Postulacion {@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+@Column(name = "id_validacion_doc") //
+private Integer idValidacionDoc;
 
     @ManyToOne
-    @JoinColumn(name = "IdUsuario", nullable = false)
-    private Usuario usuario;
+    @JoinColumn(name = "id_documentacion", nullable = false)
+    private DocumentacionAcademica documentacion;
 
     @ManyToOne
-    @JoinColumn(name = "IdOferta", nullable = false)
-    private OfertaLaboral oferta;
+    @JoinColumn(name = "id_postulacion", nullable = false)
+    private Postulacion postulacion;
 
-    @Column(name = "EstadoPostulacion", columnDefinition = "VARCHAR(20) DEFAULT 'Enviada'")
-    private String estadoPost = "Enviada"; // Ej: "Enviada", "En Revisión", "Aceptada", "Rechazada"
 
-    @Column(name = "FechaPostulacion", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime fechaPostulacion = LocalDateTime.now();
+    @Column(name = "estado_validacion", length = 20) //
+    private String estadoValidacion;
+
+    @Column(name = "observaciones", columnDefinition = "TEXT") //
+    private String observaciones;
+
+    @Column(name = "fecha_revision") //
+    private LocalDateTime fechaRevision;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.fechaRevision == null) {
+            this.fechaRevision = LocalDateTime.now();
+        }
+    }
 }

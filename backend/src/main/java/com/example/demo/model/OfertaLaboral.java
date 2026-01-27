@@ -1,66 +1,82 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "OfertaLaboral")
 @Data
+@Entity
+@Table(name = "oferta_laboral", schema = "public")
 public class OfertaLaboral {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdOferta")
+    @Column(name = "id_oferta")
     private Integer idOferta;
 
-    // FK a Empresa
-    @ManyToOne
-    @JoinColumn(name = "IdEmpresa", nullable = false)
-    private UsuarioEmpresa empresa;
 
-    // FK a Jornada
+    @NotNull(message = "La empresa es obligatoria")
     @ManyToOne
-    @JoinColumn(name = "IdJornada", nullable = false)
-    private JornadaOferta jornada;
+    @JoinColumn(name = "id_empresa", nullable = false)
+    private UsuarioEmpresa empresa; // O la clase que usemos para la empresa
 
-    // FK a Modalidad
+    @NotNull(message = "La modalidad es obligatoria")
     @ManyToOne
-    @JoinColumn(name = "IdModalidad", nullable = false)
+    @JoinColumn(name = "id_modalidad", nullable = false)
     private ModalidadOferta modalidad;
 
-    // FK a Categoría (La que faltaba)
+    @NotNull(message = "La categoría es obligatoria")
     @ManyToOne
-    @JoinColumn(name = "IdCategoria", nullable = false)
+    @JoinColumn(name = "id_categoria", nullable = false)
     private CategoriaOferta categoria;
 
+    @NotNull(message = "La jornada es obligatoria")
     @ManyToOne
-    @JoinColumn(name = "IdCiudad", nullable = false)
+    @JoinColumn(name = "id_jornada", nullable = false)
+    private JornadaOferta jornada;
+
+    @NotNull(message = "La ciudad es obligatoria")
+    @ManyToOne
+    @JoinColumn(name = "id_ciudad", nullable = false)
     private Ciudad ciudad;
 
-    @Column(name = "Titulo", nullable = false, columnDefinition = "VARCHAR(150)")
-    private String titulo; // Agregué título que suele ser necesario
+    @NotBlank(message = "El título es obligatorio")
+    @Size(max = 150)
+    @Column(name = "titulo", length = 150, nullable = false)
+    private String titulo;
 
-    @Column(name = "Descripcion", columnDefinition = "TEXT")
-    private String descripcion; // TEXT para no limitar el detalle de la oferta
+    @Column(name = "descripcion", columnDefinition = "TEXT")
+    private String descripcion;
 
-    @Column(name = "Requisitos", columnDefinition = "TEXT")
-    private String requisitos; // TEXT para listas largas de habilidades requeridas
+    @Column(name = "salario_promedio", precision = 10, scale = 2)
+    private BigDecimal salarioPromedio;
 
-    @Column(name = "TipoContrato",nullable = false, columnDefinition = "VARCHAR(20)")
-    private String tipoContrato; // Ej: "Indefinido", "Temporal"
+    @NotNull(message = "La fecha de inicio es obligatoria")
+    @Column(name = "fecha_inicio")
+    private LocalDate fechaInicio;
 
-    @Column(name = "SueldoPromedio", columnDefinition = "DECIMAL(10,2)")
-    private Double sueldoPromedio;
-
-    @Column(name = "FechaPublicacion", columnDefinition = "DATE DEFAULT CURRENT_DATE")
-    private LocalDate fechaPublicacion ;
-
-    @Column(name = "FechaCierre", columnDefinition = "DATE")
+    @Column(name = "fecha_cierre")
     private LocalDate fechaCierre;
 
-    @Column(name = "EstadoOfertaLaboral", columnDefinition = "VARCHAR(12) DEFAULT 'Activa'")
-    private String estado;
+    @Column(name = "estado_oferta", length = 20)
+    private String estadoOferta;
+
+    @Column(name = "fecha_creacion")
+    private LocalDateTime fechaCreacion;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.fechaCreacion == null) {
+            this.fechaCreacion = LocalDateTime.now();
+        }
+        if (this.estadoOferta == null) {
+            this.estadoOferta = "Activa";
+        }
+    }
 }
