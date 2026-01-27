@@ -1,8 +1,6 @@
 package com.example.demo.service.Impl;
 
-import com.example.demo.model.Roles;
 import com.example.demo.model.Usuario;
-import com.example.demo.repository.RolesRepository;
 import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.service.IUsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +14,10 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private RolesRepository rolesRepository;
-
     @Override
-    @Transactional // Requerido para ejecutar procedimientos
+    @Transactional // Mantenemos la transacción para asegurar la integridad de los datos
     public void registrarUsuarioNormal(Usuario usuario) {
-        // 1. Mapeo de parámetros hacia el método @Procedure del repositorio
+        // Mapeo exacto para sp_registrar_postulante
         usuarioRepository.registrarPostulantePro(
                 usuario.getNombre(),
                 usuario.getApellido(),
@@ -32,19 +27,20 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 usuario.getGenero(),
                 usuario.getTelefono(),
                 usuario.getCiudad() != null ? usuario.getCiudad().getIdCiudad() : null,
-                3 // ID 3 quemado directamente para Postulantes
+                3 // Rol de Postulante
         );
     }
 
     @Override
     @Transactional
     public void registrarEmpresaCompleta(Usuario usuario, String nombreEmp, String desc, String web, String ruc) {
-        // 2. Llamada directa al procedimiento de empresa definido en la interfaz
+        // ACTUALIZACIÓN: Ahora incluimos nombre y apellido del objeto usuario
+        // para cumplir con las restricciones NOT NULL de la tabla 'usuario'
         usuarioRepository.registrarEmpresaPro(
                 usuario.getCorreo(),
                 usuario.getContrasena(),
                 usuario.getCiudad() != null ? usuario.getCiudad().getIdCiudad() : null,
-                nombreEmp,
+                nombreEmp,   // Representante o nombre empresa
                 desc,
                 ruc,
                 web

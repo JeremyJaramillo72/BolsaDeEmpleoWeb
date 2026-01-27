@@ -28,18 +28,11 @@ public class RegistroEmpresaController {
     @PostMapping("/crear")
     public ResponseEntity<?> registrarEmpresa(@RequestBody Map<String, Object> payload) {
         try {
-            // 1. Extraemos los datos del Usuario (Cuenta)
+            // 1. Datos de la Cuenta de Usuario
             Usuario usuario = new Usuario();
             usuario.setCorreo((String) payload.get("correo"));
+            // Encriptamos la contraseña de inmediato
             usuario.setContrasena(encoder.encode((String) payload.get("contrasena")));
-
-            // Buscamos la ciudad seleccionada en el combo box
-            if (payload.get("idCiudad") != null) {
-                Integer idCiudad = Integer.valueOf(payload.get("idCiudad").toString());
-                Ciudad ciudad = ciudadRepository.findById(idCiudad)
-                        .orElseThrow(() -> new RuntimeException("Ciudad no encontrada"));
-                usuario.setCiudad(ciudad);
-            }
 
             // 2. Extraemos los datos específicos de la Empresa
             String nombreEmp = (String) payload.get("nombreEmpresa");
@@ -47,15 +40,27 @@ public class RegistroEmpresaController {
             String web = (String) payload.get("sitioWeb");
             String ruc = (String) payload.get("ruc");
 
-            // 3. Llamamos al servicio (que usa el procedimiento almacenado doble)
+            // Asignamos el nombre de la empresa al campo 'nombre' del usuario
+            usuario.setNombre(nombreEmp);
+
+            // 3. Manejo de la Ciudad (idCiudad)
+            if (payload.get("idCiudad") != null) {
+                Integer idCiudad = Integer.valueOf(payload.get("idCiudad").toString());
+                Ciudad ciudad = ciudadRepository.findById(idCiudad)
+                        .orElseThrow(() -> new RuntimeException("Ciudad con ID " + idCiudad + " no encontrada"));
+                usuario.setCiudad(ciudad);
+            }
+
+            // 4. Llamada al Service (7 parámetros sincronizados)
             usuarioService.registrarEmpresaCompleta(usuario, nombreEmp, desc, web, ruc);
 
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(Map.of("mensaje", "¡Empresa y cuenta de usuario registradas con éxito!"));
+                    .body(Map.of("mensaje", "¡Registro de empresa exitoso! Ahora puede iniciar sesión."));
 
         } catch (Exception e) {
+            // Captura de errores detallada para la UTEQ
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al registrar empresa: " + e.getMessage()));
+                    .body(Map.of("error", "Error en el registro de empresa: " + e.getMessage()));
         }
     }
 }

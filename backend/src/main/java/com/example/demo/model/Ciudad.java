@@ -4,20 +4,20 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "ciudad")
+@Table(name = "ciudad", schema = "public")
 @Data
 public class Ciudad {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idciudad")
+    @Column(name = "id_ciudad")
     private Integer idCiudad;
 
-    @Column(name = "nombreciudad")
+    @Column(name = "nombre_ciudad", nullable = false, length = 100)
     private String nombreCiudad;
 
-    // Relación: Una Ciudad PROVIENE de una Provincia
+    // Relación: Muchas ciudades pertenecen a una provincia
     @ManyToOne
-    @JoinColumn(name = "idprovincia")
+    @JoinColumn(name = "id_provincia") // Coincide con la columna en la BD
     private Provincia provincia;
 }

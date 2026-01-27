@@ -4,20 +4,19 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "Roles")
+@Table(name = "roles") // Cambiado a minúsculas para coincidir con la BD
 @Data
 public class Roles {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "IdRol")
+    @Column(name = "id_rol") // Coincide con id_rol de la BD
     private Integer idRol;
 
     @Column(
-            name = "NombreRol",
+            name = "nombre_rol", // Coincide con nombre_rol de la BD
             nullable = false,
-            unique = true,
-            columnDefinition = "VARCHAR(15)"
+            length = 50 // Sincronizado con character varying(50)
     )
     private String nombreRol;
 }

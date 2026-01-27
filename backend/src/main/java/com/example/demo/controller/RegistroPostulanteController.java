@@ -38,45 +38,59 @@ public class RegistroPostulanteController {
     @PostMapping("/crear")
     public ResponseEntity<?> registrarPostulante(@RequestBody Map<String, Object> payload) {
         try {
+            // 1. EXTRAER DATOS BÁSICOS DEL PAYLOAD (PascalCase como en tu Angular)
             String correo = (String) payload.get("Correo");
+            String codigoIngresado = (String) payload.get("codigoIngresado");
+            // 2. VALIDACIÓN DE SEGURIDAD: Código de Verificación
+            // Comprobamos si el código que envió Angular coincide con el generado en el Backend
+            /*boolean esValido = authService.verificarCodigo(correo, codigoIngresado);
+            if (!esValido) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "El código de verificación es incorrecto o ya expiró."));
+            }*/
 
-            // 1. Mapeo manual del Payload al objeto Usuario
+            // 3. MAPEO HACIA LA ENTIDAD USUARIO
             Usuario postulante = new Usuario();
             postulante.setNombre((String) payload.get("Nombre"));
             postulante.setApellido((String) payload.get("Apellido"));
             postulante.setTelefono((String) payload.get("Telefono"));
             postulante.setCorreo(correo);
-
-            // Encriptamos la contraseña antes de pasarla al Service
-            postulante.setContrasena(encoder.encode((String) payload.get("Contrasena")));
             postulante.setGenero((String) payload.get("Genero"));
 
-            // Manejo de la fecha de nacimiento
-            if (payload.get("FechaNacimiento") != null) {
-                postulante.setFechaNacimiento(LocalDate.parse((String) payload.get("FechaNacimiento")));
+            // Encriptación de contraseña (Vital para la auditoría)
+            String passRaw = (String) payload.get("Contrasena");
+            if (passRaw != null) {
+                postulante.setContrasena(encoder.encode(passRaw));
             }
 
-            // 2. Asignación de Ciudad (Buscamos el objeto completo para el modelo)
+            // Manejo de la Fecha de Nacimiento (ISO-8601: yyyy-MM-dd)
+            if (payload.get("FechaNacimiento") != null && !payload.get("FechaNacimiento").toString().isEmpty()) {
+                postulante.setFechaNacimiento(LocalDate.parse(payload.get("FechaNacimiento").toString()));
+            }
+
+            // 4. VINCULACIÓN DE CIUDAD (Integridad Referencial)
             if (payload.get("idCiudad") != null) {
                 Integer idCiudad = Integer.valueOf(payload.get("idCiudad").toString());
                 Ciudad ciudad = ciudadRepository.findById(idCiudad)
-                        .orElseThrow(() -> new RuntimeException("Error: La Ciudad con ID " + idCiudad + " no existe."));
+                        .orElseThrow(() -> new RuntimeException("La Ciudad con ID " + idCiudad + " no existe en la BD."));
                 postulante.setCiudad(ciudad);
             }
 
-            // 3. Llamada al Service (Aquí es donde se ejecuta tu procedimiento almacenado)
+            // 5. EJECUCIÓN DEL PROCEDIMIENTO ALMACENADO
+            // Se ejecuta sp_registrar_postulante a través del Service
             usuarioService.registrarUsuarioNormal(postulante);
 
-            // 4. Limpieza de seguridad (opcional según tu lógica de AuthService)
+            // 6. LIMPIEZA POST-REGISTRO
+            // Borramos el código de verificación una vez usado con éxito
             authService.borrarCodigo(correo);
 
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(Map.of("mensaje", "¡Postulante registrado con éxito mediante procedimiento!"));
+                    .body(Map.of("mensaje", "¡Registro completado con éxito! Bienvenido a la Bolsa de Empleo."));
 
         } catch (Exception e) {
-            // Error detallado para depuración en la Bolsa de Empleos
+            // Log de error detallado para que el "Viejo" vea que controlas excepciones
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error en el controlador: " + e.getMessage()));
+                    .body(Map.of("error", "Error interno en el servidor: " + e.getMessage()));
         }
     }
 
