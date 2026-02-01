@@ -79,8 +79,14 @@
       </div>
     </div>
 
-    <!-- Cards Grid -->
+    <!-- Router Outlet - Contenido dinámico -->
     <div class="p-8">
+      <router-outlet></router-outlet>
+    </div>
+
+    <!-- Dashboard Home Cards - Solo se muestra cuando estamos en la ruta principal -->
+    <div *ngIf="isDashboardHome()" class="p-8 space-y-8 animate-fade-in">
+      <!-- Cards Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <button
           *ngFor="let item of menuItems"

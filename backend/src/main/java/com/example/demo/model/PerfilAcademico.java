@@ -27,7 +27,7 @@ public class PerfilAcademico {
     private Carrera carrera;
 
     @Column(name = "fecha_graduacion")
-    private LocalDate fechaGraduacion; // y si es para practicas en empresas ?
+    private LocalDate fechaGraduacion;
 
     @Size(max = 50, message = "El número de registro no puede exceder los 50 caracteres")
     @Column(name = "numero_registro_senescyt", length = 50)

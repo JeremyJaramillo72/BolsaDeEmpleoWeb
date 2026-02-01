@@ -5,25 +5,25 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "seguridad_db")
+@Table(name = "seguridad", schema = "public") // Nombre exacto de tu tabla
 @Data
 public class SeguridadDb {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_seguridad")
-    private Integer IdSeguridad;
+    private Integer idSeguridad;
 
     @ManyToOne
-    @JoinColumn(name = "id_usuario", nullable = false)
+    @JoinColumn(name = "id_usuario") // Coincide con id_usuario de tu SQL
     private Usuario usuario;
 
-    @Column(name = "db_login_name", columnDefinition = "VARCHAR(60)")
-    private String dbLoginName; // Nombre de usuario en el sistema o BD
+    @Column(name = "login_name", length = 100) // Coincide con character varying(100)
+    private String loginName;
 
-    @Column(name = "tipo_autenticacion", columnDefinition = "VARCHAR(30)")
-    private String tipoAutenticacion;
+    @Column(name = "clave_name", length = 150) // Coincide con character varying(150)
+    private String claveName;
 
-    @Column(name = "ultimo_acceso", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "ultimo_acceso")
     private LocalDateTime ultimoAcceso = LocalDateTime.now();
 }

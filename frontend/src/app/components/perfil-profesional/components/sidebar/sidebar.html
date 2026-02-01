@@ -1,0 +1,32 @@
+<!-- sidebar.component.html -->
+<aside class="sidebar">
+  <div class="photo-upload" (click)="triggerFileInput()">
+    <input
+      type="file"
+      id="fotoInput"
+      accept="image/*"
+      style="display: none"
+      (change)="subirFoto($event)">
+
+    <div *ngIf="fotoUrl; else sinFoto">
+      <img [src]="fotoUrl" alt="Foto de perfil">
+    </div>
+
+    <ng-template #sinFoto>
+      <span>📷<br>Subir Foto</span>
+    </ng-template>
+  </div>
+
+  <div class="user-name">
+    <h2>{{nombre}}</h2>
+    <p>{{rol}}</p>
+  </div>
+
+  <div class="progress-section">
+    <h3>Completitud del Perfil</h3>
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="completitud"></div>
+    </div>
+    <p class="progress-text">{{completitud}}% Completado</p>
+  </div>
+</aside>

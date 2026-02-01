@@ -24,8 +24,9 @@ public class DocumentacionAcademica {
     @Column(name = "fecha_registro")
     private LocalDate fechaRegistro;
 
-    @Column(name = "archivo_titulo", columnDefinition = "TEXT")
-    private String archivoTitulo;
+    @Lob // 👈 Indica que es un objeto pesado (Large Object)
+    @Column(name = "archivo_titulo")
+    private byte[] archivoTitulo; // 👈 Cambiado a byte[] para guardar el binario
 
     @PrePersist
     public void prePersist() {

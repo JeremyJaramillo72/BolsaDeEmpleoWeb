@@ -13,6 +13,16 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "oferta_laboral", schema = "public")
+// AGREGAMOS ESTA ANOTACIÓN PARA REGISTRAR EL PROCEDURE
+@NamedStoredProcedureQuery(
+        name = "OfertaLaboral.obtenerMayorSalario",
+        procedureName = "sp_ObtenerOfertaMayorSalario",
+        parameters = {
+                @StoredProcedureParameter(mode = ParameterMode.IN, name = "pid_empresa", type = Integer.class),
+                @StoredProcedureParameter(mode = ParameterMode.OUT, name = "p_oferta_nombre", type = String.class),
+                @StoredProcedureParameter(mode = ParameterMode.OUT, name = "p_detalles", type = String.class)
+        }
+)
 public class OfertaLaboral {
 
     @Id
@@ -20,11 +30,10 @@ public class OfertaLaboral {
     @Column(name = "id_oferta")
     private Integer idOferta;
 
-
     @NotNull(message = "La empresa es obligatoria")
     @ManyToOne
     @JoinColumn(name = "id_empresa", nullable = false)
-    private UsuarioEmpresa empresa; // O la clase que usemos para la empresa
+    private UsuarioEmpresa empresa;
 
     @NotNull(message = "La modalidad es obligatoria")
     @ManyToOne

@@ -31,10 +31,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/usuarios/**",
+                                "/api/usuarios-bd/**",
                                 "/api/auth/**",
                                 "/api/registro-postulante/**",
                                 "/api/registro-empresa/**",
-                                "/api/ubicaciones/**"
+                                "/api/ubicaciones/**",
+                                "/api/perfil-academico/**",
+                                "/api/perfil/**",
+                                "/api/academico/**",
+                                "/api/ofertas/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 );

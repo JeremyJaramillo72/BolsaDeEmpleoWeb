@@ -22,7 +22,7 @@ public class CatalogoHabilidad {
     @ManyToOne
 
     @JoinColumn(name="id_tipo_habilidad",nullable = false)
-     private TipoHabilidad TipoHabilidad;
+     private TipoHabilidad tipoHabilidad;
 
     @Size(min = 3,max =30,message = "No se permite nombre tan grande solo entre 3-50 caracteres.")
     @NotBlank(message = "Es obligatorio el nombre de la habilidad.")

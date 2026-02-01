@@ -1,0 +1,70 @@
+<div class="section-card">
+  <div class="section-header">
+    <h3>
+      <span class="section-icon">🎓</span>
+      Información Académica
+    </h3>
+  </div>
+
+  <div *ngFor="let titulo of perfil.titulos; let i = index" class="academic-entry mb-8">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Facultad</label>
+        <select [(ngModel)]="titulo.id_facultad" (change)="onFacultadChange(i)">
+          <option [ngValue]="null" disabled>Seleccionar Facultad...</option>
+          <option *ngFor="let f of facultades" [value]="f.idFacultad">{{ f.nombreFacultad }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Carrera</label>
+        <select [(ngModel)]="titulo.id_carrera" [disabled]="!titulo.id_facultad">
+          <option [ngValue]="null" disabled>Seleccionar Carrera...</option>
+          <option *ngFor="let c of carrerasPorTitulo[i]" [value]="c.idCarrera">{{ c.nombreCarrera }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Fecha de Graduación</label>
+        <input type="date" [(ngModel)]="titulo.fechaGraduacion" (ngModelChange)="onInputChange()">
+      </div>
+
+      <div class="form-group">
+        <label>Número de Registro SENESCYT</label>
+        <input type="text" [(ngModel)]="titulo.registroSenescyt" (ngModelChange)="onInputChange()" placeholder="Ej: 1234-56-789012">
+      </div>
+    </div>
+
+    <div class="docs-section mt-6">
+      <h4 class="docs-title">
+        <span class="material-icons">description</span>
+        Documentos Académicos
+      </h4>
+
+      <div class="doc-card">
+        <div class="doc-info">
+          <p class="doc-name">Título de Bachiller</p>
+          <p class="doc-detail"><strong>Nombre:</strong> {{ titulo.nombreArchivo || 'ningun_archivo.pdf' }}</p>
+          <p class="doc-detail"><strong>Fecha de registro:</strong> {{ titulo.fechaRegistro || '15/01/2025' }}</p>
+        </div>
+
+        <div class="doc-actions">
+          <button class="btn-edit" title="Editar"><span class="material-icons">edit</span></button>
+          <button class="btn-delete" (click)="eliminarTitulo(i)" title="Eliminar"><span class="material-icons">delete</span></button>
+        </div>
+      </div>
+
+      <button type="button" (click)="fileInput.click()" class="btn-add-doc">
+        <span class="material-icons">add</span>
+        Agregar Documento
+      </button>
+      <input #fileInput type="file" (change)="onFileSelected($event, i)" style="display: none" accept=".pdf,.jpg,.png">
+    </div>
+    <hr class="section-divider">
+  </div>
+
+  <button (click)="agregarTitulo()" class="btn-add-section">
+    <span class="material-icons">school</span>
+    Añadir Otra Formación Académica
+  </button>
+</div>

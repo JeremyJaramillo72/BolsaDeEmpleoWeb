@@ -147,6 +147,4 @@ public class RegistroPostulanteController {
                     .body(Map.of("error", "Error al actualizar: " + e.getMessage()));
         }
     }
-
-
 }

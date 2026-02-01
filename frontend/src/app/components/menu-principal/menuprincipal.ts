@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule, NavigationEnd } from '@angular/router'; // 👈 Agregamos NavigationEnd
+import { filter } from 'rxjs/operators';
 
 interface MenuItem {
   icon: string;
@@ -8,6 +9,7 @@ interface MenuItem {
   description: string;
   color: string;
   roles?: string[];
+  path?: string;
 }
 
 interface StatCard {
@@ -20,40 +22,54 @@ interface StatCard {
 @Component({
   selector: 'app-menuprincipal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './menuprincipal.html',
   styleUrls: ['./menuprincipal.css']
 })
 export class MenuprincipalComponent implements OnInit {
   isSidebarOpen: boolean = true;
-
-  // Variables para la sesión
   nombreUsuario: string = '';
   rolUsuario: string = '';
 
-  // Listas que se cargarán según el rol
+  // Variable para controlar la visibilidad de las tarjetas
+  dashboardHomeVisible: boolean = true;
+
   menuItems: MenuItem[] = [];
   statsCards: StatCard[] = [];
 
-  constructor(private router: Router) {}
+  constructor(public router: Router) {
+    // ✨ ESCUCHA DE RUTAS: Detecta cambios de URL sin recargar la página
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.verificarRutaActual();
+    });
+  }
 
   ngOnInit(): void {
-    // 1. Recuperamos los datos que guardaste en el login
     this.nombreUsuario = localStorage.getItem('nombre') || 'Usuario';
     this.rolUsuario = localStorage.getItem('rol') || '';
 
-    // 2. Verificación de seguridad básica: si no hay ID, no debería estar aquí
     if (!localStorage.getItem('idUsuario')) {
       this.logout();
       return;
     }
 
-    // 3. Cargamos el contenido según el rol que detectamos
+    this.verificarRutaActual(); // Verificación inicial al cargar el componente
     this.inicializarMenuPorRol();
   }
 
+  // Método centralizado para validar si estamos en el "Home" del panel
+  private verificarRutaActual(): void {
+    this.dashboardHomeVisible = this.router.url === '/menu-principal';
+  }
+
+  // Esta función es la que usarás en el *ngIf de tu HTML
+  isDashboardHome(): boolean {
+    return this.dashboardHomeVisible;
+  }
+
   inicializarMenuPorRol(): void {
-    // Definición maestra de todas las opciones del menú
     const todasLasOpciones: MenuItem[] = [
       {
         icon: 'business',
@@ -67,7 +83,8 @@ export class MenuprincipalComponent implements OnInit {
         title: 'Mi Perfil Profesional',
         description: 'Gestiona tu hoja de vida y datos',
         color: 'from-blue-500 to-blue-600',
-        roles: ['POSTULANTE']
+        roles: ['POSTULANTE'],
+        path: '/perfil-profesional'
       },
       {
         icon: 'work',
@@ -98,13 +115,6 @@ export class MenuprincipalComponent implements OnInit {
         roles: ['POSTULANTE']
       },
       {
-        icon: 'verified',
-        title: 'Validación de Credenciales',
-        description: 'Valida la información de candidatos',
-        color: 'from-indigo-500 to-indigo-600',
-        roles: ['EMPRESA']
-      },
-      {
         icon: 'notifications',
         title: 'Notificaciones',
         description: 'Revisa tus notificaciones y alertas',
@@ -113,7 +123,6 @@ export class MenuprincipalComponent implements OnInit {
       }
     ];
 
-    // Filtramos para que 'menuItems' solo tenga lo que el rol actual puede ver
     this.menuItems = todasLasOpciones.filter(item =>
       item.roles?.includes(this.rolUsuario)
     );
@@ -140,13 +149,13 @@ export class MenuprincipalComponent implements OnInit {
   }
 
   onMenuItemClick(item: MenuItem): void {
-    console.log('Navegando a:', item.title);
-    // Aquí irá la navegación cuando implementes las funcionalidades
+    if (item.path) {
+      // Navegación a la ruta hija configurada
+      this.router.navigate(['/menu-principal' + item.path]);
+    }
   }
 
   logout(): void {
-    console.log('Cerrando sesión...');
-    // Limpieza total de seguridad para cumplir con los requisitos del proyecto
     localStorage.clear();
     this.router.navigate(['/login']);
   }

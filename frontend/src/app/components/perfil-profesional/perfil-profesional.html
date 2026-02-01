@@ -1,0 +1,34 @@
+<div class="container">
+  <wbr>
+  <!-- Contenedor Principal -->
+  <div class="profile-container">
+    <!-- Sidebar -->
+    <app-sidebar
+      [nombre]="perfil.nombre"
+      [rol]="perfil.rol"
+      [completitud]="completitudPerfil"
+      (fotoSubida)="actualizarProgreso()">
+    </app-sidebar>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Información Personal -->
+      <app-info-personal
+        [perfil]="perfil"
+        (datosCambiados)="actualizarProgreso()">
+      </app-info-personal>
+
+      <!-- Información Académica -->
+      <app-info-academica
+        [perfil]="perfil"
+        (datosCambiados)="actualizarProgreso()">
+      </app-info-academica>
+
+      <!-- Botones finales -->
+      <div class="save-section">
+        <button class="btn-cancel" (click)="cancelarCambios()">Cancelar Cambios</button>
+        <button class="btn-save" (click)="guardarPerfil()">💾 Guardar Perfil Completo</button>
+      </div>
+    </main>
+  </div>
+</div>

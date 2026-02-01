@@ -1,0 +1,70 @@
+
+<!-- info-personal.component.html -->
+<div class="section-card">
+  <div class="section-header">
+    <h3>
+      <span class="section-icon">👤</span>
+      Información Personal
+    </h3>
+  </div>
+  <div class="form-grid">
+    <div class="form-group">
+      <label>Número de Cédula</label>
+      <input
+        type="text"
+        [(ngModel)]="perfil.cedula"
+        (ngModelChange)="onInputChange()"
+        placeholder="Ej: 1234567890">
+    </div>
+    <div class="form-group">
+      <label>Nombre Completo</label>
+      <input
+        type="text"
+        [(ngModel)]="perfil.nombreCompleto"
+        (ngModelChange)="onInputChange()"
+        placeholder="Tu nombre completo">
+    </div>
+    <div class="form-group">
+      <label>Fecha de Nacimiento</label>
+      <input
+        type="date"
+        [(ngModel)]="perfil.fechaNacimiento"
+        (ngModelChange)="onInputChange()">
+    </div>
+    <div class="form-group">
+      <label>Género</label>
+      <select
+        [(ngModel)]="perfil.genero"
+        (ngModelChange)="onInputChange()">
+        <option value="">Seleccionar...</option>
+        <option value="Masculino">Masculino</option>
+        <option value="Femenino">Femenino</option>
+        <option value="Otro">Otro</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input
+        type="email"
+        [(ngModel)]="perfil.correo"
+        (ngModelChange)="onInputChange()"
+        placeholder="tu@email.com">
+    </div>
+    <div class="form-group">
+      <label>Teléfono</label>
+      <input
+        type="tel"
+        [(ngModel)]="perfil.telefono"
+        (ngModelChange)="onInputChange()"
+        placeholder="0999999999">
+    </div>
+    <div class="form-group">
+      <label>Dirección</label>
+      <input
+        type="text"
+        [(ngModel)]="perfil.direccion"
+        (ngModelChange)="onInputChange()"
+        placeholder="Calle, ciudad, provincia">
+    </div>
+  </div>
+</div>

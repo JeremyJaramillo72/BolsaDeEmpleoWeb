@@ -33,7 +33,6 @@ public class RegistroEmpresaController {
             usuario.setCorreo((String) payload.get("correo"));
             // Encriptamos la contraseña de inmediato
             usuario.setContrasena(encoder.encode((String) payload.get("contrasena")));
-
             // 2. Extraemos los datos específicos de la Empresa
             String nombreEmp = (String) payload.get("nombreEmpresa");
             String desc = (String) payload.get("descripcion");
