@@ -2,8 +2,10 @@ package com.example.demo.controller;
 
 import com.example.demo.model.Facultad;
 import com.example.demo.model.Carrera;
+import com.example.demo.model.Idioma;
 import com.example.demo.repository.FacultadRepository;
 import com.example.demo.repository.CarreraRepository;
+import com.example.demo.repository.IdiomaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +20,8 @@ public class AcademicController {
     private FacultadRepository facultadRepository;
     @Autowired
     private CarreraRepository carreraRepository;
+    @Autowired
+    private IdiomaRepository idiomaRepository;
     //Devuelve la lista de todas las facultades registras en mi BD
     @GetMapping("/facultades")
     public List<Facultad> listarFacultades() {
@@ -27,5 +31,10 @@ public class AcademicController {
     @GetMapping("/carreras/{idFacultad}")
     public List<Carrera> listarCarrerasPorFacultad(@PathVariable Integer idFacultad) {
         return carreraRepository.findByFacultadIdFacultad(idFacultad);
+    }
+
+    @GetMapping("/idiomas")
+    public List<Idioma> listarIdiomas() {
+        return idiomaRepository.findAll();
     }
 }

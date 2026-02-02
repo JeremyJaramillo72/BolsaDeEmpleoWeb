@@ -24,6 +24,8 @@
         (datosCambiados)="actualizarProgreso()">
       </app-info-academica>
 
+      <app-idiomas [perfil]="perfil" (datosCambiados)="actualizarProgreso()"></app-idiomas>
+
       <!-- Botones finales -->
       <div class="save-section">
         <button class="btn-cancel" (click)="cancelarCambios()">Cancelar Cambios</button>

@@ -6,6 +6,9 @@ import { InfoPersonalComponent } from './components/info-personal/info-personal'
 import { InfoAcademicaComponent } from './components/info-academica/info-academica';
 import { PerfilService } from './perfil.service'; // 👈 Asegúrate de que la ruta sea correcta
 import { CommonModule } from '@angular/common';
+import {IdiomasComponent} from './components/idiomas/idiomas';
+import { forkJoin } from 'rxjs';
+
 
 @Component({
   selector: 'app-perfil-profesional',
@@ -14,7 +17,8 @@ import { CommonModule } from '@angular/common';
     CommonModule,
     SidebarComponent,
     InfoPersonalComponent,
-    InfoAcademicaComponent
+    InfoAcademicaComponent,
+    IdiomasComponent
   ],
   templateUrl: './perfil-profesional.html',
   styleUrls: ['./perfil-profesional.css']
@@ -23,6 +27,7 @@ export class PerfilProfesionalComponent implements OnInit {
   // Inicializamos el objeto vacío para llenarlo con la DB
   perfil: any = {
     titulos: [],
+    idiomas: [],
     nombre: '',
     apellido: '',
     nombreCompleto: '',
@@ -78,35 +83,50 @@ export class PerfilProfesionalComponent implements OnInit {
 
   guardarPerfil(): void {
     const idUsuario = localStorage.getItem('idUsuario');
-
     if (!idUsuario) {
       alert('Sesión expirada. Por favor vuelve a loguearte.');
       return;
     }
 
-    // 1. Validar que existan títulos para guardar
-    if (!this.perfil.titulos || this.perfil.titulos.length === 0) {
-      alert('Por favor, agrega al menos una formación académica.');
+    // 1. Recolectamos todas las peticiones en un solo arreglo
+    const peticiones: any[] = [];
+
+    // Peticiones de Títulos
+    if (this.perfil.titulos && this.perfil.titulos.length > 0) {
+      this.perfil.titulos.forEach((t: any) => {
+        peticiones.push(this.perfilService.registrarTitulo(Number(idUsuario), t));
+      });
+    }
+
+    // Peticiones de Idiomas
+    if (this.perfil.idiomas && this.perfil.idiomas.length > 0) {
+      this.perfil.idiomas.forEach((i: any) => {
+        peticiones.push(this.perfilService.registrarIdioma(Number(idUsuario), i));
+      });
+    }
+
+    // 2. ¿Hay algo que guardar?
+    if (peticiones.length === 0) {
+      alert('No has agregado ningún cambio para guardar.');
       return;
     }
 
-    console.log('Iniciando guardado de información académica...');
+    console.log(`Iniciando el guardado de ${peticiones.length} registros...`);
 
-    // 2. Recorremos cada título y lo enviamos al Procedure
-    this.perfil.titulos.forEach((titulo: any) => {
-      this.perfilService.registrarTitulo(Number(idUsuario), titulo).subscribe({
-        next: (res) => {
-          console.log('Título guardado:', res.mensaje);
-          alert(`¡El título de ${titulo.nombreArchivo} se guardó con éxito!`);
-        },
-        error: (err) => {
-          console.error('Error al guardar título:', err);
-          alert('Hubo un error al procesar uno de los títulos. Revisa los datos.');
-        }
-      });
+    // 3. Lanzamos TODO al mismo tiempo y esperamos el final
+    forkJoin(peticiones).subscribe({
+      next: (resultados) => {
+        console.log('¡Todo guardado correctamente!', resultados);
+        alert('¡Perfil actualizado con éxito! Todos tus títulos e idiomas han sido registrados.');
+
+        // Opcional: Limpiar los arreglos temporales o recargar datos
+        this.actualizarProgreso();
+      },
+      error: (err) => {
+        console.error('Error global en el guardado:', err);
+        alert('Hubo un problema al guardar algunos datos. Por favor, revisa la consola.');
+      }
     });
-
-    // Aquí también podrías llamar a un servicio para guardar la Info Personal si cambió
   }
 
   cancelarCambios(): void {
@@ -124,20 +144,19 @@ export class PerfilProfesionalComponent implements OnInit {
   actualizarProgreso(): void {
     let camposCompletados = 0;
     const camposObligatorios = [
-      this.perfil.cedula,
-      this.perfil.nombre,
-      this.perfil.apellido,
-      this.perfil.fechaNacimiento,
-      this.perfil.genero,
-      this.perfil.correo,
-      this.perfil.telefono
+      this.perfil.cedula, this.perfil.nombre, this.perfil.apellido,
+      this.perfil.fechaNacimiento, this.perfil.genero, this.perfil.correo, this.perfil.telefono
     ];
 
     camposObligatorios.forEach(campo => {
       if (campo && campo !== '') camposCompletados++;
     });
 
-    const total = camposObligatorios.length;
+    // ✨ Sumamos un punto si tiene al menos un título y otro si tiene un idioma
+    if (this.perfil.titulos?.length > 0) camposCompletados++;
+    if (this.perfil.idiomas?.length > 0) camposCompletados++;
+
+    const total = camposObligatorios.length + 2; // +2 por las nuevas secciones
     this.completitudPerfil = Math.round((camposCompletados / total) * 100);
   }
 }

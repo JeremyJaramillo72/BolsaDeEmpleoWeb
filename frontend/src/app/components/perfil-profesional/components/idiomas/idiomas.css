@@ -1,45 +1,239 @@
-/* Reutilizamos el estilo de las tarjetas de la sección académica */
+/* ===== SECCIÓN IDIOMAS ===== */
+.section-card {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  margin-bottom: 25px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.section-header h3 {
+  color: #1e293b;
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+}
+
+.section-icon {
+  width: 35px;
+  height: 35px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+}
+
+/* Grid de Formularios */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  color: #475569;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.form-control {
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #334155;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Fila de Acciones */
+.actions-row {
+  margin-top: 25px;
+  display: flex;
+  gap: 15px;
+}
+
+.btn-attach {
+  flex: 1;
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-attach:hover {
+  background: #16a34a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.btn-add-list {
+  flex: 1;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-add-list:hover {
+  background: #4338ca;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+/* Divisor */
+.section-divider {
+  border: 0;
+  border-top: 2px solid #f1f5f9;
+  margin: 30px 0;
+}
+
+/* Título de Documentos */
+.docs-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 20px;
+}
+
+.docs-title .material-icons {
+  font-size: 20px;
+  color: #667eea;
+}
+
+/* Tarjeta de Idioma */
 .doc-card {
   background: #f8faff;
   border-radius: 12px;
-  border-left: 5px solid #6366f1; /* Color índigo para idiomas */
-  padding: 15px 20px;
+  border-left: 5px solid #4f46e5;
+  padding: 20px 25px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-  animation: fadeIn 0.3s ease-in-out;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+}
+
+.doc-card:hover {
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.1);
+  transform: translateY(-2px);
+}
+
+.doc-info {
+  flex: 1;
 }
 
 .doc-name {
   font-weight: 800;
   color: #1e293b;
-  font-size: 15px;
+  font-size: 16px;
+  margin: 0 0 8px 0;
 }
 
 .doc-detail {
   font-size: 13px;
   color: #64748b;
+  margin: 4px 0;
 }
 
-.btn-add-doc {
-  background: #22c55e;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 10px;
+.doc-detail strong {
+  color: #475569;
   font-weight: 600;
+}
+
+/* Acciones */
+.doc-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-delete {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: #ef4444;
+  color: white;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.3s;
+  justify-content: center;
+  transition: all 0.3s ease;
 }
 
-.btn-add-doc:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); }
+.btn-delete:hover {
+  background: #dc2626;
+  transform: scale(1.05);
+}
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateX(-10px); }
-  to { opacity: 1; transform: translateX(0); }
+.btn-delete .material-icons {
+  font-size: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions-row {
+    flex-direction: column;
+  }
+
+  .doc-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .doc-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
 }

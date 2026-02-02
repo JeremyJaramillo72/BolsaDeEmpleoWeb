@@ -39,6 +39,7 @@ public class SecurityConfig {
                                 "/api/perfil-academico/**",
                                 "/api/perfil/**",
                                 "/api/academico/**",
+                                "/api/perfil-idioma/**",
                                 "/api/ofertas/**"
                         ).permitAll()
                         .anyRequest().authenticated()

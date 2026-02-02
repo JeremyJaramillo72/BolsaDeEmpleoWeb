@@ -44,23 +44,23 @@ export class IdiomasComponent implements OnInit {
     }
   }
 
+  // IdiomasComponent.ts
   agregarIdioma(): void {
     if (this.nuevoIdioma.id_idioma && this.nuevoIdioma.nivel) {
-      // Buscamos el nombre del idioma para mostrarlo en la lista
-      const idiomaSeleccionado = this.idiomasDisponibles.find(i => i.idIdioma == this.nuevoIdioma.id_idioma);
+      const idm = this.idiomasDisponibles.find(i => i.idIdioma == this.nuevoIdioma.id_idioma);
 
-      if (!this.perfil.idiomas) this.perfil.idiomas = [];
-
+      // Agregamos al arreglo perfil.idiomas para que se vea en la lista
       this.perfil.idiomas.push({
-        ...this.nuevoIdioma,
-        nombre_idioma: idiomaSeleccionado.nombreIdioma
+        id_idioma: this.nuevoIdioma.id_idioma,
+        nombre_idioma: idm.nombreIdioma,
+        nivel: this.nuevoIdioma.nivel,
+        archivo: this.nuevoIdioma.archivo, // El byte[] para el backend
+        nombreArchivo: this.nuevoIdioma.nombreArchivo
       });
 
-      // Limpiar formulario
+      // Reset del formulario
       this.nuevoIdioma = { id_idioma: null, nivel: null, nombre_idioma: '', archivo: null, nombreArchivo: '', codigoCertificado: '' };
       this.datosCambiados.emit();
-    } else {
-      alert('Por favor seleccione un idioma y su nivel');
     }
   }
 

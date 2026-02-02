@@ -6,56 +6,58 @@
     </h3>
   </div>
 
-  <div class="added-list mb-6">
-    <div *ngFor="let item of perfil.idiomas; let i = index" class="doc-card">
-      <div class="doc-info">
-        <p class="doc-name">{{ item.nombre_idioma }}</p>
-        <p class="doc-detail"><strong>Nivel:</strong> {{ item.nivel }}</p>
-        <p class="doc-detail" *ngIf="item.nombreArchivo"><strong>Certificado:</strong> {{ item.nombreArchivo }}</p>
-      </div>
-      <div class="doc-actions">
-        <button class="btn-delete" (click)="eliminarIdioma(i)" title="Eliminar">
-          <span class="material-icons">delete</span>
-        </button>
-      </div>
+  <div class="form-grid">
+    <div class="form-group">
+      <label>Seleccionar Idioma</label>
+      <select [(ngModel)]="nuevoIdioma.id_idioma" class="form-control">
+        <option [ngValue]="null" disabled>Seleccionar...</option>
+        <option *ngFor="let idm of idiomasDisponibles" [value]="idm.idIdioma">
+          {{ idm.nombreIdioma }}
+        </option>
+      </select>
     </div>
+
+    <div class="form-group">
+      <label>Nivel de Dominio</label>
+      <select [(ngModel)]="nuevoIdioma.nivel" class="form-control">
+        <option [ngValue]="null" disabled>Seleccionar...</option>
+        <option *ngFor="let n of niveles" [value]="n">{{ n }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="actions-row">
+    <button type="button" class="btn-attach" (click)="fileInput.click()">
+      <span class="material-icons">attach_file</span>
+      {{ nuevoIdioma.nombreArchivo || 'Adjuntar Certificado' }}
+    </button>
+    <input #fileInput type="file" (change)="onFileSelected($event)" hidden accept=".pdf,.jpg,.png">
+
+    <button (click)="agregarIdioma()" class="btn-add-list" type="button">
+      <span class="material-icons">add</span>
+      Agregar a la Lista
+    </button>
   </div>
 
   <hr class="section-divider">
 
-  <div class="add-new-section mt-6">
-    <h4 class="text-sm font-bold text-gray-700 mb-4">Agregar Nuevo Idioma</h4>
+  <div class="docs-title">
+    <span class="material-icons">language</span>
+    Idiomas Registrados
+  </div>
 
-    <div class="form-grid">
-      <div class="form-group">
-        <label>Seleccionar Idioma</label>
-        <select [(ngModel)]="nuevoIdioma.id_idioma">
-          <option [ngValue]="null" disabled>Seleccionar...</option>
-          <option *ngFor="let idm of idiomasDisponibles" [value]="idm.idIdioma">{{ idm.nombreIdioma }}</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Nivel de Dominio</label>
-        <select [(ngModel)]="nuevoIdioma.nivel">
-          <option [ngValue]="null" disabled>Seleccionar...</option>
-          <option *ngFor="let n of niveles" [value]="n">{{ n }}</option>
-        </select>
-      </div>
+  <div *ngFor="let item of perfil.idiomas; let i = index" class="doc-card">
+    <div class="doc-info">
+      <p class="doc-name">{{ item.nombre_idioma }}</p>
+      <p class="doc-detail"><strong>Nivel:</strong> {{ item.nivel }}</p>
+      <p class="doc-detail" *ngIf="item.nombreArchivo">
+        <strong>Certificado:</strong> {{ item.nombreArchivo }}
+      </p>
     </div>
-
-    <div class="mt-4 flex items-center gap-4">
-      <button type="button" (click)="certInput.click()" class="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-100 transition-all">
-        <span class="material-icons text-sm align-middle">attach_file</span>
-        {{ nuevoIdioma.nombreArchivo ? 'Certificado cargado' : 'Adjuntar Certificado (Opcional)' }}
+    <div class="doc-actions">
+      <button class="btn-delete" (click)="eliminarIdioma(i)" type="button" title="Eliminar">
+        <span class="material-icons">delete</span>
       </button>
-      <input #certInput type="file" (change)="onFileSelected($event)" style="display: none" accept=".pdf,.jpg,.png">
-      <span class="text-xs text-gray-400 italic" *ngIf="nuevoIdioma.nombreArchivo">{{ nuevoIdioma.nombreArchivo }}</span>
     </div>
-
-    <button (click)="agregarIdioma()" class="btn-add-doc mt-6">
-      <span class="material-icons">add</span>
-      Agregar Idioma
-    </button>
   </div>
 </div>
