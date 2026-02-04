@@ -1,6 +1,8 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.LoginRequest;
+import com.example.demo.model.UsuarioEmpresa;
+import com.example.demo.repository.UsuarioEmpresaRepository; // Asegúrate de importar esto
 import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.service.AuthService;
 import com.example.demo.service.EmailService;
@@ -19,7 +21,6 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "http://localhost:4200")
-// Requerimiento: Uso de @SessionAttributes para persistir datos clave
 @SessionAttributes({"session_id_usuario", "session_rol"})
 public class AuthController {
 
@@ -28,6 +29,10 @@ public class AuthController {
 
     @Autowired
     private EmailService emailService;
+
+    // Inyectamos el repositorio correcto para buscar empresas
+    @Autowired
+    private UsuarioEmpresaRepository usuarioEmpresaRepository;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -38,11 +43,9 @@ public class AuthController {
     @PostMapping("/enviar-codigo")
     public ResponseEntity<?> solicitarCodigo(
             @RequestBody Map<String, String> requestData,
-            HttpServletRequest request // Requerimiento: Captura de objeto request
+            HttpServletRequest request
     ) {
         String correo = requestData.get("Correo");
-
-        // Ejemplo de captura de metadatos (Request Scope)
         System.out.println("Solicitud de código desde: " + request.getRemoteAddr());
 
         if (correo == null || correo.isEmpty()) {
@@ -62,32 +65,54 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @RequestBody LoginRequest loginRequest,
-            HttpServletRequest httpRequest,   // Captura Request
-            HttpServletResponse httpResponse, // Captura Response
-            HttpSession session,              // Gestión de Session
-            Model model                       // Para @SessionAttributes
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse,
+            HttpSession session,
+            Model model
     ) {
         return usuarioRepository.findByCorreo(loginRequest.getCorreo())
                 .map(usuario -> {
                     if (passwordEncoder.matches(loginRequest.getContrasena(), usuario.getContrasena())) {
 
-                        // 1. GESTIÓN DE SESIÓN (Mantenimiento de datos)
+                        // 1. GESTIÓN DE SESIÓN (Primero configuramos la sesión)
                         session.setAttribute("nombre_usuario", usuario.getNombre());
                         model.addAttribute("session_id_usuario", usuario.getIdUsuario());
-                        model.addAttribute("session_rol", usuario.getRol().getNombreRol());
 
-                        // 2. GESTIÓN DE RESPONSE (Envío de headers personalizados)
+                        String nombreRol = usuario.getRol().getNombreRol();
+                        model.addAttribute("session_rol", nombreRol);
+
+                        // 2. HEADERS
                         httpResponse.addHeader("X-Auth-Token", UUID.randomUUID().toString());
                         httpResponse.addHeader("X-UTEQ-Session", "Active");
 
-                        // Respuesta para Angular
+                        // 3. CREACIÓN DEL MAPA DE RESPUESTA (Aquí nace la variable 'response')
                         Map<String, Object> response = new HashMap<>();
                         response.put("mensaje", "¡Bienvenido de nuevo!");
                         response.put("idUsuario", usuario.getIdUsuario());
                         response.put("rol", usuario.getRol());
                         response.put("nombre", usuario.getNombre());
 
+                        // 4. LÓGICA PARA OBTENER ID EMPRESA
+                        // Ahora sí podemos usar 'response' porque ya fue creada arriba
+                        if (nombreRol != null && nombreRol.equalsIgnoreCase("EMPRESA")) {
+
+                            // Buscamos la empresa usando el ID del usuario (convertido a Long)
+                            UsuarioEmpresa empresa = usuarioEmpresaRepository.findByIdUsuario(Long.valueOf(usuario.getIdUsuario()));
+
+                            if (empresa != null) {
+                                // Agregamos el ID vital para el frontend
+                                response.put("idEmpresa", empresa.getIdEmpresa());
+                                // Opcional: enviar objeto completo
+                                response.put("empresa", empresa);
+
+                                System.out.println("✅ LOGIN EMPRESA: ID ENCONTRADO " + empresa.getIdEmpresa());
+                            } else {
+                                System.out.println("⚠️ ES ROL EMPRESA PERO NO ESTÁ EN LA TABLA usuario_empresa");
+                            }
+                        }
+
                         return ResponseEntity.ok(response);
+
                     } else {
                         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                                 .body(Collections.singletonMap("error", "Contraseña incorrecta"));
@@ -97,15 +122,12 @@ public class AuthController {
                         .body(Collections.singletonMap("error", "Usuario no registrado")));
     }
 
-    // Requerimiento: Mostrar cómo los datos se destruyen
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpSession session) {
-        // Destrucción explícita de la sesión
         session.invalidate();
         return ResponseEntity.ok(Map.of("mensaje", "Sesión cerrada y datos destruidos"));
     }
 
-    // Requerimiento: Visualizar cómo cambia la respuesta según el tipo de usuario
     @GetMapping("/perfil-resumen")
     public ResponseEntity<?> obtenerResumen(HttpSession session) {
         String nombre = (String) session.getAttribute("nombre_usuario");

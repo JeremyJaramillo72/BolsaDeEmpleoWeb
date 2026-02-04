@@ -19,8 +19,7 @@ export const routes: Routes = [
     children: [
       { path: 'perfil-profesional', component: PerfilProfesionalComponent },
       { path: 'empresa/perfil', component: PerfilEmpresaComponent },
-
-      { path: 'gestion-ofertas', component: GestionOfertasComponent },
+      { path: 'gestion-ofertas', component: GestionOfertasComponent }
     ]
   },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
