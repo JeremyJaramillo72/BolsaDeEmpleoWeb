@@ -14,12 +14,12 @@ public class UsuarioEmpresa {
     @Column(name = "id_empresa")
     private Long idEmpresa;
 
-    // Relación Uno a Uno según el diagrama ER
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", referencedColumnName = "id_usuario", unique = true)
     private Usuario usuario;
 
-    // Usamos columnDefinition = "TEXT" porque en tu SQL es tipo 'text'
+
     @Column(columnDefinition = "TEXT")
     private String descripcion;
 
@@ -29,7 +29,12 @@ public class UsuarioEmpresa {
     @Column(name = "sitioweb", length = 100)
     private String sitioWeb;
 
-    // Sincronizado con fecha_registro timestamp
     @Column(name = "fecha_registro", insertable = false, updatable = false)
     private LocalDateTime fechaRegistro;
+
+    @PrePersist
+    protected void CrearFecha(){
+        this.fechaRegistro=LocalDateTime.now();
+    }
+
 }

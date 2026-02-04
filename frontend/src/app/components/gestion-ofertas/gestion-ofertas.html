@@ -1,0 +1,143 @@
+<main class="main-content">
+  <header class="topbar">
+    <div class="welcome-text">
+      <h2>Ofertas Laborales</h2>
+      <p>Crea, edita y gestiona tus vacantes activas</p>
+    </div>
+  </header>
+
+  <div class="action-bar">
+    <div class="stats-cards">
+      <div class="stat-card">
+        <div class="stat-icon blue"><i class="fas fa-briefcase"></i></div>
+        <div>
+          <h3>{{ ofertas.length }}</h3>
+          <p>Publicadas</p>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-primary" (click)="openModal()">
+      <i class="fas fa-plus"></i> Nueva Oferta
+    </button>
+  </div>
+
+  <div class="offers-grid">
+    <div *ngIf="ofertas.length === 0" class="no-data">
+      <p>No hay ofertas publicadas aún.</p>
+    </div>
+
+    <div class="offer-card" *ngFor="let oferta of ofertas">
+      <div class="offer-header">
+        <span class="badge badge-active">{{ oferta.estadoOferta || 'Activa' }}</span>
+        <div class="offer-menu"><i class="fas fa-ellipsis-v"></i></div>
+      </div>
+      <h3>{{ oferta.titulo }}</h3>
+      <p class="offer-desc">{{ oferta.descripcion }}</p>
+
+      <div class="offer-details">
+        <span><i class="fas fa-dollar-sign"></i> ${{ oferta.salarioPromedio }}</span>
+        <span><i class="fas fa-calendar"></i> {{ oferta.fechaInicio }}</span>
+      </div>
+      <div class="offer-footer">
+        <button class="btn-outline">Ver Detalles</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="modal-overlay" *ngIf="isModalOpen">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Nueva Oferta Laboral</h3>
+      <button (click)="closeModal()" class="close-modal"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="modal-body">
+      <form (ngSubmit)="guardar()">
+        <div class="form-group full-width">
+          <label>Título de la Oferta</label>
+          <input type="text" [(ngModel)]="nuevaOferta.titulo" name="titulo" required placeholder="Ej: Desarrollador Java">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Categoría</label>
+            <select [(ngModel)]="nuevaOferta.idCategoria" name="cat">
+              <option [value]="1">Tecnología</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Modalidad</label>
+            <select [(ngModel)]="nuevaOferta.idModalidad" name="mod">
+              <option [value]="1">Presencial</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Salario ($)</label>
+            <input type="number" [(ngModel)]="nuevaOferta.salarioPromedio" name="sal">
+          </div>
+          <div class="form-group">
+            <label>Ciudad</label>
+            <select [(ngModel)]="nuevaOferta.idCiudad" name="ciu">
+              <option [value]="1">Vinces</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Inicio</label>
+            <input type="date" [(ngModel)]="nuevaOferta.fechaInicio" name="finicio">
+          </div>
+          <div class="form-group">
+            <label>Cierre</label>
+            <input type="date" [(ngModel)]="nuevaOferta.fechaCierre" name="fcierre">
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Descripción</label>
+          <textarea rows="3" [(ngModel)]="nuevaOferta.descripcion" name="desc"></textarea>
+        </div>
+
+        <div class="skills-section">
+          <h4>Requisitos (Habilidades)</h4>
+          <div class="skills-input-row">
+            <select [(ngModel)]="tempIdHabilidad" name="tmpId" class="small-select">
+              <option [value]="0">Seleccionar...</option>
+              <option [value]="1">Java</option>
+              <option [value]="2">SQL</option>
+            </select>
+            <select [(ngModel)]="tempNivel" name="tmpNivel" class="small-select">
+              <option value="Básico">Básico</option>
+              <option value="Intermedio">Intermedio</option>
+              <option value="Avanzado">Avanzado</option>
+            </select>
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="tempObligatorio" name="tmpObl"> Obligatorio
+            </label>
+            <button type="button" class="btn-small-add" (click)="agregarSkill()">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+
+          <div class="skills-tags-container">
+                      <span class="skill-chip" *ngFor="let s of nuevaOferta.habilidades; let i = index">
+                          {{ s.nombreHabilidad }} - {{ s.nivelRequerido }}
+                        <i class="fas fa-times" (click)="removerSkill(i)"></i>
+                      </span>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button (click)="closeModal()" class="btn-text">Cancelar</button>
+      <button (click)="guardar()" class="btn-primary">Guardar</button>
+    </div>
+  </div>
+</div>

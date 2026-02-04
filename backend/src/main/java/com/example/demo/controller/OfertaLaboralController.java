@@ -1,20 +1,35 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.OfertaLaboralDTO;
+import com.example.demo.model.OfertaLaboral;
+import com.example.demo.service.IOfertaLaboralService;
 import com.example.demo.service.Impl.OfertaLaboralServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 @RestController
 @RequestMapping("/api/ofertas")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:4200")
+@RequiredArgsConstructor
 public class OfertaLaboralController {
 
-    @Autowired
-    private OfertaLaboralServiceImpl service;
+    private final IOfertaLaboralService ofertaService;
 
-    @GetMapping("/mayor-salario/{idEmpresa}")
-    public ResponseEntity<?> obtenerMayorSalario(@PathVariable Integer idEmpresa) {
-        return ResponseEntity.ok(service.verMejorOferta(idEmpresa));
+    @PostMapping
+    public OfertaLaboral guardarOferta(@RequestBody OfertaLaboralDTO ofertaDTO) {
+        return ofertaService.guardarOferta(ofertaDTO);
+    }
+
+    @GetMapping("/empresa/{idEmpresa}")
+    public List<OfertaLaboral> listarPorEmpresa(@PathVariable Long idEmpresa) {
+        return ofertaService.listarPorEmpresa(idEmpresa);
+    }
+
+    @GetMapping
+    public List<OfertaLaboral> listarTodas() {
+        return ofertaService.listarTodas();
     }
 }

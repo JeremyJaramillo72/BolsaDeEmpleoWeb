@@ -3,8 +3,10 @@ import { RegistroCandidatoComponent } from "./components/registro-candidato/regi
 import { RegistroEmpresaComponent } from './components/registro-empresa/registro-empresa';
 import { LoginComponent } from './components/login/login';
 import { MenuprincipalComponent } from './components/menu-principal/menuprincipal';
-import { PerfilProfesionalComponent } from './components/perfil-profesional/perfil-profesional'; // 👈 Importante
+import { PerfilProfesionalComponent } from './components/perfil-profesional/perfil-profesional';
 import { AuthGuard } from './guards/auth-guard';
+import { PerfilEmpresaComponent } from './components/perfil-empresa/perfil-empresa';
+import { GestionOfertasComponent } from './components/gestion-ofertas/gestion-ofertas';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -14,9 +16,11 @@ export const routes: Routes = [
     path: 'menu-principal',
     component: MenuprincipalComponent,
     canActivate: [AuthGuard],
-    children: [ // 👈 Definimos los componentes que se verán "adentro"
+    children: [
       { path: 'perfil-profesional', component: PerfilProfesionalComponent },
-      // Aquí puedes agregar más rutas hijas como 'busqueda-empleos', etc.
+      { path: 'empresa/perfil', component: PerfilEmpresaComponent },
+
+      { path: 'gestion-ofertas', component: GestionOfertasComponent },
     ]
   },
   { path: '', redirectTo: '/login', pathMatch: 'full' },

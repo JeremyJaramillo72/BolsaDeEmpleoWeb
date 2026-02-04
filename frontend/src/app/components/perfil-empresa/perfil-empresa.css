@@ -1,0 +1,117 @@
+/* --- CAMBIOS PRINCIPALES AQUÍ --- */
+
+/* Contenedor Principal: Quitamos padding y fondo para que se integre */
+.profile-container {
+  padding: 0; /* Eliminamos el relleno extra */
+  background-color: transparent;
+  width: 100%;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Grilla: Ahora ocupa el 100% del ancho */
+.content-grid {
+  display: grid;
+  /* La columna izquierda será fija (350px) y la derecha ocupará TODO el resto */
+  grid-template-columns: 350px 1fr;
+  gap: 2rem;
+  width: 100%;
+  max-width: 100%; /* Quitamos el límite de 1200px */
+}
+
+/* Tarjetas: Hacemos que llenen su espacio */
+.custom-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  padding: 2.5rem;
+  border: 1px solid #eef2f6;
+  height: 100%;
+}
+
+
+
+.summary-card { text-align: center; height: fit-content; }
+
+.logo-circle {
+  width: 120px;
+  height: 120px;
+  background: #f8fafc;
+  color: #2563eb;
+  border-radius: 50%;
+  margin: 0 auto 1.5rem auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #cbd5e1;
+}
+.logo-circle .material-icons { font-size: 3rem; }
+
+h2 { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0; }
+.ruc-text { color: #64748b; font-size: 1rem; margin-top: 0.5rem; }
+
+.divider { height: 1px; background: #e2e8f0; margin: 2rem 0; }
+
+.progress-section { margin-bottom: 2rem; }
+.progress-label { display: flex; justify-content: space-between; font-weight: 600; color: #475569; margin-bottom: 0.75rem; }
+.progress-track { height: 10px; background: #f1f5f9; border-radius: 20px; overflow: hidden; }
+.progress-fill { height: 100%; background: #2563eb; border-radius: 20px; }
+
+.contact-info { color: #64748b; display: flex; justify-content: center; margin-top: 1rem; }
+.contact-info p { display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; }
+
+
+.card-header { display: flex; gap: 1.5rem; margin-bottom: 2.5rem; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 1.5rem; }
+.icon-box { background: #eff6ff; color: #2563eb; padding: 1rem; border-radius: 12px; }
+.icon-box .material-icons { font-size: 2rem; }
+
+.card-header h1 { font-size: 1.8rem; font-weight: 700; color: #0f172a; margin: 0; }
+.card-header p { color: #64748b; margin-top: 0.25rem; font-size: 1rem; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; } /* Más separación entre inputs */
+.full-width { grid-column: span 2; }
+
+.form-group label { display: block; font-weight: 600; color: #334155; margin-bottom: 0.75rem; font-size: 0.95rem; }
+
+.input-wrapper { position: relative; display: flex; align-items: center; }
+.input-wrapper .material-icons { position: absolute; left: 1.2rem; color: #94a3b8; }
+.input-wrapper input { padding-left: 3rem; }
+
+input, textarea {
+  width: 100%;
+  padding: 1rem 1.2rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.2s;
+  outline: none;
+  background-color: #fff;
+}
+
+input:focus, textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+.input-wrapper.disabled input { background: #f8fafc; color: #94a3b8; cursor: not-allowed; border-color: #e2e8f0; }
+
+textarea { resize: vertical; min-height: 150px; }
+.char-count { text-align: right; font-size: 0.85rem; color: #94a3b8; margin-top: 0.5rem; }
+
+.button-group { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #f1f5f9; }
+
+.btn-cancel { background: white; border: 1px solid #cbd5e1; color: #475569; font-weight: 600; cursor: pointer; padding: 0.8rem 2rem; border-radius: 8px; transition: all 0.2s; }
+.btn-cancel:hover { background: #f8fafc; border-color: #94a3b8; }
+
+.btn-save {
+  background: #2563eb; color: white; border: none;
+  padding: 0.8rem 2.5rem; border-radius: 8px; font-weight: 600;
+  display: flex; align-items: center; gap: 0.75rem; cursor: pointer;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+.btn-save:hover { background: #1d4ed8; transform: translateY(-1px); }
+
+
+@media (max-width: 900px) {
+  .content-grid { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .full-width { grid-column: span 1; }
+}

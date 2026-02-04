@@ -41,29 +41,37 @@ export class LoginComponent {
         next: (res: any) => {
           // DEBUG: Ver qué llega del backend
           console.log('Respuesta completa del backend:', res);
-          console.log('res.rol:', res.rol);
 
           // 1. GUARDAR DATOS INDIVIDUALES
           localStorage.setItem('idUsuario', res.idUsuario);
           localStorage.setItem('nombre', res.nombre);
 
+          // 👇👇👇 NUEVO CÓDIGO: GUARDAR ID EMPRESA 👇👇👇
+          // Esto es vital para que "Gestión de Ofertas" funcione
+          if (res.empresa && res.empresa.idEmpresa) {
+            localStorage.setItem('idEmpresa', res.empresa.idEmpresa.toString());
+            console.log('✅ idEmpresa guardado (desde objeto):', res.empresa.idEmpresa);
+          } else if (res.idEmpresa) {
+            localStorage.setItem('idEmpresa', res.idEmpresa.toString());
+            console.log('✅ idEmpresa guardado (desde raíz):', res.idEmpresa);
+          }
+          // 👆👆👆 FIN DEL NUEVO CÓDIGO 👆👆👆
+
           // Extraer el nombre del rol correctamente
           let rolNombre = '';
           if (res.rol && typeof res.rol === 'object') {
-            // Si viene como objeto: { idRol: 3, nombreRol: "Postulante" }
             rolNombre = res.rol.nombreRol || res.rol.nombre || '';
           } else {
-            // Si viene como string directo
             rolNombre = res.rol || '';
           }
 
-          // Guardar el rol en mayúsculas para consistencia
+          // Guardar el rol en mayúsculas
           localStorage.setItem('rol', rolNombre.trim().toUpperCase());
 
-          // DEBUG: Ver qué se guardó
-          console.log('Guardado en localStorage:');
+          // DEBUG: Ver qué se guardó finalmente
+          console.log('Estado final del localStorage:');
           console.log('  idUsuario:', localStorage.getItem('idUsuario'));
-          console.log('  nombre:', localStorage.getItem('nombre'));
+          console.log('  idEmpresa:', localStorage.getItem('idEmpresa')); // <-- Verificamos esto
           console.log('  rol:', localStorage.getItem('rol'));
 
           // 2. NAVEGACIÓN
@@ -71,7 +79,7 @@ export class LoginComponent {
             if (success) {
               console.log('¡Navegación exitosa al menú!');
             } else {
-              console.error('La navegación falló. Revisa app.routes.ts');
+              console.error('La navegación falló.');
             }
           });
         },

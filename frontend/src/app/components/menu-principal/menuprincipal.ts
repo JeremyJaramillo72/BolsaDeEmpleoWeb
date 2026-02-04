@@ -76,7 +76,8 @@ export class MenuprincipalComponent implements OnInit {
         title: 'Gestión de Perfil Empresarial',
         description: 'Administra la información de tu empresa',
         color: 'from-blue-500 to-blue-600',
-        roles: ['EMPRESA']
+        roles: ['EMPRESA'],
+        path: '/empresa/perfil'
       },
       {
         icon: 'person',
@@ -91,7 +92,8 @@ export class MenuprincipalComponent implements OnInit {
         title: 'Gestión de Ofertas Laborales',
         description: 'Crea y administra tus ofertas de empleo',
         color: 'from-cyan-500 to-cyan-600',
-        roles: ['EMPRESA']
+        roles: ['EMPRESA'],
+        path: '/gestion-ofertas'
       },
       {
         icon: 'search',

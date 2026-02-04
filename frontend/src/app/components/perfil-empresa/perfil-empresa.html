@@ -1,0 +1,91 @@
+<div class="profile-container">
+
+  <div class="content-grid">
+
+    <div class="custom-card summary-card">
+      <div class="logo-circle">
+        <span class="material-icons">business</span>
+        <small>Logo</small>
+      </div>
+
+      <h2>{{ perfil.nombre || 'Nombre Empresa' }}</h2>
+      <p class="ruc-text">RUC: {{ perfil.ruc || '---' }}</p>
+
+      <div class="divider"></div>
+
+      <div class="progress-section">
+        <div class="progress-label">
+          <span>Completitud</span>
+          <span class="percentage">75%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width: 75%"></div>
+        </div>
+      </div>
+
+      <div class="contact-info">
+        <p><span class="material-icons">email</span> contacto@ejemplo.com</p>
+      </div>
+    </div>
+
+    <div class="custom-card form-card">
+      <div class="card-header">
+        <div class="icon-box">
+          <span class="material-icons">edit_document</span>
+        </div>
+        <div>
+          <h1>Información de la Empresa</h1>
+          <p>Gestiona los datos públicos de tu organización</p>
+        </div>
+      </div>
+
+      <form (ngSubmit)="guardarCambios()">
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label>Número de RUC</label>
+            <div class="input-wrapper disabled">
+              <span class="material-icons">badge</span>
+              <input type="text" [value]="perfil.ruc" readonly>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Nombre Comercial</label>
+            <input type="text" class="form-control"
+                   [(ngModel)]="perfil.nombre" name="nombre"
+                   placeholder="Ej: Tech Solutions S.A.">
+          </div>
+
+          <div class="form-group full-width">
+            <label>Sitio Web</label>
+            <div class="input-wrapper">
+              <span class="material-icons">language</span>
+              <input type="text"
+                     [(ngModel)]="perfil.sitioWeb" name="sitioWeb"
+                     placeholder="www.tuempresa.com">
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Descripción</label>
+            <textarea rows="5"
+                      [(ngModel)]="perfil.descripcion" name="descripcion"
+                      placeholder="Describe la misión y visión..."></textarea>
+            <div class="char-count">
+              {{ perfil.descripcion?.length || 0 }} / 500 caracteres
+            </div>
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button type="button" class="btn-cancel">Cancelar</button>
+          <button type="submit" class="btn-save">
+            <span class="material-icons">save</span> Guardar Cambios
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
