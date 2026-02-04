@@ -20,7 +20,7 @@ public class ValidacionDocumentacion {
 
     @ManyToOne
     @JoinColumn(name = "IdDocumentacion", nullable = false)
-    private DocumentacionAcademica documentacion;
+    private documentacion_academica documentacion;
 
     @Column(
             name = "EstadoValidacion",

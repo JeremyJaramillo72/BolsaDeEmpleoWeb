@@ -1,6 +1,5 @@
 package com.example.demo.service.Impl;
 
-import com.example.demo.model.SeguridadDb;
 import com.example.demo.model.Usuario;
 import com.example.demo.repository.SeguridadDbRepository;
 import com.example.demo.repository.UsuarioRepository;
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
-import java.time.LocalDateTime;
 
 @Service
 public class UsuarioServiceImpl implements IUsuarioService {

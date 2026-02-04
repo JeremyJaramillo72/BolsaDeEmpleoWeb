@@ -26,6 +26,9 @@
 
       <app-idiomas [perfil]="perfil" (datosCambiados)="actualizarProgreso()"></app-idiomas>
 
+      <app-experiencia-laboral
+        [perfil]="perfil" (datosCambiados)="actualizarProgreso()">
+      </app-experiencia-laboral>
       <!-- Botones finales -->
       <div class="save-section">
         <button class="btn-cancel" (click)="cancelarCambios()">Cancelar Cambios</button>

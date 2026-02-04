@@ -62,4 +62,16 @@ export class PerfilService {
     return this.http.post(`http://localhost:8080/api/perfil-idioma/registrar`, formData);
   }
 
+  // En perfil.service.ts
+  getCargosCatalogo(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/cargos`);
+  }
+
+  getEmpresasCatalogo(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/empresas`);
+  }
+
+
+
+
 }

@@ -7,7 +7,9 @@ import { InfoAcademicaComponent } from './components/info-academica/info-academi
 import { PerfilService } from './perfil.service'; // 👈 Asegúrate de que la ruta sea correcta
 import { CommonModule } from '@angular/common';
 import {IdiomasComponent} from './components/idiomas/idiomas';
+import {ExperienciaLaboralComponent} from './components/exp-laboral/exp-laboral';
 import { forkJoin } from 'rxjs';
+import {FormsModule} from '@angular/forms';
 
 
 @Component({
@@ -15,10 +17,12 @@ import { forkJoin } from 'rxjs';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     SidebarComponent,
     InfoPersonalComponent,
     InfoAcademicaComponent,
-    IdiomasComponent
+    IdiomasComponent,
+    ExperienciaLaboralComponent
   ],
   templateUrl: './perfil-profesional.html',
   styleUrls: ['./perfil-profesional.css']

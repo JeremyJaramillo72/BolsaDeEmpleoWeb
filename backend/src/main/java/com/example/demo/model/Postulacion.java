@@ -14,7 +14,7 @@ private Integer idValidacionDoc;
 
     @ManyToOne
     @JoinColumn(name = "id_documentacion", nullable = false)
-    private DocumentacionAcademica documentacion;
+    private documentacion_academica documentacion;
 
     @ManyToOne
     @JoinColumn(name = "id_postulacion", nullable = false)

@@ -1,0 +1,115 @@
+<div class="section-card">
+  <div class="section-header">
+    <h3>
+      <span class="section-icon">💼</span>
+      Experiencia Laboral
+    </h3>
+  </div>
+
+  <div class="form-grid">
+    <div class="form-group">
+      <label>Cargo *</label>
+      <select [(ngModel)]="nuevaExperiencia.id_cargo" class="form-control">
+        <option [ngValue]="null" disabled>Seleccionar cargo...</option>
+        <option *ngFor="let cargo of cargosDisponibles" [value]="cargo.idCargo">
+          {{ cargo.nombreCargo }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Empresa *</label>
+      <select [(ngModel)]="nuevaExperiencia.id_empresa_catalogo" class="form-control">
+        <option [ngValue]="null" disabled>Seleccionar empresa...</option>
+        <option *ngFor="let empresa of empresasDisponibles" [value]="empresa.idEmpresa">
+          {{ empresa.nombreEmpresa }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Fecha de Inicio *</label>
+      <input
+        type="date"
+        [(ngModel)]="nuevaExperiencia.fecha_inicio"
+        class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label>Fecha de Fin</label>
+      <input
+        type="date"
+        [(ngModel)]="nuevaExperiencia.fecha_fin"
+        class="form-control"
+        placeholder="Dejar vacío si aún trabaja aquí">
+    </div>
+
+    <div class="form-group">
+      <label>Ubicación</label>
+      <input
+        type="text"
+        [(ngModel)]="nuevaExperiencia.ubicacion"
+        class="form-control"
+        placeholder="Ej: Quito, Ecuador">
+    </div>
+
+    <div class="form-group">
+      <label>Fecha de Registro</label>
+      <input
+        type="date"
+        [(ngModel)]="nuevaExperiencia.fecha_registro"
+        class="form-control">
+    </div>
+  </div>
+
+  <div class="form-group full-width">
+    <label>Descripción de Funciones *</label>
+    <textarea
+      [(ngModel)]="nuevaExperiencia.descripcion"
+      class="form-control"
+      rows="4"
+      placeholder="Describa sus responsabilidades y logros en este puesto..."></textarea>
+  </div>
+
+  <div class="actions-row">
+    <button type="button" class="btn-attach" (click)="fileInput.click()">
+      <span class="material-icons">attach_file</span>
+      {{ nuevaExperiencia.nombreArchivo || 'Adjuntar Comprobante' }}
+    </button>
+    <input #fileInput type="file" (change)="onFileSelected($event)" hidden accept=".pdf,.jpg,.png">
+
+    <button (click)="agregarExperiencia()" class="btn-add-list" type="button">
+      <span class="material-icons">add</span>
+      Agregar Experiencia
+    </button>
+  </div>
+
+  <hr class="section-divider">
+
+  <div class="docs-title">
+    <span class="material-icons">work_history</span>
+    Experiencias Registradas
+  </div>
+
+  <div *ngIf="perfil.experiencias && perfil.experiencias.length === 0" class="empty-state">
+    <span class="material-icons">work_outline</span>
+    <p>No hay experiencias laborales registradas</p>
+  </div>
+
+  <div *ngFor="let item of perfil.experiencias; let i = index" class="doc-card">
+    <div class="doc-info">
+      <p class="doc-name">{{ item.nombre_cargo }} - {{ item.nombre_empresa }}</p>
+      <p class="doc-detail"><strong>Período:</strong> {{ item.fecha_inicio | date: 'MM/yyyy' }} - {{ item.fecha_fin ? (item.fecha_fin | date: 'MM/yyyy') : 'Actualidad' }}</p>
+      <p class="doc-detail" *ngIf="item.ubicacion"><strong>Ubicación:</strong> {{ item.ubicacion }}</p>
+      <p class="doc-detail"><strong>Descripción:</strong> {{ item.descripcion }}</p>
+      <p class="doc-detail" *ngIf="item.nombreArchivo">
+        <strong>Comprobante:</strong> {{ item.nombreArchivo }}
+      </p>
+    </div>
+    <div class="doc-actions">
+      <button class="btn-delete" (click)="eliminarExperiencia(i)" type="button" title="Eliminar">
+        <span class="material-icons">delete</span>
+      </button>
+    </div>
+  </div>
+</div>

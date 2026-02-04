@@ -6,7 +6,7 @@
     </h3>
   </div>
 
-  <div *ngFor="let titulo of perfil.titulos; let i = index" class="academic-entry mb-8">
+  <div *ngFor="let titulo of perfil.titulos; let i = index" class="academic-entry">
     <div class="form-grid">
       <div class="form-group">
         <label>Facultad</label>
@@ -26,16 +26,16 @@
 
       <div class="form-group">
         <label>Fecha de Graduación</label>
-        <input type="date" [(ngModel)]="titulo.fechaGraduacion" (ngModelChange)="onInputChange()">
+        <input type="date" [(ngModel)]="titulo.fechaGraduacion" (ngModelChange)="onInputChange()" class="form-control">
       </div>
 
       <div class="form-group">
         <label>Número de Registro SENESCYT</label>
-        <input type="text" [(ngModel)]="titulo.registroSenescyt" (ngModelChange)="onInputChange()" placeholder="Ej: 1234-56-789012">
+        <input type="text" [(ngModel)]="titulo.registroSenescyt" (ngModelChange)="onInputChange()" class="form-control" placeholder="Ej: 1234-56-789012">
       </div>
     </div>
 
-    <div class="docs-section mt-6">
+    <div class="docs-section">
       <h4 class="docs-title">
         <span class="material-icons">description</span>
         Documentos Académicos
@@ -49,8 +49,12 @@
         </div>
 
         <div class="doc-actions">
-          <button class="btn-edit" title="Editar"><span class="material-icons">edit</span></button>
-          <button class="btn-delete" (click)="eliminarTitulo(i)" title="Eliminar"><span class="material-icons">delete</span></button>
+          <button class="btn-edit" title="Editar" type="button">
+            <span class="material-icons">edit</span>
+          </button>
+          <button class="btn-delete" (click)="eliminarTitulo(i)" title="Eliminar" type="button">
+            <span class="material-icons">delete</span>
+          </button>
         </div>
       </div>
 
@@ -60,10 +64,11 @@
       </button>
       <input #fileInput type="file" (change)="onFileSelected($event, i)" style="display: none" accept=".pdf,.jpg,.png">
     </div>
-    <hr class="section-divider">
+
+    <hr class="section-divider" *ngIf="i < perfil.titulos.length - 1">
   </div>
 
-  <button (click)="agregarTitulo()" class="btn-add-section">
+  <button (click)="agregarTitulo()" class="btn-add-section" type="button">
     <span class="material-icons">school</span>
     Añadir Otra Formación Académica
   </button>
