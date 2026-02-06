@@ -1,0 +1,45 @@
+<div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+  <h2 class="text-2xl font-bold text-gray-800 mb-6">Ofertas Pendientes de Validación</h2>
+
+  <div class="overflow-x-auto">
+    <div class="p-6 bg-white rounded-3xl shadow-sm">
+      <h2 class="text-2xl font-black text-gray-800 mb-8 flex items-center">
+        <span class="material-icons mr-2 text-orange-500">pending_actions</span>
+        Validación de Ofertas Laborales
+      </h2>
+
+      <div class="admin-data-container">
+        <div class="data-header" role="rowgroup">
+          <div>Información de la Oferta</div>
+          <div>Empresa</div>
+          <div>Fecha Postulación</div>
+          <div class="text-center">Acciones</div>
+        </div>
+
+        <div *ngFor="let item of [1,2,3]" class="data-row" role="row">
+          <div class="flex flex-col">
+            <span class="text-lg font-bold text-blue-600">Desarrollador Java Senior</span>
+            <span class="text-sm text-gray-500">ID Oferta: #00{{item}}</span>
+          </div>
+
+          <div class="text-gray-700 font-medium">
+            <span class="mobile-label">Empresa:</span>Tech Solutions S.A.
+          </div>
+
+          <div class="text-gray-500 text-sm">
+            <span class="mobile-label">Fecha:</span>01/02/2026
+          </div>
+
+          <div class="flex justify-center space-x-3">
+            <button class="p-2 bg-green-50 text-green-600 rounded-xl hover:bg-green-600 hover:text-white transition-all shadow-sm" title="Aprobar">
+              <span class="material-icons">verified</span>
+            </button>
+            <button class="p-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm" title="Rechazar">
+              <span class="material-icons">block</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

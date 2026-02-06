@@ -1,0 +1,59 @@
+/* Contenedor principal tipo Card */
+.admin-data-container {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+/* Cabecera de la "tabla" (Solo visible en escritorio) */
+.data-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr; /* Proporciones de las columnas */
+  padding: 1rem;
+  background: #c4e8fd;
+  font-weight: 700;
+  color: #0063ea;
+  border-radius: 0.75rem;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+/* Fila de datos (Diseño de tarjeta) */
+.data-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  align-items: center;
+  padding: 1.25rem;
+  background: #e4e7f3;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+}
+
+.data-row:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Etiquetas para personas con discapacidad visual o móviles */
+.mobile-label {
+  display: none; /* Se oculta en escritorio */
+}
+
+@media (max-width: 768px) {
+  .data-header { display: none; } /* Ocultamos cabecera en móvil */
+
+  .data-row {
+    grid-template-columns: 1fr; /* Una sola columna en móvil */
+    gap: 0.5rem;
+  }
+
+  .mobile-label {
+    display: inline;
+    font-weight: bold;
+    color: #94a3b8;
+    margin-right: 0.5rem;
+  }
+}

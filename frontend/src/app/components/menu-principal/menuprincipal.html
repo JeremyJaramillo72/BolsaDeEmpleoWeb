@@ -36,7 +36,7 @@
       <!-- Menu Items - Sidebar colapsado -->
       <div *ngIf="!isSidebarOpen" class="space-y-4">
         <button
-          *ngFor="let item of menuItems"
+          *ngFor= "let item of menuItems"
           (click)="onMenuItemClick(item)"
           class="w-full p-3 rounded-lg bg-white bg-opacity-10 hover:bg-opacity-20 transition-all duration-200 text-white flex justify-center">
           <span class="material-icons">{{ item.icon }}</span>
@@ -83,7 +83,10 @@
     <div class="p-8">
       <router-outlet></router-outlet>
     </div>
-
+    <!-- <div class="main-content">
+      <router-outlet></router-outlet>
+    </div>
+    -->
     <!-- Dashboard Home Cards - Solo se muestra cuando estamos en la ruta principal -->
     <div *ngIf="isDashboardHome()" class="p-8 space-y-8 animate-fade-in">
       <!-- Cards Grid -->

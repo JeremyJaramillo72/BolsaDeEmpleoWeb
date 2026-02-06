@@ -122,7 +122,25 @@ export class MenuprincipalComponent implements OnInit {
         description: 'Revisa tus notificaciones y alertas',
         color: 'from-purple-500 to-purple-600',
         roles: ['EMPRESA', 'POSTULANTE']
+      },
+      {
+        icon: 'fact_check',
+        title: 'Validación de Ofertas',
+        description: 'Aprueba o rechaza nuevas vacantes',
+        color: 'from-orange-500 to-orange-600',
+        roles: ['ADMINISTRADOR'],
+        path: '/admin-validar'
+      },
+      {
+        icon: 'admin_panel_settings',
+        title: 'Gestión de Usuarios',
+        description: 'Control de empresas y graduados',
+        color: 'from-red-500 to-red-600',
+        roles: ['ADMINISTRADOR'],
+        path: '/admin-usuarios'
       }
+
+
     ];
 
     this.menuItems = todasLasOpciones.filter(item =>
@@ -142,6 +160,14 @@ export class MenuprincipalComponent implements OnInit {
         { label: 'En Proceso', value: 2, color: 'from-cyan-500 to-cyan-600' },
         { label: 'Ofertas Guardadas', value: 10, color: 'from-blue-500 to-blue-600' },
         { label: 'Alertas', value: 3, color: 'from-purple-500 to-purple-600' }
+      ];
+    }
+    else if (this.rolUsuario === 'ADMINISTRADOR') {
+      this.statsCards = [
+        { label: 'Ofertas Pendientes', value: 8, color: 'from-orange-500 to-orange-600' },
+        { label: 'Empresas Nuevas', value: 3, color: 'from-blue-500 to-blue-600' },
+        { label: 'Usuarios Totales', value: 150, color: 'from-teal-500 to-teal-600' },
+        { label: 'Reportes Hoy', value: 12, color: 'from-red-500 to-red-600' }
       ];
     }
   }
