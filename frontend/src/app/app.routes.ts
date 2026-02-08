@@ -7,6 +7,9 @@ import { PerfilProfesionalComponent } from './components/perfil-profesional/perf
 import { AuthGuard } from './guards/auth-guard';
 import { PerfilEmpresaComponent } from './components/perfil-empresa/perfil-empresa';
 import { GestionOfertasComponent } from './components/gestion-ofertas/gestion-ofertas';
+import { AdminValidarOfertasComponent} from './components/Panel-Admin/components/admin-validar/admin-validar';
+import { AdminGestionUsuariosComponent} from './components/Panel-Admin/components/admin-usuarios/admin-usuarios'
+import {AdminMiniAdmiComponent} from './components/Panel-Admin/components/admin-mini-admi/admin-mini-admi';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -19,7 +22,10 @@ export const routes: Routes = [
     children: [
       { path: 'perfil-profesional', component: PerfilProfesionalComponent },
       { path: 'empresa/perfil', component: PerfilEmpresaComponent },
-      { path: 'gestion-ofertas', component: GestionOfertasComponent }
+      { path: 'gestion-ofertas', component: GestionOfertasComponent },
+      { path: 'PanelAdmi/ValidarOfertas', component: AdminValidarOfertasComponent },
+      { path: 'PanelAdmi/GestionUser', component: AdminGestionUsuariosComponent },
+      { path: 'PanelAdmi/admin-MiniAdmi', component: AdminMiniAdmiComponent }
     ]
   },
   { path: '', redirectTo: '/login', pathMatch: 'full' },

@@ -1,0 +1,122 @@
+<div class="main-container">
+
+  <header class="page-header">
+    <div class="title-section">
+      <span class="material-icons icon-header">manage_accounts</span>
+      <h2>Gestión de Personal Interno</h2>
+    </div>
+
+    <button *ngIf="vistaActual === 'LISTA'" class="btn btn-primary" (click)="iniciarCreacion()">
+      <span class="material-icons">add</span>
+      Nuevo Administrador
+    </button>
+  </header>
+
+  <div *ngIf="vistaActual === 'LISTA'" class="content-area fade-in">
+    <div class="card">
+      <table class="modern-table">
+        <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Rol BD</th>
+          <th>Fecha Creación</th>
+          <th>Permisos de UI Asignados </th>
+          <th class="text-center">Estado</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let admin of listaAdmins">
+          <td class="font-bold">{{ admin.usuario }}</td>
+          <td>
+            <span class="badge badge-gray">{{ admin.rolBD }}</span>
+          </td>
+          <td>{{ admin.fechaCreacion | date:'dd/MM/yyyy' }}</td>
+          <td>
+            <div class="permisos-list">
+              <span *ngFor="let p of admin.permisosUI" class="permiso-tag">{{ p }}</span>
+            </div>
+          </td>
+          <td class="text-center">
+            <button class="status-pill"
+                    [class.active]="admin.activo"
+                    [class.inactive]="!admin.activo"
+                    (click)="toggleEstado(admin)">
+              {{ admin.activo ? 'ACTIVO' : 'INACTIVO' }}
+            </button>
+          </td>
+          <td class="text-center actions-cell">
+            <button class="icon-btn edit" title="Editar">
+              <span class="material-icons">edit</span>
+            </button>
+            <button class="icon-btn delete" title="Eliminar">
+              <span class="material-icons">delete</span>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="listaAdmins.length === 0">
+          <td colspan="6" class="empty-state">No hay administradores registrados.</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="vistaActual === 'CREAR'" class="content-area fade-in">
+    <div class="card form-card">
+      <div class="form-header">
+        <h3>Nuevo Usuario Administrativo</h3>
+        <p>Crea un usuario con acceso directo a base de datos y permisos específicos.</p>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-section">
+          <div class="form-group">
+            <label>Usuario BD</label>
+            <div class="input-wrapper">
+              <span class="material-icons">person</span>
+              <input type="text" [(ngModel)]="nuevoAdmin.usuario" placeholder="Ej. supervisor_juan">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Contraseña </label>
+            <div class="input-wrapper">
+              <span class="material-icons">vpn_key</span>
+              <input type="text" [(ngModel)]="nuevoAdmin.contrasena" placeholder="********">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Rol de Grupo </label>
+            <div class="input-wrapper">
+              <span class="material-icons">security</span>
+              <select [(ngModel)]="nuevoAdmin.rolBD">
+                <option value="" disabled selected>Seleccione un rol...</option>
+                <option *ngFor="let rol of rolesDisponibles" [value]="rol.valor">
+                  {{ rol.etiqueta }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <label class="section-label">Permisos de Visualización</label>
+          <div class="checkbox-grid">
+            <label *ngFor="let seccion of seccionesDisponibles" class="checkbox-card" [class.checked]="seccion.seleccionada">
+              <input type="checkbox" [(ngModel)]="seccion.seleccionada">
+              <span>{{ seccion.nombre }}</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-secondary" (click)="cancelarCreacion()">Cancelar</button>
+        <button class="btn btn-primary" (click)="guardarAdmin()">Guardar Usuario</button>
+      </div>
+    </div>
+  </div>
+
+</div>

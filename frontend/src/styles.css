@@ -1,2 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
 @import 'material-icons/iconfont/material-icons.css';
+/* Esta es la nueva forma de cargar Tailwind v4 */
+@import "tailwindcss";
+
+@import "tailwindcss/preflight";

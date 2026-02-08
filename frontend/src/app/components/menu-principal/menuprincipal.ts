@@ -123,21 +123,46 @@ export class MenuprincipalComponent implements OnInit {
         color: 'from-purple-500 to-purple-600',
         roles: ['EMPRESA', 'POSTULANTE']
       },
-      {
-        icon: 'fact_check',
-        title: 'Validación de Ofertas',
-        description: 'Aprueba o rechaza nuevas vacantes',
-        color: 'from-orange-500 to-orange-600',
-        roles: ['ADMINISTRADOR'],
-        path: '/admin-validar'
-      },
+
       {
         icon: 'admin_panel_settings',
         title: 'Gestión de Usuarios',
         description: 'Control de empresas y graduados',
         color: 'from-red-500 to-red-600',
         roles: ['ADMINISTRADOR'],
-        path: '/admin-usuarios'
+        path: '/PanelAdmi/GestionUser'
+      },
+      {
+        icon: 'settings_suggest',
+        title: 'Gestión de Catálogos',
+        description: 'Gestión de habilidades, carreras y tipos de contrato',
+        color: 'from-emerald-500 to-green-600', // o 'from-indigo-500 to-indigo-600'
+        roles: ['ADMINISTRADOR'],
+        path: '/PanelAdmi/GestionCatalogos'
+      },
+      {
+        icon: 'fact_check',
+        title: 'Validación de Ofertas',
+        description: 'Aprueba o rechaza nuevas vacantes',
+        color: 'from-orange-500 to-orange-600',
+        roles: ['ADMINISTRADOR'],
+        path: '/PanelAdmi/ValidarOfertas'
+      },
+      {
+        icon: 'manage_accounts', // o 'admin_panel_settings' o supervisor_account
+        title: 'Gestión de Administradores',
+        description: 'Crear y gestionar administradores secundarios',
+        color: 'from-green-500 to-indigo-600',
+        roles: ['ADMINISTRADOR'],
+        path: '/PanelAdmi/admin-MiniAdmi'
+      },
+      {
+        icon: 'bar_chart',
+        title: 'Reportes y Estadísticas',
+        description: 'Métricas y análisis del sistema',
+        color: 'from-green-500 to-blue-600',
+        roles: ['ADMINISTRADOR'],
+        path: '/PanelAdmi/reports'
       }
 
 

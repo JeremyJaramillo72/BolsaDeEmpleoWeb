@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import {OfertaLaboralDTO} from '../../../../services/oferta.service';
 
 @Component({
   selector: 'app-admin-validar',
@@ -9,7 +10,7 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './admin-validar.html',
   styleUrls: ['./admin-validar.css'] //
 })
-export class AdminValidarComponent implements OnInit {
+export class AdminValidarOfertasComponent implements OnInit {
   offers: any[] = [];
 
   constructor(private http: HttpClient) {}
@@ -31,3 +32,4 @@ export class AdminValidarComponent implements OnInit {
     if(motivo) console.log('Rechazando oferta:', id, 'Motivo:', motivo);
   }
 }
+

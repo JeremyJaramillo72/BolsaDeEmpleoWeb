@@ -8,12 +8,12 @@ import { CommonModule } from '@angular/common';
   templateUrl: './admin-usuarios.html',
   styleUrls: ['./admin-usuarios.css']
 })
-export class AdminUsuariosComponent implements OnInit {
+export class AdminGestionUsuariosComponent implements OnInit {
   users: any[] = [];
   usuarios: (NgIterable<unknown> & NgIterable<any>) | undefined | null;
 
   ngOnInit(): void {
-    // Simulando 
+    // Simulando
     this.usuarios = [
       { id: 1, nombre: 'Juan Pérez', correo: 'juan@mail.com', rol: 'POSTULANTE', activo: true },
       { id: 2, nombre: 'Empresa ABC', correo: 'abc@corp.com', rol: 'EMPRESA', activo: false }
