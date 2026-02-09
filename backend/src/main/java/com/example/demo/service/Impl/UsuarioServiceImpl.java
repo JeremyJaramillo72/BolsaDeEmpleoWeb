@@ -5,7 +5,9 @@ import com.example.demo.repository.SeguridadDbRepository;
 import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.service.IUsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,12 +25,18 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     // Clave única acordada con el ingeniero
     private static final String CLAVE_UNICA_BD = "Uteq_2026_Secure";
 
     @Override
     @Transactional
     public void registrarUsuarioNormal(Usuario usuario) {
+        int idRolParaGuardar = (usuario.getRol() != null && usuario.getRol().getIdRol() != null)
+                ? usuario.getRol().getIdRol()
+                : 3;
+
         usuarioRepository.registrarPostulantePro(
                 usuario.getNombre(),
                 usuario.getApellido(),
@@ -38,7 +46,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 usuario.getGenero(),
                 usuario.getTelefono(),
                 usuario.getCiudad() != null ? usuario.getCiudad().getIdCiudad() : null,
-                3
+                idRolParaGuardar
         );
         // 2. BUSCAMOS EL ID GENERADO (Vital para el SP de seguridad)
         Usuario usuarioGuardado = usuarioRepository.findByCorreo(usuario.getCorreo())
@@ -49,34 +57,67 @@ public class UsuarioServiceImpl implements IUsuarioService {
         jdbcTemplate.update("CALL public.registroUsuarioLogin(?, ?, ?)",
                 usuarioGuardado.getCorreo(),
                 usuarioGuardado.getIdUsuario().intValue(),
-                3 // ID del rol Postulante
+                idRolParaGuardar// ID del rol Postulante
         );
     }
 
     @Override
     @Transactional
     public void registrarUsuarioConAccesoBD(Usuario usuario) {
-        // 1. Ejecutamos tu SP de registro de postulante (el que ya tenías)
-        registrarUsuarioNormal(usuario);
 
-        // 2. Buscamos el usuario para obtener el ID generado por la BD
+
+        String contrasenaEncriptada = passwordEncoder.encode(usuario.getContrasena());
+
+        try {
+            if (usuario.getPermisosUi() != null && !usuario.getPermisosUi().isEmpty()) {
+
+                // --- CAMINO PARA ADMINISTRADORES / INTERNOS ---
+                usuarioRepository.registrarAdminInternoPro(
+                        usuario.getNombre(),
+                        usuario.getApellido(),
+                        contrasenaEncriptada,
+                        usuario.getCorreo(),
+                        usuario.getFechaNacimiento() != null ? Date.valueOf(usuario.getFechaNacimiento()) : null,
+                        usuario.getGenero(),
+                        usuario.getTelefono(),
+                        usuario.getCiudad() != null ? usuario.getCiudad().getIdCiudad() : null,
+                        usuario.getRol().getIdRol(),
+                        usuario.getPermisosUi()
+                );
+
+            } else {
+                // --- CAMINO PARA USUARIOS NORMALES ---
+                usuarioRepository.registrarPostulantePro(
+                        usuario.getNombre(),
+                        usuario.getApellido(),
+                        contrasenaEncriptada,
+                        usuario.getCorreo(),
+                        usuario.getFechaNacimiento() != null ? Date.valueOf(usuario.getFechaNacimiento()) : null,
+                        usuario.getGenero(),
+                        usuario.getTelefono(),
+                        usuario.getCiudad() != null ? usuario.getCiudad().getIdCiudad() : null,
+                        usuario.getRol().getIdRol()
+                );
+            }
+        } catch (DataIntegrityViolationException e) {
+            throw new RuntimeException("El correo " + usuario.getCorreo() + " ya está registrado.");
+        }
+
+        // 3. RECUPERAR ID Y CREAR LOGIN
         Usuario usuarioGuardado = usuarioRepository.findByCorreo(usuario.getCorreo())
                 .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado tras registro."));
 
         try {
-            // 3. Llamamos a tu NUEVO procedimiento: registroUsuarioLogin
-            // Parámetros: Correo (text), id_usuario (int), id_rol (int)
-            String sqlCallSP = "CALL public.registroUsuarioLogin(?, ?, ?)";
-
-            jdbcTemplate.update(sqlCallSP,
+            usuarioRepository.crearCredencialesBD(
                     usuarioGuardado.getCorreo(),
-                    usuarioGuardado.getIdUsuario().intValue(), // Convertimos Long a int
-                    usuarioGuardado.getRol().getIdRol()         // Enviamos el ID del rol (1, 2 o 3)
+                    usuarioGuardado.getIdUsuario().intValue(),
+                    usuario.getRol().getIdRol()
             );
+            System.out.println("✅ Credenciales de BD creadas para: " + usuarioGuardado.getCorreo());
 
         } catch (Exception e) {
-            // Si el usuario ya existe en Postgres, el SP fallará y @Transactional hará rollback
-            throw new RuntimeException("Error al crear credenciales de BD: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Error creando credenciales Login: " + e.getMessage());
         }
     }
 

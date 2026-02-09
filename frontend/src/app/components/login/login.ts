@@ -45,6 +45,7 @@ export class LoginComponent {
           // 1. GUARDAR DATOS INDIVIDUALES
           localStorage.setItem('idUsuario', res.idUsuario);
           localStorage.setItem('nombre', res.nombre);
+          localStorage.setItem('permisosUi', res.permisosUi || '');
 
           // 👇👇👇 NUEVO CÓDIGO: GUARDAR ID EMPRESA 👇👇👇
           // Esto es vital para que "Gestión de Ofertas" funcione
@@ -56,7 +57,7 @@ export class LoginComponent {
             console.log('✅ idEmpresa guardado (desde raíz):', res.idEmpresa);
           }
           // 👆👆👆 FIN DEL NUEVO CÓDIGO 👆👆👆
-
+        // con emojis para más fps ✨
           // Extraer el nombre del rol correctamente
           let rolNombre = '';
           if (res.rol && typeof res.rol === 'object') {

@@ -92,6 +92,9 @@ public class AuthController {
                         response.put("rol", usuario.getRol());
                         response.put("nombre", usuario.getNombre());
 
+                        //nuevo nuevo
+                        response.put("permisosUi", usuario.getPermisosUi());
+
                         // 4. LÓGICA PARA OBTENER ID EMPRESA
                         // Ahora sí podemos usar 'response' porque ya fue creada arriba
                         if (nombreRol != null && nombreRol.equalsIgnoreCase("EMPRESA")) {
