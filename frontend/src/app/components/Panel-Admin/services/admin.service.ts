@@ -9,7 +9,7 @@ export class AdminService {
 
   // Ajusta la URL si es necesario
   private apiUrl = 'http://localhost:8080/api/usuarios-bd/registrar-completo';
-  private rolesUrl = 'http://localhost:8080/api/roles';
+  private rolesUrl = 'http://localhost:8080/api/usuarios-bd/roles';
 
   constructor(private http: HttpClient) { }
 
