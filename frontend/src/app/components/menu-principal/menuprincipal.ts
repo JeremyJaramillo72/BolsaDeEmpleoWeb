@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule, NavigationEnd } from '@angular/router'; // 👈 Agregamos NavigationEnd
+import { Router, RouterModule, NavigationEnd } from '@angular/router'; //  Agregamos NavigationEnd
 import { filter } from 'rxjs/operators';
-
+import { AuthService } from '../../services/auth.service';
 interface MenuItem {
   icon: string;
   title: string;
@@ -37,13 +37,16 @@ export class MenuprincipalComponent implements OnInit {
   menuItems: MenuItem[] = [];
   statsCards: StatCard[] = [];
 
-  constructor(public router: Router) {
-    // ✨ ESCUCHA DE RUTAS: Detecta cambios de URL sin recargar la página
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe(() => {
-      this.verificarRutaActual();
-    });
+  constructor(
+    public router: Router,
+    public authService: AuthService
+  ) {
+    // Escucha de cambios de ruta
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this.verificarRutaActual();
+      });
   }
 
   ngOnInit(): void {

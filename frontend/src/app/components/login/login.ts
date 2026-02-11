@@ -44,6 +44,7 @@ export class LoginComponent {
 
           // 1. GUARDAR DATOS INDIVIDUALES
           localStorage.setItem('idUsuario', res.idUsuario);
+          localStorage.setItem('idRol', res.rol.idRol || res.idRol);
           localStorage.setItem('nombre', res.nombre);
           localStorage.setItem('permisosUi', res.permisosUi || '');
 
