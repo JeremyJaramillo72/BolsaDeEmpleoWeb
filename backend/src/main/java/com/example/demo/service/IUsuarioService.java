@@ -7,4 +7,5 @@ public interface IUsuarioService {
     void registrarUsuarioNormal(Usuario usuario);
     void registrarEmpresaCompleta(Usuario usuario, String nombreEmp, String desc, String web, String ruc);
     void registrarUsuarioConAccesoBD(Usuario usuario);
+    void registrarAdministrador(Usuario admin);
 }

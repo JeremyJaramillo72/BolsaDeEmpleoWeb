@@ -16,5 +16,5 @@ public class CategoriaOferta {
             nullable = false,
             unique = true,
             columnDefinition = "VARCHAR(40)")
-    private String nombrecategoria;
+    private String nombreCategoria;
 }

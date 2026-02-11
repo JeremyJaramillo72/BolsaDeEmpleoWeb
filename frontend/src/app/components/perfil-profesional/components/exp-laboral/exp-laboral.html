@@ -6,17 +6,50 @@
     </h3>
   </div>
 
-  <div class="form-grid">
-    <div class="form-group">
-      <label>Cargo *</label>
-      <select [(ngModel)]="nuevaExperiencia.id_cargo" class="form-control">
-        <option [ngValue]="null" disabled>Seleccionar cargo...</option>
-        <option *ngFor="let cargo of cargosDisponibles" [value]="cargo.idCargo">
-          {{ cargo.nombreCargo }}
-        </option>
-      </select>
+  <!-- Sección de Cargos -->
+  <div class="cargo-section">
+    <h4 class="subsection-title">
+      <span class="material-icons">badge</span>
+      Cargos Desempeñados
+    </h4>
+
+    <div class="cargo-input-group">
+      <div class="form-group cargo-select">
+        <label>Seleccionar Cargo *</label>
+        <select [(ngModel)]="cargoActual" class="form-control">
+          <option [ngValue]="null" disabled>Seleccionar cargo...</option>
+          <option *ngFor="let cargo of cargosDisponibles" [value]="cargo.idCargo">
+            {{ cargo.nombreCargo }}
+          </option>
+        </select>
+      </div>
+
+      <button type="button" class="btn-add-cargo" (click)="agregarCargoTemporal()">
+        <span class="material-icons">add</span>
+        Agregar Cargo
+      </button>
     </div>
 
+    <!-- Lista de Cargos Temporales -->
+    <div class="cargos-list" *ngIf="cargosTemporales.length > 0">
+      <div class="cargo-chip" *ngFor="let cargo of cargosTemporales; let i = index">
+        <span class="cargo-chip-text">{{ cargo.nombre_cargo }}</span>
+        <button type="button" class="cargo-chip-remove" (click)="eliminarCargoTemporal(i)">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="empty-cargos" *ngIf="cargosTemporales.length === 0">
+      <span class="material-icons">work_outline</span>
+      <p>No se han agregado cargos. Agregue al menos un cargo para continuar.</p>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- Formulario de Experiencia -->
+  <div class="form-grid">
     <div class="form-group">
       <label>Empresa *</label>
       <select [(ngModel)]="nuevaExperiencia.id_empresa_catalogo" class="form-control">
@@ -25,6 +58,15 @@
           {{ empresa.nombreEmpresa }}
         </option>
       </select>
+    </div>
+
+    <div class="form-group">
+      <label>Ubicación</label>
+      <input
+        type="text"
+        [(ngModel)]="nuevaExperiencia.ubicacion"
+        class="form-control"
+        placeholder="Ej: Quito, Ecuador">
     </div>
 
     <div class="form-group">
@@ -42,15 +84,6 @@
         [(ngModel)]="nuevaExperiencia.fecha_fin"
         class="form-control"
         placeholder="Dejar vacío si aún trabaja aquí">
-    </div>
-
-    <div class="form-group">
-      <label>Ubicación</label>
-      <input
-        type="text"
-        [(ngModel)]="nuevaExperiencia.ubicacion"
-        class="form-control"
-        placeholder="Ej: Quito, Ecuador">
     </div>
 
     <div class="form-group">

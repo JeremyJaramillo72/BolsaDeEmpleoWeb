@@ -63,6 +63,22 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
     @Override
     @Transactional
+    public void registrarAdministrador(Usuario admin) {
+        // Cambiamos Long por Integer para que coincida con tu Entidad Ciudad
+        Integer idCiudad = (admin.getCiudad() != null) ? admin.getCiudad().getIdCiudad() : null;
+
+        usuarioRepository.registrarAdminPro(
+                admin.getNombre(),
+                admin.getApellido(),
+                admin.getContrasena(),
+                admin.getCorreo(),
+                admin.getTelefono(),
+                idCiudad // Ahora coincide con el Integer del Repo
+        );
+    }
+
+    @Override
+    @Transactional
     public void registrarUsuarioConAccesoBD(Usuario usuario) {
 
 

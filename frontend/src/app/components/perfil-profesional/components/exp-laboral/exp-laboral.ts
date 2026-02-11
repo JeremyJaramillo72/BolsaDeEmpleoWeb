@@ -3,6 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PerfilService } from '../../perfil.service';
 
+interface DetalleCargo {
+  id_cargo: number | null;
+  nombre_cargo: string;
+}
+
 @Component({
   selector: 'app-experiencia-laboral',
   standalone: true,
@@ -17,11 +22,15 @@ export class ExperienciaLaboralComponent implements OnInit {
   cargosDisponibles: any[] = []; // Se cargan desde el backend
   empresasDisponibles: any[] = []; // Se cargan desde el backend
 
+  // Lista de cargos temporales para esta experiencia
+  cargosTemporales: DetalleCargo[] = [];
+
+  // Cargo actual en el formulario
+  cargoActual: number | null = null;
+
   // Objeto temporal para el formulario de "Agregar Nuevo"
   nuevaExperiencia = {
-    id_cargo: null,
     id_empresa_catalogo: null,
-    nombre_cargo: '',
     nombre_empresa: '',
     archivo_comprobante: null,
     nombreArchivo: '',
@@ -58,18 +67,60 @@ export class ExperienciaLaboralComponent implements OnInit {
     }
   }
 
+  // Agregar cargo a la lista temporal
+  agregarCargoTemporal(): void {
+    if (this.cargoActual) {
+      // Verificar si el cargo ya está en la lista
+      const yaExiste = this.cargosTemporales.some(c => c.id_cargo === this.cargoActual);
+
+      if (yaExiste) {
+        alert('Este cargo ya está agregado a la lista');
+        return;
+      }
+
+      const cargo = this.cargosDisponibles.find(c => c.idCargo == this.cargoActual);
+
+      if (cargo) {
+        this.cargosTemporales.push({
+          id_cargo: cargo.idCargo,
+          nombre_cargo: cargo.nombreCargo
+        });
+
+        // Limpiar el select
+        this.cargoActual = null;
+      }
+    } else {
+      alert('Por favor seleccione un cargo');
+    }
+  }
+
+  // Eliminar cargo de la lista temporal
+  eliminarCargoTemporal(index: number): void {
+    this.cargosTemporales.splice(index, 1);
+  }
+
   agregarExperiencia(): void {
-    if (this.nuevaExperiencia.id_cargo && this.nuevaExperiencia.id_empresa_catalogo &&
-      this.nuevaExperiencia.fecha_inicio && this.nuevaExperiencia.descripcion) {
+    // Validación de campos obligatorios
+    if (this.cargosTemporales.length === 0) {
+      alert('Debe agregar al menos un cargo a la experiencia');
+      return;
+    }
 
-      const cargo = this.cargosDisponibles.find(c => c.idCargo == this.nuevaExperiencia.id_cargo);
-      const empresa = this.empresasDisponibles.find(e => e.idEmpresa == this.nuevaExperiencia.id_empresa_catalogo);
+    if (!this.nuevaExperiencia.id_empresa_catalogo ||
+      !this.nuevaExperiencia.fecha_inicio ||
+      !this.nuevaExperiencia.descripcion) {
+      alert('Por favor complete los campos obligatorios: Empresa, Fecha Inicio y Descripción');
+      return;
+    }
 
-      // Agregamos al arreglo perfil.experiencias para que se vea en la lista
+    const empresa = this.empresasDisponibles.find(e => e.idEmpresa == this.nuevaExperiencia.id_empresa_catalogo);
+
+    // Crear un registro de experiencia por cada cargo
+    this.cargosTemporales.forEach(cargo => {
       this.perfil.experiencias.push({
-        id_cargo: this.nuevaExperiencia.id_cargo,
+        id_cargo: cargo.id_cargo,
         id_empresa_catalogo: this.nuevaExperiencia.id_empresa_catalogo,
-        nombre_cargo: cargo ? cargo.nombreCargo : '',
+        nombre_cargo: cargo.nombre_cargo,
         nombre_empresa: empresa ? empresa.nombreEmpresa : '',
         descripcion: this.nuevaExperiencia.descripcion,
         fecha_inicio: this.nuevaExperiencia.fecha_inicio,
@@ -79,26 +130,27 @@ export class ExperienciaLaboralComponent implements OnInit {
         archivo_comprobante: this.nuevaExperiencia.archivo_comprobante,
         nombreArchivo: this.nuevaExperiencia.nombreArchivo
       });
+    });
 
-      // Reset del formulario
-      this.nuevaExperiencia = {
-        id_cargo: null,
-        id_empresa_catalogo: null,
-        nombre_cargo: '',
-        nombre_empresa: '',
-        archivo_comprobante: null,
-        nombreArchivo: '',
-        descripcion: '',
-        fecha_inicio: '',
-        fecha_fin: '',
-        fecha_registro: '',
-        ubicacion: ''
-      };
+    // Reset del formulario y lista temporal
+    this.resetFormulario();
+    this.datosCambiados.emit();
+  }
 
-      this.datosCambiados.emit();
-    } else {
-      alert('Por favor complete los campos obligatorios: Cargo, Empresa, Fecha Inicio y Descripción');
-    }
+  resetFormulario(): void {
+    this.nuevaExperiencia = {
+      id_empresa_catalogo: null,
+      nombre_empresa: '',
+      archivo_comprobante: null,
+      nombreArchivo: '',
+      descripcion: '',
+      fecha_inicio: '',
+      fecha_fin: '',
+      fecha_registro: '',
+      ubicacion: ''
+    };
+    this.cargosTemporales = [];
+    this.cargoActual = null;
   }
 
   eliminarExperiencia(index: number): void {

@@ -63,4 +63,14 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
             @Param("idUsuario") Integer idUsuario,
             @Param("idRol") Integer idRol
     );
+
+    @Procedure(procedureName = "sp_registrar_admin")
+    void registrarAdminPro(
+            @Param("p_nombre") String nombre,
+            @Param("p_apellido") String apellido,
+            @Param("p_contrasena") String contra,
+            @Param("p_correo") String correo,
+            @Param("p_telefono") String telf,
+            @Param("p_id_ciudad") Integer idCiudad // Ponlo como Integer aquí
+    );
 }

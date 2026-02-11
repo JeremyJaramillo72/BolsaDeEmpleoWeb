@@ -18,6 +18,7 @@ public class PostgresRoleInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         // 1. Obtenemos el usuario autenticado desde Spring Security
+        System.out.println("--- INTERCEPTOR ACTIVADO PARA: " + request.getRequestURI() + " ---");
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {

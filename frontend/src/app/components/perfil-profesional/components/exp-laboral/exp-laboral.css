@@ -37,6 +37,145 @@
   font-size: 18px;
 }
 
+/* ===== SECCIÓN DE CARGOS ===== */
+.cargo-section {
+  background: #f8faff;
+  border-radius: 15px;
+  padding: 25px;
+  margin-bottom: 30px;
+  border: 2px dashed #cbd5e1;
+}
+
+.subsection-title {
+  color: #1e293b;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 20px 0;
+}
+
+.subsection-title .material-icons {
+  color: #667eea;
+  font-size: 20px;
+}
+
+.cargo-input-group {
+  display: flex;
+  gap: 15px;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+
+.cargo-select {
+  flex: 1;
+  margin-bottom: 0 !important;
+}
+
+.btn-add-cargo {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  height: 48px;
+}
+
+.btn-add-cargo:hover {
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Lista de Cargos (Chips) */
+.cargos-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+  padding: 15px;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.cargo-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.cargo-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.cargo-chip-text {
+  user-select: none;
+}
+
+.cargo-chip-remove {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.cargo-chip-remove:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1);
+}
+
+.cargo-chip-remove .material-icons {
+  font-size: 16px;
+  color: white;
+}
+
+/* Estado Vacío de Cargos */
+.empty-cargos {
+  text-align: center;
+  padding: 30px;
+  color: #94a3b8;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.empty-cargos .material-icons {
+  font-size: 40px;
+  margin-bottom: 10px;
+  opacity: 0.5;
+}
+
+.empty-cargos p {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+}
+
 /* Grid de Formularios */
 .form-grid {
   display: grid;
@@ -250,6 +389,16 @@ textarea.form-control {
 @media (max-width: 768px) {
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .cargo-input-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-add-cargo {
+    width: 100%;
+    justify-content: center;
   }
 
   .actions-row {

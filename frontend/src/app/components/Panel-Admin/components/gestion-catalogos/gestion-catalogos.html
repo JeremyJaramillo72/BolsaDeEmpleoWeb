@@ -1,0 +1,354 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>
+      <span class="header-icon">⚙️</span>
+      Gestión de Catálogos
+    </h1>
+    <p class="page-description">Administre los catálogos del sistema</p>
+  </div>
+
+  <!-- Mensajes de Alerta -->
+  <div class="alert alert-success" *ngIf="mensajeExito">
+    <span class="material-icons">check_circle</span>
+    {{ mensajeExito }}
+  </div>
+
+  <div class="alert alert-error" *ngIf="mensajeError">
+    <span class="material-icons">error</span>
+    {{ mensajeError }}
+  </div>
+
+  <!-- Tabs de Navegación -->
+  <div class="tabs-container">
+    <button
+      class="tab-button"
+      [class.active]="tabActiva === 'categorias'"
+      (click)="cambiarTab('categorias')">
+      <span class="material-icons">category</span>
+      Categorías
+    </button>
+
+    <button
+      class="tab-button"
+      [class.active]="tabActiva === 'carreras'"
+      (click)="cambiarTab('carreras')">
+      <span class="material-icons">school</span>
+      Carreras
+    </button>
+
+    <button
+      class="tab-button"
+      [class.active]="tabActiva === 'facultades'"
+      (click)="cambiarTab('facultades')">
+      <span class="material-icons">domain</span>
+      Facultades
+    </button>
+
+    <button
+      class="tab-button"
+      [class.active]="tabActiva === 'idiomas'"
+      (click)="cambiarTab('idiomas')">
+      <span class="material-icons">language</span>
+      Idiomas
+    </button>
+
+    <button
+      class="tab-button"
+      [class.active]="tabActiva === 'jornadas'"
+      (click)="cambiarTab('jornadas')">
+      <span class="material-icons">schedule</span>
+      Jornadas
+    </button>
+
+    <button
+      class="tab-button"
+      [class.active]="tabActiva === 'modalidades'"
+      (click)="cambiarTab('modalidades')">
+      <span class="material-icons">computer</span>
+      Modalidades
+    </button>
+  </div>
+
+  <!-- Contenido de las Tabs -->
+  <div class="tab-content">
+
+    <!-- ========== TAB CATEGORÍAS ========== -->
+    <div class="catalog-section" *ngIf="tabActiva === 'categorias'">
+      <div class="section-card">
+        <div class="section-header">
+          <h3>
+            <span class="section-icon">📂</span>
+            Categorías de Ofertas
+          </h3>
+        </div>
+
+        <div class="form-inline">
+          <div class="form-group">
+            <label>Nombre de la Categoría</label>
+            <input
+              type="text"
+              [(ngModel)]="nuevaCategoria.nombre"
+              class="form-control"
+              placeholder="Ej: Tecnología">
+          </div>
+          <button class="btn-add" (click)="agregarCategoria()">
+            <span class="material-icons">add</span>
+            Agregar
+          </button>
+        </div>
+
+        <div class="items-list">
+          <div class="item-card" *ngFor="let cat of categorias">
+            <div class="item-info">
+              <span class="item-icon">📁</span>
+              <span class="item-name">{{ cat.nombreCategoria }}</span>
+            </div>
+            <button class="btn-delete-small" (click)="eliminarCategoria(cat.idCategoria!)">
+              <span class="material-icons">delete</span>
+            </button>
+          </div>
+
+          <div class="empty-state" *ngIf="categorias.length === 0">
+            <span class="material-icons">inbox</span>
+            <p>No hay categorías registradas</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== TAB CARRERAS ========== -->
+    <div class="catalog-section" *ngIf="tabActiva === 'carreras'">
+      <div class="section-card">
+        <div class="section-header">
+          <h3>
+            <span class="section-icon">🎓</span>
+            Carreras Universitarias
+          </h3>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Nombre de la Carrera</label>
+            <input
+              type="text"
+              [(ngModel)]="nuevaCarrera.nombre"
+              class="form-control"
+              placeholder="Ej: Ingeniería en Sistemas">
+          </div>
+
+          <div class="form-group">
+            <label>Facultad</label>
+            <select [(ngModel)]="nuevaCarrera.id_facultad" class="form-control">
+              <option [ngValue]="null" disabled>Seleccionar facultad...</option>
+              <option *ngFor="let fac of facultadesDisponibles" [value]="fac.idFacultad">
+                {{ fac.nombreFacultad }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn-add full-width" (click)="agregarCarrera()">
+          <span class="material-icons">add</span>
+          Agregar Carrera
+        </button>
+
+        <div class="items-list">
+          <div class="item-card-extended" *ngFor="let car of carreras">
+            <div class="item-info">
+              <span class="item-icon">🎓</span>
+              <div class="item-details">
+                <span class="item-name">{{ car.nombreCarrera }}</span>
+                <span class="item-subtitle">{{ obtenerNombreFacultad(car.idFacultad) }}</span>
+              </div>
+            </div>
+            <button class="btn-delete-small" (click)="eliminarCarrera(car.idCarrera)">
+              <span class="material-icons">delete</span>
+            </button>
+          </div>
+
+          <div class="empty-state" *ngIf="carreras.length === 0">
+            <span class="material-icons">school</span>
+            <p>No hay carreras registradas</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== TAB FACULTADES ========== -->
+    <div class="catalog-section" *ngIf="tabActiva === 'facultades'">
+      <div class="section-card">
+        <div class="section-header">
+          <h3>
+            <span class="section-icon">🏛️</span>
+            Facultades
+          </h3>
+        </div>
+
+        <div class="form-inline">
+          <div class="form-group">
+            <label>Nombre de la Facultad</label>
+            <input
+              type="text"
+              [(ngModel)]="nuevaFacultad.nombre"
+              class="form-control"
+              placeholder="Ej: Facultad de Ingeniería">
+          </div>
+          <button class="btn-add" (click)="agregarFacultad()">
+            <span class="material-icons">add</span>
+            Agregar
+          </button>
+        </div>
+
+        <div class="items-list">
+          <div class="item-card" *ngFor="let fac of facultades">
+            <div class="item-info">
+              <span class="item-icon">🏛️</span>
+              <span class="item-name">{{ fac.nombreFacultad }}</span>
+            </div>
+            <button class="btn-delete-small" (click)="eliminarFacultad(fac.idFacultad!)">
+              <span class="material-icons">delete</span>
+            </button>
+          </div>
+
+          <div class="empty-state" *ngIf="facultades.length === 0">
+            <span class="material-icons">domain</span>
+            <p>No hay facultades registradas</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== TAB IDIOMAS ========== -->
+    <div class="catalog-section" *ngIf="tabActiva === 'idiomas'">
+      <div class="section-card">
+        <div class="section-header">
+          <h3>
+            <span class="section-icon">🌐</span>
+            Idiomas
+          </h3>
+        </div>
+
+        <div class="form-inline">
+          <div class="form-group">
+            <label>Nombre del Idioma</label>
+            <input
+              type="text"
+              [(ngModel)]="nuevoIdioma.nombre"
+              class="form-control"
+              placeholder="Ej: Inglés">
+          </div>
+          <button class="btn-add" (click)="agregarIdioma()">
+            <span class="material-icons">add</span>
+            Agregar
+          </button>
+        </div>
+
+        <div class="items-list">
+          <div class="item-card" *ngFor="let idm of idiomas">
+            <div class="item-info">
+              <span class="item-icon">🌐</span>
+              <span class="item-name">{{ idm.nombreIdioma }}</span>
+            </div>
+            <button class="btn-delete-small" (click)="eliminarIdioma(idm.idIdioma!)">
+              <span class="material-icons">delete</span>
+            </button>
+          </div>
+
+          <div class="empty-state" *ngIf="idiomas.length === 0">
+            <span class="material-icons">language</span>
+            <p>No hay idiomas registrados</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== TAB JORNADAS ========== -->
+    <div class="catalog-section" *ngIf="tabActiva === 'jornadas'">
+      <div class="section-card">
+        <div class="section-header">
+          <h3>
+            <span class="section-icon">⏰</span>
+            Jornadas Laborales
+          </h3>
+        </div>
+
+        <div class="form-inline">
+          <div class="form-group">
+            <label>Nombre de la Jornada</label>
+            <input
+              type="text"
+              [(ngModel)]="nuevaJornada.nombre"
+              class="form-control"
+              placeholder="Ej: Tiempo Completo">
+          </div>
+          <button class="btn-add" (click)="agregarJornada()">
+            <span class="material-icons">add</span>
+            Agregar
+          </button>
+        </div>
+
+        <div class="items-list">
+          <div class="item-card" *ngFor="let jor of jornadas">
+            <div class="item-info">
+              <span class="item-icon">⏰</span>
+              <span class="item-name">{{ jor.nombreJornada }}</span>
+            </div>
+            <button class="btn-delete-small" (click)="eliminarJornada(jor.idJornada!)">
+              <span class="material-icons">delete</span>
+            </button>
+          </div>
+
+          <div class="empty-state" *ngIf="jornadas.length === 0">
+            <span class="material-icons">schedule</span>
+            <p>No hay jornadas registradas</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== TAB MODALIDADES ========== -->
+    <div class="catalog-section" *ngIf="tabActiva === 'modalidades'">
+      <div class="section-card">
+        <div class="section-header">
+          <h3>
+            <span class="section-icon">💻</span>
+            Modalidades de Trabajo
+          </h3>
+        </div>
+
+        <div class="form-inline">
+          <div class="form-group">
+            <label>Nombre de la Modalidad</label>
+            <input
+              type="text"
+              [(ngModel)]="nuevaModalidad.nombre"
+              class="form-control"
+              placeholder="Ej: Remoto">
+          </div>
+          <button class="btn-add" (click)="agregarModalidad()">
+            <span class="material-icons">add</span>
+            Agregar
+          </button>
+        </div>
+
+        <div class="items-list">
+          <div class="item-card" *ngFor="let mod of modalidades">
+            <div class="item-info">
+              <span class="item-icon">💻</span>
+              <span class="item-name">{{ mod.nombreModalidad }}</span>
+            </div>
+            <button class="btn-delete-small" (click)="eliminarModalidad(mod.idModalidad!)">
+              <span class="material-icons">delete</span>
+            </button>
+          </div>
+
+          <div class="empty-state" *ngIf="modalidades.length === 0">
+            <span class="material-icons">computer</span>
+            <p>No hay modalidades registradas</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

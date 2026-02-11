@@ -11,6 +11,8 @@ import { AdminValidarOfertasComponent} from './components/Panel-Admin/components
 import { AdminGestionUsuariosComponent} from './components/Panel-Admin/components/admin-usuarios/admin-usuarios'
 import {AdminMiniAdmiComponent} from './components/Panel-Admin/components/admin-mini-admi/admin-mini-admi';
 
+import  {GestionCatalogosComponent} from './components/Panel-Admin/components/gestion-catalogos/gestion-catalogos';
+
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'registro-candidato', component: RegistroCandidatoComponent },
@@ -25,7 +27,11 @@ export const routes: Routes = [
       { path: 'gestion-ofertas', component: GestionOfertasComponent },
       { path: 'PanelAdmi/ValidarOfertas', component: AdminValidarOfertasComponent },
       { path: 'PanelAdmi/GestionUser', component: AdminGestionUsuariosComponent },
-      { path: 'PanelAdmi/admin-MiniAdmi', component: AdminMiniAdmiComponent }
+      { path: 'PanelAdmi/admin-MiniAdmi', component: AdminMiniAdmiComponent },
+      {
+        path: 'PanelAdmi/GestionCatalogos',
+        component: GestionCatalogosComponent
+      }
     ]
   },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
