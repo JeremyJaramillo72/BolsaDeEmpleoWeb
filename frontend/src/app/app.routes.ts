@@ -13,6 +13,8 @@ import {AdminMiniAdmiComponent} from './components/Panel-Admin/components/admin-
 
 import  {GestionCatalogosComponent} from './components/Panel-Admin/components/gestion-catalogos/gestion-catalogos';
 
+import {GestionReportesComponent} from './components/Panel-Admin/components/gestion-reportes/gestion-reportes';
+
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'registro-candidato', component: RegistroCandidatoComponent },
@@ -31,7 +33,12 @@ export const routes: Routes = [
       {
         path: 'PanelAdmi/GestionCatalogos',
         component: GestionCatalogosComponent
+      },
+      {
+        path: 'PanelAdmi/GestionReportes',
+        component: GestionReportesComponent
       }
+
     ]
   },
   { path: '', redirectTo: '/login', pathMatch: 'full' },

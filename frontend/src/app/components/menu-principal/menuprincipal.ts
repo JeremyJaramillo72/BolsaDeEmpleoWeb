@@ -165,10 +165,8 @@ export class MenuprincipalComponent implements OnInit {
         description: 'Métricas y análisis del sistema',
         color: 'from-green-500 to-blue-600',
         roles: ['ADMINISTRADOR'],
-        path: '/PanelAdmi/reports'
+        path: '/PanelAdmi/GestionReportes'
       }
-
-
     ];
 
     this.menuItems = todasLasOpciones.filter(item =>

@@ -104,4 +104,42 @@ export class AdminService {
     return this.http.delete(`${this.apiUrl}/modalidades/${id}`);
   }
 
+  // Para los reportes
+
+  // ========== REPORTES ==========
+  getReporteOfertas(filtros: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reportes/ofertas`, filtros);
+  }
+
+  getReportePostulaciones(filtros: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reportes/postulaciones`, filtros);
+  }
+
+  getReporteUsuarios(filtros: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reportes/usuarios`, filtros);
+  }
+
+  getReporteEmpresas(filtros: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reportes/empresas`, filtros);
+  }
+
+  getReporteEstadisticas(filtros: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reportes/estadisticas`, filtros);
+  }
+
+// ========== EXPORTAR ==========
+  exportarExcel(datos: any[], nombreArchivo: string): Observable<Blob> {
+    return this.http.post(`${this.apiUrl}/reportes/exportar/excel`,
+      { datos, nombreArchivo },
+      { responseType: 'blob' }
+    );
+  }
+
+  exportarPDF(tipoReporte: string, filtros: any): Observable<Blob> {
+    return this.http.post(`${this.apiUrl}/reportes/exportar/pdf`,
+      { tipoReporte, filtros },
+      { responseType: 'blob' }
+    );
+  }
+
 }
