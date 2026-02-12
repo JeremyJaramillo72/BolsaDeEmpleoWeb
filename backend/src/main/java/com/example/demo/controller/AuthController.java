@@ -74,18 +74,17 @@ public class AuthController {
                 .map(usuario -> {
                     if (passwordEncoder.matches(loginRequest.getContrasena(), usuario.getContrasena())) {
 
-                        // 1. GESTIÓN DE SESIÓN (Primero configuramos la sesión)
+
                         session.setAttribute("nombre_usuario", usuario.getNombre());
                         model.addAttribute("session_id_usuario", usuario.getIdUsuario());
 
                         String nombreRol = usuario.getRol().getNombreRol();
                         model.addAttribute("session_rol", nombreRol);
 
-                        // 2. HEADERS
+
                         httpResponse.addHeader("X-Auth-Token", UUID.randomUUID().toString());
                         httpResponse.addHeader("X-UTEQ-Session", "Active");
 
-                        // 3. CREACIÓN DEL MAPA DE RESPUESTA (Aquí nace la variable 'response')
                         Map<String, Object> response = new HashMap<>();
                         response.put("mensaje", "¡Bienvenido de nuevo!");
                         response.put("idUsuario", usuario.getIdUsuario());
@@ -95,17 +94,16 @@ public class AuthController {
                         //nuevo nuevo
                         response.put("permisosUi", usuario.getPermisosUi());
 
-                        // 4. LÓGICA PARA OBTENER ID EMPRESA
-                        // Ahora sí podemos usar 'response' porque ya fue creada arriba
+
                         if (nombreRol != null && nombreRol.equalsIgnoreCase("EMPRESA")) {
 
-                            // Buscamos la empresa usando el ID del usuario (convertido a Long)
+
                             UsuarioEmpresa empresa = usuarioEmpresaRepository.findByIdUsuario(Long.valueOf(usuario.getIdUsuario()));
 
                             if (empresa != null) {
-                                // Agregamos el ID vital para el frontend
+                        
                                 response.put("idEmpresa", empresa.getIdEmpresa());
-                                // Opcional: enviar objeto completo
+
                                 response.put("empresa", empresa);
 
                                 System.out.println("✅ LOGIN EMPRESA: ID ENCONTRADO " + empresa.getIdEmpresa());
