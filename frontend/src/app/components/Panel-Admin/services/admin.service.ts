@@ -142,4 +142,28 @@ export class AdminService {
     );
   }
 
+  //Para VAlidar empresas
+  // ========== VALIDACIÓN DE EMPRESAS ==========
+  getEmpresasPorEstado(estado: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/empresas/estado/${estado}`);
+  }
+
+  getEstadisticasEmpresas(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/empresas/estadisticas`);
+  }
+
+  aprobarEmpresa(datos: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/empresas/aprobar`, datos);
+  }
+
+  rechazarEmpresa(datos: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/empresas/rechazar`, datos);
+  }
+
+  descargarDocumentoEmpresa(idEmpresa: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/empresas/${idEmpresa}/documento`,
+      { responseType: 'blob' }
+    );
+  }
+
 }

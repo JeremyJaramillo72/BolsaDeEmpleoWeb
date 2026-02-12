@@ -166,6 +166,14 @@ export class MenuprincipalComponent implements OnInit {
         color: 'from-green-500 to-blue-600',
         roles: ['ADMINISTRADOR'],
         path: '/PanelAdmi/GestionReportes'
+      },
+      {
+        icon: 'manage_accounts', // o 'admin_panel_settings' o supervisor_account
+        title: 'Validación Empresas',
+        description: 'Valida y gestiona las Empresas que se Registran',
+        color: 'from-green-500 to-indigo-600',
+        roles: ['ADMINISTRADOR'],
+        path: '/PanelAdmi/ValidarEmpresa'
       }
     ];
 

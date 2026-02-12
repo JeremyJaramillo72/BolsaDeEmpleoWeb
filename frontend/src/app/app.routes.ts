@@ -10,10 +10,10 @@ import { GestionOfertasComponent } from './components/gestion-ofertas/gestion-of
 import { AdminValidarOfertasComponent} from './components/Panel-Admin/components/admin-validar/admin-validar';
 import { AdminGestionUsuariosComponent} from './components/Panel-Admin/components/admin-usuarios/admin-usuarios'
 import {AdminMiniAdmiComponent} from './components/Panel-Admin/components/admin-mini-admi/admin-mini-admi';
-
 import  {GestionCatalogosComponent} from './components/Panel-Admin/components/gestion-catalogos/gestion-catalogos';
-
 import {GestionReportesComponent} from './components/Panel-Admin/components/gestion-reportes/gestion-reportes';
+
+import {ValidarEmpresaComponent} from './components/Panel-Admin/components/validar-empresa/validar-empresa';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -37,6 +37,10 @@ export const routes: Routes = [
       {
         path: 'PanelAdmi/GestionReportes',
         component: GestionReportesComponent
+      },
+      {
+        path: 'PanelAdmi/ValidarEmpresa',
+        component: ValidarEmpresaComponent
       }
 
     ]
