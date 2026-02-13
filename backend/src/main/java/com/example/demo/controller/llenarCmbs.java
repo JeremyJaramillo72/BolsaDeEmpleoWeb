@@ -31,6 +31,9 @@ public class llenarCmbs {
     @Autowired
     private ModalidadOfertaRepository modalidadRepository;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
 
     @GetMapping("/facultades")
     public List<Facultad> listarFacultades() {
@@ -66,6 +69,60 @@ public class llenarCmbs {
         return modalidadRepository.findAll();
     }
 
+    @GetMapping("/usuarios/estadisticas")
+    public ResponseEntity<?> getEstadisticasUsuarios() {
+        long total = usuarioRepository.count();
+        // Aquí puedes añadir más lógica, por ahora devolvemos el total
+        return ResponseEntity.ok(Map.of(
+                "totalUsuarios", total,
+                "fechaActualizacion", new java.util.Date()
+        ));
+    }
+
+    // 2. Obtener auditorías de un usuario específico
+    @GetMapping("/usuarios/{idUsuario}/auditorias")
+    public List<Auditoria> getAuditoriasUsuario(@PathVariable Integer idUsuario) {
+        // Nota: Necesitarás tener un AuditoriaRepository y la entidad Auditoria
+        // return auditoriaRepository.findByUsuarioId(idUsuario);
+        return List.of(); // Placeholder hasta que tengas tu entidad de auditoría
+    }
+
+    // 4. Exportar Auditorías de un usuario a Excel
+    @GetMapping("/usuarios/{idUsuario}/auditorias/exportar")
+    public ResponseEntity<byte[]> exportarAuditoriasExcel(@PathVariable Integer idUsuario) {
+        // Lógica similar a la anterior filtrando por ID
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=auditoria_" + idUsuario + ".xlsx")
+                .body(new byte[0]); // Placeholder
+    }
+
+    @GetMapping("/usuarios") // Ruta final: /api/academico/usuarios
+    public List<Usuario> getTodosUsuarios() {
+        return usuarioRepository.findAll();
+    }
+
+    @PostMapping("/usuarios/exportar")
+    public ResponseEntity<byte[]> exportarUsuariosExcel(@RequestBody List<Usuario> usuarios) {
+        try {
+            // 1. Aquí llamarías a una lógica para convertir la lista 'usuarios' a Excel
+            // byte[] excelBytes = excelService.generarExcel(usuarios);
+
+            // Simulación de contenido para que no de error
+            byte[] contenidoSimulado = new byte[0];
+
+            return ResponseEntity.ok()
+                    .header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .header("Content-Disposition", "attachment; filename=reporte_usuarios.xlsx")
+                    .body(contenidoSimulado);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+
+
+
 
     @PostMapping("/idiomas")
     public ResponseEntity<?> crearIdioma(@RequestBody Idioma nuevoIdioma) {
@@ -88,6 +145,23 @@ public class llenarCmbs {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "No se pudo guardar la categoría: " + e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/categorias/{id}")
+    public ResponseEntity<?> eliminarCategoria(@PathVariable Integer id) {
+        try {
+            // Verificamos si existe antes de intentar borrar
+            if (categoriaRepository.existsById(id)) {
+                categoriaRepository.deleteById(id);
+                return ResponseEntity.ok(Map.of("mensaje", "Categoría eliminada correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "La categoría con ID " + id + " no existe"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se pudo eliminar la categoría: " + e.getMessage()));
         }
     }
 

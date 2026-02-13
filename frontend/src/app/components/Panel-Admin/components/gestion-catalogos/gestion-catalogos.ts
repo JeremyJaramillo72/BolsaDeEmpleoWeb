@@ -302,7 +302,10 @@ export class GestionCatalogosComponent implements OnInit {
       this.adminService.eliminarCategoria(id).subscribe({
         next: () => {
           this.mostrarExito('Categoría eliminada exitosamente');
-          // Refresco con delay opcional también aquí
+          // Optimización: quitar de la lista inmediatamente
+          this.categorias = this.categorias.filter(c => c.idCategoria !== id);
+
+          // El refresco del servidor se queda como respaldo
           setTimeout(() => this.cargarCategorias(), 300);
         },
         error: (err) => this.mostrarError('Error al eliminar categoría')

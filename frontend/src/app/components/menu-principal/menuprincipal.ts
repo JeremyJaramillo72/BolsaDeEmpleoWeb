@@ -134,7 +134,7 @@ export class MenuprincipalComponent implements OnInit {
         description: 'Control de empresas y graduados',
         color: 'from-red-500 to-red-600',
         roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
-        path: '/PanelAdmi/GestionUser',
+        path: '/PanelAuditorias/auditorias-users',
         permiso: 'USERS'
       },
       {

@@ -30,10 +30,12 @@ export class AdminService {
     // Aquí sí usamos la ruta específica de registro
     return this.http.post(`${this.apiUsuariosUrl}/registrar-completo`, usuario, { responseType: 'text' });
   }
+
   obtenerAdminsRegistrados(): Observable<any[]> {
     // Llama al endpoint nuevo que acabamos de crear
     return this.http.get<any[]>(`${this.apiUsuariosUrl}/listar-admins`);
   }
+
   cambiarEstadoAdmin(id: number, estado: string): Observable<any> {
     // Envía una petición PUT. Ejemplo: .../cambiar-estado/5?estado=Inactivo
     return this.http.put(
@@ -191,6 +193,36 @@ export class AdminService {
       { responseType: 'blob' }
     );
   }
+
+  //Auditorias
+  // ========== ADMINISTRACIÓN DE USUARIOS ==========
+  obtenerTodosUsuarios(): Observable<any> {
+    return this.http.get(`${this.apiAcademicoUrl}/usuarios`);
+  }
+
+  // http://localhost:8080/api/academico/usuarios
+  getEstadisticasUsuarios(): Observable<any> {
+    return this.http.get(`${this.apiAcademicoUrl}/usuarios/estadisticas`);
+  }
+
+  getAuditoriasUsuario(idUsuario: number): Observable<any> {
+    return this.http.get(`${this.apiAcademicoUrl}/admin/usuarios/${idUsuario}/auditorias`);
+  }
+
+  exportarUsuariosExcel(usuarios: any[]): Observable<Blob> {
+    return this.http.post(`${this.apiAcademicoUrl}/admin/usuarios/exportar`,
+      { usuarios },
+      { responseType: 'blob' }
+    );
+  }
+
+  exportarAuditoriasExcel(idUsuario: number): Observable<Blob> {
+    return this.http.get(`${this.apiAcademicoUrl}/admin/usuarios/${idUsuario}/auditorias/exportar`,
+      { responseType: 'blob' }
+    );
+  }
+
+
 
 
 }

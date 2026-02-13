@@ -1,0 +1,348 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>
+      <span class="header-icon">👥</span>
+      Administración de Usuarios
+    </h1>
+    <p class="page-description">Gestione los usuarios registrados en el sistema</p>
+  </div>
+
+  <!-- Mensaje de Error -->
+  <div class="alert alert-error" *ngIf="mensajeError">
+    <span class="material-icons">error</span>
+    {{ mensajeError }}
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="stats-grid">
+    <div class="stat-card total">
+      <div class="stat-icon">
+        <span class="material-icons">people</span>
+      </div>
+      <div class="stat-content">
+        <h4>Total Usuarios</h4>
+        <p class="stat-number">{{ estadisticas.totalUsuarios }}</p>
+        <span class="stat-detail">{{ estadisticas.usuariosActivos }} activos</span>
+      </div>
+    </div>
+
+    <div class="stat-card admin">
+      <div class="stat-icon">
+        <span class="material-icons">admin_panel_settings</span>
+      </div>
+      <div class="stat-content">
+        <h4>Administradores</h4>
+        <p class="stat-number">{{ estadisticas.administradores }}</p>
+      </div>
+    </div>
+
+    <div class="stat-card empresa">
+      <div class="stat-icon">
+        <span class="material-icons">business</span>
+      </div>
+      <div class="stat-content">
+        <h4>Empresas</h4>
+        <p class="stat-number">{{ estadisticas.empresas }}</p>
+      </div>
+    </div>
+
+    <div class="stat-card usuarios">
+      <div class="stat-icon">
+        <span class="material-icons">person</span>
+      </div>
+      <div class="stat-content">
+        <h4>Usuarios</h4>
+        <p class="stat-number">{{ estadisticas.usuariosNormales }}</p>
+        <span class="stat-detail">{{ estadisticas.registrosHoy }} hoy</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="section-card">
+    <div class="filters-section">
+      <div class="search-box">
+        <span class="material-icons">search</span>
+        <input
+          type="text"
+          [(ngModel)]="filtroBusqueda"
+          (ngModelChange)="aplicarFiltros()"
+          placeholder="Buscar por nombre, email o rol..."
+          class="search-input">
+      </div>
+
+      <div class="filter-group">
+        <select [(ngModel)]="filtroRol" (ngModelChange)="aplicarFiltros()" class="filter-select">
+          <option value="">Todos los roles</option>
+          <option *ngFor="let rol of rolesDisponibles" [value]="rol">{{ rol }}</option>
+        </select>
+
+        <select [(ngModel)]="filtroEstado" (ngModelChange)="aplicarFiltros()" class="filter-select">
+          <option value="">Todos los estados</option>
+          <option *ngFor="let estado of estadosDisponibles" [value]="estado">{{ estado }}</option>
+        </select>
+
+        <button class="btn-clear" (click)="limpiarFiltros()">
+          <span class="material-icons">refresh</span>
+          Limpiar
+        </button>
+
+        <button class="btn-export" (click)="exportarUsuarios()">
+          <span class="material-icons">download</span>
+          Exportar Excel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Usuarios -->
+  <div class="table-section" *ngIf="!cargando">
+    <div class="table-header">
+      <h3>Lista de Usuarios</h3>
+      <span class="table-count">{{ rangoMostrado }}</span>
+    </div>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+        <tr>
+          <th class="sortable" (click)="ordenarPor('nombre')">
+            <div class="th-content">
+              Nombre
+              <span class="material-icons sort-icon" *ngIf="columnaOrden === 'nombre'">
+                  {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                </span>
+            </div>
+          </th>
+          <th class="sortable" (click)="ordenarPor('email')">
+            <div class="th-content">
+              Email
+              <span class="material-icons sort-icon" *ngIf="columnaOrden === 'email'">
+                  {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                </span>
+            </div>
+          </th>
+          <th class="sortable" (click)="ordenarPor('rol')">
+            <div class="th-content">
+              Rol
+              <span class="material-icons sort-icon" *ngIf="columnaOrden === 'rol'">
+                  {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                </span>
+            </div>
+          </th>
+          <th class="sortable" (click)="ordenarPor('estado')">
+            <div class="th-content">
+              Estado
+              <span class="material-icons sort-icon" *ngIf="columnaOrden === 'estado'">
+                  {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                </span>
+            </div>
+          </th>
+          <th class="sortable" (click)="ordenarPor('fechaRegistro')">
+            <div class="th-content">
+              Fecha Registro
+              <span class="material-icons sort-icon" *ngIf="columnaOrden === 'fechaRegistro'">
+                  {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                </span>
+            </div>
+          </th>
+          <th class="sortable" (click)="ordenarPor('auditorias')">
+            <div class="th-content">
+              Auditorías
+              <span class="material-icons sort-icon" *ngIf="columnaOrden === 'auditorias'">
+                  {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                </span>
+            </div>
+          </th>
+          <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let usuario of usuariosPaginados">
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar">
+                {{ usuario?.nombreCompleto?.charAt(0)?.toUpperCase() || '?' }}
+              </div>
+              <span class="user-name">{{ usuario.nombreCompleto }}</span>
+            </div>
+          </td>
+          <td>{{ usuario.email }}</td>
+          <td>
+              <span class="badge rol-badge" [ngClass]="getRolClass(usuario.rol)">
+                {{ usuario.rol }}
+              </span>
+          </td>
+          <td>
+              <span class="badge estado-badge" [ngClass]="getEstadoClass(usuario.estado)">
+                {{ usuario.estado }}
+              </span>
+          </td>
+          <td>{{ usuario.fechaRegistro | date:'dd/MM/yyyy' }}</td>
+          <td class="text-center">
+            <span class="audit-count">{{ usuario.totalAuditorias }}</span>
+          </td>
+          <td>
+            <button class="btn-action" (click)="verAuditorias(usuario)">
+              <span class="material-icons">history</span>
+              Ver Auditorías
+            </button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+
+      <!-- Estado Vacío -->
+      <div class="empty-state" *ngIf="usuariosFiltrados.length === 0">
+        <span class="material-icons">person_search</span>
+        <p>No se encontraron usuarios con los filtros seleccionados</p>
+      </div>
+    </div>
+
+    <!-- Paginación -->
+    <div class="pagination" *ngIf="totalPaginas > 1">
+      <button
+        class="page-btn"
+        (click)="cambiarPagina(paginaActual - 1)"
+        [disabled]="paginaActual === 1">
+        <span class="material-icons">chevron_left</span>
+      </button>
+
+      <div class="page-numbers">
+        <button
+          *ngFor="let p of [].constructor(totalPaginas); let i = index"
+          class="page-number"
+          [class.active]="paginaActual === i + 1"
+          (click)="cambiarPagina(i + 1)"
+          [hidden]="totalPaginas > 7 && (i + 1 < paginaActual - 2 || i + 1 > paginaActual + 2) && i + 1 !== 1 && i + 1 !== totalPaginas">
+          {{ i + 1 }}
+        </button>
+      </div>
+
+      <button
+        class="page-btn"
+        (click)="cambiarPagina(paginaActual + 1)"
+        [disabled]="paginaActual === totalPaginas">
+        <span class="material-icons">chevron_right</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Indicador de Carga -->
+  <div class="loading-container" *ngIf="cargando">
+    <div class="spinner"></div>
+    <p>Cargando usuarios...</p>
+  </div>
+</div>
+
+<!-- ========== MODAL DE AUDITORÍAS ========== -->
+<div class="modal-overlay" *ngIf="mostrarModalAuditorias" (click)="cerrarModalAuditorias()">
+  <div class="modal-container large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-section">
+        <h2>Historial de Auditorías</h2>
+        <p class="modal-subtitle" *ngIf="usuarioSeleccionado">
+          {{ usuarioSeleccionado.nombreCompleto }} - {{ usuarioSeleccionado.email }}
+        </p>
+      </div>
+      <div class="modal-actions-header">
+        <button class="btn-export-modal" (click)="exportarAuditorias()">
+          <span class="material-icons">download</span>
+          Exportar
+        </button>
+        <button class="btn-close" (click)="cerrarModalAuditorias()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="modal-body" *ngIf="!cargandoAuditorias">
+      <div class="audit-summary">
+        <div class="summary-item">
+          <span class="material-icons">assignment</span>
+          <div class="summary-content">
+            <span class="summary-label">Total de Acciones</span>
+            <span class="summary-value">{{ auditorias.length }}</span>
+          </div>
+        </div>
+        <div class="summary-item" *ngIf="usuarioSeleccionado?.ultimoAcceso">
+          <span class="material-icons">access_time</span>
+          <div class="summary-content">
+            <span class="summary-label">Último Acceso</span>
+            <span class="summary-value">{{ formatearFechaHora(usuarioSeleccionado?.ultimoAcceso) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline de Auditorías -->
+      <div class="audit-timeline">
+        <div class="audit-item" *ngFor="let auditoria of auditoriasPaginadas">
+          <div class="audit-marker" [ngClass]="getAccionClass(auditoria.accion)">
+            <span class="material-icons">
+              {{ getAccionClass(auditoria.accion) === 'accion-crear' ? 'add_circle' :
+              getAccionClass(auditoria.accion) === 'accion-editar' ? 'edit' :
+                getAccionClass(auditoria.accion) === 'accion-eliminar' ? 'delete' :
+                  getAccionClass(auditoria.accion) === 'accion-acceso' ? 'login' : 'circle' }}
+            </span>
+          </div>
+          <div class="audit-content">
+            <div class="audit-header">
+              <h4 class="audit-action">{{ auditoria.accion }}</h4>
+              <span class="audit-time">{{ formatearFechaHora(auditoria.fechaHora) }}</span>
+            </div>
+            <div class="audit-details">
+              <div class="audit-module">
+                <span class="material-icons">folder</span>
+                {{ auditoria.modulo }}
+              </div>
+              <p class="audit-description">{{ auditoria.descripcion }}</p>
+              <div class="audit-meta" *ngIf="auditoria.ipAddress || auditoria.navegador">
+                <span class="meta-item" *ngIf="auditoria.ipAddress">
+                  <span class="material-icons">location_on</span>
+                  IP: {{ auditoria.ipAddress }}
+                </span>
+                <span class="meta-item" *ngIf="auditoria.navegador">
+                  <span class="material-icons">computer</span>
+                  {{ auditoria.navegador }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estado Vacío -->
+        <div class="empty-audit" *ngIf="auditorias.length === 0">
+          <span class="material-icons">history</span>
+          <p>No hay auditorías registradas para este usuario</p>
+        </div>
+      </div>
+
+      <!-- Paginación Auditorías -->
+      <div class="pagination" *ngIf="totalPaginasAuditorias > 1">
+        <button
+          class="page-btn"
+          (click)="cambiarPaginaAuditorias(paginaAuditorias - 1)"
+          [disabled]="paginaAuditorias === 1">
+          <span class="material-icons">chevron_left</span>
+        </button>
+
+        <span class="page-info">
+          Página {{ paginaAuditorias }} de {{ totalPaginasAuditorias }}
+        </span>
+
+        <button
+          class="page-btn"
+          (click)="cambiarPaginaAuditorias(paginaAuditorias + 1)"
+          [disabled]="paginaAuditorias === totalPaginasAuditorias">
+          <span class="material-icons">chevron_right</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Cargando Auditorías -->
+    <div class="loading-modal" *ngIf="cargandoAuditorias">
+      <div class="spinner"></div>
+      <p>Cargando auditorías...</p>
+    </div>
+  </div>
+</div>

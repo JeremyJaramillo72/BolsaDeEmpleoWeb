@@ -42,6 +42,7 @@ public class UsuarioBDController {
         List<Roles> roles = rolesRepository.findAll();
         return ResponseEntity.ok(roles);
     }
+
     // tablas de mini admis
     @GetMapping("/listar-admins")
     public ResponseEntity<List<Usuario>> listarAdministrativos() {
@@ -49,6 +50,7 @@ public class UsuarioBDController {
         List<Usuario> admins = usuarioRepository.findByRol_IdRolNotIn(Arrays.asList(1,2,3));
         return ResponseEntity.ok(admins);
     }
+
     @PutMapping("/cambiar-estado/{id}")
     public ResponseEntity<?> cambiarEstado(@PathVariable Long id, @RequestParam String estado) {
         try {
