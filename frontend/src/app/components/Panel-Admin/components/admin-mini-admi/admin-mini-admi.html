@@ -12,7 +12,7 @@
       class="btn btn-primary"
       (click)="iniciarCreacion()">
       <span class="material-icons">add</span>
-      Nuevo Administrador
+      Nuevo Personal Interno
     </button>
   </header>
 
@@ -25,7 +25,7 @@
           <th>Usuario</th>
           <th>Rol BD</th>
           <th>Fecha Creación</th>
-          <th>Permisos UI</th>
+          <th class="text-center">Permisos UI</th>
           <th class="text-center">Estado</th>
           <th class="text-center">Acciones</th>
         </tr>
@@ -53,20 +53,27 @@
 
           <td class="text-center">
             <button
-              class="status-pill"
-              [class.active]="admin.activo"
-              [class.inactive]="!admin.activo"
-              (click)="toggleEstado(admin)">
-              {{ admin.activo ? 'ACTIVO' : 'INACTIVO' }}
+              class="status-pill cursor-pointer transition-colors hover:opacity-80"
+              [class.active]="admin.estadoValidacion === 'Activo'"
+              [class.inactive]="admin.estadoValidacion !== 'Activo'"
+              (click)="toggleEstado(admin)"
+              title="Clic para cambiar estado">
+
+              {{ admin.estadoValidacion ? admin.estadoValidacion.toUpperCase() : 'PENDIENTE' }}
+
             </button>
           </td>
+
 
           <td class="text-center actions-cell">
             <button class="icon-btn edit" title="Editar">
               <span class="material-icons">edit</span>
             </button>
 
-            <button class="icon-btn delete" title="Eliminar">
+            <button
+              class="icon-btn delete"
+              title="Desactivar"
+              (click)="desactivarUsuario(admin)">
               <span class="material-icons">delete</span>
             </button>
           </td>
@@ -161,13 +168,13 @@
             <div class="input-wrapper">
               <span class="material-icons">security</span>
               <select [(ngModel)]="nuevoAdmin.rolId">
-                <option value="0" disabled>
+                <option [ngValue]="null" disabled>
                   Seleccione un rol...
                 </option>
 
                 <option
                   *ngFor="let rol of rolesDisponibles"
-                  [value]="rol.id">
+                  [ngValue]="rol.id">
                   {{ rol.etiqueta }}
                 </option>
               </select>

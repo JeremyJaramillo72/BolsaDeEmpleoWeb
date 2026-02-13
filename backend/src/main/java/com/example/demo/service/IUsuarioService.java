@@ -8,4 +8,5 @@ public interface IUsuarioService {
     void registrarEmpresaCompleta(Usuario usuario, String nombreEmp, String desc, String web, String ruc);
     void registrarUsuarioConAccesoBD(Usuario usuario);
     void registrarAdministrador(Usuario admin);
+    void cambiarEstadoUsuario(Long idUsuario, String nuevoEstado);
 }

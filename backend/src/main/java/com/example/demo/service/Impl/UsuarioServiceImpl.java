@@ -161,4 +161,13 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 2 // ID del rol Empresa
         );
     }
+    @Override
+    public void cambiarEstadoUsuario(Long idUsuario, String nuevoEstado) {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        usuario.setEstadoValidacion(nuevoEstado); // "Inactivo" o "Activo"
+        usuarioRepository.save(usuario);
+    }
+
 }

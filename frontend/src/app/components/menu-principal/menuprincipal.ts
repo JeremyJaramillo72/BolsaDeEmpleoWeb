@@ -10,6 +10,7 @@ interface MenuItem {
   color: string;
   roles?: string[];
   path?: string;
+  permiso?: string; // <--- agg esto para validar
 }
 
 interface StatCard {
@@ -132,24 +133,27 @@ export class MenuprincipalComponent implements OnInit {
         title: 'Gestión de Usuarios',
         description: 'Control de empresas y graduados',
         color: 'from-red-500 to-red-600',
-        roles: ['ADMINISTRADOR'],
-        path: '/PanelAdmi/GestionUser'
+        roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
+        path: '/PanelAdmi/GestionUser',
+        permiso: 'USERS'
       },
       {
         icon: 'settings_suggest',
         title: 'Gestión de Catálogos',
         description: 'Gestión de habilidades, carreras y tipos de contrato',
         color: 'from-emerald-500 to-green-600', // o 'from-indigo-500 to-indigo-600'
-        roles: ['ADMINISTRADOR'],
-        path: '/PanelAdmi/GestionCatalogos'
+        roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
+        path: '/PanelAdmi/GestionCatalogos',
+        permiso: 'CATALOGOS'
       },
       {
         icon: 'fact_check',
         title: 'Validación de Ofertas',
         description: 'Aprueba o rechaza nuevas vacantes',
         color: 'from-orange-500 to-orange-600',
-        roles: ['ADMINISTRADOR'],
-        path: '/PanelAdmi/ValidarOfertas'
+        roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
+        path: '/PanelAdmi/ValidarOfertas',
+        permiso: 'VALIDACION_O'
       },
       {
         icon: 'manage_accounts', // o 'admin_panel_settings' o supervisor_account
@@ -164,22 +168,33 @@ export class MenuprincipalComponent implements OnInit {
         title: 'Reportes y Estadísticas',
         description: 'Métricas y análisis del sistema',
         color: 'from-green-500 to-blue-600',
-        roles: ['ADMINISTRADOR'],
-        path: '/PanelAdmi/GestionReportes'
+        roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
+        path: '/PanelAdmi/GestionReportes',
+        permiso: 'REPORTES'
       },
       {
         icon: 'manage_accounts', // o 'admin_panel_settings' o supervisor_account
         title: 'Validación Empresas',
         description: 'Valida y gestiona las Empresas que se Registran',
         color: 'from-green-500 to-indigo-600',
-        roles: ['ADMINISTRADOR'],
-        path: '/PanelAdmi/ValidarEmpresa'
+        roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
+        path: '/PanelAdmi/ValidarEmpresa',
+        permiso: 'VALIDACION_E'
       }
     ];
 
-    this.menuItems = todasLasOpciones.filter(item =>
-      item.roles?.includes(this.rolUsuario)
-    );
+    this.menuItems = todasLasOpciones.filter(item => {
+      // solo revisa si el rol está
+      const rolCoincide = item.roles?.includes(this.rolUsuario);
+
+      // aqui se hace la validacion del permiso cfm
+      if (rolCoincide && item.permiso) {
+        return this.authService.tienePermiso(item.permiso);
+      }
+
+      // si tiene rol pero no permisos definidos pasa libre
+      return rolCoincide;
+    });
 
     if (this.rolUsuario === 'EMPRESA') {
       this.statsCards = [

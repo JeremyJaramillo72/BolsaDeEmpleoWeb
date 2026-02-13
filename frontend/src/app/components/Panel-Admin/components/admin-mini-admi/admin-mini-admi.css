@@ -13,7 +13,13 @@
   max-width: 1200px;
   margin: 0 auto;
 }
-
+/* admin-mini-admi.css */
+.status-pill {
+  /* ... tus estilos actuales ... */
+  cursor: pointer; /* <--- IMPORTANTE: Para que sepan que se puede clicar */
+  border: none;    /* Quitar borde por defecto de botón */
+  user-select: none; /* Para que no seleccionen el texto al hacer clic rápido */
+}
 .page-header {
   display: flex;
   justify-content: space-between;

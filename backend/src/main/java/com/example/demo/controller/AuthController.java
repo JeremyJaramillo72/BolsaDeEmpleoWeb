@@ -6,6 +6,8 @@ import com.example.demo.repository.UsuarioEmpresaRepository; // Asegúrate de im
 import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.service.AuthService;
 import com.example.demo.service.EmailService;
+import com.example.demo.service.IUsuarioService;
+import com.example.demo.service.Impl.UsuarioServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -39,6 +41,8 @@ public class AuthController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+
 
     @PostMapping("/enviar-codigo")
     public ResponseEntity<?> solicitarCodigo(
@@ -77,7 +81,7 @@ public class AuthController {
 
                         String estado = usuario.getEstadoValidacion();
 
-                        if (estado == null || !estado.equalsIgnoreCase("Aprobado")) {
+                        if (estado == null || (!estado.equalsIgnoreCase("Aprobado") && !estado.equalsIgnoreCase("Activo"))) {
                             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                                     .body(Collections.singletonMap("error",
                                             "Tu cuenta aún no ha sido aprobada. Estado actual: " + (estado != null ? estado : "Pendiente")));
@@ -108,7 +112,7 @@ public class AuthController {
                             UsuarioEmpresa empresa = usuarioEmpresaRepository.findByIdUsuario(Long.valueOf(usuario.getIdUsuario()));
 
                             if (empresa != null) {
-                        
+
                                 response.put("idEmpresa", empresa.getIdEmpresa());
 
                                 response.put("empresa", empresa);
@@ -146,4 +150,6 @@ public class AuthController {
 
         return ResponseEntity.ok(Map.of("usuario_actual", nombre, "estado", "Logueado"));
     }
+
+
 }

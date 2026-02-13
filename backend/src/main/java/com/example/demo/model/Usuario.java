@@ -47,7 +47,7 @@ public class Usuario {
     private LocalDate fechaNacimiento;
 
     @Column(name="estado_validacion")
-    private String EstadoValidacion;
+    private String estadoValidacion;
 
 
     @Column(name = "fecha_registro", insertable = false, updatable = false)

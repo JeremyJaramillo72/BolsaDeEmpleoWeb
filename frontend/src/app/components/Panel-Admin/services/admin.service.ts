@@ -1,3 +1,4 @@
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs'; // Agregamos 'of' para el mock de estadísticas
@@ -29,6 +30,19 @@ export class AdminService {
     // Aquí sí usamos la ruta específica de registro
     return this.http.post(`${this.apiUsuariosUrl}/registrar-completo`, usuario, { responseType: 'text' });
   }
+  obtenerAdminsRegistrados(): Observable<any[]> {
+    // Llama al endpoint nuevo que acabamos de crear
+    return this.http.get<any[]>(`${this.apiUsuariosUrl}/listar-admins`);
+  }
+  cambiarEstadoAdmin(id: number, estado: string): Observable<any> {
+    // Envía una petición PUT. Ejemplo: .../cambiar-estado/5?estado=Inactivo
+    return this.http.put(
+      `${this.apiUsuariosUrl}/cambiar-estado/${id}?estado=${estado}`,
+      {}, // Body vacío
+      { responseType: 'text' } // Esperamos un mensaje de texto
+    );
+  }
+
 
   // ==========================================
   // ✅ VALIDACIÓN DE EMPRESAS (NUEVOS MÉTODOS)
@@ -73,9 +87,11 @@ export class AdminService {
   getCarrerasCatalogo(): Observable<any> {
     return this.http.get(`${this.apiAcademicoUrl}/carreras`);
   }
+
   agregarCarrera(carrera: any): Observable<any> {
     return this.http.post(`${this.apiAcademicoUrl}/carreras`, carrera);
   }
+
   eliminarCarrera(id: number): Observable<any> {
     return this.http.delete(`${this.apiAcademicoUrl}/carreras/${id}`); // CORREGIDO
   }
@@ -84,9 +100,11 @@ export class AdminService {
   getFacultadesCatalogo(): Observable<any> {
     return this.http.get<any[]>(`${this.apiAcademicoUrl}/facultades`);
   }
+
   agregarFacultad(facultad: any): Observable<any> {
     return this.http.post(`${this.apiAcademicoUrl}/facultades`, facultad);
   }
+
   eliminarFacultad(id: number): Observable<any> {
     return this.http.delete(`${this.apiAcademicoUrl}/facultades/${id}`); // CORREGIDO
   }
@@ -94,10 +112,15 @@ export class AdminService {
   // --- IDIOMAS ---
   getIdiomasCatalogo(): Observable<any> {
     return this.http.get<any[]>(`${this.apiAcademicoUrl}/idiomas`);
+
   }
+
+
   agregarIdioma(idioma: any): Observable<any> {
     return this.http.post(`${this.apiAcademicoUrl}/idiomas`, idioma);
+
   }
+
   eliminarIdioma(id: number): Observable<any> {
     return this.http.delete(`${this.apiAcademicoUrl}/idiomas/${id}`); // CORREGIDO
   }
@@ -106,9 +129,11 @@ export class AdminService {
   getJornadasCatalogo(): Observable<any> {
     return this.http.get<any[]>(`${this.apiAcademicoUrl}/jornadas`);
   }
+
   agregarJornada(jornada: any): Observable<any> {
     return this.http.post(`${this.apiAcademicoUrl}/jornadas`, jornada);
   }
+
   eliminarJornada(id: number): Observable<any> {
     return this.http.delete(`${this.apiAcademicoUrl}/jornadas/${id}`); // CORREGIDO
   }
@@ -117,9 +142,11 @@ export class AdminService {
   getModalidadesCatalogo(): Observable<any> {
     return this.http.get<any[]>(`${this.apiAcademicoUrl}/modalidades`);
   }
+
   agregarModalidad(modalidad: any): Observable<any> {
     return this.http.post(`${this.apiAcademicoUrl}/modalidades`, modalidad);
   }
+
   eliminarModalidad(id: number): Observable<any> {
     return this.http.delete(`${this.apiAcademicoUrl}/modalidades/${id}`); // CORREGIDO
   }
@@ -128,6 +155,7 @@ export class AdminService {
   // 📊 REPORTES (Corregido para usar apiAdminUrl)
   // ==========================================
   // Asumiendo que los reportes los maneja el AdminController o similar
+
 
   getReporteOfertas(filtros: any): Observable<any> {
     return this.http.post(`${this.apiAdminUrl}/reportes/ofertas`, filtros);
@@ -164,14 +192,5 @@ export class AdminService {
     );
   }
 
-  // ==========================================
-  // 🗑️ MÉTODOS OBSOLETOS (Puedes borrarlos)
-  // ==========================================
-  // Estos métodos ya fueron reemplazados por 'cambiarEstadoEmpresa' y 'getEmpresas'
-  /*
-  getEmpresasPorEstado(estado: string) { ... }
-  aprobarEmpresa(datos: any) { ... }
-  rechazarEmpresa(datos: any) { ... }
-  */
 
 }
