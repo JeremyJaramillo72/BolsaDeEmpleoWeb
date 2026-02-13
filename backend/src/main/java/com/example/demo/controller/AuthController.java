@@ -75,6 +75,13 @@ public class AuthController {
                     if (passwordEncoder.matches(loginRequest.getContrasena(), usuario.getContrasena())) {
 
 
+                        String estado = usuario.getEstadoValidacion();
+
+                        if (estado == null || !estado.equalsIgnoreCase("Aprobado")) {
+                            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                    .body(Collections.singletonMap("error",
+                                            "Tu cuenta aún no ha sido aprobada. Estado actual: " + (estado != null ? estado : "Pendiente")));
+                        }
                         session.setAttribute("nombre_usuario", usuario.getNombre());
                         model.addAttribute("session_id_usuario", usuario.getIdUsuario());
 

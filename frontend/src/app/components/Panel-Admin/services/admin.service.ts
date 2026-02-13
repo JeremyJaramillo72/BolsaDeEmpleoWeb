@@ -1,169 +1,177 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs'; // Agregamos 'of' para el mock de estadísticas
+import { EmpresaResumen } from '../components/validar-empresa/validar-empresa';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AdminService {
 
-  // Ajusta la URL si es necesario
-  private apiUrl = 'http://localhost:8080/api/usuarios-bd/registrar-completo';
-  private rolesUrl = 'http://localhost:8080/api/usuarios-bd/roles';
-
-  private url ='';
+  // ==========================================
+  // 🌐 URLs BASE (Organizadas para no fallar)
+  // ==========================================
+  private apiUsuariosUrl = 'http://localhost:8080/api/usuarios-bd';
+  private apiAcademicoUrl = 'http://localhost:8080/api/academico';
+  private apiAdminUrl = 'http://localhost:8080/api/admin';
 
   constructor(private http: HttpClient) { }
 
+  // ==========================================
+  // 👤 GESTIÓN DE USUARIOS Y ROLES
+  // ==========================================
+
   obtenerRolesDeBD(): Observable<any[]> {
-    return this.http.get<any[]>(this.rolesUrl);
+    return this.http.get<any[]>(`${this.apiUsuariosUrl}/roles`);
   }
 
   crearAdministrador(usuario: any): Observable<any> {
-    return this.http.post(this.apiUrl, usuario, { responseType: 'text' });
+    // Aquí sí usamos la ruta específica de registro
+    return this.http.post(`${this.apiUsuariosUrl}/registrar-completo`, usuario, { responseType: 'text' });
   }
 
-  // ========== CATEGORÍAS ==========
+  // ==========================================
+  // ✅ VALIDACIÓN DE EMPRESAS (NUEVOS MÉTODOS)
+  // ==========================================
+
+  // 1. Obtener lista (Usando el nuevo Controller)
+  getEmpresas(estado: string): Observable<EmpresaResumen[]> {
+    return this.http.get<EmpresaResumen[]>(`${this.apiAdminUrl}/empresas?estado=${estado}`);
+  }
+
+  // 2. Cambiar estado (Aprobar/Rechazar)
+  cambiarEstadoEmpresa(idUsuario: number, nuevoEstado: string): Observable<any> {
+    return this.http.put(`${this.apiAdminUrl}/validar-empresa/${idUsuario}`, { nuevoEstado });
+  }
+
+  // 3. Estadísticas (Mock para que el frontend no falle, ya que lo calculamos visualmente)
+  getEstadisticasEmpresas(): Observable<any> {
+    return of({});
+  }
+
+  // 4. Descargar documento (Corregido para usar apiAdminUrl)
+  descargarDocumentoEmpresa(idEmpresa: number): Observable<Blob> {
+    return this.http.get(`${this.apiAdminUrl}/empresas/${idEmpresa}/documento`, { responseType: 'blob' });
+  }
+
+  // ==========================================
+  // 📚 GESTIÓN ACADÉMICA (Corregido para usar apiAcademicoUrl)
+  // ==========================================
+
+  // --- CATEGORÍAS ---
   getCategoriasCatalogo(): Observable<any> {
-    return this.http.get<any[]>(`http://localhost:8080/api/academico/categorias`);
+    return this.http.get<any[]>(`${this.apiAcademicoUrl}/categorias`);
   }
-
   agregarCategoria(categoria: any): Observable<any> {
-    return this.http.post(`http://localhost:8080/api/academico/categorias`, categoria);
+    return this.http.post(`${this.apiAcademicoUrl}/categorias`, categoria);
   }
-
   eliminarCategoria(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/categorias/${id}`);
+    return this.http.delete(`${this.apiAcademicoUrl}/categorias/${id}`); // CORREGIDO
   }
 
-// ========== CARRERAS ==========
+  // --- CARRERAS ---
   getCarrerasCatalogo(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/carreras`);
+    return this.http.get(`${this.apiAcademicoUrl}/carreras`);
   }
-
   agregarCarrera(carrera: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/carreras`, carrera);
+    return this.http.post(`${this.apiAcademicoUrl}/carreras`, carrera);
   }
-
   eliminarCarrera(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/carreras/${id}`);
+    return this.http.delete(`${this.apiAcademicoUrl}/carreras/${id}`); // CORREGIDO
   }
 
-// ========== FACULTADES ==========
+  // --- FACULTADES ---
   getFacultadesCatalogo(): Observable<any> {
-    return this.http.get<any[]>(`http://localhost:8080/api/academico/facultades`);
+    return this.http.get<any[]>(`${this.apiAcademicoUrl}/facultades`);
   }
-
   agregarFacultad(facultad: any): Observable<any> {
-    return this.http.post(`http://localhost:8080/api/academico/facultades`, facultad);
+    return this.http.post(`${this.apiAcademicoUrl}/facultades`, facultad);
   }
-
   eliminarFacultad(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/facultades/${id}`);
+    return this.http.delete(`${this.apiAcademicoUrl}/facultades/${id}`); // CORREGIDO
   }
 
-// ========== IDIOMAS ==========
+  // --- IDIOMAS ---
   getIdiomasCatalogo(): Observable<any> {
-    // Ajusta la URL según tu controlador de Spring Boot (ej: IdiomaController)
-    return this.http.get<any[]>(`http://localhost:8080/api/academico/idiomas`);
+    return this.http.get<any[]>(`${this.apiAcademicoUrl}/idiomas`);
   }
-
-// ========== AGREGAR IDIOMA ==========
   agregarIdioma(idioma: any): Observable<any> {
-    // Asegúrate de que esta URL coincida con la de tu @GetMapping (http://localhost:8080/api/academico/idiomas)
-    return this.http.post(`http://localhost:8080/api/academico/idiomas`, idioma);
+    return this.http.post(`${this.apiAcademicoUrl}/idiomas`, idioma);
   }
-
   eliminarIdioma(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/idiomas/${id}`);
+    return this.http.delete(`${this.apiAcademicoUrl}/idiomas/${id}`); // CORREGIDO
   }
 
-// ========== JORNADAS ==========
+  // --- JORNADAS ---
   getJornadasCatalogo(): Observable<any> {
-    return this.http.get<any[]>(`http://localhost:8080/api/academico/jornadas`);
+    return this.http.get<any[]>(`${this.apiAcademicoUrl}/jornadas`);
   }
-
   agregarJornada(jornada: any): Observable<any> {
-    return this.http.post(`http://localhost:8080/api/academico/jornadas`, jornada);
+    return this.http.post(`${this.apiAcademicoUrl}/jornadas`, jornada);
   }
-
   eliminarJornada(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/jornadas/${id}`);
+    return this.http.delete(`${this.apiAcademicoUrl}/jornadas/${id}`); // CORREGIDO
   }
 
-// ========== MODALIDADES ==========
+  // --- MODALIDADES ---
   getModalidadesCatalogo(): Observable<any> {
-    return this.http.get<any[]>(`http://localhost:8080/api/academico/modalidades`);
+    return this.http.get<any[]>(`${this.apiAcademicoUrl}/modalidades`);
   }
-
   agregarModalidad(modalidad: any): Observable<any> {
-    return this.http.post(`http://localhost:8080/api/academico/modalidades`, modalidad);
+    return this.http.post(`${this.apiAcademicoUrl}/modalidades`, modalidad);
   }
-
   eliminarModalidad(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/modalidades/${id}`);
+    return this.http.delete(`${this.apiAcademicoUrl}/modalidades/${id}`); // CORREGIDO
   }
 
-  // Para los reportes
+  // ==========================================
+  // 📊 REPORTES (Corregido para usar apiAdminUrl)
+  // ==========================================
+  // Asumiendo que los reportes los maneja el AdminController o similar
 
-  // ========== REPORTES ==========
   getReporteOfertas(filtros: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/reportes/ofertas`, filtros);
+    return this.http.post(`${this.apiAdminUrl}/reportes/ofertas`, filtros);
   }
 
   getReportePostulaciones(filtros: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/reportes/postulaciones`, filtros);
+    return this.http.post(`${this.apiAdminUrl}/reportes/postulaciones`, filtros);
   }
 
   getReporteUsuarios(filtros: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/reportes/usuarios`, filtros);
+    return this.http.post(`${this.apiAdminUrl}/reportes/usuarios`, filtros);
   }
 
   getReporteEmpresas(filtros: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/reportes/empresas`, filtros);
+    return this.http.post(`${this.apiAdminUrl}/reportes/empresas`, filtros);
   }
 
   getReporteEstadisticas(filtros: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/reportes/estadisticas`, filtros);
+    return this.http.post(`${this.apiAdminUrl}/reportes/estadisticas`, filtros);
   }
 
-// ========== EXPORTAR ==========
+  // --- EXPORTAR ---
   exportarExcel(datos: any[], nombreArchivo: string): Observable<Blob> {
-    return this.http.post(`${this.apiUrl}/reportes/exportar/excel`,
+    return this.http.post(`${this.apiAdminUrl}/reportes/exportar/excel`,
       { datos, nombreArchivo },
       { responseType: 'blob' }
     );
   }
 
   exportarPDF(tipoReporte: string, filtros: any): Observable<Blob> {
-    return this.http.post(`${this.apiUrl}/reportes/exportar/pdf`,
+    return this.http.post(`${this.apiAdminUrl}/reportes/exportar/pdf`,
       { tipoReporte, filtros },
       { responseType: 'blob' }
     );
   }
 
-  //Para VAlidar empresas
-  // ========== VALIDACIÓN DE EMPRESAS ==========
-  getEmpresasPorEstado(estado: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/empresas/estado/${estado}`);
-  }
-
-  getEstadisticasEmpresas(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/empresas/estadisticas`);
-  }
-
-  aprobarEmpresa(datos: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/empresas/aprobar`, datos);
-  }
-
-  rechazarEmpresa(datos: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/empresas/rechazar`, datos);
-  }
-
-  descargarDocumentoEmpresa(idEmpresa: number): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/empresas/${idEmpresa}/documento`,
-      { responseType: 'blob' }
-    );
-  }
+  // ==========================================
+  // 🗑️ MÉTODOS OBSOLETOS (Puedes borrarlos)
+  // ==========================================
+  // Estos métodos ya fueron reemplazados por 'cambiarEstadoEmpresa' y 'getEmpresas'
+  /*
+  getEmpresasPorEstado(estado: string) { ... }
+  aprobarEmpresa(datos: any) { ... }
+  rechazarEmpresa(datos: any) { ... }
+  */
 
 }

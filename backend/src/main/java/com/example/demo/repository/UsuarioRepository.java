@@ -36,7 +36,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
             @Param("p_correo") String correo,
             @Param("p_contrasena") String contra,
             @Param("p_id_ciudad") Integer idCiudad,   // Ajustado snake_case
-            @Param("p_nombre_empresa") String nombreEmp, // Ajustado snake_case
+            @Param("p_nombre") String nombreEmp, // Ajustado snake_case
             @Param("p_descripcion") String desc,
             @Param("p_ruc") String ruc,
             @Param("p_sitioweb") String web

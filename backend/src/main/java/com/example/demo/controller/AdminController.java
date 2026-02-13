@@ -3,6 +3,8 @@ package com.example.demo.controller;
 import com.example.demo.model.Usuario;
 import com.example.demo.model.Ciudad;
 import com.example.demo.repository.CiudadRepository;
+import com.example.demo.repository.UsuarioEmpresaRepository;
+import com.example.demo.repository.Views.IEmpresaResumenProjection;
 import com.example.demo.service.IUsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,15 +12,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/admins")
+@RequestMapping("/api/admin")
+
 public class AdminController {
 
     @Autowired
     private IUsuarioService usuarioService;
-
+    @Autowired
+    private UsuarioEmpresaRepository usuarioEmpresaRepository;
 
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -26,6 +31,7 @@ public class AdminController {
     // Inyectamos el repo de ciudad para validar que exista antes de registrar
     @Autowired
     private CiudadRepository ciudadRepository;
+
 
     @PostMapping("/crear")
     public ResponseEntity<?> registrarAdmin(@RequestBody Map<String, Object> payload) {
@@ -62,6 +68,16 @@ public class AdminController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error al registrar admin: " + e.getMessage()));
+        }
+    }
+    @GetMapping("/empresas")
+    public ResponseEntity<List<IEmpresaResumenProjection>> listarEmpresas(@RequestParam(required = false) String estado) {
+
+        if (estado == null || estado.equals("Todas") || estado.isEmpty()) {
+            return ResponseEntity.ok(usuarioEmpresaRepository.listarDesdeVista());
+        } else {
+            String estadoBD = estado.endsWith("s") ? estado.substring(0, estado.length() - 1) : estado;
+            return ResponseEntity.ok(usuarioEmpresaRepository.listarDesdeVistaPorEstado(estadoBD));
         }
     }
 }

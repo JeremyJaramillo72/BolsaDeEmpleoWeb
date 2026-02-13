@@ -20,7 +20,7 @@ public class Usuario {
     @JoinColumn(name = "id_rol")
     private Roles rol;
 
-    // Sincronizado con id_ciudad de la BD
+
     @ManyToOne
     @JoinColumn(name = "id_ciudad")
     private Ciudad ciudad;
@@ -43,12 +43,13 @@ public class Usuario {
     @Column(length = 20)
     private String genero;
 
-    // Mapeo exacto de fecha_nacimiento (date)
     @Column(name = "fecha_nacimiento")
     private LocalDate fechaNacimiento;
 
-    // Mapeo exacto de fecha_registro (timestamp)
-    // insertable = false permite que la BD use el DEFAULT CURRENT_TIMESTAMP
+    @Column(name="estado_validacion")
+    private String EstadoValidacion;
+
+
     @Column(name = "fecha_registro", insertable = false, updatable = false)
     private LocalDateTime fechaRegistro;
 

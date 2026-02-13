@@ -3,20 +3,18 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
 
-interface EmpresaPendiente {
-  id: number;
+
+// 1. Interfaz EXACTA a lo que envía el Backend (Java)
+export interface EmpresaResumen {
+  idUsuario: number;      // Antes era 'id'
   nombreEmpresa: string;
   ruc: string;
-  sector: string;
-  email: string;
-  telefono: string;
-  direccion: string;
+  correo: string;         // Antes era 'email'
+  estado: string;         // 'Pendiente', 'Aprobado', 'Rechazado'
   sitioWeb?: string;
-  representanteLegal: string;
-  documentoVerificacion?: string;
+  descripcion: string;
   fechaRegistro: string;
-  estado: string;
-  motivoRechazo?: string;
+  nombreCiudad: string;
 }
 
 @Component({
@@ -28,25 +26,23 @@ interface EmpresaPendiente {
 })
 export class ValidarEmpresaComponent implements OnInit {
 
-  // Filtro de estado
+  // Filtro de estado (Pestaña actual)
   filtroEstado: string = 'Pendiente';
   filtrosBusqueda: string = '';
 
-  // Listas de empresas
-  empresasPendientes: EmpresaPendiente[] = [];
-  empresasVerificadas: EmpresaPendiente[] = [];
-  empresasRechazadas: EmpresaPendiente[] = [];
+  // LISTA MAESTRA (Aquí guardamos todo lo que llega de la BD)
+  todasLasEmpresas: EmpresaResumen[] = [];
 
-  // Empresa seleccionada para detalle/validación
-  empresaSeleccionada: EmpresaPendiente | null = null;
+  // Empresa seleccionada
+  empresaSeleccionada: EmpresaResumen | null = null;
   mostrarModal = false;
 
-  // Formulario de validación
-  accionValidacion: 'aprobar' | 'rechazar' | null = null;
+  // Lógica de validación
+  accionValidacion: 'Aprobado' | 'Rechazado' | null = null;
   motivoRechazo = '';
-  observaciones = '';
+  observaciones = ''; // (Opcional, si tu BD no lo tiene, no se guardará)
 
-  // Estados de UI
+  // Estados UI
   cargando = false;
   mensajeExito = '';
   mensajeError = '';
@@ -59,239 +55,146 @@ export class ValidarEmpresaComponent implements OnInit {
   estadisticas = {
     totalPendientes: 0,
     totalVerificadas: 0,
-    totalRechazadas: 0,
-    pendientesHoy: 0
+    totalRechazadas: 0
   };
 
   constructor(private adminService: AdminService) {}
 
   ngOnInit() {
     this.cargarEmpresas();
-    this.cargarEstadisticas();
   }
 
   // ========== CARGA DE DATOS ==========
   cargarEmpresas(): void {
     this.cargando = true;
 
-    this.adminService.getEmpresasPorEstado('Pendiente').subscribe({
+    // Pedimos 'Todas' al backend para llenar las listas y contadores de una vez
+    this.adminService.getEmpresas('Todas').subscribe({
       next: (data) => {
-        this.empresasPendientes = data;
+        this.todasLasEmpresas = data;
+        this.calcularEstadisticas();
         this.cargando = false;
       },
       error: (err) => {
-        this.mostrarError('Error al cargar empresas pendientes');
+        this.mostrarError('Error al conectar con el servidor.');
+        console.error(err);
         this.cargando = false;
       }
     });
-
-    this.adminService.getEmpresasPorEstado('Verificada').subscribe({
-      next: (data) => {
-        this.empresasVerificadas = data;
-      },
-      error: (err) => console.error('Error al cargar empresas verificadas')
-    });
-
-    this.adminService.getEmpresasPorEstado('Rechazada').subscribe({
-      next: (data) => {
-        this.empresasRechazadas = data;
-      },
-      error: (err) => console.error('Error al cargar empresas rechazadas')
-    });
   }
 
-  cargarEstadisticas(): void {
-    this.adminService.getEstadisticasEmpresas().subscribe({
-      next: (data) => {
-        this.estadisticas = data;
-      },
-      error: (err) => console.error('Error al cargar estadísticas')
-    });
+  calcularEstadisticas() {
+    this.estadisticas.totalPendientes = this.todasLasEmpresas.filter(e => e.estado === 'Pendiente').length;
+    this.estadisticas.totalVerificadas = this.todasLasEmpresas.filter(e => e.estado === 'Aprobado').length;
+    this.estadisticas.totalRechazadas = this.todasLasEmpresas.filter(e => e.estado === 'Rechazado').length;
   }
 
   // ========== FILTRADO Y BÚSQUEDA ==========
-  get empresasFiltradas(): EmpresaPendiente[] {
-    let empresas: EmpresaPendiente[] = [];
+  get empresasFiltradas(): EmpresaResumen[] {
+    // 1. Primero filtramos por la Pestaña (Pendiente, Verificada...)
+    let lista = this.todasLasEmpresas.filter(e => {
+      if (this.filtroEstado === 'Pendiente') return e.estado === 'Pendiente';
+      if (this.filtroEstado === 'Verificada') return e.estado === 'Aprobado'; // Ojo: BD dice Aprobado
+      if (this.filtroEstado === 'Rechazada') return e.estado === 'Rechazado';
+      return true; // Caso 'Todas'
+    });
 
-    switch (this.filtroEstado) {
-      case 'Pendiente':
-        empresas = this.empresasPendientes;
-        break;
-      case 'Verificada':
-        empresas = this.empresasVerificadas;
-        break;
-      case 'Rechazada':
-        empresas = this.empresasRechazadas;
-        break;
-      default:
-        empresas = [...this.empresasPendientes, ...this.empresasVerificadas, ...this.empresasRechazadas];
-    }
-
-    // Aplicar búsqueda
+    // 2. Luego aplicamos la búsqueda por texto
     if (this.filtrosBusqueda.trim()) {
-      const busqueda = this.filtrosBusqueda.toLowerCase();
-      empresas = empresas.filter(emp =>
-        emp.nombreEmpresa.toLowerCase().includes(busqueda) ||
-        emp.ruc.includes(busqueda) ||
-        emp.sector.toLowerCase().includes(busqueda)
+      const texto = this.filtrosBusqueda.toLowerCase();
+      lista = lista.filter(emp =>
+        emp.nombreEmpresa.toLowerCase().includes(texto) ||
+        emp.ruc.includes(texto) ||
+        emp.correo.toLowerCase().includes(texto)
       );
     }
-
-    return empresas;
+    return lista;
   }
 
-  get empresasPaginadas(): EmpresaPendiente[] {
+  // Paginación sobre la lista ya filtrada
+  get empresasPaginadas(): EmpresaResumen[] {
     const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
-    const fin = inicio + this.itemsPorPagina;
-    return this.empresasFiltradas.slice(inicio, fin);
+    return this.empresasFiltradas.slice(inicio, inicio + this.itemsPorPagina);
   }
 
   get totalPaginas(): number {
-    return Math.ceil(this.empresasFiltradas.length / this.itemsPorPagina);
+    return Math.ceil(this.empresasFiltradas.length / this.itemsPorPagina) || 1;
   }
 
   cambiarPagina(pagina: number): void {
-    if (pagina >= 1 && pagina <= this.totalPaginas) {
-      this.paginaActual = pagina;
-    }
+    this.paginaActual = pagina;
   }
 
   cambiarFiltroEstado(estado: string): void {
     this.filtroEstado = estado;
     this.paginaActual = 1;
+    this.filtrosBusqueda = ''; // Limpiamos búsqueda al cambiar de pestaña
   }
 
-  // ========== MODAL DE DETALLE ==========
-  abrirModalDetalle(empresa: EmpresaPendiente): void {
+  // ========== MODALES Y ACCIONES ==========
+  abrirModalDetalle(empresa: EmpresaResumen): void {
     this.empresaSeleccionada = empresa;
     this.mostrarModal = true;
     this.accionValidacion = null;
     this.motivoRechazo = '';
-    this.observaciones = '';
   }
 
   cerrarModal(): void {
     this.mostrarModal = false;
     this.empresaSeleccionada = null;
-    this.accionValidacion = null;
-    this.motivoRechazo = '';
-    this.observaciones = '';
   }
 
-  // ========== ACCIONES DE VALIDACIÓN ==========
-  prepararAprobacion(): void {
-    this.accionValidacion = 'aprobar';
-  }
-
-  prepararRechazo(): void {
-    this.accionValidacion = 'rechazar';
+  // Prepara la acción cuando das click en los botones del modal
+  setAccion(accion: 'Aprobado' | 'Rechazado' | null) {
+    this.accionValidacion = accion;
   }
 
   confirmarValidacion(): void {
-    if (!this.empresaSeleccionada) return;
-
-    if (this.accionValidacion === 'rechazar' && !this.motivoRechazo.trim()) {
-      this.mostrarError('El motivo del rechazo es obligatorio');
-      return;
-    }
+    if (!this.empresaSeleccionada || !this.accionValidacion) return;
 
     this.cargando = true;
 
-    const datosValidacion = {
-      idEmpresa: this.empresaSeleccionada.id,
-      accion: this.accionValidacion,
-      motivoRechazo: this.motivoRechazo,
-      observaciones: this.observaciones
-    };
-
-    if (this.accionValidacion === 'aprobar') {
-      this.aprobarEmpresa(datosValidacion);
-    } else {
-      this.rechazarEmpresa(datosValidacion);
-    }
-  }
-
-  aprobarEmpresa(datos: any): void {
-    this.adminService.aprobarEmpresa(datos).subscribe({
-      next: (response) => {
-        this.mostrarExito('Empresa aprobada exitosamente');
-        this.cargarEmpresas();
-        this.cargarEstadisticas();
+    // Llamamos al servicio unificado
+    this.adminService.cambiarEstadoEmpresa(
+      this.empresaSeleccionada.idUsuario, // Usamos idUsuario
+      this.accionValidacion               // Enviamos "Aprobado" o "Rechazado"
+    ).subscribe({
+      next: (res) => {
+        this.mostrarExito(`Empresa ${this.accionValidacion} correctamente`);
+        this.cargarEmpresas(); // Recargamos la lista
         this.cerrarModal();
-        this.cargando = false;
       },
       error: (err) => {
-        this.mostrarError('Error al aprobar empresa');
+        this.mostrarError('Error al procesar la solicitud');
         this.cargando = false;
       }
     });
-  }
-
-  rechazarEmpresa(datos: any): void {
-    this.adminService.rechazarEmpresa(datos).subscribe({
-      next: (response) => {
-        this.mostrarExito('Empresa rechazada exitosamente');
-        this.cargarEmpresas();
-        this.cargarEstadisticas();
-        this.cerrarModal();
-        this.cargando = false;
-      },
-      error: (err) => {
-        this.mostrarError('Error al rechazar empresa');
-        this.cargando = false;
-      }
-    });
-  }
-
-  // ========== DESCARGAR DOCUMENTO ==========
-  descargarDocumento(empresa: EmpresaPendiente): void {
-    if (empresa.documentoVerificacion) {
-      this.adminService.descargarDocumentoEmpresa(empresa.id).subscribe({
-        next: (blob) => {
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `documento_${empresa.nombreEmpresa}_${empresa.id}.pdf`;
-          link.click();
-        },
-        error: (err) => {
-          this.mostrarError('Error al descargar documento');
-        }
-      });
-    }
   }
 
   // ========== UTILIDADES ==========
   mostrarExito(mensaje: string): void {
     this.mensajeExito = mensaje;
-    this.mensajeError = '';
     setTimeout(() => this.mensajeExito = '', 4000);
   }
 
   mostrarError(mensaje: string): void {
     this.mensajeError = mensaje;
-    this.mensajeExito = '';
     setTimeout(() => this.mensajeError = '', 4000);
   }
 
+  // Clase CSS para las etiquetas
   getEstadoBadgeClass(estado: string): string {
     switch(estado) {
-      case 'Pendiente': return 'badge-pendiente';
-      case 'Verificada': return 'badge-verificada';
-      case 'Rechazada': return 'badge-rechazada';
-      default: return '';
+      case 'Pendiente': return 'badge-warning'; // Ajusta a tus clases CSS
+      case 'Aprobado': return 'badge-success';
+      case 'Rechazado': return 'badge-danger';
+      default: return 'badge-secondary';
     }
   }
 
-  formatearFecha(fecha: string): string {
-    return new Date(fecha).toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  }
-
+  // Calculo de días (Asegurándonos de que la fecha existe)
   calcularDiasDesdeRegistro(fechaRegistro: string): number {
+    if (!fechaRegistro) return 0;
     const hoy = new Date();
     const registro = new Date(fechaRegistro);
     const diferencia = hoy.getTime() - registro.getTime();

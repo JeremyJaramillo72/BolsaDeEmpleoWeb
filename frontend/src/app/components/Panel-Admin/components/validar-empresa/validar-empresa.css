@@ -42,14 +42,8 @@
 }
 
 @keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .alert-success {
@@ -64,9 +58,7 @@
   border: 2px solid #ef4444;
 }
 
-.alert .material-icons {
-  font-size: 24px;
-}
+.alert .material-icons { font-size: 24px; }
 
 /* ===== ESTADÍSTICAS ===== */
 .stats-grid {
@@ -101,21 +93,11 @@
   color: white;
 }
 
-.stat-card.pendiente .stat-icon {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-}
+.stat-card.pendiente .stat-icon { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.stat-card.verificada .stat-icon { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.stat-card.rechazada .stat-icon { background: linear-gradient(135deg, #ef4444, #dc2626); }
 
-.stat-card.verificada .stat-icon {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-}
-
-.stat-card.rechazada .stat-icon {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-}
-
-.stat-icon .material-icons {
-  font-size: 32px;
-}
+.stat-icon .material-icons { font-size: 32px; }
 
 .stat-content h4 {
   color: #64748b;
@@ -186,9 +168,7 @@
   border-color: #667eea;
 }
 
-.filter-tab .material-icons {
-  font-size: 18px;
-}
+.filter-tab .material-icons { font-size: 18px; }
 
 .search-box {
   display: flex;
@@ -268,13 +248,9 @@
   border-radius: 20px;
 }
 
-.empresa-dias .material-icons {
-  font-size: 16px;
-}
+.empresa-dias .material-icons { font-size: 16px; }
 
-.empresa-body {
-  padding: 25px;
-}
+.empresa-body { padding: 25px; }
 
 .empresa-info-grid {
   display: grid;
@@ -332,17 +308,9 @@
   color: white;
 }
 
-.btn-action.view {
-  background: #3b82f6;
-}
-
-.btn-action.download {
-  background: #8b5cf6;
-}
-
-.btn-action.approve {
-  background: #22c55e;
-}
+.btn-action.view { background: #3b82f6; }
+.btn-action.download { background: #8b5cf6; }
+.btn-action.approve { background: #22c55e; }
 
 .btn-action:hover {
   transform: translateY(-2px);
@@ -375,20 +343,9 @@
   font-size: 14px;
 }
 
-.badge-pendiente {
-  background: #f59e0b;
-  color: white;
-}
-
-.badge-verificada {
-  background: #22c55e;
-  color: white;
-}
-
-.badge-rechazada {
-  background: #ef4444;
-  color: white;
-}
+.badge-pendiente { background: #f59e0b; color: white; }
+.badge-verificada { background: #22c55e; color: white; }
+.badge-rechazada { background: #ef4444; color: white; }
 
 /* ===== PAGINACIÓN ===== */
 .pagination {
@@ -476,9 +433,7 @@
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .loading-container p {
   margin-top: 20px;
@@ -513,20 +468,11 @@
   animation: slideUp 0.3s ease;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .modal-header {
@@ -563,13 +509,9 @@
   transform: rotate(90deg);
 }
 
-.modal-body {
-  padding: 30px;
-}
+.modal-body { padding: 30px; }
 
-.detail-section {
-  margin-bottom: 30px;
-}
+.detail-section { margin-bottom: 30px; }
 
 .detail-section h3 {
   color: #1e293b;
@@ -620,9 +562,7 @@
   text-decoration: none;
 }
 
-.detail-link:hover {
-  text-decoration: underline;
-}
+.detail-link:hover { text-decoration: underline; }
 
 .status-info {
   display: flex;
@@ -670,22 +610,15 @@
   color: white;
 }
 
-.btn-validate.approve {
-  background: #22c55e;
-}
-
-.btn-validate.reject {
-  background: #ef4444;
-}
+.btn-validate.approve { background: #22c55e; }
+.btn-validate.reject { background: #ef4444; }
 
 .btn-validate:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
-.validation-form {
-  animation: slideIn 0.3s ease;
-}
+.validation-form { animation: slideIn 0.3s ease; }
 
 .form-title {
   font-size: 18px;
@@ -696,13 +629,8 @@
   margin: 0 0 10px 0;
 }
 
-.approve-title {
-  color: #22c55e;
-}
-
-.reject-title {
-  color: #ef4444;
-}
+.approve-title { color: #22c55e; }
+.reject-title { color: #ef4444; }
 
 .form-description {
   color: #64748b;
@@ -710,9 +638,7 @@
   margin: 0 0 20px 0;
 }
 
-.form-group {
-  margin-bottom: 20px;
-}
+.form-group { margin-bottom: 20px; }
 
 .form-group label {
   color: #475569;
@@ -781,13 +707,8 @@
   color: white;
 }
 
-.btn-confirm.approve {
-  background: #22c55e;
-}
-
-.btn-confirm.reject {
-  background: #ef4444;
-}
+.btn-confirm.approve { background: #22c55e; }
+.btn-confirm.reject { background: #ef4444; }
 
 .btn-confirm:hover:not(:disabled) {
   transform: translateY(-2px);
@@ -824,24 +745,20 @@
   line-height: 1.6;
 }
 
-/* ===== RESPONSIVE ===== */
+/* =========================================
+   ESTILOS RESPONSIVE (MÓVIL Y TABLET)
+   ========================================= */
 @media (max-width: 768px) {
-  .page-container {
-    padding: 20px;
-  }
+  .page-container { padding: 20px; }
 
   .filters-row {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .filter-tabs {
-    flex-direction: column;
-  }
+  .filter-tabs { flex-direction: column; }
 
-  .search-box {
-    min-width: auto;
-  }
+  .search-box { min-width: auto; }
 
   .empresa-header {
     flex-direction: column;
@@ -849,28 +766,72 @@
     gap: 15px;
   }
 
-  .empresa-info-grid {
-    grid-template-columns: 1fr;
-  }
+  .empresa-info-grid { grid-template-columns: 1fr; }
 
-  .empresa-actions {
-    flex-direction: column;
-  }
+  .empresa-actions { flex-direction: column; }
 
   .btn-action {
     width: 100%;
     justify-content: center;
   }
 
-  .validation-actions {
-    flex-direction: column;
-  }
+  .validation-actions { flex-direction: column; }
 
-  .form-actions {
-    flex-direction: column;
-  }
+  .form-actions { flex-direction: column; }
 
-  .detail-grid {
-    grid-template-columns: 1fr;
-  }
+  .detail-grid { grid-template-columns: 1fr; }
 }
+
+/* =========================================
+   ESTILOS DE BOTONES GLOBALES (FUERA DEL MEDIA QUERY)
+   ========================================= */
+/* Contenedor de los botones (para que estén lado a lado) */
+.d-flex { display: flex !important; }
+.gap-2 { gap: 0.5rem !important; }
+.flex-grow-1 { flex-grow: 1 !important; }
+.justify-content-end { justify-content: flex-end !important; }
+
+/* Estilo Base del Botón */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Botón VERDE (Aprobar) */
+.btn-success { background-color: #2ecc71; color: white; }
+.btn-success:hover { background-color: #27ae60; }
+
+/* Botón ROJO (Rechazar) */
+.btn-danger { background-color: #e74c3c; color: white; }
+.btn-danger:hover { background-color: #c0392b; }
+
+/* Botón GRIS (Cancelar) */
+.btn-secondary { background-color: #95a5a6; color: white; }
+.btn-secondary:hover { background-color: #7f8c8d; }
+
+/* Caja de Confirmación */
+.confirm-box {
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  animation: fadeIn 0.3s ease;
+}
+
+.bg-light-success { background-color: #e8f8f5; border-color: #2ecc71; }
+.bg-light-danger { background-color: #fdedec; border-color: #e74c3c; }
