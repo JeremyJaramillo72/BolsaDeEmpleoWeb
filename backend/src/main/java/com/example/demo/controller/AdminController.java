@@ -4,8 +4,10 @@ import com.example.demo.model.Usuario;
 import com.example.demo.model.Ciudad;
 import com.example.demo.repository.CiudadRepository;
 import com.example.demo.repository.UsuarioEmpresaRepository;
+import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.repository.Views.IEmpresaResumenProjection;
 import com.example.demo.service.IUsuarioService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,8 @@ import java.util.Map;
 @RequestMapping("/api/admin")
 
 public class AdminController {
+    @Autowired
+private UsuarioRepository usuarioRepository;
 
     @Autowired
     private IUsuarioService usuarioService;
@@ -27,8 +31,6 @@ public class AdminController {
 
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-
-    // Inyectamos el repo de ciudad para validar que exista antes de registrar
     @Autowired
     private CiudadRepository ciudadRepository;
 
@@ -36,14 +38,14 @@ public class AdminController {
     @PostMapping("/crear")
     public ResponseEntity<?> registrarAdmin(@RequestBody Map<String, Object> payload) {
         try {
-            // 1. Mapeo de datos básicos
+
             Usuario admin = new Usuario();
             admin.setNombre((String) payload.get("Nombre"));
             admin.setApellido((String) payload.get("Apellido"));
             admin.setCorreo((String) payload.get("Correo"));
             admin.setTelefono((String) payload.get("Telefono"));
 
-            // 2. Encriptación de contraseña
+
             String passRaw = (String) payload.get("Contrasena");
             if (passRaw != null) {
                 admin.setContrasena(encoder.encode(passRaw));
@@ -59,7 +61,7 @@ public class AdminController {
                 admin.setCiudad(ciudad);
             }
 
-            // 4. Llamada al Service (que ejecuta el SP)
+
             usuarioService.registrarAdministrador(admin);
 
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -78,6 +80,29 @@ public class AdminController {
         } else {
             String estadoBD = estado.endsWith("s") ? estado.substring(0, estado.length() - 1) : estado;
             return ResponseEntity.ok(usuarioEmpresaRepository.listarDesdeVistaPorEstado(estadoBD));
+        }
+    }
+    // 2. Agrega el método que Angular está intentando llamar al hacer click en los botones
+    @PutMapping("/validar-empresa/{idUsuario}")
+    public ResponseEntity<?> cambiarEstadoEmpresa(@PathVariable Long idUsuario, @RequestBody Map<String, String> body) {
+        try {
+
+            String nuevoEstado = body.get("nuevoEstado");
+
+            return usuarioRepository.findById(idUsuario).map(usuario -> {
+
+                usuario.setEstadoValidacion(nuevoEstado);
+
+
+                usuarioRepository.save(usuario);
+
+                return ResponseEntity.ok(Map.of("mensaje", "Empresa " + nuevoEstado + " correctamente."));
+            }).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Usuario no encontrado")));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error del servidor: " + e.getMessage()));
         }
     }
 }

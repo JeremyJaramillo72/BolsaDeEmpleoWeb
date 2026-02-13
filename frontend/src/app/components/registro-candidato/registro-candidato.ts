@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import {RouterLink} from '@angular/router';
+import {RouterLink, Router} from '@angular/router';
 
 @Component({
   selector: 'app-registro-candidato',
@@ -36,13 +36,12 @@ export class RegistroCandidatoComponent implements OnInit {
   idProvinciaSeleccionada: number | null = null;
   idCiudadSeleccionada: number | null = null;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private router:Router) {}
 
   ngOnInit() {
     this.cargarProvincias();
   }
 
-  // 1. Carga inicial de provincias desde el backend
   cargarProvincias() {
     this.http.get<any[]>('http://localhost:8080/api/ubicaciones/provincias')
       .subscribe({
@@ -51,7 +50,6 @@ export class RegistroCandidatoComponent implements OnInit {
       });
   }
 
-  // 2. Carga ciudades cada vez que cambia la provincia
   onProvinciaChange() {
     if (this.idProvinciaSeleccionada) {
       this.http.get<any[]>(`http://localhost:8080/api/ubicaciones/ciudades/${this.idProvinciaSeleccionada}`)
@@ -64,15 +62,12 @@ export class RegistroCandidatoComponent implements OnInit {
         });
     }
   }
-
-  // 3. Simulación/Llamada para enviar el código al correo
   enviarCodigo() {
     if (!this.correo) {
       alert('Por favor, ingresa un correo válido');
       return;
     }
     this.enviandoCodigo = true;
-    // Aquí iría tu servicio de AuthService del backend
     this.http.post('http://localhost:8080/api/auth/enviar-codigo', { correo: this.correo })
       .subscribe({
         next: () => {
@@ -118,6 +113,7 @@ export class RegistroCandidatoComponent implements OnInit {
         next: (res) => {
           console.log('Registro exitoso', res);
           alert('¡Postulante registrado con éxito!');
+          this.router.navigate(['api/auth/login']);
         },
         error: (err) => {
           console.error('Error al registrar', err);

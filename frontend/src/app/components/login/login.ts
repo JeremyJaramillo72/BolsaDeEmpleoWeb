@@ -39,17 +39,15 @@ export class LoginComponent {
     this.http.post('http://localhost:8080/api/auth/login', loginData)
       .subscribe({
         next: (res: any) => {
-          // DEBUG: Ver qué llega del backend
           console.log('Respuesta completa del backend:', res);
 
-          // 1. GUARDAR DATOS INDIVIDUALES
+
           localStorage.setItem('idUsuario', res.idUsuario);
           localStorage.setItem('idRol', res.rol.idRol || res.idRol);
           localStorage.setItem('nombre', res.nombre);
           localStorage.setItem('permisosUi', res.permisosUi || '');
 
-          // 👇👇👇 NUEVO CÓDIGO: GUARDAR ID EMPRESA 👇👇👇
-          // Esto es vital para que "Gestión de Ofertas" funcione
+
           if (res.empresa && res.empresa.idEmpresa) {
             localStorage.setItem('idEmpresa', res.empresa.idEmpresa.toString());
             console.log('✅ idEmpresa guardado (desde objeto):', res.empresa.idEmpresa);
@@ -57,9 +55,7 @@ export class LoginComponent {
             localStorage.setItem('idEmpresa', res.idEmpresa.toString());
             console.log('✅ idEmpresa guardado (desde raíz):', res.idEmpresa);
           }
-          // 👆👆👆 FIN DEL NUEVO CÓDIGO 👆👆👆
-        // con emojis para más fps ✨
-          // Extraer el nombre del rol correctamente
+
           let rolNombre = '';
           if (res.rol && typeof res.rol === 'object') {
             rolNombre = res.rol.nombreRol || res.rol.nombre || '';
@@ -67,16 +63,16 @@ export class LoginComponent {
             rolNombre = res.rol || '';
           }
 
-          // Guardar el rol en mayúsculas
+
           localStorage.setItem('rol', rolNombre.trim().toUpperCase());
 
-          // DEBUG: Ver qué se guardó finalmente
+
           console.log('Estado final del localStorage:');
           console.log('  idUsuario:', localStorage.getItem('idUsuario'));
-          console.log('  idEmpresa:', localStorage.getItem('idEmpresa')); // <-- Verificamos esto
+          console.log('  idEmpresa:', localStorage.getItem('idEmpresa'));
           console.log('  rol:', localStorage.getItem('rol'));
 
-          // 2. NAVEGACIÓN
+
           this.router.navigate(['/menu-principal']).then((success) => {
             if (success) {
               console.log('¡Navegación exitosa al menú!');

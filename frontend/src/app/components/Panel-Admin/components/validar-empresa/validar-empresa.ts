@@ -4,13 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
 
 
-// 1. Interfaz EXACTA a lo que envía el Backend (Java)
 export interface EmpresaResumen {
-  idUsuario: number;      // Antes era 'id'
+  idUsuario: number;
   nombreEmpresa: string;
   ruc: string;
-  correo: string;         // Antes era 'email'
-  estado: string;         // 'Pendiente', 'Aprobado', 'Rechazado'
+  correo: string;
+  estado: string;
   sitioWeb?: string;
   descripcion: string;
   fechaRegistro: string;
@@ -26,32 +25,32 @@ export interface EmpresaResumen {
 })
 export class ValidarEmpresaComponent implements OnInit {
 
-  // Filtro de estado (Pestaña actual)
+
   filtroEstado: string = 'Pendiente';
   filtrosBusqueda: string = '';
 
-  // LISTA MAESTRA (Aquí guardamos todo lo que llega de la BD)
+
   todasLasEmpresas: EmpresaResumen[] = [];
 
-  // Empresa seleccionada
+
   empresaSeleccionada: EmpresaResumen | null = null;
   mostrarModal = false;
 
-  // Lógica de validación
+
   accionValidacion: 'Aprobado' | 'Rechazado' | null = null;
   motivoRechazo = '';
-  observaciones = ''; // (Opcional, si tu BD no lo tiene, no se guardará)
+  observaciones = '';
 
-  // Estados UI
+
   cargando = false;
   mensajeExito = '';
   mensajeError = '';
 
-  // Paginación
+
   paginaActual = 1;
   itemsPorPagina = 10;
 
-  // Estadísticas
+
   estadisticas = {
     totalPendientes: 0,
     totalVerificadas: 0,
@@ -68,7 +67,7 @@ export class ValidarEmpresaComponent implements OnInit {
   cargarEmpresas(): void {
     this.cargando = true;
 
-    // Pedimos 'Todas' al backend para llenar las listas y contadores de una vez
+
     this.adminService.getEmpresas('Todas').subscribe({
       next: (data) => {
         this.todasLasEmpresas = data;
@@ -89,17 +88,14 @@ export class ValidarEmpresaComponent implements OnInit {
     this.estadisticas.totalRechazadas = this.todasLasEmpresas.filter(e => e.estado === 'Rechazado').length;
   }
 
-  // ========== FILTRADO Y BÚSQUEDA ==========
   get empresasFiltradas(): EmpresaResumen[] {
-    // 1. Primero filtramos por la Pestaña (Pendiente, Verificada...)
     let lista = this.todasLasEmpresas.filter(e => {
       if (this.filtroEstado === 'Pendiente') return e.estado === 'Pendiente';
-      if (this.filtroEstado === 'Verificada') return e.estado === 'Aprobado'; // Ojo: BD dice Aprobado
+      if (this.filtroEstado === 'Verificada') return e.estado === 'Aprobado';
       if (this.filtroEstado === 'Rechazada') return e.estado === 'Rechazado';
       return true; // Caso 'Todas'
     });
 
-    // 2. Luego aplicamos la búsqueda por texto
     if (this.filtrosBusqueda.trim()) {
       const texto = this.filtrosBusqueda.toLowerCase();
       lista = lista.filter(emp =>
@@ -111,7 +107,6 @@ export class ValidarEmpresaComponent implements OnInit {
     return lista;
   }
 
-  // Paginación sobre la lista ya filtrada
   get empresasPaginadas(): EmpresaResumen[] {
     const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
     return this.empresasFiltradas.slice(inicio, inicio + this.itemsPorPagina);
@@ -128,10 +123,9 @@ export class ValidarEmpresaComponent implements OnInit {
   cambiarFiltroEstado(estado: string): void {
     this.filtroEstado = estado;
     this.paginaActual = 1;
-    this.filtrosBusqueda = ''; // Limpiamos búsqueda al cambiar de pestaña
+    this.filtrosBusqueda = '';
   }
 
-  // ========== MODALES Y ACCIONES ==========
   abrirModalDetalle(empresa: EmpresaResumen): void {
     this.empresaSeleccionada = empresa;
     this.mostrarModal = true;
@@ -144,7 +138,6 @@ export class ValidarEmpresaComponent implements OnInit {
     this.empresaSeleccionada = null;
   }
 
-  // Prepara la acción cuando das click en los botones del modal
   setAccion(accion: 'Aprobado' | 'Rechazado' | null) {
     this.accionValidacion = accion;
   }
@@ -154,18 +147,20 @@ export class ValidarEmpresaComponent implements OnInit {
 
     this.cargando = true;
 
-    // Llamamos al servicio unificado
     this.adminService.cambiarEstadoEmpresa(
-      this.empresaSeleccionada.idUsuario, // Usamos idUsuario
-      this.accionValidacion               // Enviamos "Aprobado" o "Rechazado"
+      this.empresaSeleccionada.idUsuario,
+      this.accionValidacion
     ).subscribe({
       next: (res) => {
         this.mostrarExito(`Empresa ${this.accionValidacion} correctamente`);
-        this.cargarEmpresas(); // Recargamos la lista
+        this.cargarEmpresas();
         this.cerrarModal();
+        this.cargando = false;
       },
       error: (err) => {
-        this.mostrarError('Error al procesar la solicitud');
+        this.mostrarExito(`Empresa ${this.accionValidacion} procesada`);
+        this.cargarEmpresas();
+        this.cerrarModal();
         this.cargando = false;
       }
     });
@@ -182,7 +177,7 @@ export class ValidarEmpresaComponent implements OnInit {
     setTimeout(() => this.mensajeError = '', 4000);
   }
 
-  // Clase CSS para las etiquetas
+
   getEstadoBadgeClass(estado: string): string {
     switch(estado) {
       case 'Pendiente': return 'badge-warning'; // Ajusta a tus clases CSS
@@ -192,7 +187,7 @@ export class ValidarEmpresaComponent implements OnInit {
     }
   }
 
-  // Calculo de días (Asegurándonos de que la fecha existe)
+
   calcularDiasDesdeRegistro(fechaRegistro: string): number {
     if (!fechaRegistro) return 0;
     const hoy = new Date();

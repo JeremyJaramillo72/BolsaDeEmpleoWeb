@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
+
 
 @Component({
   selector: 'app-registro-empresa',
@@ -13,17 +14,16 @@ import { RouterModule } from '@angular/router';
 })
 export class RegistroEmpresaComponent implements OnInit {
 
-  // Estados de la UI
+
   enviandoCodigo: boolean = false;
   codigoValido: boolean = false;
   codigoInvalido: boolean = false;
   correoVerificado: boolean = false;
 
-  // Listas de ubicación
+
   provincias: any[] = [];
   ciudades: any[] = [];
 
-  // Variables vinculadas al HTML (ngModel)
   correo: string = '';
   codigoVerificacion: string = '';
   contrasena: string = '';
@@ -35,8 +35,8 @@ export class RegistroEmpresaComponent implements OnInit {
   idProvinciaSeleccionada: any = '';
   idCiudad: any = ''; // Este nombre debe coincidir con tu backend
 
-  constructor(private http: HttpClient) {}
 
+  constructor(private http: HttpClient, private router: Router) {}
   ngOnInit() {
     this.cargarProvincias();
   }
@@ -49,14 +49,14 @@ export class RegistroEmpresaComponent implements OnInit {
       });
   }
 
-  // Carga de ciudades cuando cambia la provincia
+
   onProvinciaChange() {
     if (this.idProvinciaSeleccionada) {
       this.http.get<any[]>(`http://localhost:8080/api/ubicaciones/ciudades/${this.idProvinciaSeleccionada}`)
         .subscribe({
           next: (data) => {
             this.ciudades = data;
-            this.idCiudad = ''; // Limpiamos la ciudad seleccionada anterior
+            this.idCiudad = '';
           },
           error: (err) => console.error('Error al cargar ciudades', err)
         });
@@ -80,6 +80,7 @@ export class RegistroEmpresaComponent implements OnInit {
       .subscribe({
         next: (res: any) => {
           alert(res.mensaje || '¡Empresa registrada con éxito!');
+          this.router.navigate(['/api/auth/login']);
         },
         error: (err) => {
           alert('Error: ' + (err.error?.error || 'Error en el servidor'));
@@ -87,7 +88,7 @@ export class RegistroEmpresaComponent implements OnInit {
       });
   }
 
-  // Métodos de apoyo para el código de verificación
+
   enviarCodigo() { /* Tu lógica de enviar código */ }
   validarCodigoVisual() {
     if (this.codigoVerificacion.length === 6) {
