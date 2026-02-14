@@ -43,11 +43,11 @@ public class RegistroPostulanteController {
             String codigoIngresado = (String) payload.get("codigoIngresado");
             // 2. VALIDACIÓN DE SEGURIDAD: Código de Verificación
             // Comprobamos si el código que envió Angular coincide con el generado en el Backend
-          /*  boolean esValido = authService.validarCodigo(correo, codigoIngresado);
+           boolean esValido = authService.validarCodigo(correo, codigoIngresado);
             if (!esValido) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(Map.of("error", "El código de verificación es incorrecto o ya expiró."));
-            }*/
+            }
 
             // 3. MAPEO HACIA LA ENTIDAD USUARIO
             Usuario postulante = new Usuario();

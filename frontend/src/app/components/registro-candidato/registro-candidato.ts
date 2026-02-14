@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import {Component, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule} from '@angular/forms';
+import {HttpClient, HttpClientModule} from '@angular/common/http';
 import {RouterLink, Router} from '@angular/router';
 
 @Component({
@@ -36,7 +36,8 @@ export class RegistroCandidatoComponent implements OnInit {
   idProvinciaSeleccionada: number | null = null;
   idCiudadSeleccionada: number | null = null;
 
-  constructor(private http: HttpClient, private router:Router) {}
+  constructor(private http: HttpClient, private router: Router) {
+  }
 
   ngOnInit() {
     this.cargarProvincias();
@@ -62,13 +63,14 @@ export class RegistroCandidatoComponent implements OnInit {
         });
     }
   }
+
   enviarCodigo() {
     if (!this.correo) {
       alert('Por favor, ingresa un correo válido');
       return;
     }
     this.enviandoCodigo = true;
-    this.http.post('http://localhost:8080/api/auth/enviar-codigo', { correo: this.correo })
+    this.http.post('http://localhost:8080/api/auth/enviar-codigo', {Correo: this.correo})
       .subscribe({
         next: () => {
           this.enviandoCodigo = false;
@@ -111,13 +113,20 @@ export class RegistroCandidatoComponent implements OnInit {
     this.http.post('http://localhost:8080/api/registro-postulante/crear', payload)
       .subscribe({
         next: (res) => {
-          console.log('Registro exitoso', res);
           alert('¡Postulante registrado con éxito!');
-          this.router.navigate(['api/auth/login']);
+          this.router.navigate(['/api/auth/login']);
         },
         error: (err) => {
-          console.error('Error al registrar', err);
-          alert('Error: ' + (err.error?.error || 'No se pudo completar el registro'));
+          // AQUÍ ES DONDE CAPTURAS LA EXPIRACIÓN O CÓDIGO INCORRECTO
+          if (err.status === 400) {
+            this.codigoInvalido = true;
+            this.codigoValido = false;
+            // Mostramos el mensaje exacto que configuraste en Java:
+            // "El código de verificación es incorrecto o ya expiró."
+            alert(err.error?.error || 'Código inválido');
+          } else {
+            alert('Error interno en el servidor');
+          }
         }
       });
   }
