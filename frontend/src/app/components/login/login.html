@@ -11,6 +11,9 @@
     <h2>Iniciar Sesión</h2>
     <p class="subtitle">Ingresa tus credenciales para continuar.</p>
 
+    <div *ngIf="errorMsg" style="background-color: #fee2e2; border: 1px solid #ef4444; color: #991b1b; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: 600;">
+      <span style="margin-right: 5px;">⚠️</span> {{ errorMsg }}
+    </div>
     <form (ngSubmit)="onLogin()" #loginForm="ngForm">
 
       <div class="input-group">
