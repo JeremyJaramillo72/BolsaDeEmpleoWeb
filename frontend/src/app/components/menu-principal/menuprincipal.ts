@@ -104,7 +104,8 @@ export class MenuprincipalComponent implements OnInit {
         title: 'Búsqueda de Empleos',
         description: 'Encuentra vacantes disponibles',
         color: 'from-cyan-500 to-cyan-600',
-        roles: ['POSTULANTE']
+        roles: ['POSTULANTE'],
+        path: '/busqueda-empleo'
       },
       {
         icon: 'groups',
@@ -118,7 +119,8 @@ export class MenuprincipalComponent implements OnInit {
         title: 'Mis Postulaciones',
         description: 'Revisa el estado de tus aplicaciones',
         color: 'from-teal-500 to-teal-600',
-        roles: ['POSTULANTE']
+        roles: ['POSTULANTE'],
+        path: '/mis-postulaciones'
       },
       {
         icon: 'notifications',

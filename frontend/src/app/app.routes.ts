@@ -15,6 +15,9 @@ import {GestionReportesComponent} from './components/Panel-Admin/components/gest
 
 import {ValidarEmpresaComponent} from './components/Panel-Admin/components/validar-empresa/validar-empresa';
 
+import { BusquedaEmpleoComponent } from './components/busqueda-empleo/busqueda-empleo';
+import { MisPostulacionesComponent } from './components/mis-postulaciones/mis-postulaciones';
+
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'registro-candidato', component: RegistroCandidatoComponent },
@@ -41,7 +44,9 @@ export const routes: Routes = [
       {
         path: 'PanelAdmi/ValidarEmpresa',
         component: ValidarEmpresaComponent
-      }
+      },
+      {   path: 'busqueda-empleo', component: PerfilProfesionalComponent },
+      {   path: 'mis-postulaciones', component: PerfilProfesionalComponent }
 
     ]
   },
