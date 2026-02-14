@@ -11,22 +11,11 @@
     <h2>Registro Empresa</h2>
     <p class="subtitle">Crea una cuenta corporativa para tu organización.</p>
 
-    <form (submit)="registrar()">
-      <div class="input-group">
-        <label>CORREO CORPORATIVO</label>
-        <div class="email-wrapper">
-          <input type="email" name="correo" [(ngModel)]="correo" placeholder="rrhh@miempresa.com" required>
-          <button type="button" (click)="enviarCodigo()" [disabled]="enviandoCodigo">
-            {{ enviandoCodigo ? 'Enviando...' : 'Enviar Código' }}
-          </button>
-        </div>
-      </div>
+    <form (submit)="registrar()" #registroForm="ngForm">
 
       <div class="input-group">
-        <label>CÓDIGO DE VERIFICACIÓN</label>
-        <input type="text" name="codigo" [(ngModel)]="codigoVerificacion"
-               (input)="validarCodigoVisual()" maxlength="6"
-               [class.is-valid]="codigoValido" [class.is-invalid]="codigoInvalido" placeholder="6 dígitos" required>
+        <label>CORREO CORPORATIVO</label>
+        <input type="email" name="correo" [(ngModel)]="correo" placeholder="rrhh@miempresa.com" required>
       </div>
 
       <div class="input-group">
@@ -78,7 +67,7 @@
         <textarea name="desc" [(ngModel)]="descripcion" rows="3" placeholder="Cuéntanos un poco sobre tu empresa..."></textarea>
       </div>
 
-      <button type="submit" class="btn-register" [disabled]="!correoVerificado">
+      <button type="submit" class="btn-register" [disabled]="!registroForm.valid">
         Registrar Empresa
       </button>
 
