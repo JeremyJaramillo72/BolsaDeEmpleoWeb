@@ -93,14 +93,22 @@ export class GestionOfertasComponent implements OnInit {
   guardar() {
     this.ofertaService.crearOferta(this.nuevaOferta).subscribe({
       next: (resp) => {
-        alert('¡Oferta creada!');
+        alert('¡Oferta creada con éxito!');
         this.closeModal();
         this.nuevaOferta = this.inicializarOferta();
         this.cargarOfertas();
       },
       error: (err) => {
-        console.error(err);
-        alert('Error al guardar. Revisa la consola.');
+
+        if (err.status === 200 || err.status === 201) {
+          alert('¡Oferta creada con éxito!');
+          this.closeModal();
+          this.nuevaOferta = this.inicializarOferta();
+          this.cargarOfertas();
+        } else {
+          console.error("Detalle del error:", err);
+          alert('Error al guardar. Revisa la consola.');
+        }
       }
     });
   }

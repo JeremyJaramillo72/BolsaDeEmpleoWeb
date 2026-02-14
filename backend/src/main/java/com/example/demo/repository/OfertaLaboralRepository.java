@@ -4,6 +4,7 @@ import com.example.demo.model.OfertaLaboral;
 import com.example.demo.dto.OfertaDetalleDTO;
 import com.example.demo.model.UsuarioEmpresa;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
@@ -20,30 +21,31 @@ public interface OfertaLaboralRepository extends JpaRepository<OfertaLaboral, In
     List<OfertaLaboral> findByEmpresa(UsuarioEmpresa empresa);
 
     @Query(value = """
-        SELECT sp_crearoferta(
-            CAST(:idEmpresa AS BIGINT),
-            CAST(:idModalidad AS INTEGER),
-            CAST(:idCategoria AS INTEGER),
-            CAST(:idJornada AS INTEGER),
-            CAST(:idCiudad AS INTEGER),
+        select sp_crearoferta(
+            cast(:idEmpresa as bigint),
+            cast(:idModalidad as integer),
+            cast(:idCategoria as integer),
+            cast(:idJornada as integer),
+            cast(:idCiudad as integer),
             :titulo,
             :descripcion,
-            CAST(:salario AS DECIMAL),
-            CAST(:fechaInicio AS DATE),
-            CAST(:fechaCierre AS DATE),
-            CAST(:habilidades AS JSONB) 
+            cast(:salario as decimal),
+            cast(:fechaInicio as date),
+            cast(:fechaCierre as date),
+            cast(:habilidades as jsonb) 
         )
-    """, nativeQuery = true)    Integer registrarOferta(
-            @Param("idEmpresa") Long idEmpresa,
-            @Param("idModalidad") Integer idModalidad,
-            @Param("idCategoria") Integer idCategoria,
-            @Param("idJornada") Integer idJornada,
-            @Param("idCiudad") Integer idCiudad,
-            @Param("titulo") String titulo,
-            @Param("descripcion") String descripcion,
-            @Param("salario") BigDecimal salario,
-            @Param("fechaInicio") LocalDate fechaInicio,
-            @Param("fechaCierre") LocalDate fechaCierre,
-            @Param("habilidades") String habilidadesJson
+    """, nativeQuery = true)
+    Object registrarOferta( // 👈 Retornamos Object para absorber la fila invisible
+                            @Param("idEmpresa") Long idEmpresa,
+                            @Param("idModalidad") Integer idModalidad,
+                            @Param("idCategoria") Integer idCategoria,
+                            @Param("idJornada") Integer idJornada,
+                            @Param("idCiudad") Integer idCiudad,
+                            @Param("titulo") String titulo,
+                            @Param("descripcion") String descripcion,
+                            @Param("salario") BigDecimal salario,
+                            @Param("fechaInicio") LocalDate fechaInicio,
+                            @Param("fechaCierre") LocalDate fechaCierre,
+                            @Param("habilidades") String habilidadesJson
     );
 }
