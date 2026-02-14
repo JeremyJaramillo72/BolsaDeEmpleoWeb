@@ -1,396 +1,121 @@
 <div class="page-container">
-  <div class="page-header">
-    <h1>
-      <span class="header-icon">📊</span>
-      Gestión de Reportes
-    </h1>
-    <p class="page-description">Genere y exporte reportes detallados del sistema</p>
-  </div>
 
-  <!-- Mensaje de Error -->
-  <div class="alert alert-error" *ngIf="mensajeError">
-    <span class="material-icons">error</span>
-    {{ mensajeError }}
-  </div>
+  <h1>Gestión de Reportes</h1>
 
-  <!-- Tabs de Tipo de Reporte -->
+  <!-- TABS -->
   <div class="tabs-container">
-    <button
-      class="tab-button"
-      [class.active]="tipoReporte === 'ofertas'"
-      (click)="cambiarTipoReporte('ofertas')">
-      <span class="material-icons">work</span>
-      Ofertas Laborales
+    <button type="button"
+            class="tab-button"
+            [class.active]="tipoReporte==='ofertas'"
+            (click)="cambiarTipoReporte('ofertas')">
+      Ofertas
     </button>
 
-    <button
-      class="tab-button"
-      [class.active]="tipoReporte === 'postulaciones'"
-      (click)="cambiarTipoReporte('postulaciones')">
-      <span class="material-icons">send</span>
+    <button type="button"
+            class="tab-button"
+            [class.active]="tipoReporte==='postulaciones'"
+            (click)="cambiarTipoReporte('postulaciones')">
       Postulaciones
     </button>
 
-    <button
-      class="tab-button"
-      [class.active]="tipoReporte === 'usuarios'"
-      (click)="cambiarTipoReporte('usuarios')">
-      <span class="material-icons">people</span>
+    <button type="button"
+            class="tab-button"
+            [class.active]="tipoReporte==='usuarios'"
+            (click)="cambiarTipoReporte('usuarios')">
       Usuarios
     </button>
-
-    <button
-      class="tab-button"
-      [class.active]="tipoReporte === 'empresas'"
-      (click)="cambiarTipoReporte('empresas')">
-      <span class="material-icons">business</span>
-      Empresas
-    </button>
-
-    <button
-      class="tab-button"
-      [class.active]="tipoReporte === 'estadisticas'"
-      (click)="cambiarTipoReporte('estadisticas')">
-      <span class="material-icons">analytics</span>
-      Estadísticas
-    </button>
   </div>
 
-  <!-- Panel de Filtros -->
+  <!-- FILTROS -->
   <div class="section-card">
-    <div class="section-header">
-      <h3>
-        <span class="section-icon">🔍</span>
-        Filtros de Búsqueda
-      </h3>
+
+    <!-- OFERTAS -->
+    <div *ngIf="tipoReporte==='ofertas'" class="form-grid-4">
+
+      <input class="form-control"
+             placeholder="Estado"
+             [(ngModel)]="filtrosOfertas.estado">
+
+      <input class="form-control"
+             placeholder="Categoría"
+             [(ngModel)]="filtrosOfertas.categoria">
+
+      <input class="form-control"
+             placeholder="Ciudad"
+             [(ngModel)]="filtrosOfertas.ciudad">
+
     </div>
 
-    <!-- Filtros Comunes -->
-    <div class="form-grid-3">
-      <div class="form-group">
-        <label>Fecha Inicio *</label>
-        <input
-          type="date"
-          [(ngModel)]="filtros.fechaInicio"
-          class="form-control">
-      </div>
+    <!-- POSTULACIONES -->
+    <div *ngIf="tipoReporte==='postulaciones'" class="form-grid-4">
 
-      <div class="form-group">
-        <label>Fecha Fin *</label>
-        <input
-          type="date"
-          [(ngModel)]="filtros.fechaFin"
-          class="form-control">
-      </div>
+      <input class="form-control"
+             placeholder="Estado Validación"
+             [(ngModel)]="filtrosPostulaciones.estadoValidacion">
 
-      <!-- Filtros específicos por tipo de reporte -->
-      <div class="form-group" *ngIf="tipoReporte === 'ofertas'">
-        <label>Estado</label>
-        <select [(ngModel)]="filtros.estado" class="form-control">
-          <option value="">Todos</option>
-          <option *ngFor="let estado of estadosOferta" [value]="estado">
-            {{ estado }}
-          </option>
-        </select>
-      </div>
-
-      <div class="form-group" *ngIf="tipoReporte === 'ofertas' || tipoReporte === 'postulaciones'">
-        <label>Categoría</label>
-        <select [(ngModel)]="filtros.categoria" class="form-control">
-          <option value="">Todas</option>
-          <option *ngFor="let cat of categorias" [value]="cat.idCategoria">
-            {{ cat.nombreCategoria }}
-          </option>
-        </select>
-      </div>
-
-      <div class="form-group" *ngIf="tipoReporte === 'ofertas' || tipoReporte === 'postulaciones'">
-        <label>Empresa</label>
-        <select [(ngModel)]="filtros.empresa" class="form-control">
-          <option value="">Todas</option>
-          <option *ngFor="let emp of empresas" [value]="emp.idEmpresa">
-            {{ emp.nombreEmpresa }}
-          </option>
-        </select>
-      </div>
-
-      <div class="form-group" *ngIf="tipoReporte === 'usuarios'">
-        <label>Facultad</label>
-        <select [(ngModel)]="filtros.facultad" class="form-control">
-          <option value="">Todas</option>
-          <option *ngFor="let fac of facultades" [value]="fac.idFacultad">
-            {{ fac.nombreFacultad }}
-          </option>
-        </select>
-      </div>
     </div>
 
-    <!-- Botones de Acción -->
+    <!-- USUARIOS -->
+    <div *ngIf="tipoReporte==='usuarios'" class="form-grid-4">
+
+      <input class="form-control"
+             placeholder="Correo"
+             [(ngModel)]="filtrosUsuarios.correo">
+
+    </div>
+
+    <!-- BOTONES -->
     <div class="actions-row">
-      <button class="btn-secondary" (click)="limpiarFiltros()">
-        <span class="material-icons">refresh</span>
-        Limpiar Filtros
+      <button type="button"
+              class="btn-secondary"
+              (click)="limpiar()">
+        Limpiar
       </button>
 
-      <button class="btn-primary" (click)="generarReporte()" [disabled]="cargando">
-        <span class="material-icons">{{cargando ? 'hourglass_empty' : 'search'}}</span>
-        {{ cargando ? 'Generando...' : 'Generar Reporte' }}
+      <button type="button"
+              class="btn-primary"
+              [disabled]="cargando"
+              (click)="vistaPrevia()">
+        {{ cargando ? 'Cargando...' : 'Vista previa' }}
+      </button>
+
+      <button type="button"
+              class="btn-success"
+              [disabled]="resultados.length===0"
+              (click)="exportarPDF()">
+        Exportar PDF
       </button>
     </div>
+
   </div>
 
-  <!-- Resultados -->
-  <div class="results-section" *ngIf="mostrandoResultados && !cargando">
-
-    <!-- Header de Resultados -->
-    <div class="results-header">
-      <div class="results-info">
-        <h3>Resultados del Reporte</h3>
-        <p>{{ totalItems }} registros encontrados</p>
-      </div>
-
-      <div class="export-buttons" *ngIf="totalItems > 0">
-        <button class="btn-export excel" (click)="exportarExcel()">
-          <span class="material-icons">description</span>
-          Exportar Excel
-        </button>
-        <button class="btn-export pdf" (click)="exportarPDF()">
-          <span class="material-icons">picture_as_pdf</span>
-          Exportar PDF
-        </button>
-      </div>
-    </div>
-
-    <!-- ========== TABLA OFERTAS ========== -->
-    <div class="table-container" *ngIf="tipoReporte === 'ofertas' && reporteOfertas.length > 0">
-      <table class="data-table">
-        <thead>
-        <tr>
-          <th>ID</th>
-          <th>Título</th>
-          <th>Empresa</th>
-          <th>Categoría</th>
-          <th>Salario</th>
-          <th>Estado</th>
-          <th>Postulaciones</th>
-          <th>Fecha Creación</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr *ngFor="let oferta of itemsPaginados">
-          <td>{{ oferta.id }}</td>
-          <td class="text-bold">{{ oferta.titulo }}</td>
-          <td>{{ oferta.empresa }}</td>
-          <td>{{ oferta.categoria }}</td>
-          <td class="text-money">${{ oferta.salario | number:'1.2-2' }}</td>
-          <td>
-              <span class="badge" [ngClass]="getEstadoClass(oferta.estado)">
-                {{ oferta.estado }}
-              </span>
-          </td>
-          <td class="text-center">{{ oferta.totalPostulaciones }}</td>
-          <td>{{ oferta.fechaCreacion | date:'dd/MM/yyyy' }}</td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- ========== TABLA POSTULACIONES ========== -->
-    <div class="table-container" *ngIf="tipoReporte === 'postulaciones' && reportePostulaciones.length > 0">
-      <table class="data-table">
-        <thead>
-        <tr>
-          <th>ID</th>
-          <th>Usuario</th>
-          <th>Oferta</th>
-          <th>Empresa</th>
-          <th>Estado</th>
-          <th>Fecha Postulación</th>
-          <th>Experiencia</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr *ngFor="let post of itemsPaginados">
-          <td>{{ post.id }}</td>
-          <td class="text-bold">{{ post.nombreUsuario }}</td>
-          <td>{{ post.tituloOferta }}</td>
-          <td>{{ post.empresa }}</td>
-          <td>
-            <span class="badge badge-info">{{ post.estadoPostulacion }}</span>
-          </td>
-          <td>{{ post.fechaPostulacion | date:'dd/MM/yyyy HH:mm' }}</td>
-          <td>{{ post.anosExperiencia }} años</td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- ========== TABLA USUARIOS ========== -->
-    <div class="table-container" *ngIf="tipoReporte === 'usuarios' && reporteUsuarios.length > 0">
-      <table class="data-table">
-        <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nombre Completo</th>
-          <th>Email</th>
-          <th>Facultad</th>
-          <th>Carrera</th>
-          <th>Postulaciones</th>
-          <th>Fecha Registro</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr *ngFor="let usuario of itemsPaginados">
-          <td>{{ usuario.id }}</td>
-          <td class="text-bold">{{ usuario.nombreCompleto }}</td>
-          <td>{{ usuario.email }}</td>
-          <td>{{ usuario.facultad }}</td>
-          <td>{{ usuario.carrera }}</td>
-          <td class="text-center">{{ usuario.totalPostulaciones }}</td>
-          <td>{{ usuario.fechaRegistro | date:'dd/MM/yyyy' }}</td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- ========== TABLA EMPRESAS ========== -->
-    <div class="table-container" *ngIf="tipoReporte === 'empresas' && reporteEmpresas.length > 0">
-      <table class="data-table">
-        <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nombre Empresa</th>
-          <th>RUC</th>
-          <th>Sector</th>
-          <th>Ofertas Activas</th>
-          <th>Total Ofertas</th>
-          <th>Verificada</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr *ngFor="let empresa of itemsPaginados">
-          <td>{{ empresa.id }}</td>
-          <td class="text-bold">{{ empresa.nombre }}</td>
-          <td>{{ empresa.ruc }}</td>
-          <td>{{ empresa.sector }}</td>
-          <td class="text-center">{{ empresa.ofertasActivas }}</td>
-          <td class="text-center">{{ empresa.totalOfertas }}</td>
-          <td class="text-center">
-              <span class="badge" [ngClass]="empresa.verificada ? 'badge-activa' : 'badge-pausada'">
-                {{ empresa.verificada ? 'Sí' : 'No' }}
-              </span>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- ========== ESTADÍSTICAS ========== -->
-    <div class="statistics-grid" *ngIf="tipoReporte === 'estadisticas' && reporteEstadisticas">
-      <div class="stat-card">
-        <div class="stat-icon ofertas">
-          <span class="material-icons">work</span>
-        </div>
-        <div class="stat-content">
-          <h4>Total Ofertas</h4>
-          <p class="stat-number">{{ reporteEstadisticas.totalOfertas }}</p>
-          <span class="stat-detail">{{ reporteEstadisticas.ofertasActivas }} activas</span>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon postulaciones">
-          <span class="material-icons">send</span>
-        </div>
-        <div class="stat-content">
-          <h4>Total Postulaciones</h4>
-          <p class="stat-number">{{ reporteEstadisticas.totalPostulaciones }}</p>
-          <span class="stat-detail">Promedio: {{ reporteEstadisticas.promedioPostulaciones }} por oferta</span>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon usuarios">
-          <span class="material-icons">people</span>
-        </div>
-        <div class="stat-content">
-          <h4>Usuarios Registrados</h4>
-          <p class="stat-number">{{ reporteEstadisticas.totalUsuarios }}</p>
-          <span class="stat-detail">{{ reporteEstadisticas.usuariosActivos }} activos</span>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon empresas">
-          <span class="material-icons">business</span>
-        </div>
-        <div class="stat-content">
-          <h4>Empresas</h4>
-          <p class="stat-number">{{ reporteEstadisticas.totalEmpresas }}</p>
-          <span class="stat-detail">{{ reporteEstadisticas.empresasVerificadas }} verificadas</span>
-        </div>
-      </div>
-
-      <!-- Gráfico de Categorías Más Populares -->
-      <div class="chart-card">
-        <h4>Categorías Más Populares</h4>
-        <div class="chart-bars">
-          <div class="bar-item" *ngFor="let cat of reporteEstadisticas.categoriasMasPopulares">
-            <div class="bar-label">{{ cat.nombre }}</div>
-            <div class="bar-container">
-              <div class="bar-fill" [style.width.%]="(cat.cantidad / reporteEstadisticas.maxCategorias) * 100"></div>
-              <span class="bar-value">{{ cat.cantidad }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Empresas Más Activas -->
-      <div class="chart-card">
-        <h4>Empresas Más Activas</h4>
-        <div class="chart-bars">
-          <div class="bar-item" *ngFor="let emp of reporteEstadisticas.empresasMasActivas">
-            <div class="bar-label">{{ emp.nombre }}</div>
-            <div class="bar-container">
-              <div class="bar-fill empresas" [style.width.%]="(emp.ofertas / reporteEstadisticas.maxOfertas) * 100"></div>
-              <span class="bar-value">{{ emp.ofertas }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Paginación -->
-    <div class="pagination" *ngIf="totalPaginas > 1 && tipoReporte !== 'estadisticas'">
-      <button
-        class="page-btn"
-        (click)="cambiarPagina(paginaActual - 1)"
-        [disabled]="paginaActual === 1">
-        <span class="material-icons">chevron_left</span>
-      </button>
-
-      <span class="page-info">
-        Página {{ paginaActual }} de {{ totalPaginas }}
-      </span>
-
-      <button
-        class="page-btn"
-        (click)="cambiarPagina(paginaActual + 1)"
-        [disabled]="paginaActual === totalPaginas">
-        <span class="material-icons">chevron_right</span>
-      </button>
-    </div>
-
-    <!-- Estado Vacío -->
-    <div class="empty-state" *ngIf="totalItems === 0">
-      <span class="material-icons">search_off</span>
-      <p>No se encontraron resultados con los filtros seleccionados</p>
-    </div>
+  <!-- MENSAJE ERROR -->
+  <div *ngIf="mensajeError" class="error-message">
+    {{ mensajeError }}
   </div>
 
-  <!-- Indicador de Carga -->
-  <div class="loading-container" *ngIf="cargando">
-    <div class="spinner"></div>
-    <p>Generando reporte...</p>
+  <!-- RESULTADOS -->
+  <div *ngIf="mostrandoResultados">
+
+    <p>{{ resultados.length }} registros encontrados</p>
+
+    <table class="data-table" *ngIf="resultados.length > 0">
+      <thead>
+      <tr>
+        <th *ngFor="let col of columnas">
+          {{ col }}
+        </th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let fila of resultados">
+        <td *ngFor="let col of columnas">
+          {{ fila[col] }}
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
   </div>
+
 </div>
