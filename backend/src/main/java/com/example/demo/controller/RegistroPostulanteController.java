@@ -23,7 +23,7 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:4200")
 public class RegistroPostulanteController {
 
-    // Cambiado: Ahora inyectamos la interfaz IUsuarioService
+
     @Autowired
     private IUsuarioService usuarioService;
 

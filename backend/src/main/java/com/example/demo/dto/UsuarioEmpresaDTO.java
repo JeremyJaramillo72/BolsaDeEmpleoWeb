@@ -13,5 +13,7 @@ public class UsuarioEmpresaDTO {
     private String sitioWeb;
     private String descripcion;
     private LocalDateTime fechaRegistro;
+    private String correo;
+    private String urlImagen;
 
 }

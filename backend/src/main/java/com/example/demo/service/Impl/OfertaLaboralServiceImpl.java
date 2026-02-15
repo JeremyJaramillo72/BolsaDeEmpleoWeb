@@ -40,7 +40,6 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
             throw new RuntimeException("Error al convertir habilidades a JSON", e);
         }
 
-        // 👇 SOLUCIÓN: Simplemente ejecutamos la inserción sin esperar un ID de vuelta
         ofertaRepository.registrarOferta(
                 dto.getIdEmpresa(),
                 dto.getIdModalidad(),
@@ -55,8 +54,6 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
                 habilidadesJson
         );
 
-        // 👇 Como la BD no nos devuelve el ID nuevo, retornamos null.
-        // Tu controlador responderá con éxito de todas formas.
         return null;
     }
 

@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit,ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule, NavigationEnd } from '@angular/router'; //  Agregamos NavigationEnd
+import { Router, RouterModule, NavigationEnd } from '@angular/router';
+import { UsuarioEmpresaService } from '../../services/usuario-empresa.service';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 interface MenuItem {
@@ -31,6 +32,7 @@ export class MenuprincipalComponent implements OnInit {
   isSidebarOpen: boolean = true;
   nombreUsuario: string = '';
   rolUsuario: string = '';
+  fotoMenu: string = '';
 
   // Variable para controlar la visibilidad de las tarjetas
   dashboardHomeVisible: boolean = true;
@@ -40,7 +42,9 @@ export class MenuprincipalComponent implements OnInit {
 
   constructor(
     public router: Router,
-    public authService: AuthService
+    public authService: AuthService,
+    private cdr: ChangeDetectorRef,
+  private usuarioEmpresaService: UsuarioEmpresaService
   ) {
     // Escucha de cambios de ruta
     this.router.events
@@ -58,9 +62,16 @@ export class MenuprincipalComponent implements OnInit {
       this.cerrarSesion();
       return;
     }
+    this.usuarioEmpresaService.logoActual$.subscribe(nuevaUrl => {
+      if (nuevaUrl) {
+        this.fotoMenu = nuevaUrl;
+        this.cdr.detectChanges();
+      }
+    });
 
-    this.verificarRutaActual(); // Verificación inicial al cargar el componente
+    this.verificarRutaActual();
     this.inicializarMenuPorRol();
+
   }
 
   // Método centralizado para validar si estamos en el "Home" del panel

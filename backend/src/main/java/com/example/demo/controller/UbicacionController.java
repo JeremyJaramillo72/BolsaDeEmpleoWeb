@@ -15,7 +15,7 @@ import com.example.demo.repository.CiudadRepository;
 
 @RestController
 @RequestMapping("/api/ubicaciones")
-@CrossOrigin(origins = "http://localhost:4200") // Permite la conexión con tu frontend en Angular
+@CrossOrigin(origins = "http://localhost:4200")
 public class UbicacionController {
 
     @Autowired 

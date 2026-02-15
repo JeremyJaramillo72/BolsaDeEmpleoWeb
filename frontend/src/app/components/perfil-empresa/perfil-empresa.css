@@ -2,23 +2,22 @@
 
 /* Contenedor Principal: Quitamos padding y fondo para que se integre */
 .profile-container {
-  padding: 0; /* Eliminamos el relleno extra */
+  padding: 0;
   background-color: transparent;
   width: 100%;
   font-family: 'Segoe UI', sans-serif;
 }
 
-/* Grilla: Ahora ocupa el 100% del ancho */
+
 .content-grid {
   display: grid;
-  /* La columna izquierda será fija (350px) y la derecha ocupará TODO el resto */
   grid-template-columns: 350px 1fr;
   gap: 2rem;
   width: 100%;
-  max-width: 100%; /* Quitamos el límite de 1200px */
+  max-width: 100%;
 }
 
-/* Tarjetas: Hacemos que llenen su espacio */
+
 .custom-card {
   background: white;
   border-radius: 16px;
@@ -33,8 +32,8 @@
 .summary-card { text-align: center; height: fit-content; }
 
 .logo-circle {
-  width: 120px;
-  height: 120px;
+  width: 200px;
+  height: 200px;
   background: #f8fafc;
   color: #2563eb;
   border-radius: 50%;
@@ -44,8 +43,9 @@
   align-items: center;
   justify-content: center;
   border: 2px dashed #cbd5e1;
+  overflow: hidden;
 }
-.logo-circle .material-icons { font-size: 3rem; }
+.logo-circle .material-icons { font-size: 3rem;object-fit: cover; }
 
 h2 { font-size: 1.5rem; font-weight: 700; color: #0f172a; margin: 0; }
 .ruc-text { color: #64748b; font-size: 1rem; margin-top: 0.5rem; }

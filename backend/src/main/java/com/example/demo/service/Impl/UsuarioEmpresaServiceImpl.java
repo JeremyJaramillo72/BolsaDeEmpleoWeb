@@ -6,6 +6,7 @@ import com.example.demo.repository.UsuarioEmpresaRepository;
 import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.service.IUsuarioEmpresaService;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.message.Message;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +27,7 @@ public class UsuarioEmpresaServiceImpl implements IUsuarioEmpresaService {
     @Override
     public  UsuarioEmpresaDTO editar(Long id, UsuarioEmpresaDTO dto ){
       empresaRepository.actualizarDatosEmpresa(
-              id, dto.getNombre(), dto.getSitioWeb(), dto.getDescripcion()
+              id.intValue(), dto.getNombre(), dto.getSitioWeb(), dto.getDescripcion()
       );
       dto.setIdEmpresa(id);
       return dto;
@@ -56,6 +57,9 @@ public class UsuarioEmpresaServiceImpl implements IUsuarioEmpresaService {
         if(entity.getUsuario() != null) {
             dto.setIdUsuario(entity.getUsuario().getIdUsuario());
             dto.setNombre(entity.getUsuario().getNombre());
+            dto.setCorreo(entity.getUsuario().getCorreo());
+            String url = empresaRepository.obtenerUrlImagenPorUsuario(entity.getUsuario().getIdUsuario());
+            dto.setUrlImagen(url);
         }
 
         dto.setDescripcion(entity.getDescripcion());

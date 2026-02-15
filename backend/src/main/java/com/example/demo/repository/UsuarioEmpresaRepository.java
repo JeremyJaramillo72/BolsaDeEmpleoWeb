@@ -15,13 +15,16 @@ import java.util.Optional;
 public interface UsuarioEmpresaRepository extends JpaRepository<UsuarioEmpresa, Long> {
 
 
-     @Procedure(procedureName = "sp_PerfilEmpresa")
+     @Procedure(procedureName = "sp_modificarperfilempresa")
      void actualizarDatosEmpresa(
-             Long p_IdEmpresa,
-             String p_nombreEmpresa,
-             String p_sitioWeb,
-             String p_descripcion
+             @Param("p_idempresa") Integer idEmpresa,
+             @Param("p_nombreempresa") String nombreEmpresa,
+             @Param("p_sitioweb") String sitioWeb,
+             @Param("p_descripcion") String descripcion
      );
+
+    @Query(value = "select fn_obtener_url_imagen(:idUsuario)", nativeQuery = true)
+    String obtenerUrlImagenPorUsuario(@Param("idUsuario") Long idUsuario);
 
     boolean existsByRuc(String ruc);
         Optional <UsuarioEmpresa> findByUsuario_IdUsuario(long idUsuario);

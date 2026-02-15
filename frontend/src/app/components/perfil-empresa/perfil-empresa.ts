@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit,ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router'; //
@@ -18,16 +18,43 @@ export class PerfilEmpresaComponent implements OnInit {
     nombre: '',
     descripcion: '',
     ruc: '',
-    sitioWeb: ''
+    sitioWeb: '',
+    correo: '',
+    urlImagen: ''
   };
-
+  porcentajeCompletitud: number = 0;
   constructor(
     private empresaService: UsuarioEmpresaService,
-    private router: Router
+    private router: Router,
+  private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.cargarDatosDelUsuarioLogueado();
+  }
+  calcularCompletitud() {
+    if (!this.perfil) return;
+
+    let camposLlenos = 0;
+
+
+    const camposRequeridos = [
+      this.perfil.nombre,
+      this.perfil.ruc,
+      this.perfil.sitioWeb,
+      this.perfil.descripcion,
+      this.perfil.urlImagen
+    ];
+
+
+    camposRequeridos.forEach(campo => {
+      if (campo && campo.toString().trim() !== '') {
+        camposLlenos++;
+      }
+    });
+
+    const totalCampos = camposRequeridos.length;
+    this.porcentajeCompletitud = Math.round((camposLlenos / totalCampos) * 100);
   }
 
   cargarDatosDelUsuarioLogueado() {
@@ -42,6 +69,8 @@ export class PerfilEmpresaComponent implements OnInit {
       this.empresaService.obtenerPerfilPorUsuario(idUsuario).subscribe({
         next: (data) => {
           this.perfil = data;
+          this.calcularCompletitud();
+          this.cdr.detectChanges();
           if (!this.perfil.idUsuario) {
             this.perfil.idUsuario = idUsuario;
           }
@@ -57,6 +86,7 @@ export class PerfilEmpresaComponent implements OnInit {
     }
   }
 
+
   guardarCambios() {
 
     if (this.perfil.idEmpresa) {
@@ -67,5 +97,37 @@ export class PerfilEmpresaComponent implements OnInit {
     } else {
       alert('No se puede actualizar: El perfil no tiene ID de empresa asignado.');
     }
+  }
+
+  archivoSeleccionado: File | null = null;
+
+
+  seleccionarImagen(event: any) {
+    const archivo = event.target.files[0];
+    if (archivo) {
+      this.archivoSeleccionado = archivo;
+
+      this.subirImagen();
+    }
+  }
+
+  subirImagen() {
+    if (this.archivoSeleccionado && this.perfil.idUsuario) {
+      this.empresaService.subirLogoEmpresa(this.perfil.idUsuario, this.archivoSeleccionado)
+        .subscribe({
+          next: (respuesta: any) => {
+            console.log('¡foto subida con éxito!', respuesta);
+            this.perfil.urlImagen = respuesta.urlImagen;
+            this.empresaService.actualizarLogo(respuesta.urlImagen);
+            this.calcularCompletitud();
+            this.cdr.detectChanges();
+
+          },
+          error: (err) => {
+            console.error('error al subir la foto', err);
+          }
+        });
+    }
+
   }
 }
