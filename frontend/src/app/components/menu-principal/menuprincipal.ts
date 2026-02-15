@@ -55,7 +55,7 @@ export class MenuprincipalComponent implements OnInit {
     this.rolUsuario = localStorage.getItem('rol') || '';
 
     if (!localStorage.getItem('idUsuario')) {
-      this.logout();
+      this.cerrarSesion();
       return;
     }
 
@@ -132,7 +132,7 @@ export class MenuprincipalComponent implements OnInit {
 
       {
         icon: 'admin_panel_settings',
-        title: 'Gestión de Usuarios',
+        title: 'Auditorias',
         description: 'Control de empresas y graduados',
         color: 'from-red-500 to-red-600',
         roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
@@ -234,8 +234,27 @@ export class MenuprincipalComponent implements OnInit {
     }
   }
 
-  logout(): void {
-    localStorage.clear();
-    this.router.navigate(['/login']);
+  // En menuprincipal.component.ts
+
+  cerrarSesion() {
+    // 1. Usamos el servicio authService en lugar de this.http directamente
+    this.authService.logout().subscribe({
+      next: () => {
+        // 2. Limpiamos el rastro en el navegador
+        localStorage.clear();
+        sessionStorage.clear();
+
+        // 3. Redirigimos al login
+        this.router.navigate(['/login']);
+        console.log("⏪ Conexión de BD reseteada al default y sesión cerrada");
+      },
+      error: (err) => {
+        console.error("Error al cerrar sesión en el servidor", err);
+        // Limpiamos y salimos incluso si falla la red por seguridad
+        localStorage.clear();
+        this.router.navigate(['/login']);
+      }
+    });
   }
+
 }

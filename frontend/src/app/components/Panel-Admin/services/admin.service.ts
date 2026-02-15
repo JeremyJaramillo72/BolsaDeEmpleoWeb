@@ -90,8 +90,11 @@ export class AdminService {
     return this.http.get(`${this.apiAcademicoUrl}/carreras`);
   }
 
-  agregarCarrera(carrera: any): Observable<any> {
-    return this.http.post(`${this.apiAcademicoUrl}/carreras`, carrera);
+  agregarCarrera(carrera: { nombreCarrera: string; idFacultad: number }): Observable<any> {
+    return this.http.post(
+      `${this.apiAcademicoUrl}/aggCarreras`,
+      carrera
+    );
   }
 
   eliminarCarrera(id: number): Observable<any> {

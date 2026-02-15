@@ -26,6 +26,15 @@ interface Catalogo {
   idModalidad?: number;
   nombreModalidad?: string;
 
+  id_Rol?: number;
+  nombreRol?: string;
+
+}
+
+interface Carrera {
+  idCarrera?: number;
+  nombreCarrera: string;
+  idFacultad: number;
 }
 
 @Component({
@@ -58,6 +67,8 @@ export class GestionCatalogosComponent implements OnInit {
   nuevoIdioma: Catalogo = { nombre: '' };
   nuevaJornada: Catalogo = { nombre: '' };
   nuevaModalidad: Catalogo = { nombre: '' };
+
+
 
   // Estados de carga
   cargando = false;
@@ -163,20 +174,26 @@ export class GestionCatalogosComponent implements OnInit {
   }
 
   agregarCarrera(): void {
-    if (!this.nuevaCarrera.nombre.trim() || !this.nuevaCarrera.id_facultad) {
+    if (!this.nuevaCarrera.nombreCarrera?.trim() || !this.nuevaCarrera.idFacultad) {
       this.mostrarError('Complete todos los campos de la carrera');
       return;
     }
 
-    this.adminService.agregarCarrera(this.nuevaCarrera).subscribe({
-      next: (response) => {
+    const carreraParaEnviar = {
+      nombreCarrera: this.nuevaCarrera.nombreCarrera.trim(),
+      idFacultad: this.nuevaCarrera.idFacultad
+    };
+
+    this.adminService.agregarCarrera(carreraParaEnviar).subscribe({
+      next: () => {
         this.mostrarExito('Carrera agregada exitosamente');
         this.cargarCarreras();
-        this.nuevaCarrera = { nombre: '', id_facultad: null };
+        this.nuevaCarrera = { nombreCarrera: '', idFacultad: null };
       },
-      error: (err) => this.mostrarError('Error al agregar carrera')
+      error: () => this.mostrarError('Error al agregar carrera')
     });
   }
+
 
   agregarFacultad(): void {
     if (!this.nuevaFacultad.nombre.trim()) {

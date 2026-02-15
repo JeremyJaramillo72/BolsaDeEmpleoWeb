@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  constructor() { }
+  constructor(private http: HttpClient) { }
 
   // Esta función devuelve TRUE si el usuario tiene permiso para ver la sección
   tienePermiso(permisoRequerido: string): boolean {
@@ -33,6 +34,7 @@ export class AuthService {
 
   // Método opcional para salir
   logout() {
-    localStorage.clear();
+    // Retornamos el observable para que el componente pueda reaccionar al éxito
+    return this.http.post('http://localhost:8080/api/auth/logout', {}, { withCredentials: true });
   }
 }

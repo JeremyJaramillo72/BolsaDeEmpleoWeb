@@ -1,10 +1,13 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.LoginRequest;
+import com.example.demo.model.Seguridad;
 import com.example.demo.model.UsuarioEmpresa;
+import com.example.demo.repository.SeguridadRepository;
 import com.example.demo.repository.UsuarioEmpresaRepository;
 import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.service.AuthService;
+import com.example.demo.service.DbSwitchService;
 import com.example.demo.service.EmailService;
 import com.example.demo.service.IUsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,6 +43,12 @@ public class AuthController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private DbSwitchService dbSwitchService;
+
+    @Autowired
+    private SeguridadRepository seguridadRepository;
+
     @PostMapping("/enviar-codigo")
     public ResponseEntity<?> solicitarCodigo(
             @RequestBody Map<String, String> requestData,
@@ -72,22 +81,23 @@ public class AuthController {
     ) {
         return usuarioRepository.findByCorreo(loginRequest.getCorreo())
                 .map(usuario -> {
+                    // 1. Validar contraseña del aplicativo
                     if (passwordEncoder.matches(loginRequest.getContrasena(), usuario.getContrasena())) {
 
-                        // 👇 AQUÍ ESTÁ LA MAGIA DE LA VALIDACIÓN Y EL CORREO 👇
+                        // 👇 VALIDACIÓN DE ESTADO Y ENVÍO DE CORREO 👇
                         String estado = usuario.getEstadoValidacion();
                         String estadoActual = (estado != null && !estado.isEmpty()) ? estado : "Pendiente";
 
                         if (!estadoActual.equalsIgnoreCase("Aprobado") && !estadoActual.equalsIgnoreCase("Activo")) {
 
-                            // 1. enviamos el correo de advertencia
+                            // Enviamos el correo de advertencia
                             try {
                                 emailService.enviarCorreoCuentaNoAprobada(usuario.getCorreo(), usuario.getNombre(), estadoActual);
                             } catch (Exception e) {
                                 System.out.println("aviso: no se pudo enviar el correo de bloqueo: " + e.getMessage());
                             }
 
-                            // 2. personalizamos el mensaje que verá en angular
+                            // Personalizamos el mensaje según el estado
                             String msjFront = estadoActual.equalsIgnoreCase("Rechazado")
                                     ? "tu solicitud de cuenta fue rechazada. comunícate con el administrador."
                                     : "tu cuenta aún está en revisión. no puedes iniciar sesión hasta ser aprobado.";
@@ -97,8 +107,21 @@ public class AuthController {
                         }
                         // 👆 FIN DE LA VALIDACIÓN 👆
 
+                        // 3. BUSCAR CREDENCIALES DE BASE DE DATOS EN ENTIDAD SEGURIDAD
+                        Seguridad seguridad = seguridadRepository.findByUsuario(usuario);
+                        if (seguridad != null) {
+                            try {
+                                // HACEMOS EL SWITCH FÍSICO A LA BD
+                                dbSwitchService.switchToUser(seguridad.getLoginName(), seguridad.getClaveName());
+                            } catch (Exception e) {
+                                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                        .body(Collections.singletonMap("error", "No se pudo establecer conexión con sus credenciales de BD"));
+                            }
+                        }
 
+                        // 4. Guardar en sesión
                         session.setAttribute("nombre_usuario", usuario.getNombre());
+                        session.setAttribute("idUsuario", usuario.getIdUsuario());
                         model.addAttribute("session_id_usuario", usuario.getIdUsuario());
 
                         String nombreRol = usuario.getRol().getNombreRol();
@@ -107,6 +130,7 @@ public class AuthController {
                         httpResponse.addHeader("X-Auth-Token", UUID.randomUUID().toString());
                         httpResponse.addHeader("X-UTEQ-Session", "Active");
 
+                        // Respuesta al Frontend
                         Map<String, Object> response = new HashMap<>();
                         response.put("mensaje", "¡bienvenido de nuevo!");
                         response.put("idUsuario", usuario.getIdUsuario());
@@ -139,8 +163,10 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpSession session) {
+        // CUANDO CIERRA SESIÓN, REGRESAMOS AL USUARIO POR DEFECTO DEL BACKEND
+        dbSwitchService.resetToDefault();
         session.invalidate();
-        return ResponseEntity.ok(Map.of("mensaje", "sesión cerrada y datos destruidos"));
+        return ResponseEntity.ok(Map.of("mensaje", "Conexión de BD cerrada y sesión finalizada"));
     }
 
     @GetMapping("/perfil-resumen")

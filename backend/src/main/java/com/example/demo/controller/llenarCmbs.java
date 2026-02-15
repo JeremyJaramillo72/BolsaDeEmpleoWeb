@@ -34,6 +34,9 @@ public class llenarCmbs {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private RolesRepository rolesRepository;
+
 
     @GetMapping("/facultades")
     public List<Facultad> listarFacultades() {
@@ -101,6 +104,37 @@ public class llenarCmbs {
         return usuarioRepository.findAll();
     }
 
+    @GetMapping("/roles")
+    public List<Roles> listarRoles() {
+        return rolesRepository.findAll();
+    }
+
+    @PostMapping("/roles")
+    public ResponseEntity<?> crearRol(@RequestBody Roles nuevoRol) {
+        try {
+            Roles rolGuardado = rolesRepository.save(nuevoRol);
+            return ResponseEntity.status(HttpStatus.CREATED).body(rolGuardado);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error: " + e.getMessage()));
+        }
+    }
+
+
+    /*@GetMapping("/facultad/{idFacultad}")
+    public ResponseEntity<?> listarCarrerasPorFacultad(@PathVariable Integer idFacultad) {
+
+        try {
+            List<Carrera> carreras = carreraRepository.findByFacultadIdFacultad(idFacultad);
+            return ResponseEntity.ok(carreras);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al obtener carreras"));
+        }
+    }*/
+
+
     @PostMapping("/usuarios/exportar")
     public ResponseEntity<byte[]> exportarUsuariosExcel(@RequestBody List<Usuario> usuarios) {
         try {
@@ -119,9 +153,6 @@ public class llenarCmbs {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
-
-
 
 
     @PostMapping("/idiomas")
@@ -202,8 +233,33 @@ public class llenarCmbs {
         }
     }
 
+    @PostMapping("/aggCarreras")
+    public ResponseEntity<?> crearCarrera(@RequestBody Map<String, Object> payload) {
 
+        try {
+            String nombreCarrera = (String) payload.get("nombreCarrera");
+            Integer idFacultad = Integer.valueOf(payload.get("idFacultad").toString());
 
+            if (nombreCarrera == null || nombreCarrera.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "El nombre de la carrera es obligatorio"));
+            }
 
+            Facultad facultad = facultadRepository.findById(idFacultad)
+                    .orElseThrow(() -> new RuntimeException("La facultad no existe"));
 
+            Carrera carrera = new Carrera();
+            carrera.setNombreCarrera(nombreCarrera.trim());
+            carrera.setFacultad(facultad);
+
+            carreraRepository.save(carrera);
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("mensaje", "Carrera creada correctamente"));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al crear carrera: " + e.getMessage()));
+        }
+    }
 }

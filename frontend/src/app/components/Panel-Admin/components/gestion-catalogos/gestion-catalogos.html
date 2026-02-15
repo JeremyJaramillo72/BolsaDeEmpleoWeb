@@ -28,13 +28,7 @@
       Categorías
     </button>
 
-    <button
-      class="tab-button"
-      [class.active]="tabActiva === 'carreras'"
-      (click)="cambiarTab('carreras')">
-      <span class="material-icons">school</span>
-      Carreras
-    </button>
+
 
     <button
       class="tab-button"
@@ -66,6 +60,14 @@
       (click)="cambiarTab('modalidades')">
       <span class="material-icons">computer</span>
       Modalidades
+    </button>
+
+    <button
+      class="tab-button"
+      [class.active]="tabActiva === 'roles'"
+      (click)="cambiarTab('roles')">
+      <span class="material-icons">computer</span>
+      Roles
     </button>
   </div>
 
@@ -116,63 +118,7 @@
       </div>
     </div>
 
-    <!-- ========== TAB CARRERAS ========== -->
-    <div class="catalog-section" *ngIf="tabActiva === 'carreras'">
-      <div class="section-card">
-        <div class="section-header">
-          <h3>
-            <span class="section-icon">🎓</span>
-            Carreras Universitarias
-          </h3>
-        </div>
 
-        <div class="form-grid-2">
-          <div class="form-group">
-            <label>Nombre de la Carrera</label>
-            <input
-              type="text"
-              [(ngModel)]="nuevaCarrera.nombre"
-              class="form-control"
-              placeholder="Ej: Ingeniería en Sistemas">
-          </div>
-
-          <div class="form-group">
-            <label>Facultad</label>
-            <select [(ngModel)]="nuevaCarrera.id_facultad" class="form-control">
-              <option [ngValue]="null" disabled>Seleccionar facultad...</option>
-              <option *ngFor="let fac of facultadesDisponibles" [value]="fac.idFacultad">
-                {{ fac.nombreFacultad }}
-              </option>
-            </select>
-          </div>
-        </div>
-
-        <button class="btn-add full-width" (click)="agregarCarrera()">
-          <span class="material-icons">add</span>
-          Agregar Carrera
-        </button>
-
-        <div class="items-list">
-          <div class="item-card-extended" *ngFor="let car of carreras">
-            <div class="item-info">
-              <span class="item-icon">🎓</span>
-              <div class="item-details">
-                <span class="item-name">{{ car.nombreCarrera }}</span>
-                <span class="item-subtitle">{{ obtenerNombreFacultad(car.idFacultad) }}</span>
-              </div>
-            </div>
-            <button class="btn-delete-small" (click)="eliminarCarrera(car.idCarrera)">
-              <span class="material-icons">delete</span>
-            </button>
-          </div>
-
-          <div class="empty-state" *ngIf="carreras.length === 0">
-            <span class="material-icons">school</span>
-            <p>No hay carreras registradas</p>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- ========== TAB FACULTADES ========== -->
     <div class="catalog-section" *ngIf="tabActiva === 'facultades'">
