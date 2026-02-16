@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "ValidacionIdioma")
+@Table(name = "ValidacionIdioma", schema = "postulaciones")
 @Data
 public class ValidacionIdioma {
 

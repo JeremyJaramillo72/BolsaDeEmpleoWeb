@@ -19,7 +19,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByCorreo(String correo);
 
     // Sincronizado con sp_registrar_postulante
-    @Procedure(procedureName = "sp_registrar_postulante")
+    @Procedure(procedureName = "usuarios.sp_registrar_postulante")
     void registrarPostulantePro(
             @Param("p_nombre") String nombre,
             @Param("p_apellido") String apellido,
@@ -33,7 +33,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     );
 
     // Sincronizado con sp_registrar_empresa_completa (7 parámetros)
-    @Procedure(procedureName = "sp_registrar_empresa_completa")
+    @Procedure(procedureName = "empresas.sp_registrar_empresa_completa")
     void registrarEmpresaPro(
             @Param("p_correo") String correo,
             @Param("p_contrasena") String contra,
@@ -44,7 +44,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
             @Param("p_sitioweb") String web
     );
 
-    @Procedure(procedureName = "sp_registrar_admin_interno")
+    @Procedure(procedureName = "seguridad.sp_registrar_admin_interno")
     void registrarAdminInternoPro(
             @Param("p_nombre") String nombre,
             @Param("p_apellido") String apellido,
@@ -59,7 +59,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     );
     @Modifying
     @Transactional
-    @Query(value = "CALL public.registrousuariologin(:correo, :idUsuario, :idRol)", nativeQuery = true)
+    @Query(value = "CALL seguridad.registrousuariologin(:correo, :idUsuario, :idRol)", nativeQuery = true)
     void crearCredencialesBD(
             @Param("correo") String correo,
             @Param("idUsuario") Integer idUsuario,

@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "postulacion")
+@Table(name = "postulacion", schema = "postulaciones")
 @Data
 public class Postulacion {@Id
 @GeneratedValue(strategy = GenerationType.IDENTITY)

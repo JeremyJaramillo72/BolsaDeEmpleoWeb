@@ -16,6 +16,8 @@ export class AdminService {
   private apiAcademicoUrl = 'http://localhost:8080/api/academico';
   private apiAdminUrl = 'http://localhost:8080/api/admin';
 
+  private apiRolesbd = '';
+
   constructor(private http: HttpClient) { }
 
   // ==========================================
@@ -224,6 +226,35 @@ export class AdminService {
       { responseType: 'blob' }
     );
   }
+
+
+  // FUNCIONES PARA LOS ROLES DE BASE DE DATOS
+  // ========== ROLES DE BASE DE DATOS ==========
+  obtenerRolesBD(): Observable<any> {
+    return this.http.get(`${this.apiRolesbd}/admin/roles-bd`);
+  }
+
+  obtenerRolesBase(): Observable<any> {
+    return this.http.get(`${this.apiRolesbd}/admin/roles-base`);
+  }
+
+  obtenerEsquemasYTablas(): Observable<any> {
+    return this.http.get(`${this.apiRolesbd}/admin/esquemas`);
+  }
+
+  crearRolBD(datos: any): Observable<any> {
+    return this.http.post(`${this.apiRolesbd}/admin/roles-bd`, datos);
+  }
+
+  obtenerPermisosRol(idRol: number): Observable<any> {
+    return this.http.get(`${this.apiRolesbd}/admin/roles-bd/${idRol}/permisos`);
+  }
+
+  eliminarRolBD(idRol: number): Observable<any> {
+    return this.http.delete(`${this.apiRolesbd}/admin/roles-bd/${idRol}`);
+  }
+
+
 
 
 

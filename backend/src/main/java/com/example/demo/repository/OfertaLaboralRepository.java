@@ -21,7 +21,7 @@ public interface OfertaLaboralRepository extends JpaRepository<OfertaLaboral, In
     List<OfertaLaboral> findByEmpresa(UsuarioEmpresa empresa);
 
     @Query(value = """
-        select sp_crearoferta(
+        select ofertas.sp_crearoferta(
             cast(:idEmpresa as bigint),
             cast(:idModalidad as integer),
             cast(:idCategoria as integer),

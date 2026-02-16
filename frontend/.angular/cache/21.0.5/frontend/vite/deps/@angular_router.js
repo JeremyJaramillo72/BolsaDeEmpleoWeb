@@ -1,7 +1,7 @@
 import {
   Title
-} from "./chunk-FOF3DKWL.js";
-import "./chunk-ZGAOAJ7H.js";
+} from "./chunk-32FRG7V4.js";
+import "./chunk-OF7D6J4U.js";
 import {
   HashLocationStrategy,
   Location,
@@ -10,10 +10,10 @@ import {
   PathLocationStrategy,
   PlatformNavigation,
   ViewportScroller
-} from "./chunk-23BYIDDT.js";
+} from "./chunk-LZFR77ZR.js";
 import {
   LOCATION_INITIALIZED
-} from "./chunk-K47UAWBS.js";
+} from "./chunk-XXV4YIJD.js";
 import {
   APP_BOOTSTRAP_LISTENER,
   ApplicationRef,
@@ -86,12 +86,12 @@ import {
   ɵɵloadQuery,
   ɵɵqueryRefresh,
   ɵɵsanitizeUrlOrResourceUrl
-} from "./chunk-465BKOEO.js";
+} from "./chunk-PBQRXIMG.js";
 import {
   defer,
   isObservable
-} from "./chunk-5GZPBGYT.js";
-import "./chunk-7Z4YW3FP.js";
+} from "./chunk-53B2AV33.js";
+import "./chunk-D5HPMNDN.js";
 import {
   BehaviorSubject,
   EMPTY,
@@ -99,8 +99,6 @@ import {
   Observable,
   Subject,
   Subscription,
-  __spreadProps,
-  __spreadValues,
   catchError,
   combineLatest,
   concat,
@@ -124,7 +122,11 @@ import {
   takeUntil,
   tap,
   throwError
-} from "./chunk-GJVV2SYQ.js";
+} from "./chunk-W3LQWAEF.js";
+import {
+  __spreadProps,
+  __spreadValues
+} from "./chunk-46DXP6YY.js";
 
 // node_modules/@angular/router/fesm2022/_router-chunk.mjs
 var PRIMARY_OUTLET = "primary";
@@ -4710,7 +4712,7 @@ var Router = class _Router {
     try {
       return this.urlSerializer.parse(url);
     } catch (e) {
-      this.console.warn(formatRuntimeError(4018, ngDevMode && `Error parsing URL ${url}. Falling back to '/' instead. 
+      this.console.warn(formatRuntimeError(4018, ngDevMode && `Error parsing URL ${url}. Falling back to '/' instead.
 ` + e));
       return this.urlSerializer.parse("/");
     }

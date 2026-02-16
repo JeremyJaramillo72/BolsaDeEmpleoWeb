@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "roles") // Cambiado a minúsculas para coincidir con la BD
+@Table(name = "roles" , schema = "usuarios") // Cambiado a minúsculas para coincidir con la BD
 @Data
 public class Roles {
 

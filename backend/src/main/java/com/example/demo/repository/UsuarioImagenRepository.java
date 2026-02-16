@@ -12,6 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 public interface UsuarioImagenRepository extends JpaRepository<UsuarioImagen, Integer> {
     @Modifying
     @Transactional
-    @Query(value = "call sp_guardar_url_imagen(?1, ?2)", nativeQuery = true)
+    @Query(value = "call usuarios.sp_guardar_url_imagen(?1, ?2)", nativeQuery = true)
     void guardarUrlImagen(Integer idUsuario, String url);
 }

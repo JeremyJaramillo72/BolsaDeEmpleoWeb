@@ -1,0 +1,255 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>
+      <span class="header-icon">🔐</span>
+      Gestión de Roles y Permisos de Base de Datos
+    </h1>
+    <p class="page-description">Administre roles SQL y asigne permisos granulares a nivel de esquema y tabla</p>
+  </div>
+
+  <!-- Alertas -->
+  <div class="alert alert-success" *ngIf="mensajeExito">
+    <span class="material-icons">check_circle</span>
+    {{ mensajeExito }}
+  </div>
+
+  <div class="alert alert-error" *ngIf="mensajeError">
+    <span class="material-icons">error</span>
+    {{ mensajeError }}
+  </div>
+
+  <!-- ========== VISTA LISTA ========== -->
+  <div *ngIf="vistaActual === 'LISTA'" class="fade-in">
+    <div class="action-bar">
+      <button class="btn-primary" (click)="irACrear()">
+        <span class="material-icons">add</span>
+        Crear Nuevo Rol
+      </button>
+    </div>
+
+    <div class="roles-grid" *ngIf="!cargando">
+      <div class="rol-card" *ngFor="let rol of rolesCreados">
+        <div class="rol-header">
+          <div class="rol-title-section">
+            <h3>{{ rol.nombre }}</h3>
+            <span class="rol-badge">{{ rol.rolBase }}</span>
+          </div>
+          <div class="rol-actions">
+            <button class="icon-btn edit" (click)="irAEditar(rol)" title="Editar">
+              <span class="material-icons">edit</span>
+            </button>
+            <button class="icon-btn delete" (click)="eliminarRol(rol)" title="Eliminar">
+              <span class="material-icons">delete</span>
+            </button>
+          </div>
+        </div>
+        <div class="rol-body">
+          <div class="rol-info">
+            <div class="info-item">
+              <span class="material-icons">security</span>
+              <span>{{ rol.totalPermisos }} permisos asignados</span>
+            </div>
+            <div class="info-item">
+              <span class="material-icons">calendar_today</span>
+              <span>{{ rol.fechaCreacion | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="rolesCreados.length === 0">
+        <span class="material-icons">security</span>
+        <p>No hay roles creados. Crea tu primer rol de base de datos.</p>
+      </div>
+    </div>
+
+    <div class="loading-container" *ngIf="cargando">
+      <div class="spinner"></div>
+      <p>Cargando roles...</p>
+    </div>
+  </div>
+
+  <!-- ========== VISTA CREAR/EDITAR ========== -->
+  <div *ngIf="vistaActual === 'CREAR' || vistaActual === 'EDITAR'" class="fade-in">
+    <div class="section-card">
+      <div class="section-header">
+        <h3>
+          <span class="section-icon">
+            {{ vistaActual === 'CREAR' ? '➕' : '✏️' }}
+          </span>
+          {{ vistaActual === 'CREAR' ? 'Crear Nuevo Rol' : 'Editar Rol' }}
+        </h3>
+      </div>
+
+      <!-- Formulario Básico -->
+      <div class="form-section">
+        <h4 class="subsection-title">Información del Rol</h4>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Nombre del Rol SQL *</label>
+            <input
+              type="text"
+              [(ngModel)]="nuevoRol.nombre"
+              class="form-control"
+              placeholder="Ej: rol_soporte_tecnico">
+            <small class="form-hint">Use solo minúsculas, números y guiones bajos</small>
+          </div>
+
+          <div class="form-group">
+            <label>Heredar de Rol Base</label>
+            <select [(ngModel)]="nuevoRol.rolBaseId" class="form-control">
+              <option [ngValue]="null">Sin herencia</option>
+              <option *ngFor="let rolBase of rolesBase" [value]="rolBase.id">
+                {{ rolBase.nombre }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Descripción</label>
+            <textarea
+              [(ngModel)]="nuevoRol.descripcion"
+              class="form-control"
+              rows="2"
+              placeholder="Descripción opcional del propósito del rol..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <hr class="section-divider">
+
+      <!-- Permisos de Esquemas -->
+      <div class="form-section">
+        <h4 class="subsection-title">
+          <span class="material-icons">database</span>
+          Permisos de Esquemas y Tablas
+        </h4>
+
+        <div class="esquemas-container">
+          <div class="esquema-card" *ngFor="let esquema of esquemas">
+            <!-- Header del Esquema -->
+            <div class="esquema-header">
+              <div class="esquema-title-section">
+                <div class="checkbox-group">
+                  <input
+                    type="checkbox"
+                    [id]="'usage-' + esquema.nombre"
+                    [(ngModel)]="esquema.usage"
+                    (change)="cambiarUsageEsquema(esquema)">
+                  <label [for]="'usage-' + esquema.nombre">
+                    <span class="material-icons">folder</span>
+                    <strong>{{ esquema.nombre }}</strong>
+                  </label>
+                </div>
+
+                <span class="esquema-badge" [ngClass]="getEstadoEsquema(esquema)">
+                  {{ getEstadoEsquema(esquema) === 'global' ? 'Permisos Globales' :
+                  getEstadoEsquema(esquema) === 'parcial' ? contarPermisosActivos(esquema) + ' permisos' : 'Sin permisos' }}
+                </span>
+              </div>
+
+              <div class="esquema-controls">
+                <div class="switch-container" *ngIf="esquema.usage">
+                  <label class="switch">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="esquema.permisoGlobal"
+                      (change)="cambiarPermisoGlobal(esquema)">
+                    <span class="slider"></span>
+                  </label>
+                  <span class="switch-label">Todos los permisos</span>
+                </div>
+
+                <button
+                  class="btn-expand"
+                  (click)="toggleMostrarTablas(esquema)"
+                  [disabled]="!esquema.usage">
+                  <span class="material-icons">
+                    {{ esquema.mostrarTablas ? 'expand_less' : 'expand_more' }}
+                  </span>
+                  {{ esquema.mostrarTablas ? 'Ocultar' : 'Ver' }} Tablas
+                </button>
+              </div>
+            </div>
+
+            <!-- Lista de Tablas -->
+            <div class="tablas-container" *ngIf="esquema.mostrarTablas && esquema.usage">
+              <div class="tabla-item" *ngFor="let tabla of esquema.tablas">
+                <div class="tabla-header" (click)="tabla.mostrarPermisos = !tabla.mostrarPermisos">
+                  <div class="tabla-title">
+                    <span class="material-icons">table_chart</span>
+                    {{ tabla.nombre }}
+                  </div>
+
+                  <div class="tabla-status">
+                    <span class="permiso-count" *ngIf="tabla.permisos.select || tabla.permisos.insert || tabla.permisos.update || tabla.permisos.delete">
+                      {{ (tabla.permisos.select ? 1 : 0) + (tabla.permisos.insert ? 1 : 0) +
+                    (tabla.permisos.update ? 1 : 0) + (tabla.permisos.delete ? 1 : 0) }}/4
+                    </span>
+                    <span class="material-icons chevron">
+                      {{ tabla.mostrarPermisos ? 'expand_less' : 'expand_more' }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="permisos-grid" *ngIf="tabla.mostrarPermisos">
+                  <label class="permiso-checkbox select">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="tabla.permisos.select"
+                      (change)="cambiarPermisoTabla(esquema, tabla)"
+                      [disabled]="esquema.permisoGlobal">
+                    <span class="material-icons">visibility</span>
+                    <span>SELECT</span>
+                  </label>
+
+                  <label class="permiso-checkbox insert">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="tabla.permisos.insert"
+                      (change)="cambiarPermisoTabla(esquema, tabla)"
+                      [disabled]="esquema.permisoGlobal">
+                    <span class="material-icons">add_circle</span>
+                    <span>INSERT</span>
+                  </label>
+
+                  <label class="permiso-checkbox update">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="tabla.permisos.update"
+                      (change)="cambiarPermisoTabla(esquema, tabla)"
+                      [disabled]="esquema.permisoGlobal">
+                    <span class="material-icons">edit</span>
+                    <span>UPDATE</span>
+                  </label>
+
+                  <label class="permiso-checkbox delete">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="tabla.permisos.delete"
+                      (change)="cambiarPermisoTabla(esquema, tabla)"
+                      [disabled]="esquema.permisoGlobal">
+                    <span class="material-icons">delete</span>
+                    <span>DELETE</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div class="form-actions">
+        <button class="btn-secondary" (click)="irALista()">
+          Cancelar
+        </button>
+        <button class="btn-primary" (click)="guardarRol()" [disabled]="guardando">
+          <span class="material-icons">{{ guardando ? 'hourglass_empty' : 'save' }}</span>
+          {{ guardando ? 'Guardando...' : 'Guardar Rol' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

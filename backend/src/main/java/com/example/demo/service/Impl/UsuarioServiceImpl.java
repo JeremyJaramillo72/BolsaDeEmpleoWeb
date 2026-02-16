@@ -54,7 +54,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
         // 3. CREAMOS EL USUARIO DE BASE DE DATOS AUTOMÁTICAMENTE
         // Llamamos a tu SP: registroUsuarioLogin(correo, id, rol)
-        jdbcTemplate.update("CALL public.registroUsuarioLogin(?, ?, ?)",
+        jdbcTemplate.update("CALL seguridad.registroUsuarioLogin(?, ?, ?)",
                 usuarioGuardado.getCorreo(),
                 usuarioGuardado.getIdUsuario().intValue(),
                 idRolParaGuardar// ID del rol Postulante
@@ -155,7 +155,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 .orElseThrow(() -> new RuntimeException("Error al recuperar empresa registrada."));
 
         // 3. CREAMOS EL USUARIO DE BASE DE DATOS (Rol 2 para empresas)
-        jdbcTemplate.update("CALL public.registroUsuarioLogin(?, ?, ?)",
+        jdbcTemplate.update("CALL seguridad.registroUsuarioLogin(?, ?, ?)",
                 usuarioGuardado.getCorreo(),
                 usuarioGuardado.getIdUsuario().intValue(),
                 2 // ID del rol Empresa

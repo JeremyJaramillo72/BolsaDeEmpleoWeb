@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "seguridad", schema = "public") // Nombre exacto de tu tabla
+@Table(name = "seguridad", schema = "seguridad") // Nombre exacto de tu tabla
 @Data
 public class Seguridad {
 

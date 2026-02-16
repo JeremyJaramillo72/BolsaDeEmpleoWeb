@@ -13,7 +13,7 @@ import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "oferta_habilidad_seleccionada")
+@Table(name = "oferta_habilidad_seleccionada", schema = "ofertas")
 public class OfertaHabilidadSeleccionada {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

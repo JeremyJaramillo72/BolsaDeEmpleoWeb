@@ -193,7 +193,19 @@ export class MenuprincipalComponent implements OnInit {
         roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
         path: '/PanelAdmi/ValidarEmpresa',
         permiso: 'VALIDACION_E'
+      },
+
+      {
+        icon: 'manage_accounts', // o 'admin_panel_settings' o supervisor_account
+        title: 'Gestión Roles BD',
+        description: 'Crea y gestiona tus Roles de Base de Dato',
+        color: 'from-green-500 to-indigo-600',
+        roles: ['ADMINISTRADOR'],
+        path: '/GestionRolesbd',
+        //permiso: 'VALIDACION_E'
       }
+
+
     ];
 
     this.menuItems = todasLasOpciones.filter(item => {
