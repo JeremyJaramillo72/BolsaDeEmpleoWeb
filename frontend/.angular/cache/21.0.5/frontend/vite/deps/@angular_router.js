@@ -1,7 +1,7 @@
 import {
   Title
-} from "./chunk-32FRG7V4.js";
-import "./chunk-OF7D6J4U.js";
+} from "./chunk-EJT3UTIU.js";
+import "./chunk-5KWBPSMW.js";
 import {
   HashLocationStrategy,
   Location,
@@ -10,10 +10,10 @@ import {
   PathLocationStrategy,
   PlatformNavigation,
   ViewportScroller
-} from "./chunk-LZFR77ZR.js";
+} from "./chunk-IY7PFMOC.js";
 import {
   LOCATION_INITIALIZED
-} from "./chunk-XXV4YIJD.js";
+} from "./chunk-2BB2HWPE.js";
 import {
   APP_BOOTSTRAP_LISTENER,
   ApplicationRef,
@@ -86,12 +86,12 @@ import {
   ɵɵloadQuery,
   ɵɵqueryRefresh,
   ɵɵsanitizeUrlOrResourceUrl
-} from "./chunk-PBQRXIMG.js";
+} from "./chunk-7KUD2HJN.js";
+import "./chunk-LQKJR2HS.js";
 import {
   defer,
   isObservable
-} from "./chunk-53B2AV33.js";
-import "./chunk-D5HPMNDN.js";
+} from "./chunk-NGWI62ZP.js";
 import {
   BehaviorSubject,
   EMPTY,
@@ -101,7 +101,7 @@ import {
   Subscription,
   catchError,
   combineLatest,
-  concat,
+  concat2 as concat,
   concatMap,
   defaultIfEmpty,
   filter,
@@ -122,7 +122,7 @@ import {
   takeUntil,
   tap,
   throwError
-} from "./chunk-W3LQWAEF.js";
+} from "./chunk-73FCWE6J.js";
 import {
   __spreadProps,
   __spreadValues
@@ -4712,7 +4712,7 @@ var Router = class _Router {
     try {
       return this.urlSerializer.parse(url);
     } catch (e) {
-      this.console.warn(formatRuntimeError(4018, ngDevMode && `Error parsing URL ${url}. Falling back to '/' instead.
+      this.console.warn(formatRuntimeError(4018, ngDevMode && `Error parsing URL ${url}. Falling back to '/' instead. 
 ` + e));
       return this.urlSerializer.parse("/");
     }

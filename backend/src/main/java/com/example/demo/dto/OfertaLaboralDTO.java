@@ -18,9 +18,12 @@ public class OfertaLaboralDTO {
 
     private String titulo;
     private String descripcion;
-    private BigDecimal salarioPromedio;
     private LocalDate fechaInicio;
     private LocalDate fechaCierre;
     private String estadoOferta;
     private List<OfertaHabilidadDTO> habilidades;
+    private Integer cantidadVacantes;
+    private Integer experienciaMinima;
+    private BigDecimal salarioMin;
+    private BigDecimal salarioMax;
 }

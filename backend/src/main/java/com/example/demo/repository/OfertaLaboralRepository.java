@@ -2,7 +2,9 @@ package com.example.demo.repository;
 
 import com.example.demo.model.OfertaLaboral;
 import com.example.demo.dto.OfertaDetalleDTO;
+import com.example.demo.model.Usuario;
 import com.example.demo.model.UsuarioEmpresa;
+import com.example.demo.repository.Views.IOfertaEmpresaDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,38 +16,32 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public interface OfertaLaboralRepository extends JpaRepository<OfertaLaboral, Integer> {
 
     List<OfertaLaboral> findByEmpresa(UsuarioEmpresa empresa);
 
-    @Query(value = """
-        select ofertas.sp_crearoferta(
-            cast(:idEmpresa as bigint),
-            cast(:idModalidad as integer),
-            cast(:idCategoria as integer),
-            cast(:idJornada as integer),
-            cast(:idCiudad as integer),
-            :titulo,
-            :descripcion,
-            cast(:salario as decimal),
-            cast(:fechaInicio as date),
-            cast(:fechaCierre as date),
-            cast(:habilidades as jsonb) 
-        )
-    """, nativeQuery = true)
-    Object registrarOferta( // 👈 Retornamos Object para absorber la fila invisible
-                            @Param("idEmpresa") Long idEmpresa,
-                            @Param("idModalidad") Integer idModalidad,
-                            @Param("idCategoria") Integer idCategoria,
-                            @Param("idJornada") Integer idJornada,
-                            @Param("idCiudad") Integer idCiudad,
-                            @Param("titulo") String titulo,
-                            @Param("descripcion") String descripcion,
-                            @Param("salario") BigDecimal salario,
-                            @Param("fechaInicio") LocalDate fechaInicio,
-                            @Param("fechaCierre") LocalDate fechaCierre,
-                            @Param("habilidades") String habilidadesJson
+    @Procedure(name = "ofertas.sp_crearoferta")
+    void registrarOferta(
+
+                            @Param("p_idempresa") Long idEmpresa,
+                            @Param("p_idmodalidad") Integer idModalidad,
+                            @Param("p_idcategoria") Integer idCategoria,
+                            @Param("p_idjornada") Integer idJornada,
+                            @Param("p_idciudad") Integer idCiudad,
+                            @Param("p_titulo") String titulo,
+                            @Param("p_descripcion") String descripcion,
+                            @Param("p_salario_min") BigDecimal salarioMin,
+                            @Param("p_salario_max") BigDecimal salarioMax,
+                            @Param("p_cantidad_vacantes") Integer cantidadVacantes,
+                            @Param("p_experiencia_minima") Integer experienciaMinima,
+                            @Param("p_fecha_inicio") LocalDate fechaInicio,
+                            @Param("p_fecha_cierre") LocalDate fechaCierre,
+                            @Param("p_habilidades") String habilidadesJson
     );
+
+    @Query(value = "select * from ofertas.fn_mostrarofertasempresa(:idEmpresa)", nativeQuery = true)
+    List<IOfertaEmpresaDTO> obtenerOfertasPorEmpresa(@Param("idEmpresa") Long idEmpresa);
 }

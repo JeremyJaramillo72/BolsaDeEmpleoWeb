@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.OfertaLaboralDTO;
 import com.example.demo.model.OfertaLaboral;
+import com.example.demo.repository.Views.IOfertaEmpresaDTO;
 import com.example.demo.service.IOfertaLaboralService;
 import com.example.demo.service.Impl.OfertaLaboralServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ public class OfertaLaboralController {
     }
 
     @GetMapping("/empresa/{idEmpresa}")
-    public List<OfertaLaboral> listarPorEmpresa(@PathVariable Long idEmpresa) {
+    public List<IOfertaEmpresaDTO> listarPorEmpresa(@PathVariable Long idEmpresa) {
         return ofertaService.listarPorEmpresa(idEmpresa);
     }
 

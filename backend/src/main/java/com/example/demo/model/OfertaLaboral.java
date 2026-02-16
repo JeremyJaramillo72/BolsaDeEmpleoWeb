@@ -1,6 +1,7 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -53,8 +54,27 @@ public class OfertaLaboral {
     @Column(name = "descripcion", columnDefinition = "TEXT")
     private String descripcion;
 
-    @Column(name = "salario_promedio", precision = 10, scale = 2)
-    private BigDecimal salarioPromedio;
+
+    @NotNull(message = "El numero de vacantes es obligatorio")
+    @Size(max =5000)
+    @Column (name="cantidad_vacantes",nullable = false)
+    private Integer cantidadVacantes;
+
+
+    @NotNull(message = "La experiencia minima es obligatoria")
+    @Size(max =100)
+    @Column (name="experiencia_minima",nullable = false)
+    private Integer experienciaMinima;
+
+    @NotNull(message = "El salario minima es obligatorio")
+    @Column (name="salario_min",nullable = false)
+    @Size(max = 900000)
+    private BigDecimal salarioMin;
+
+    @NotNull(message = "El salario maximo es obligatorio")
+    @Column (name="salario_max",nullable = false)
+    @Size(max = 900000)
+    private BigDecimal salarioMax;
 
     @NotNull(message = "La fecha de inicio es obligatoria")
     @Column(name = "fecha_inicio")

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit ,ChangeDetectorRef} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OfertaService, OfertaLaboralDTO, OfertaHabilidadDTO } from '../../services/oferta.service';
@@ -23,8 +23,10 @@ export class GestionOfertasComponent implements OnInit {
   tempIdHabilidad: number = 0;
   tempNivel: string = 'Básico';
   tempObligatorio: boolean = false;
+  textoBusqueda: string = '';
+  filtroEstado: string = 'Todos';
 
-  constructor(private ofertaService: OfertaService,private router: Router) {}
+  constructor(private ofertaService: OfertaService,private router: Router,private cdr:ChangeDetectorRef) {}
 
   ngOnInit(): void {
     const idGuardado = localStorage.getItem('idEmpresa');
@@ -34,6 +36,8 @@ export class GestionOfertasComponent implements OnInit {
     if (idGuardado) {
       this.idEmpresaLogueada = Number(idGuardado);
       this.nuevaOferta.idEmpresa = this.idEmpresaLogueada;
+      this.cargarOfertas();
+
     } else {
 
       this.router.navigate(['/login']);
@@ -49,20 +53,64 @@ export class GestionOfertasComponent implements OnInit {
       idCiudad: 1,
       titulo: '',
       descripcion: '',
-      salarioPromedio: 0,
+      salarioMin: 0,
+      salarioMax: 0,
+      cantidadVacantes: 0,
+      experienciaMinima: 0,
       fechaInicio: '',
       fechaCierre: '',
       habilidades: []
     };
   }
 
-  cargarOfertas() {
-    this.ofertaService.listarPorEmpresa(this.idEmpresaLogueada).subscribe({
-      next: (data) => this.ofertas = data,
-      error: (e) => console.error('Error cargando ofertas', e)
+  cargarOfertas(): void {
+
+
+    this.ofertaService.obtenerOfertasPorEmpresa(this.idEmpresaLogueada).subscribe({
+      next: (datosDelBackend) => {
+        this.ofertas = datosDelBackend.map(oferta => {
+          return {
+            ...oferta,
+            habilidades: typeof oferta.habilidades === 'string'
+              ? JSON.parse(oferta.habilidades)
+              : oferta.habilidades,
+
+            requisitos_manuales: typeof oferta.requisitos_manuales === 'string'
+              ? JSON.parse(oferta.requisitos_manuales)
+              : oferta.requisitos_manuales
+          };
+        });
+
+        this.cdr.detectChanges();
+        console.log('Ofertas cargadas exitosamente:', this.ofertas);
+      },
+      error: (error) => {
+        console.error('Error al cargar las ofertas de la empresa', error);
+      }
     });
   }
 
+
+
+  get ofertasFiltradas(): OfertaLaboralDTO[] {
+
+    if (!this.ofertas) return [];
+
+    return this.ofertas.filter((oferta: any) => {
+
+      const titulo = oferta.titulo ? oferta.titulo.toLowerCase() : '';
+      const descripcion = oferta.descripcion ? oferta.descripcion.toLowerCase() : '';
+      const texto = this.textoBusqueda ? this.textoBusqueda.toLowerCase() : '';
+
+      const coincideTexto = titulo.includes(texto) || descripcion.includes(texto);
+      const estadoReal = oferta.estadoOferta || oferta.estado_oferta || '';
+
+      const coincideEstado = this.filtroEstado === 'Todos' ||
+        estadoReal.toLowerCase() === this.filtroEstado.toLowerCase();
+
+      return coincideTexto && coincideEstado;
+    });
+  }
   openModal() { this.isModalOpen = true; }
   closeModal() { this.isModalOpen = false; }
 

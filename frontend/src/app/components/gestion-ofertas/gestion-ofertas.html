@@ -1,48 +1,96 @@
 <main class="main-content">
   <header class="topbar">
     <div class="welcome-text">
-      <h2>Ofertas Laborales</h2>
+      <h2>Mis Ofertas Laborales</h2>
       <p>Crea, edita y gestiona tus vacantes activas</p>
     </div>
   </header>
 
-  <div class="action-bar">
-    <div class="stats-cards">
-      <div class="stat-card">
-        <div class="stat-icon blue"><i class="fas fa-briefcase"></i></div>
-        <div>
-          <h3>{{ ofertas.length }}</h3>
-          <p>Publicadas</p>
+  <div class="layout-wrapper">
+
+    <aside class="sidebar-filters">
+      <div class="filter-header">
+        <i class="fas fa-wrench"></i>
+        <h3>Filtros</h3>
+      </div>
+
+      <div class="filter-group">
+        <label>Buscar vacante</label>
+        <div class="search-input-wrapper">
+          <i class="fas fa-search"></i>
+          <input type="text" [(ngModel)]="textoBusqueda" placeholder="Título o palabra clave...">
         </div>
       </div>
-    </div>
 
-    <button class="btn-primary" (click)="openModal()">
-      <i class="fas fa-plus"></i> Nueva Oferta
-    </button>
-  </div>
-
-  <div class="offers-grid">
-    <div *ngIf="ofertas.length === 0" class="no-data">
-      <p>No hay ofertas publicadas aún.</p>
-    </div>
-
-    <div class="offer-card" *ngFor="let oferta of ofertas">
-      <div class="offer-header">
-        <span class="badge badge-active">{{ oferta.estadoOferta || 'Activa' }}</span>
-        <div class="offer-menu"><i class="fas fa-ellipsis-v"></i></div>
+      <div class="filter-group">
+        <label>Estado de la oferta</label>
+        <select [(ngModel)]="filtroEstado">
+          <option value="Todos">Todas las ofertas</option>
+          <option value="activa">Activas</option>
+          <option value="pendiente">Pendientes</option>
+          <option value="cerrada">Cerradas</option>
+        </select>
       </div>
-      <h3>{{ oferta.titulo }}</h3>
-      <p class="offer-desc">{{ oferta.descripcion }}</p>
 
-      <div class="offer-details">
-        <span><i class="fas fa-dollar-sign"></i> ${{ oferta.salarioPromedio }}</span>
-        <span><i class="fas fa-calendar"></i> {{ oferta.fechaInicio }}</span>
+      <button class="btn-clear-filters" (click)="textoBusqueda = ''; filtroEstado = 'Todos'">
+        Limpiar Filtros
+      </button>
+    </aside>
+
+    <section class="main-offers-content">
+
+      <div class="action-bar">
+        <div class="stats-text">
+          Mostrando <strong>{{ ofertasFiltradas.length }}</strong> ofertas
+        </div>
+        <button class="btn-primary" (click)="openModal()">
+          <i class="fas fa-plus"></i> Nueva Oferta
+        </button>
       </div>
-      <div class="offer-footer">
-        <button class="btn-outline">Ver Detalles</button>
+
+      <div class="offers-grid">
+        <div *ngIf="ofertasFiltradas.length === 0" class="no-data">
+          <i class="fas fa-folder-open fa-3x"></i>
+          <p>No se encontraron ofertas con estos filtros.</p>
+        </div>
+
+        <div class="offer-card-candidate-style" *ngFor="let oferta of ofertasFiltradas">
+
+          <div class="card-main-info">
+            <div class="card-header-row">
+              <h3>{{ oferta.titulo }}</h3>
+              <span class="status-badge" [ngClass]="oferta.estadoOferta === 'pendiente' ? 'badge-draft' : 'badge-active'">
+                {{ oferta.estadoOferta || 'Activa' }}
+              </span>
+            </div>
+
+            <div class="details-horizontal-row">
+              <span class="detail-item">
+                <i class="fas fa-map-marker-alt text-accent"></i> {{ oferta.ciudad || 'Por definir' }}
+              </span>
+              <span class="detail-item">
+                <i class="far fa-clock text-accent"></i> {{ oferta.modalidad || 'Presencial' }} • {{ oferta.jornada || 'Jornada Completa' }}
+              </span>
+              <span class="detail-item">
+                <i class="fas fa-money-bill-wave text-accent"></i> ${{ oferta.salarioMin || 0 }} - ${{ oferta.salarioMax || 0 }}
+              </span>
+            </div>
+
+            <p class="description-truncated">{{ oferta.descripcion || 'Sin descripción detallada.' }}</p>
+
+            <div class="card-footer-info">
+              <small class="text-muted"><i class="far fa-calendar-alt"></i> Cierra: {{ oferta.fechaCierre || 'Sin fecha' }}</small>
+              <span class="applicant-counter"><i class="fas fa-users"></i> <strong>{{ oferta.postulantes || 0 }}</strong> postulantes</span>
+            </div>
+          </div>
+
+          <div class="card-actions-right">
+            <button class="btn-primary-action">Gestionar</button>
+          </div>
+        </div>
       </div>
-    </div>
+
+    </section>
   </div>
 </main>
 
@@ -57,7 +105,7 @@
       <form (ngSubmit)="guardar()">
         <div class="form-group full-width">
           <label>Título de la Oferta</label>
-          <input type="text" [(ngModel)]="nuevaOferta.titulo" name="titulo" required placeholder="Ej: Desarrollador Java">
+          <input type="text" [(ngModel)]="nuevaOferta.titulo" name="titulo" required placeholder="Ej: Desarrollador Backend Senior">
         </div>
 
         <div class="form-row">
@@ -71,73 +119,60 @@
             <label>Modalidad</label>
             <select [(ngModel)]="nuevaOferta.idModalidad" name="mod">
               <option [value]="1">Presencial</option>
+              <option [value]="2">Remoto</option>
             </select>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label>Salario ($)</label>
-            <input type="number" [(ngModel)]="nuevaOferta.salarioPromedio" name="sal">
+            <label>Salario Mínimo ($)</label>
+            <input type="number" [(ngModel)]="nuevaOferta.salarioMin" name="smin" placeholder="Ej: 800">
           </div>
+          <div class="form-group">
+            <label>Salario Máximo ($)</label>
+            <input type="number" [(ngModel)]="nuevaOferta.salarioMax" name="smax" placeholder="Ej: 1200">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Vacantes Disponibles</label>
+            <input type="number" [(ngModel)]="nuevaOferta.cantidadVacantes" name="vacantes" placeholder="Ej: 1">
+          </div>
+          <div class="form-group">
+            <label>Experiencia Mínima (Años)</label>
+            <input type="number" [(ngModel)]="nuevaOferta.experienciaMinima" name="exp" placeholder="Ej: 2">
+          </div>
+        </div>
+
+        <div class="form-row">
           <div class="form-group">
             <label>Ciudad</label>
             <select [(ngModel)]="nuevaOferta.idCiudad" name="ciu">
-              <option [value]="1">Vinces</option>
+              <option [value]="1">Quito</option>
+              <option [value]="2">Guayaquil</option>
             </select>
           </div>
-        </div>
-
-        <div class="form-row">
           <div class="form-group">
-            <label>Inicio</label>
-            <input type="date" [(ngModel)]="nuevaOferta.fechaInicio" name="finicio">
-          </div>
-          <div class="form-group">
-            <label>Cierre</label>
+            <label>Fecha de Cierre</label>
             <input type="date" [(ngModel)]="nuevaOferta.fechaCierre" name="fcierre">
           </div>
         </div>
 
         <div class="form-group full-width">
-          <label>Descripción</label>
-          <textarea rows="3" [(ngModel)]="nuevaOferta.descripcion" name="desc"></textarea>
+          <label>Descripción del Puesto</label>
+          <textarea rows="4" [(ngModel)]="nuevaOferta.descripcion" name="desc" placeholder="Describe las responsabilidades principales..."></textarea>
         </div>
 
         <div class="skills-section">
-          <h4>Requisitos (Habilidades)</h4>
-          <div class="skills-input-row">
-            <select [(ngModel)]="tempIdHabilidad" name="tmpId" class="small-select">
-              <option [value]="0">Seleccionar...</option>
-              <option [value]="1">Java</option>
-              <option [value]="2">SQL</option>
-            </select>
-            <select [(ngModel)]="tempNivel" name="tmpNivel" class="small-select">
-              <option value="Básico">Básico</option>
-              <option value="Intermedio">Intermedio</option>
-              <option value="Avanzado">Avanzado</option>
-            </select>
-            <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="tempObligatorio" name="tmpObl"> Obligatorio
-            </label>
-            <button type="button" class="btn-small-add" (click)="agregarSkill()">
-              <i class="fas fa-plus"></i>
-            </button>
-          </div>
-
-          <div class="skills-tags-container">
-                      <span class="skill-chip" *ngFor="let s of nuevaOferta.habilidades; let i = index">
-                          {{ s.nombreHabilidad }} - {{ s.nivelRequerido }}
-                        <i class="fas fa-times" (click)="removerSkill(i)"></i>
-                      </span>
-          </div>
         </div>
       </form>
     </div>
 
     <div class="modal-footer">
-      <button (click)="closeModal()" class="btn-text">Cancelar</button>
-      <button (click)="guardar()" class="btn-primary">Guardar</button>
+      <button type="button" (click)="closeModal()" class="btn-text">Cancelar</button>
+      <button type="submit" class="btn-primary">Publicar Oferta</button>
     </div>
   </div>
 </div>

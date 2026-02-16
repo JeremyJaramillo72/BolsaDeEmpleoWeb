@@ -3,6 +3,7 @@ package com.example.demo.service.Impl;
 import com.example.demo.dto.OfertaLaboralDTO;
 import com.example.demo.model.*;
 import com.example.demo.repository.*;
+import com.example.demo.repository.Views.IOfertaEmpresaDTO;
 import com.example.demo.service.IOfertaLaboralService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +49,10 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
                 dto.getIdCiudad(),
                 dto.getTitulo(),
                 dto.getDescripcion(),
-                dto.getSalarioPromedio(),
+                dto.getSalarioMin(),
+                dto.getSalarioMax(),
+                dto.getCantidadVacantes(),
+                dto.getExperienciaMinima(),
                 dto.getFechaInicio(),
                 dto.getFechaCierre(),
                 habilidadesJson
@@ -59,10 +63,8 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<OfertaLaboral> listarPorEmpresa(Long idEmpresa) {
-        UsuarioEmpresa empresa = new UsuarioEmpresa();
-        empresa.setIdEmpresa(idEmpresa);
-        return ofertaRepository.findByEmpresa(empresa);
+    public List<IOfertaEmpresaDTO> listarPorEmpresa(Long idEmpresa) {
+        return ofertaRepository.obtenerOfertasPorEmpresa(idEmpresa);
     }
 
     @Override

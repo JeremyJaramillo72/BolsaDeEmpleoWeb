@@ -18,11 +18,21 @@ export interface OfertaLaboralDTO {
   idCiudad: number;
   titulo: string;
   descripcion: string;
-  salarioPromedio: number;
+  salarioMin: number;
+  salarioMax: number;
+  cantidadVacantes: number;
+  experienciaMinima: number;
+
+
   fechaInicio: string;
   fechaCierre: string;
   estadoOferta?: string;
   habilidades: OfertaHabilidadDTO[];
+
+  ciudad?: string;       // Para mostrar "Quito" en vez de 1
+  modalidad?: string;    // Para mostrar "Presencial" en vez de 1
+  jornada?: string;      // Para mostrar "Tiempo Completo" en vez de 1
+  postulantes?: number;  // Para el contador de la tarjeta
 }
 
 @Injectable({
@@ -37,7 +47,7 @@ export class OfertaService {
     return this.http.post<any>(this.apiUrl, oferta);
   }
 
-  listarPorEmpresa(idEmpresa: number): Observable<OfertaLaboralDTO[]> {
-    return this.http.get<OfertaLaboralDTO[]>(`${this.apiUrl}/empresa/${idEmpresa}`);
+  obtenerOfertasPorEmpresa(idEmpresa: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/empresa/${idEmpresa}`);
   }
 }

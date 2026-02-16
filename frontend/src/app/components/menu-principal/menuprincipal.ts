@@ -74,9 +74,13 @@ export class MenuprincipalComponent implements OnInit {
 
   }
 
-  // Método centralizado para validar si estamos en el "Home" del panel
   private verificarRutaActual(): void {
-    this.dashboardHomeVisible = this.router.url === '/menu-principal';
+    // A veces Angular le pone un "/" extra al final de la URL dependiendo de la configuración.
+    // Con esto validamos ambas opciones de forma segura.
+    const urlActual = this.router.url.split('?')[0]; // Ignoramos parámetros si los hay
+
+    this.dashboardHomeVisible = (urlActual === '/menu-principal' || urlActual === '/menu-principal/');
+    this.cdr.detectChanges();
   }
 
   // Esta función es la que usarás en el *ngIf de tu HTML
@@ -250,14 +254,25 @@ export class MenuprincipalComponent implements OnInit {
     this.isSidebarOpen = !this.isSidebarOpen;
   }
 
+  // 1. ACTUALIZA EL CLIC DEL MENÚ
   onMenuItemClick(item: MenuItem): void {
     if (item.path) {
-      // Navegación a la ruta hija configurada
-      this.router.navigate(['/menu-principal' + item.path]);
+      // ¡MAGIA AQUÍ! Ocultamos el dashboard en el milisegundo en que hace clic.
+      // No esperamos a que el router termine de pensar.
+      this.dashboardHomeVisible = false;
+
+      // Usamos navigateByUrl para evitar errores de arreglos y rutas raras
+      this.router.navigateByUrl('/menu-principal' + item.path).then(navegacionExitosa => {
+        if (!navegacionExitosa) {
+          // Si por alguna razón la ruta falla (ej. bloqueada por un guard),
+          // volvemos a verificar dónde estamos realmente.
+          this.verificarRutaActual();
+        }
+      });
     }
   }
 
-  // En menuprincipal.component.ts
+
 
   cerrarSesion() {
     // 1. Usamos el servicio authService en lugar de this.http directamente
