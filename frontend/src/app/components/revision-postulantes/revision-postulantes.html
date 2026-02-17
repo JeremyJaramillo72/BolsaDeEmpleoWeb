@@ -1,0 +1,88 @@
+<main class="main-content">
+
+  <header class="topbar">
+    <div class="welcome-text">
+      <h2>Revisión de Postulantes</h2>
+      <p>Selecciona una oferta para evaluar a los candidatos que han aplicado.</p>
+    </div>
+  </header>
+
+  <div class="layout-wrapper">
+    <aside class="sidebar-filters">
+      <div class="filter-header">
+        <span class="material-icons text-gray-500">tune</span>
+        <h3>Filtros</h3>
+      </div>
+      <div class="filter-group">
+        <label>Buscar vacante</label>
+        <div class="search-input-wrapper">
+          <span class="material-icons icon-search">search</span>
+          <input type="text" [(ngModel)]="textoBusqueda" placeholder="Título o palabra clave...">
+        </div>
+      </div>
+      <div class="filter-group">
+        <label>Estado de la oferta</label>
+        <select [(ngModel)]="filtroEstado">
+          <option value="Todos">Todas las ofertas</option>
+          <option value="activa">Activas</option>
+          <option value="cerrada">Cerradas</option>
+        </select>
+      </div>
+      <button class="btn-clear-filters" (click)="limpiarFiltros()">
+        Limpiar Filtros
+      </button>
+    </aside>
+
+    <section class="main-offers-content">
+
+      <div class="action-bar" style="margin-bottom: 1.5rem;">
+        <div class="stats-text" style="color: #64748b; font-size: 1rem;">
+          Mostrando <strong>{{ ofertasFiltradas.length }}</strong> ofertas para revisión
+        </div>
+      </div>
+
+      <div class="offers-grid">
+        <div *ngIf="ofertasFiltradas.length === 0" class="no-data">
+          <span class="material-icons text-6xl mb-2 text-gray-300">inbox</span>
+          <p>No se encontraron ofertas con estos filtros.</p>
+        </div>
+
+        <div class="modern-card" *ngFor="let oferta of ofertasFiltradas">
+
+          <div class="card-left">
+            <div class="header-row">
+              <h3>{{ oferta.titulo }}</h3>
+              <span class="status-badge" [ngClass]="oferta.estadoOferta === 'activa' ? 'badge-active' : 'badge-closed'">
+                {{ oferta.estadoOferta | titlecase }}
+              </span>
+            </div>
+            <div class="meta-row">
+              <p class="meta-info">
+                <span class="material-icons text-sm">event</span> Cierra: {{ oferta.fechaCierre || 'Sin fecha' }}
+              </p>
+              <p class="meta-info">
+                <span class="material-icons text-sm">location_on</span> {{ oferta.ciudad || 'Por definir' }}
+              </p>
+            </div>
+          </div>
+
+          <div class="card-right">
+            <div class="applicant-count" [ngClass]="{'has-applicants': oferta.postulantes > 0}">
+              <span class="count-number">{{ oferta.postulantes || 0 }}</span>
+              <span class="count-label">Candidatos</span>
+            </div>
+
+            <button
+              class="btn-primary"
+              [disabled]="oferta.postulantes == 0"
+              (click)="verCandidatos(oferta.idOferta)"
+              [class.btn-disabled]="oferta.postulantes == 0">
+              Ver Perfiles <span class="material-icons">arrow_forward</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
