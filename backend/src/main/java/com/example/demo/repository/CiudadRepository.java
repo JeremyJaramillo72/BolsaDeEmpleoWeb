@@ -7,6 +7,6 @@ import java.util.List;
 
 @Repository
 public interface CiudadRepository extends JpaRepository<Ciudad, Integer> {
-    // Usamos el guion bajo (_) para forzar a Spring a entrar en 'provincia' y buscar 'idProvincia'
+
     List<Ciudad> findByProvincia_IdProvincia(Integer idProvincia);
 }

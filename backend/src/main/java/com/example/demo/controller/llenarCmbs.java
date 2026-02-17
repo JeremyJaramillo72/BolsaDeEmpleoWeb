@@ -2,7 +2,9 @@ package com.example.demo.controller;
 
 import com.example.demo.model.*;
 import com.example.demo.repository.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,9 +14,14 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/academico")
-@CrossOrigin(origins = "*") // 👈 Permite que Angular (puerto 4200) se conecte
+@CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class llenarCmbs {
 
+    private final ProvinciaRepository provinciaRepository;
+    private final CiudadRepository ciudadRepository;
+    private final TipoHabilidadRepository tipoHabilidadRepository;
+    private  final CatalogoHabilidadRepository catalogoHabilidadRepository;
     @Autowired
     private FacultadRepository facultadRepository;
     @Autowired
@@ -26,7 +33,7 @@ public class llenarCmbs {
     private CategoriaOfertaRepository categoriaRepository;
 
     @Autowired
-    private JornadaOfertaRepository jornadaRepository; // Inyecta tu repositorio
+    private JornadaOfertaRepository jornadaRepository;
 
     @Autowired
     private ModalidadOfertaRepository modalidadRepository;
@@ -38,11 +45,28 @@ public class llenarCmbs {
     private RolesRepository rolesRepository;
 
 
+    @GetMapping("/provincias")
+    public List <Provincia> listaProvincias(){
+        return provinciaRepository.findAll();
+    }
+    @GetMapping("/ciudades/{idProvincia}")
+    public List<Ciudad>ListaProvinciaPorCiudad (@PathVariable Integer idProvincia){
+        return ciudadRepository.findByProvincia_IdProvincia(idProvincia);
+    }
     @GetMapping("/facultades")
     public List<Facultad> listarFacultades() {
         return facultadRepository.findAll();
     }
-    //Devuelve la lista de todas las carreras registras en mi BD
+    @GetMapping("/tipos-habilidad")
+    public  List <TipoHabilidad> listarTiposHabilidad(){
+        return tipoHabilidadRepository.findAll();
+    }
+    @GetMapping("/habilidades/{idTipo}")
+    public  List <CatalogoHabilidad> listarHabilidadesPorTipo(@PathVariable Integer idTipo){
+        return catalogoHabilidadRepository.findByTipoHabilidad_IdTipoHabilidad(idTipo);
+    }
+
+
 
 
     @GetMapping("/carreras/{idFacultad}")

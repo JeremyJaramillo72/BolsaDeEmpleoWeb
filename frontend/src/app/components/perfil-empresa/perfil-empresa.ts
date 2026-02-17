@@ -23,15 +23,18 @@ export class PerfilEmpresaComponent implements OnInit {
     urlImagen: ''
   };
   porcentajeCompletitud: number = 0;
+
   constructor(
     private empresaService: UsuarioEmpresaService,
     private router: Router,
-  private cdr: ChangeDetectorRef
-  ) {}
+    private cdr: ChangeDetectorRef
+  ) {
+  }
 
   ngOnInit(): void {
     this.cargarDatosDelUsuarioLogueado();
   }
+
   calcularCompletitud() {
     if (!this.perfil) return;
 
@@ -88,7 +91,9 @@ export class PerfilEmpresaComponent implements OnInit {
 
 
   guardarCambios() {
-
+    if (!this.validarCampos()) {
+      return;
+    }
     if (this.perfil.idEmpresa) {
       this.empresaService.actualizarPerfil(this.perfil.idEmpresa, this.perfil).subscribe({
         next: () => alert('¡Perfil actualizado con éxito!'),
@@ -129,5 +134,23 @@ export class PerfilEmpresaComponent implements OnInit {
         });
     }
 
+  }
+
+  validarCampos(): boolean {
+    const o = this.perfil;
+    if (!o.nombre || o.nombre.trim().length < 5) {
+      alert('⚠️ El nombre de la empresa es obligatorio y debe tener al menos 5 caracteres.');
+      return false;
+    }
+
+    if (!o.descripcion || o.descripcion.trim().length < 5) {
+      alert('⚠️ La descripción es obligatoria y debe ser clara (mínimo 5 caracteres).');
+      return false;
+    }
+    if (!o.sitioWeb || o.sitioWeb.trim().length === 0) {
+      alert('⚠️ El sitio web es obligatorio.');
+      return false;
+    }
+    return true;
   }
 }

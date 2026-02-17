@@ -14,7 +14,7 @@ import  {GestionCatalogosComponent} from './components/Panel-Admin/components/ge
 import {GestionReportesComponent} from './components/Panel-Admin/components/gestion-reportes/gestion-reportes';
 
 import {ValidarEmpresaComponent} from './components/Panel-Admin/components/validar-empresa/validar-empresa';
-
+import {RevisionPostulantesComponent} from './components/revision-postulantes/revision-postulantes';
 import {RolesBdComponent} from './components/Panel-Admin/components/roles-bd/roles-bd';
 
 import { BusquedaEmpleoComponent } from './components/busqueda-empleo/busqueda-empleo';
@@ -35,6 +35,7 @@ export const routes: Routes = [
       { path: 'PanelAdmi/ValidarOfertas', component: AdminValidarOfertasComponent },
       { path: 'PanelAuditorias/auditorias-users', component: AdminUsuariosComponent },
       { path: 'PanelAdmi/admin-MiniAdmi', component: AdminMiniAdmiComponent },
+      {path: 'revision-postulantes', component: RevisionPostulantesComponent},
       {
         path: 'PanelAdmi/GestionCatalogos',
         component: GestionCatalogosComponent

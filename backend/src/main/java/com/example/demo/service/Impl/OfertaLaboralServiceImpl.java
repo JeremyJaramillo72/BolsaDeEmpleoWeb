@@ -4,6 +4,7 @@ import com.example.demo.dto.OfertaLaboralDTO;
 import com.example.demo.model.*;
 import com.example.demo.repository.*;
 import com.example.demo.repository.Views.IOfertaEmpresaDTO;
+import com.example.demo.repository.Views.IPostulanteOfertaDTO;
 import com.example.demo.service.IOfertaLaboralService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,35 +29,89 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
     @Transactional
     public OfertaLaboral guardarOferta(OfertaLaboralDTO dto) {
 
-        if (dto.getIdOferta() != null) {
-            throw new UnsupportedOperationException("La edición no está implementada con este Stored Procedure.");
+
+        if (dto.getTitulo() == null || dto.getTitulo().trim().isEmpty()) {
+            throw new IllegalArgumentException("el título de la oferta es obligatorio");
         }
+        if (dto.getDescripcion() == null || dto.getDescripcion().trim().isEmpty()) {
+            throw new IllegalArgumentException("la descripción es obligatoria");
+        }
+        if (dto.getIdCiudad() == null || dto.getIdCiudad() == 0) {
+            throw new IllegalArgumentException("debe seleccionar una provincia y una ciudad válida");
+        }
+        if (dto.getCantidadVacantes() == null || dto.getCantidadVacantes() < 1) {
+            throw new IllegalArgumentException("debe haber al menos 1 vacante");
+        }
+
+
+        if (dto.getSalarioMin() != null && dto.getSalarioMax() != null) {
+            if (dto.getSalarioMin().compareTo(dto.getSalarioMax()) > 0) {
+                throw new IllegalArgumentException("el salario mínimo no puede ser mayor al salario máximo");
+            }
+        }
+        if (dto.getFechaInicio() != null && dto.getFechaCierre() != null) {
+            if (dto.getFechaCierre().isBefore(dto.getFechaInicio())) {
+                throw new IllegalArgumentException("la fecha de cierre no puede ser anterior a la fecha de inicio");
+            }
+        }
+
+
         String habilidadesJson = "[]";
         try {
             if (dto.getHabilidades() != null && !dto.getHabilidades().isEmpty()) {
-
                 habilidadesJson = objectMapper.writeValueAsString(dto.getHabilidades());
             }
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error al convertir habilidades a JSON", e);
+            throw new RuntimeException("error al convertir habilidades a json", e);
         }
 
-        ofertaRepository.registrarOferta(
-                dto.getIdEmpresa(),
-                dto.getIdModalidad(),
-                dto.getIdCategoria(),
-                dto.getIdJornada(),
-                dto.getIdCiudad(),
-                dto.getTitulo(),
-                dto.getDescripcion(),
-                dto.getSalarioMin(),
-                dto.getSalarioMax(),
-                dto.getCantidadVacantes(),
-                dto.getExperienciaMinima(),
-                dto.getFechaInicio(),
-                dto.getFechaCierre(),
-                habilidadesJson
-        );
+        String requisitosJson = "[]";
+        try {
+            if (dto.getRequisitos_manuales() != null && !dto.getRequisitos_manuales().isEmpty()) {
+                requisitosJson = objectMapper.writeValueAsString(dto.getRequisitos_manuales());
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("error al convertir requisitos manuales a json", e);
+        }
+
+
+        if (dto.getIdOferta() == null || dto.getIdOferta() == 0) {
+            ofertaRepository.registrarOferta(
+                    dto.getIdEmpresa(),
+                    dto.getIdModalidad(),
+                    dto.getIdCategoria(),
+                    dto.getIdJornada(),
+                    dto.getIdCiudad(),
+                    dto.getTitulo(),
+                    dto.getDescripcion(),
+                    dto.getSalarioMin(),
+                    dto.getSalarioMax(),
+                    dto.getCantidadVacantes(),
+                    dto.getExperienciaMinima(),
+                    dto.getFechaInicio() != null ? dto.getFechaInicio() : java.time.LocalDate.now(),
+                    dto.getFechaCierre(),
+                    habilidadesJson,
+                    requisitosJson
+            );
+        } else {
+            ofertaRepository.actualizarOferta(
+                    dto.getIdOferta(),
+                    dto.getIdModalidad(),
+                    dto.getIdCategoria(),
+                    dto.getIdJornada(),
+                    dto.getIdCiudad(),
+                    dto.getTitulo(),
+                    dto.getDescripcion(),
+                    dto.getSalarioMin(),
+                    dto.getSalarioMax(),
+                    dto.getCantidadVacantes(),
+                    dto.getExperienciaMinima(),
+                    dto.getEstadoOferta(),
+                    dto.getFechaCierre(),
+                    habilidadesJson,
+                    requisitosJson
+            );
+        }
 
         return null;
     }
@@ -73,6 +128,10 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
         return ofertaRepository.findAll();
     }
 
+    @Override
+    public List<IPostulanteOfertaDTO> obtenerPostulantes(Long idOferta) {
+        return ofertaRepository.obtenerPostulantesPorOferta(idOferta);
+    }
 
 
     }

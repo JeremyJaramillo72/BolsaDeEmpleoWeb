@@ -25,7 +25,7 @@ public interface IOfertaEmpresaDTO {
     String getEstado_oferta();
     LocalDateTime getFecha_creacion();
     Long getPostulantes();
-
+    Integer getId_provincia();
     String getHabilidades();
     String getRequisitos_manuales();
 }

@@ -127,7 +127,8 @@ export class MenuprincipalComponent implements OnInit {
         title: 'Revisión de Postulaciones',
         description: 'Revisa los candidatos postulados',
         color: 'from-teal-500 to-teal-600',
-        roles: ['EMPRESA']
+        roles: ['EMPRESA'],
+        path: '/revision-postulantes'
       },
       {
         icon: 'assignment',

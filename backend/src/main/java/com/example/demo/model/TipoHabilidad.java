@@ -1,5 +1,6 @@
 package com.example.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,6 +32,7 @@ public class TipoHabilidad {
     @Column (name = "descripcion")
     private String descripcion;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "tipoHabilidad",cascade=CascadeType.ALL)
     @ToString.Exclude
     private List<CatalogoHabilidad> habilidades;

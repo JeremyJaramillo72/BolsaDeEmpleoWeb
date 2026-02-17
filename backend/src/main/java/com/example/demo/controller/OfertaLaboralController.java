@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.OfertaLaboralDTO;
 import com.example.demo.model.OfertaLaboral;
 import com.example.demo.repository.Views.IOfertaEmpresaDTO;
+import com.example.demo.repository.Views.IPostulanteOfertaDTO;
 import com.example.demo.service.IOfertaLaboralService;
 import com.example.demo.service.Impl.OfertaLaboralServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -32,5 +33,11 @@ public class OfertaLaboralController {
     @GetMapping
     public List<OfertaLaboral> listarTodas() {
         return ofertaService.listarTodas();
+    }
+
+    @GetMapping("/{idOferta}/postulantes")
+    public ResponseEntity<List<IPostulanteOfertaDTO>> obtenerPostulantes(@PathVariable Long idOferta) {
+        List<IPostulanteOfertaDTO> postulantes = ofertaService.obtenerPostulantes(idOferta);
+        return ResponseEntity.ok(postulantes);
     }
 }

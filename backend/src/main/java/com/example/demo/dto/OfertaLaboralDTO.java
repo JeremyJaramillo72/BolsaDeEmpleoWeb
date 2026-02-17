@@ -15,6 +15,7 @@ public class OfertaLaboralDTO {
     private Integer idCategoria;
     private Integer idJornada;
     private Integer idCiudad;
+    private Integer idProvincia;
 
     private String titulo;
     private String descripcion;
@@ -26,4 +27,6 @@ public class OfertaLaboralDTO {
     private Integer experienciaMinima;
     private BigDecimal salarioMin;
     private BigDecimal salarioMax;
+    private List <RequisitoManualDTO> requisitos_manuales;
+
 }

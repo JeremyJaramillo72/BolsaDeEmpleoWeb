@@ -50,4 +50,33 @@ export class OfertaService {
   obtenerOfertasPorEmpresa(idEmpresa: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/empresa/${idEmpresa}`);
   }
+
+  obtenerCategorias() {
+    return this.http.get<any[]>('http://localhost:8080/api/academico/categorias');
+  }
+
+  obtenerModalidades() {
+    return this.http.get<any[]>('http://localhost:8080/api/academico/modalidades');
+  }
+
+  obtenerJornadas() {
+    return this.http.get<any[]>('http://localhost:8080/api/academico/jornadas');
+  }
+  obtenerProvincias(){
+    return this.http.get<any[]>('http://localhost:8080/api/academico/provincias')
+  }
+  obtenerProvinciasPorCiudad(idProvincia: Number){
+    return this.http.get<any[]>(`http://localhost:8080/api/academico/ciudades/${idProvincia}`)
+  }
+  obtenerTiposHabilidad() {
+    return this.http.get<any[]>('http://localhost:8080/api/academico/tipos-habilidad');
+  }
+
+  obtenerHabilidadesPorTipo(idTipo: number) {
+    return this.http.get<any[]>(`http://localhost:8080/api/academico/habilidades/${idTipo}`);
+  }
+  obtenerPostulantesPorOferta(idOferta: number): Observable<any[]> {
+
+    return this.http.get<any[]>(`${this.apiUrl}/${idOferta}/postulantes`);
+  }
 }
