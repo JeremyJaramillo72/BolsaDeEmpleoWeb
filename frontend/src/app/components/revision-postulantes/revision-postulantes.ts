@@ -29,7 +29,7 @@ export class RevisionPostulantesComponent implements OnInit {
     if (idGuardado) {
       this.idEmpresaLogueada = Number(idGuardado);
       this.cargarOfertasParaRevision();
-      this.cdr.detectChanges();
+
     } else {
       this.router.navigate(['/login']);
     }
@@ -47,6 +47,7 @@ export class RevisionPostulantesComponent implements OnInit {
 
 
         this.ofertas = ofertasMapeadas.filter(o => o.estadoOferta !== 'pendiente');
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Error al cargar ofertas:', err)
     });

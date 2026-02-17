@@ -256,14 +256,6 @@ export class GestionOfertasComponent implements OnInit {
       alert('⚠️ El título del puesto es obligatorio y debe ser claro (mínimo 5 caracteres).');
       return false;
     }
-    if (!o.idProvincia || o.idProvincia == 0) {
-      alert('⚠️ Por favor, seleccione una Provincia.');
-      return false;
-    }
-    if (!o.idCiudad || o.idCiudad == 0) {
-      alert('⚠️ Por favor, seleccione una Ciudad válida.');
-      return false;
-    }
     if (!o.cantidadVacantes || o.cantidadVacantes < 1) {
       alert('⚠️ Debe haber al menos 1 vacante disponible.');
       return false;
