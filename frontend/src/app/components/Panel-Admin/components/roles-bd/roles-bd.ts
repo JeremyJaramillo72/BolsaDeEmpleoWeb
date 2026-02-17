@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
@@ -75,7 +75,7 @@ export class RolesBdComponent implements OnInit {
   // Rol en edición
   rolEnEdicion: RolCreado | null = null;
 
-  constructor(private adminService: AdminService) {}
+  constructor(private adminService: AdminService,   private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.cargarRolesCreados();
@@ -90,13 +90,14 @@ export class RolesBdComponent implements OnInit {
     this.adminService.obtenerRolesBD().subscribe({
       next: (data) => {
         this.rolesCreados = data.map((rol: any) => ({
-          id: rol.idRol,
-          nombre: rol.nombreRol,
+          id: rol.idRol,          // Ahora recibirá el nombre del rol como string
+          nombre: rol.nombreRol,  // Recibirá el nombre del rol
           rolBase: rol.rolBase || 'Ninguno',
           fechaCreacion: rol.fechaCreacion,
           totalPermisos: rol.totalPermisos || 0
         }));
         this.cargando = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error al cargar roles:', err);

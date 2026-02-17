@@ -43,8 +43,8 @@ public class SecurityConfig {
                                 "/api/perfil-idioma/**",
                                 "/api/empresa-perfil/**",
                                 "/api/ofertas/**",
-                                "/api/admins/**"
-
+                                "/api/admins/**",
+                                "/api/rolesbd"
                         ).permitAll()
                         .anyRequest().authenticated()
                 );

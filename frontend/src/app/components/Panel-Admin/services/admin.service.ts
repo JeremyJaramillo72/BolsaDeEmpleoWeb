@@ -16,7 +16,7 @@ export class AdminService {
   private apiAcademicoUrl = 'http://localhost:8080/api/academico';
   private apiAdminUrl = 'http://localhost:8080/api/admin';
 
-  private apiRolesbd = '';
+  private apiRolesbd = 'http://localhost:8080/api/rolesbd';
 
   constructor(private http: HttpClient) { }
 
@@ -230,33 +230,30 @@ export class AdminService {
 
   // FUNCIONES PARA LOS ROLES DE BASE DE DATOS
   // ========== ROLES DE BASE DE DATOS ==========
+
+
   obtenerRolesBD(): Observable<any> {
-    return this.http.get(`${this.apiRolesbd}/admin/roles-bd`);
+    return this.http.get(`${this.apiRolesbd}/roles-bd`);
   }
 
   obtenerRolesBase(): Observable<any> {
-    return this.http.get(`${this.apiRolesbd}/admin/roles-base`);
+    return this.http.get(`${this.apiRolesbd}/roles-base`);
   }
 
   obtenerEsquemasYTablas(): Observable<any> {
-    return this.http.get(`${this.apiRolesbd}/admin/esquemas`);
+    return this.http.get(`${this.apiRolesbd}/esquemas`);
   }
 
   crearRolBD(datos: any): Observable<any> {
-    return this.http.post(`${this.apiRolesbd}/admin/roles-bd`, datos);
+    return this.http.post(`${this.apiRolesbd}/roles-bd`, datos);
   }
 
   obtenerPermisosRol(idRol: number): Observable<any> {
-    return this.http.get(`${this.apiRolesbd}/admin/roles-bd/${idRol}/permisos`);
+    return this.http.get(`${this.apiRolesbd}/roles-bd/${idRol}/permisos`);
   }
 
   eliminarRolBD(idRol: number): Observable<any> {
-    return this.http.delete(`${this.apiRolesbd}/admin/roles-bd/${idRol}`);
+    return this.http.delete(`${this.apiRolesbd}/roles-bd/${idRol}`);
   }
-
-
-
-
-
 
 }
