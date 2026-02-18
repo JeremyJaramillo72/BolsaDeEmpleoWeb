@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs'; // Agregamos 'of' para el mock de estadísticas
 import { EmpresaResumen } from '../components/validar-empresa/validar-empresa';
+import {observableToBeFn} from 'rxjs/internal/testing/TestScheduler';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +18,7 @@ export class AdminService {
   private apiAdminUrl = 'http://localhost:8080/api/admin';
 
   private apiRolesbd = 'http://localhost:8080/api/rolesbd';
+  private apiOfertasUrl = 'http://localhost:8080/api/ofertas';
 
   constructor(private http: HttpClient) { }
 
@@ -254,6 +256,20 @@ export class AdminService {
 
   eliminarRolBD(idRol: number): Observable<any> {
     return this.http.delete(`${this.apiRolesbd}/roles-bd/${idRol}`);
+  }
+
+  // VALIDAR OFERTASSS
+  obtenerOfertasPorEstado (estado: string  ): Observable<any []>
+  {
+    return this.http.get<any[]>(`${this.apiOfertasUrl}/estado/${estado}`);
+  }
+
+  validarOfertas (idOferta: number, estado: string): Observable<any>{
+    return this.http.put(
+      `${this.apiOfertasUrl}/${idOferta}/validar?estado=${estado}`,
+      {},
+      { responseType: 'text' }
+    )
   }
 
 }

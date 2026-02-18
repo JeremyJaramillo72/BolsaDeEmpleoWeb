@@ -1,11 +1,11 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.IOfertaResumen;
 import com.example.demo.dto.OfertaLaboralDTO;
 import com.example.demo.model.OfertaLaboral;
 import com.example.demo.repository.Views.IOfertaEmpresaDTO;
 import com.example.demo.repository.Views.IPostulanteOfertaDTO;
 import com.example.demo.service.IOfertaLaboralService;
-import com.example.demo.service.Impl.OfertaLaboralServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OfertaLaboralController {
 
-    private final IOfertaLaboralService ofertaService;
+    @Autowired
+    private IOfertaLaboralService ofertaService;
 
     @PostMapping
     public OfertaLaboral guardarOferta(@RequestBody OfertaLaboralDTO ofertaDTO) {
@@ -39,5 +40,25 @@ public class OfertaLaboralController {
     public ResponseEntity<List<IPostulanteOfertaDTO>> obtenerPostulantes(@PathVariable Long idOferta) {
         List<IPostulanteOfertaDTO> postulantes = ofertaService.obtenerPostulantes(idOferta);
         return ResponseEntity.ok(postulantes);
+    }
+
+    @GetMapping("/estado/{estado}")
+    public ResponseEntity<List<IOfertaResumen>> listarPorEstado(@PathVariable String estado) {
+        List<IOfertaResumen> ofertas = ofertaService.listarPorEstado(estado);
+        return ResponseEntity.ok(ofertas);
+    }
+
+    @PutMapping("/{idOferta}/validar")
+    public ResponseEntity<?> validarOferta (
+            @PathVariable Long idOferta, // Debe ser Long
+            @RequestParam String estado
+    ) {
+        try {
+            ofertaService.cambiarEstadoOferta((long) Math.toIntExact(idOferta), estado);
+            return ResponseEntity.ok("Oferta actualizada a: " + estado);
+        } catch(Exception e) {
+            e.printStackTrace(); // Imprime el error en consola para verlo si vuelve a fallar
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
     }
 }

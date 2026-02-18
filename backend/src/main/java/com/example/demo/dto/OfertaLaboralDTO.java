@@ -17,6 +17,7 @@ public class OfertaLaboralDTO {
     private Integer idCiudad;
     private Integer idProvincia;
 
+
     private String titulo;
     private String descripcion;
     private LocalDate fechaInicio;

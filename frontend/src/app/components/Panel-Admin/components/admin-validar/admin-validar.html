@@ -1,45 +1,228 @@
-<div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-  <h2 class="text-2xl font-bold text-gray-800 mb-6">Ofertas Pendientes de Validación</h2>
+<div class="admin-container">
 
-  <div class="overflow-x-auto">
-    <div class="p-6 bg-white rounded-3xl shadow-sm">
-      <h2 class="text-2xl font-black text-gray-800 mb-8 flex items-center">
-        <span class="material-icons mr-2 text-orange-500">pending_actions</span>
-        Validación de Ofertas Laborales
-      </h2>
+  <!-- ENCABEZADO -->
+  <div class="header-section">
+    <div class="header-top">
+      <div>
+        <h2>Gestión de Ofertas</h2>
+        <p class="subtitle">Estado actual: <strong>{{ estadoActual }}</strong></p>
+      </div>
 
-      <div class="admin-data-container">
-        <div class="data-header" role="rowgroup">
-          <div>Información de la Oferta</div>
-          <div>Empresa</div>
-          <div>Fecha Postulación</div>
-          <div class="text-center">Acciones</div>
-        </div>
+      <div class="tabs-estados">
+        <button class="btn-tab" [class.active]="estadoActual === 'PENDIENTE'" (click)="cambiarTab('PENDIENTE')">
+          <span class="tab-dot pendiente"></span> Pendientes
+        </button>
+        <button class="btn-tab" [class.active]="estadoActual === 'APROBADA'" (click)="cambiarTab('APROBADA')">
+          <span class="tab-dot aprobada"></span> Aprobadas
+        </button>
+        <button class="btn-tab" [class.active]="estadoActual === 'RECHAZADA'" (click)="cambiarTab('RECHAZADA')">
+          <span class="tab-dot rechazada"></span> Rechazadas
+        </button>
+      </div>
+    </div>
 
-        <div *ngFor="let item of [1,2,3]" class="data-row" role="row">
-          <div class="flex flex-col">
-            <span class="text-lg font-bold text-blue-600">Desarrollador Java Senior</span>
-            <span class="text-sm text-gray-500">ID Oferta: #00{{item}}</span>
-          </div>
+    <div class="filters-bar">
+      <div class="filter-group search">
+        <span class="material-icons">search</span>
+        <input type="text" [(ngModel)]="filtroTexto" placeholder="Buscar por título o empresa...">
+      </div>
+      <button class="btn-filter-today" [class.active]="soloHoy" (click)="toggleHoy()">
+        <span class="material-icons">today</span>
+        Hoy
+      </button>
 
-          <div class="text-gray-700 font-medium">
-            <span class="mobile-label">Empresa:</span>Tech Solutions S.A.
-          </div>
+      <div class="filter-group date-picker" [class.active]="fechaFiltro">
+        <span class="material-icons">calendar_month</span>
+        <input
+          type="date"
+          [(ngModel)]="fechaFiltro"
+          (change)="soloHoy = false"
+          title="Filtrar por fecha específica">
+        <button *ngIf="fechaFiltro" class="clear-date" (click)="fechaFiltro = ''" title="Limpiar fecha">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
-          <div class="text-gray-500 text-sm">
-            <span class="mobile-label">Fecha:</span>01/02/2026
-          </div>
+  <!-- CARGANDO -->
+  <div *ngIf="cargando" class="state-message loading">
+    <div class="spinner"></div>
+    <p>Cargando datos...</p>
+  </div>
 
-          <div class="flex justify-center space-x-3">
-            <button class="p-2 bg-green-50 text-green-600 rounded-xl hover:bg-green-600 hover:text-white transition-all shadow-sm" title="Aprobar">
-              <span class="material-icons">verified</span>
+  <!-- TABLA -->
+  <div *ngIf="!cargando" class="table-container">
+    <div class="table-header">
+      <div class="col-info">Oferta</div>
+      <div class="col-empresa">Empresa / RUC</div>
+      <div class="col-ubicacion">Ubicación</div>
+      <div class="col-fecha">Inicio</div>
+      <div class="col-acciones">Acciones</div>
+    </div>
+
+    <div class="table-row" *ngFor="let item of ofertasFiltradas">
+      <div class="col-info">
+        <span class="offer-title">{{ item.titulo }}</span>
+        <span class="offer-id">ID: #{{ item.idOferta }}</span>
+      </div>
+
+      <div class="col-empresa">
+        <strong>{{ item.nombreEmpresa || item.nombre_empresa }}</strong>
+        <small>{{ item.rucEmpresa || item.ruc_empresa }}</small>
+      </div>
+
+      <div class="col-ubicacion">
+        <span class="material-icons location-icon">place</span>
+        {{ item.nombreCiudad }}
+      </div>
+
+      <div class="col-fecha">
+        {{ item.fechaInicio | date:'dd/MM/yyyy' }}
+      </div>
+
+      <!-- ACCIONES -->
+      <div class="col-acciones">
+        <button class="btn-ver" (click)="verDetalles(item)" title="Ver detalles">
+          <span class="material-icons">visibility</span>
+          <span class="btn-ver-label">Ver detalles</span>
+        </button>
+
+        <div class="dropdown" *ngIf="estadoActual === 'PENDIENTE'" [class.open]="menuAbiertoId === item.idOferta">
+          <button class="btn-menu" (click)="toggleMenu(item.idOferta, $event)" title="Más acciones">
+            <span class="material-icons">more_vert</span>
+          </button>
+          <div class="dropdown-menu">
+            <button class="dropdown-item approve" (click)="aprobar(item); cerrarMenu()">
+              <span class="material-icons">check_circle</span>
+              Aprobar oferta
             </button>
-            <button class="p-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm" title="Rechazar">
-              <span class="material-icons">block</span>
+            <button class="dropdown-item reject" (click)="rechazar(item); cerrarMenu()">
+              <span class="material-icons">cancel</span>
+              Rechazar oferta
             </button>
           </div>
         </div>
       </div>
     </div>
+
+    <div *ngIf="ofertasFiltradas.length === 0" class="empty-state">
+      <span class="material-icons">inbox</span>
+      <p>No hay ofertas en estado <strong>{{ estadoActual }}</strong></p>
+    </div>
+  </div>
+
+</div>
+
+<!-- OVERLAY oscuro -->
+<div class="sidebar-overlay" *ngIf="mostrarModal" (click)="cerrarModal()"></div>
+
+<!-- SIDEBAR DESLIZANTE -->
+<div class="sidebar-panel" [class.open]="mostrarModal">
+
+  <div class="sidebar-header">
+    <div class="sidebar-title-block">
+      <span class="sidebar-label">Detalle de Oferta</span>
+      <h3>{{ ofertaSeleccionada?.titulo }}</h3>
+      <span class="sidebar-id">ID #{{ ofertaSeleccionada?.idOferta }}</span>
+    </div>
+    <button class="close-btn" (click)="cerrarModal()">
+      <span class="material-icons">close</span>
+    </button>
+  </div>
+
+  <div class="sidebar-body" *ngIf="ofertaSeleccionada">
+
+    <!-- BLOQUE: Empresa -->
+    <div class="sidebar-block">
+      <div class="block-title">
+        <span class="material-icons">business</span>
+        Información de la Empresa
+      </div>
+      <div class="info-section">
+        <div class="info-card full">
+          <label class="lbl-empresa">Empresa</label>
+          <p>{{ ofertaSeleccionada?.nombreEmpresa || ofertaSeleccionada?.nombre_empresa }} <span class="ruc-sep">—</span> {{ ofertaSeleccionada?.rucEmpresa || ofertaSeleccionada?.ruc_empresa }}</p>
+          <small>Correo: {{ ofertaSeleccionada?.correo }}</small>
+        </div>
+        <div class="info-card">
+          <label class="lbl-ubicacion">Ciudad</label>
+          <p>{{ ofertaSeleccionada?.nombreCiudad }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOQUE: Detalles de la Oferta -->
+    <div class="sidebar-block">
+      <div class="block-title">
+        <span class="material-icons">work</span>
+        Detalles de la Oferta
+      </div>
+      <div class="info-section">
+        <div class="info-card">
+          <label class="lbl-modalidad">Modalidad</label>
+          <p>{{ ofertaSeleccionada?.nombreModalidad }}</p>
+        </div>
+        <div class="info-card">
+          <label class="lbl-jornada">Jornada</label>
+          <p>{{ ofertaSeleccionada?.nombreJornada }}</p>
+        </div>
+        <div class="info-card">
+          <label class="lbl-categoria">Categoría</label>
+          <p>{{ ofertaSeleccionada?.nombreCategoria }}</p>
+        </div>
+        <div class="info-card">
+          <label class="lbl-vacantes">Vacantes</label>
+          <p>{{ ofertaSeleccionada?.cantidadVacantes }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOQUE: Salario y Fechas -->
+    <div class="sidebar-block">
+      <div class="block-title">
+        <span class="material-icons">payments</span>
+        Condiciones
+      </div>
+      <div class="info-section">
+        <div class="info-card highlight-green">
+          <label class="lbl-salario">Salario Mínimo</label>
+          <p>${{ ofertaSeleccionada?.salarioMin | number:'1.2-2' }}</p>
+        </div>
+        <div class="info-card highlight-green">
+          <label class="lbl-salario">Salario Máximo</label>
+          <p>${{ ofertaSeleccionada?.salarioMax | number:'1.2-2' }}</p>
+        </div>
+        <div class="info-card">
+          <label class="lbl-fecha-inicio">Fecha Inicio</label>
+          <p>{{ ofertaSeleccionada?.fechaInicio | date:'dd/MM/yyyy' }}</p>
+        </div>
+        <div class="info-card highlight-red">
+          <label class="lbl-fecha-cierre">Fecha Cierre</label>
+          <p>{{ ofertaSeleccionada?.fechaCierre | date:'dd/MM/yyyy' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOQUE: Descripción -->
+    <div class="sidebar-block">
+      <div class="block-title">
+        <span class="material-icons">description</span>
+        Descripción del Puesto
+      </div>
+      <div class="desc-box">{{ ofertaSeleccionada?.descripcion }}</div>
+    </div>
+
+    <div class="sidebar-actions" *ngIf="estadoActual === 'PENDIENTE'">
+      <button (click)="aprobar(ofertaSeleccionada)" class="btn-action approve">
+        <span class="material-icons">check_circle</span>
+        Aprobar oferta
+      </button>
+      <button (click)="rechazar(ofertaSeleccionada)" class="btn-action reject">
+        <span class="material-icons">cancel</span>
+        Rechazar oferta
+      </button>
+    </div>
+
   </div>
 </div>

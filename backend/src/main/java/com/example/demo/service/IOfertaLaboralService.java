@@ -2,8 +2,10 @@ package com.example.demo.service;
 
 import com.example.demo.dto.OfertaLaboralDTO;
 import com.example.demo.model.OfertaLaboral;
+import com.example.demo.repository.OfertaLaboralRepository;
 import com.example.demo.repository.Views.IOfertaEmpresaDTO;
 import com.example.demo.repository.Views.IPostulanteOfertaDTO;
+import com.example.demo.dto.IOfertaResumen;
 
 import java.util.List;
 
@@ -14,4 +16,9 @@ public interface IOfertaLaboralService {
 
     List<OfertaLaboral> listarTodas();
     List<IPostulanteOfertaDTO> obtenerPostulantes(Long idOferta);
+
+    List<IOfertaResumen> listarPorEstado(String estadoOferta);
+
+    void cambiarEstadoOferta(Long idOferta, String nuevoEstadoOferta);
+
 }

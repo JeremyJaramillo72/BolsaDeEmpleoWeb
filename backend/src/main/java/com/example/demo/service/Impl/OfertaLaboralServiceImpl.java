@@ -7,23 +7,21 @@ import com.example.demo.repository.Views.IOfertaEmpresaDTO;
 import com.example.demo.repository.Views.IPostulanteOfertaDTO;
 import com.example.demo.service.IOfertaLaboralService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import com.example.demo.dto.IOfertaResumen;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
     private final OfertaLaboralRepository ofertaRepository;
-    private  final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -133,5 +131,16 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
         return ofertaRepository.obtenerPostulantesPorOferta(idOferta);
     }
 
-
+    @Override
+    @Transactional(readOnly = true)
+    public List<IOfertaResumen> listarPorEstado(String estadoOferta) {
+        return ofertaRepository.listarPorEstadoSP(estadoOferta);
     }
+
+    @Override
+    @Transactional
+    public void cambiarEstadoOferta(Long idOferta, String nuevoEstado) {
+
+        ofertaRepository.actualizarEstadoDirecto(idOferta, nuevoEstado);
+    }
+}

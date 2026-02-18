@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit , ChangeDetectorRef} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
+
 import {HttpErrorResponse} from '@angular/common/http';
 
 @Component({
@@ -37,11 +38,15 @@ export class AdminMiniAdmiComponent implements OnInit {
 
   // Eliminamos 'private http: any' porque usaremos solo el servicio
 
-  constructor(private adminService: AdminService) { }
+  constructor(
+    private adminService: AdminService
+    , private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
     this.cargarListaAdminsRegistrados();
     this.cargarRolesInternos();
+
 
   }
   cargarListaAdminsRegistrados()
@@ -60,6 +65,7 @@ export class AdminMiniAdmiComponent implements OnInit {
             permisosUI: usuario.permisosUi ? usuario.permisosUi.split(',') : [],
               estadoValidacion: usuario.estadoValidacion,
           }));
+          this.cdr.detectChanges();
         },
         error: (e) => console.error('Error cargando lista de admins:', e)
       });
@@ -167,16 +173,15 @@ export class AdminMiniAdmiComponent implements OnInit {
     const nuevoEstado = estadoActual === 'Activo' ? 'Inactivo' : 'Activo';
 
     if (nuevoEstado === 'Inactivo') {
-      if(!confirm(`¿Seguro que deseas desactivar a ${admin.usuario}?`)) return;
+      if(!confirm(`¿Seguro que deseas Desactivar a ${admin.usuario}?`)) return;
     }
-
-    // 2. Llamar al Backend
     this.adminService.cambiarEstadoAdmin(admin.id, nuevoEstado).subscribe({
       next: (respuesta) => {
         console.log(respuesta); // "Estado actualizado a Activo/Inactivo"
 
-        // 3. ¡Magia! Actualizamos la vista inmediatamente sin recargar la página
         admin.estadoValidacion = nuevoEstado;
+
+        this.cdr.detectChanges();
       },
       error: (e) => {
         console.error(e);

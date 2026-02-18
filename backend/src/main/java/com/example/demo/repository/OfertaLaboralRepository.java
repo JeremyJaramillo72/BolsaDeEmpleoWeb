@@ -1,5 +1,6 @@
 package com.example.demo.repository;
 
+import com.example.demo.dto.IOfertaResumen;
 import com.example.demo.dto.OfertaLaboralDTO;
 import com.example.demo.model.OfertaLaboral;
 import com.example.demo.dto.OfertaDetalleDTO;
@@ -25,6 +26,13 @@ import java.util.Optional;
 public interface OfertaLaboralRepository extends JpaRepository<OfertaLaboral, Integer> {
 
     List<OfertaLaboral> findByEmpresa(UsuarioEmpresa empresa);
+
+    @Query(value = "SELECT * FROM ofertas.listar_ofertas_por_estado(:estado)", nativeQuery = true)
+    List<IOfertaResumen> listarPorEstadoSP(@Param("estado") String estado);
+
+    @Modifying //
+    @Query(value = "UPDATE ofertas.oferta_laboral SET estado_oferta = :estado WHERE id_oferta = :id", nativeQuery = true)
+    void actualizarEstadoDirecto(@Param("id") Long id, @Param("estado") String estado);
 
     @Modifying
     @Transactional

@@ -7,7 +7,7 @@ import { PerfilProfesionalComponent } from './components/perfil-profesional/perf
 import { AuthGuard } from './guards/auth-guard';
 import { PerfilEmpresaComponent } from './components/perfil-empresa/perfil-empresa';
 import { GestionOfertasComponent } from './components/gestion-ofertas/gestion-ofertas';
-import { AdminValidarOfertasComponent} from './components/Panel-Admin/components/admin-validar/admin-validar';
+import { AdminValidarComponent} from './components/Panel-Admin/components/admin-validar/admin-validar';
 import { AdminUsuariosComponent} from './components/Panel-Admin/components/auditorias-users/auditorias-users'
 import {AdminMiniAdmiComponent} from './components/Panel-Admin/components/admin-mini-admi/admin-mini-admi';
 import  {GestionCatalogosComponent} from './components/Panel-Admin/components/gestion-catalogos/gestion-catalogos';
@@ -32,7 +32,7 @@ export const routes: Routes = [
       { path: 'perfil-profesional', component: PerfilProfesionalComponent },
       { path: 'empresa/perfil', component: PerfilEmpresaComponent },
       { path: 'gestion-ofertas', component: GestionOfertasComponent },
-      { path: 'PanelAdmi/ValidarOfertas', component: AdminValidarOfertasComponent },
+      { path: 'PanelAdmi/ValidarOfertas', component: AdminValidarComponent },
       { path: 'PanelAuditorias/auditorias-users', component: AdminUsuariosComponent },
       { path: 'PanelAdmi/admin-MiniAdmi', component: AdminMiniAdmiComponent },
       {path: 'revision-postulantes', component: RevisionPostulantesComponent},
