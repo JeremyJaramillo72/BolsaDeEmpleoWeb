@@ -1,215 +1,88 @@
-/* =========================
-   RESET Y BASE
-========================= */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: 'Segoe UI', Tahoma, sans-serif;
-}
+/* Contenedor Principal bloqueado a la pantalla */
+.login-wrapper { display: flex; height: 100vh; font-family: 'Inter', system-ui, sans-serif; background-color: #f8fafc; overflow: hidden; }
 
-html, body {
-  height: 100%;
-}
+/* PANEL IZQUIERDO */
+.panel-izquierdo { width: 50%; position: relative; background-image: url('https://images.unsplash.com/photo-1769092992447-18050cf9bd26?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'); background-size: cover; background-position: center; display: none; }
+@media (min-width: 1024px) { .panel-izquierdo { display: block; } }
 
-body {
-  background-color: #eef2f7;
-}
+/* Colores Azules */
+.overlay-azul { position: absolute; inset: 0; background-color: rgba(37, 99, 235, 0.4); }
+.overlay-gradiente-azul { position: absolute; inset: 0; background: linear-gradient(to top, rgba(30, 58, 138, 0.75) 0%, transparent 60%); }
 
-/* =========================
-   CONTENEDOR PRINCIPAL
-   🔥 CENTRADO ABSOLUTO REAL
-========================= */
-.container {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+/* Compresión vertical del texto izquierdo */
+.contenido-lateral { position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem 2.5rem; box-sizing: border-box; }
 
-  display: flex;
-  width: 100%;
-  max-width: 850px;
+/* Marca Superior */
+.marca { display: flex; align-items: center; gap: 10px; margin-bottom: auto; }
+.logo-escudo { width: 40px; height: 40px; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.3); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 1.2rem; }
+.textos-marca { display: flex; flex-direction: column; }
+.titulo-marca { color: white; font-weight: 700; font-size: 0.9rem; }
+.subtitulo-marca { color: #bfdbfe; font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
-  background: #fff;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-}
+/* Contenido Principal Compactado */
+.hero-principal { margin-top: auto; margin-bottom: auto; }
+.hero-titulo { color: white; font-size: 2.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -0.02em; }
+.lista-beneficios-grande { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.8rem; }
+.lista-beneficios-grande li { display: flex; align-items: center; gap: 0.8rem; color: #dbeafe; font-size: 0.9rem; font-weight: 500; }
+.icono-check-grande { color: #bfdbfe; font-size: 1.2rem; }
 
-/* =========================
-   PANEL IZQUIERDO
-========================= */
-.info-side {
-  flex: 1;
-  background-color: #0056b3;
-  color: white;
-  padding: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
+/* --- PANEL DERECHO (FORMULARIO) MÁXIMA COMPRESIÓN --- */
+/* Padding super reducido a 1rem verticalmente */
+.panel-derecho { flex: 1; display: flex; justify-content: center; align-items: center; padding: 1rem 2rem; overflow-y: auto; background-color: white; box-sizing: border-box; }
+.formulario-container { width: 100%; max-width: 440px; }
 
-.info-content {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
+/* Marca Mobile */
+.marca-mobile { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+@media (min-width: 1024px) { .marca-mobile { display: none; } }
+.logo-escudo-mobile { width: 36px; height: 36px; background: #2563EB; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 1rem; }
+.textos-marca-mobile { display: flex; flex-direction: column; }
+.titulo-marca-mobile { color: #0f172a; font-weight: 700; font-size: 0.9rem; }
+.subtitulo-marca-mobile { color: #64748b; font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
-.main-icon {
-  width: 120px;
-  margin-bottom: 25px;
-}
+/* Cabecera Form */
+.etiqueta-top span { color: #2563EB; font-size: 0.75rem; font-weight: 600; margin-bottom: 4px; display: block; }
+.titulo-form { color: #0f172a; font-size: 1.8rem; font-weight: 800; margin-bottom: 0.2rem; letter-spacing: -0.02em; }
+.subtitulo-form { color: #64748b; font-size: 0.85rem; margin-bottom: 1.2rem; }
+.alerta-error { background-color: #fef2f2; border: 1px solid #f87171; color: #991b1b; padding: 8px 12px; border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.8rem; }
 
-.info-side h1 {
-  font-size: 2rem;
-  margin-bottom: 15px;
-}
+/* Formulario Grid y Inputs super pegados */
+.grid-form { display: flex; flex-direction: column; gap: 0.8rem; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label { font-size: 0.75rem; font-weight: 600; color: #374151; }
+.input-moderno { width: 100%; padding: 0.6rem 1rem; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.85rem; background-color: #f8fafc; outline: none; transition: all 0.2s; box-sizing: border-box; }
+.input-moderno:focus { border-color: #2563EB; background-color: white; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+.input-icon-wrapper { position: relative; width: 100%; }
+.icono-input { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 1.1rem; }
+.input-moderno.con-icono { padding-left: 2.8rem; }
+.input-moderno.con-toggle { padding-right: 2.8rem; }
+.btn-toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #9ca3af; cursor: pointer; display: flex; align-items: center; transition: color 0.2s; }
+.btn-toggle-password:hover { color: #6b7280; }
 
-/* =========================
-   PANEL DERECHO (FORM)
-========================= */
-.form-side {
-  flex: 1.2;
-  padding: 50px 40px;
-}
+/* Opciones de Login */
+.opciones-login { display: flex; justify-content: space-between; align-items: center; margin-top: -0.2rem; }
+.checkbox-label { display: flex; align-items: center; gap: 6px; cursor: pointer; color: #64748b; font-size: 0.75rem; }
+.checkbox-moderno { width: 14px; height: 14px; accent-color: #2563EB; cursor: pointer; margin:0;}
+.enlace-olvido { color: #2563EB; font-size: 0.75rem; font-weight: 600; text-decoration: none; transition: color 0.2s; }
+.enlace-olvido:hover { color: #1d4ed8; }
 
-.form-side h2 {
-  color: #333;
-  margin-bottom: 5px;
-}
+/* Botón Login Azul */
+.btn-login { width: 100%; background-color: #2563EB; color: white; border: none; padding: 0.7rem; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 0.2rem; transition: all 0.2s; }
+.btn-login:hover:not(:disabled) { background-color: #1d4ed8; }
+.btn-login:disabled { background-color: #cbd5e1; cursor: not-allowed; }
 
-.subtitle {
-  color: #7f8c8d;
-  font-size: 0.9rem;
-  margin-bottom: 30px;
-}
+/* Selector de Registro Prominente super comprimido */
+.registro-opciones { margin-top: 1.5rem; }
+.divisor-texto { display: flex; align-items: center; gap: 10px; margin-bottom: 0.8rem; }
+.divisor-texto hr { flex: 1; border: none; border-top: 1px solid #e2e8f0; }
+.divisor-texto span { color: #94a3b8; font-size: 0.75rem; font-weight: 500; }
+.botones-registro { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.btn-opcion-registro { background: white; border: 2px solid #e2e8f0; border-radius: 10px; padding: 0.6rem; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s; }
+.icono-opcion { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+.btn-opcion-registro.postulante:hover { border-color: #10b981; background-color: #f0fdf4; }
+.btn-opcion-registro.postulante .icono-opcion { background-color: #ecfdf5; color: #10b981; }
+.btn-opcion-registro.empresa:hover { border-color: #8b5cf6; background-color: #faf5ff; }
+.btn-opcion-registro.empresa .icono-opcion { background-color: #f5f3ff; color: #8b5cf6; }
+.titulo-opcion { display: block; color: #0f172a; font-size: 0.8rem; font-weight: 700; margin-bottom: 2px; }
+.subtitulo-opcion { display: block; color: #64748b; font-size: 0.65rem; }
 
-/* =========================
-   INPUTS
-========================= */
-.input-group {
-  margin-bottom: 20px;
-}
-
-.input-group label {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: bold;
-  color: #2c3e50;
-  margin-bottom: 8px;
-  letter-spacing: 1px;
-}
-
-.input-group input {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #dcdde1;
-  border-radius: 10px;
-  background: #f9f9f9;
-  outline: none;
-  transition: 0.3s;
-}
-
-.input-group input:focus {
-  border-color: #34495e;
-  background: #fff;
-  box-shadow: 0 0 8px rgba(52, 73, 94, 0.1);
-}
-
-/* =========================
-   PASSWORD VISIBILITY
-========================= */
-.password-wrapper {
-  position: relative;
-  width: 100%;
-}
-
-.password-wrapper input {
-  padding-right: 45px;
-}
-
-.toggle-password {
-  position: absolute;
-  right: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  font-size: 1.2rem;
-  user-select: none;
-  transition: transform 0.2s ease;
-}
-
-.toggle-password:active {
-  transform: translateY(-50%) scale(0.9);
-}
-
-/* =========================
-   BOTÓN LOGIN
-========================= */
-.btn-login {
-  width: 100%;
-  padding: 14px;
-  background-color: #2c3e50;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 10px;
-  transition: background-color 0.3s;
-}
-
-.btn-login:hover:not(:disabled) {
-  background-color: #1a252f;
-}
-
-.btn-login:disabled {
-  background-color: #95a5a6;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-/* =========================
-   FOOTER LINKS
-========================= */
-.footer-links {
-  margin-top: 25px;
-  text-align: center;
-  font-size: 0.85rem;
-  color: #7f8c8d;
-  line-height: 1.6;
-}
-
-.footer-links a {
-  color: #2980b9;
-  text-decoration: none;
-  font-weight: bold;
-  transition: color 0.2s;
-}
-
-.footer-links a:hover {
-  text-decoration: underline;
-  color: #1a252f;
-}
-
-/* =========================
-   RESPONSIVE
-========================= */
-@media (max-width: 768px) {
-  .container {
-    flex-direction: column;
-    width: 90%;
-  }
-
-  .info-side {
-    padding: 30px;
-  }
-
-  .info-side h1 {
-    font-size: 1.5rem;
-  }
-}
+.pie-pagina { text-align: center; color: #94a3b8; font-size: 0.7rem; margin-top: 1.2rem; }

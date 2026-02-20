@@ -1,80 +1,118 @@
-<div class="container">
-  <div class="info-side">
-    <div class="info-content">
-      <img src="https://cdn-icons-png.flaticon.com/512/4091/4091968.png" alt="Icono Empresa" class="main-icon">
-      <h1>Encuentra el Mejor Talento</h1>
-      <p>Únete a nuestra red de empresas y conecta con miles de profesionales calificados.</p>
+<div class="registro-wrapper">
+  <div class="panel-izquierdo">
+    <div class="overlay-morado"></div>
+    <div class="overlay-gradiente-morado"></div>
+
+    <div class="contenido-lateral">
+      <div class="marca">
+        <div class="logo-escudo">U</div>
+        <div class="textos-marca">
+          <span class="titulo-marca">Bolsa de Empleo</span>
+          <span class="subtitulo-marca">Univ. Técnica Estatal de Quevedo</span>
+        </div>
+      </div>
+
+      <div class="hero-section">
+        <div class="badge-oficial">
+          <span class="material-icons icono-pequeno">trending_up</span>
+          <span>+320 empresas registradas</span>
+        </div>
+        <h2 class="hero-titulo">Conecta con el<br>mejor talento<br>universitario</h2>
+        <p class="hero-texto">Publica tus ofertas y accede a miles de profesionales formados en la UTEQ, listos para sumarse a tu equipo.</p>
+
+        <ul class="lista-beneficios">
+          <li><span class="emoji-bullet">🎓</span><span>Perfiles verificados de egresados UTEQ</span></li>
+          <li><span class="emoji-bullet">📣</span><span>Publica ofertas en minutos</span></li>
+          <li><span class="emoji-bullet">📊</span><span>Panel de gestión de postulaciones</span></li>
+          <li><span class="emoji-bullet">⚡</span><span>Proceso de selección más ágil</span></li>
+        </ul>
+      </div>
     </div>
   </div>
 
-  <div class="form-side">
-    <h2>Registro Empresa</h2>
-    <p class="subtitle">Crea una cuenta corporativa para tu organización.</p>
+  <div class="panel-derecho">
+    <div class="formulario-container">
 
-    <form (submit)="registrar()" #registroForm="ngForm">
-
-      <div class="input-group">
-        <label>CORREO CORPORATIVO</label>
-        <input type="email" name="correo" [(ngModel)]="correo" placeholder="rrhh@miempresa.com" required>
-      </div>
-
-      <div class="input-group">
-        <label>CONTRASEÑA</label>
-        <input type="password" name="pass" [(ngModel)]="contrasena" placeholder="********" required>
-      </div>
-
-      <hr class="divider">
-
-      <div class="row">
-        <div class="input-group">
-          <label>PROVINCIA</label>
-          <select name="provincia" [(ngModel)]="idProvinciaSeleccionada" (change)="onProvinciaChange()" required>
-            <option value="" disabled selected>Seleccione Provincia</option>
-            <option *ngFor="let p of provincias" [value]="p.idProvincia">
-              {{p.nombreProvincia}}
-            </option>
-          </select>
+      <div class="cabecera-form">
+        <div class="etiqueta-top">
+          <div class="punto-morado"></div>
+          <span>Registro de Empresa</span>
         </div>
-        <div class="input-group">
-          <label>CIUDAD</label>
-          <select name="ciudad" [(ngModel)]="idCiudad" [disabled]="!idProvinciaSeleccionada" required>
-            <option value="" disabled selected>Seleccione Ciudad</option>
-            <option *ngFor="let c of ciudades" [value]="c.idCiudad">
-              {{c.nombreCiudad}}
-            </option>
-          </select>
+        <h1 class="titulo-form">Crea tu cuenta corporativa</h1>
+        <p class="subtitulo-form">Conecta con talento formado en la UTEQ desde hoy.</p>
+      </div>
+
+      <form (submit)="registrar()" #registroForm="ngForm" class="grid-form">
+
+        <div class="form-group">
+          <label>Nombre de la Empresa</label>
+          <div class="input-icon-wrapper">
+            <span class="material-icons icono-input">domain</span>
+            <input type="text" name="nE" [(ngModel)]="nombreEmpresa" placeholder="Ej: Tech Solutions S.A." class="input-moderno con-icono" required>
+          </div>
         </div>
-      </div>
 
-      <div class="input-group">
-        <label>NOMBRE DE LA EMPRESA</label>
-        <input type="text" name="nE" [(ngModel)]="nombreEmpresa" placeholder="Ej: Tech Solutions S.A." required>
-      </div>
-
-      <div class="row">
-        <div class="input-group">
-          <label>RUC</label>
-          <input type="text" name="ruc" [(ngModel)]="ruc" placeholder="1792..." required>
+        <div class="form-row dos-columnas">
+          <div class="form-group">
+            <label>RUC</label>
+            <div class="input-icon-wrapper">
+              <span class="material-icons icono-input">receipt_long</span>
+              <input type="text" name="ruc" [(ngModel)]="ruc" placeholder="1792..." class="input-moderno con-icono" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Sitio Web</label>
+            <div class="input-icon-wrapper">
+              <span class="material-icons icono-input">language</span>
+              <input type="url" name="web" [(ngModel)]="sitioWeb" placeholder="https://..." class="input-moderno con-icono">
+            </div>
+          </div>
         </div>
-        <div class="input-group">
-          <label>SITIO WEB</label>
-          <input type="url" name="web" [(ngModel)]="sitioWeb" placeholder="https://...">
+
+        <div class="form-row dos-columnas">
+          <div class="form-group">
+            <label>Provincia</label>
+            <select name="provincia" [(ngModel)]="idProvinciaSeleccionada" (change)="onProvinciaChange()" class="input-moderno" required>
+              <option value="" disabled selected>Seleccione Provincia</option>
+              <option *ngFor="let p of provincias" [value]="p.idProvincia">{{p.nombreProvincia}}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Ciudad</label>
+            <select name="ciudad" [(ngModel)]="idCiudad" [disabled]="!idProvinciaSeleccionada" class="input-moderno" required>
+              <option value="" disabled selected>Seleccione Ciudad</option>
+              <option *ngFor="let c of ciudades" [value]="c.idCiudad">{{c.nombreCiudad}}</option>
+            </select>
+          </div>
         </div>
-      </div>
 
-      <div class="input-group">
-        <label>DESCRIPCIÓN DE LA EMPRESA</label>
-        <textarea name="desc" [(ngModel)]="descripcion" rows="3" placeholder="Cuéntanos un poco sobre tu empresa..."></textarea>
-      </div>
+        <div class="form-group">
+          <label>Correo Corporativo</label>
+          <div class="input-icon-wrapper">
+            <span class="material-icons icono-input">business_center</span>
+            <input type="email" name="correo" [(ngModel)]="correo" placeholder="rrhh@miempresa.com" class="input-moderno con-icono" required>
+          </div>
+        </div>
 
-      <button type="submit" class="btn-register" [disabled]="!registroForm.valid">
-        Registrar Empresa
-      </button>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <div class="input-icon-wrapper">
+            <span class="material-icons icono-input">lock</span>
+            <input type="password" name="pass" [(ngModel)]="contrasena" placeholder="Mínimo 8 caracteres" class="input-moderno con-icono" required>
+          </div>
+        </div>
 
-      <div class="footer-links">
+        <button type="submit" class="btn-registrar" [disabled]="!registroForm.valid" style="margin-top: 1rem;">
+          Registrar Empresa <span class="material-icons">arrow_forward</span>
+        </button>
+
+      </form>
+
+      <div class="enlaces-inferiores">
         <p>¿Buscas empleo? <a routerLink="/registro-candidato">Regístrate como Candidato</a></p>
         <p><a routerLink="/login">Volver al Inicio de Sesión</a></p>
       </div>
-    </form>
+
+    </div>
   </div>
 </div>

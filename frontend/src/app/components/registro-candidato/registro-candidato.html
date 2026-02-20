@@ -1,101 +1,145 @@
-<div class="container">
-    <div class="info-side">
-        <div class="info-content">
-            <img src="https://cdn-icons-png.flaticon.com/512/1063/1063376.png" alt="Icono CV" class="main-icon">
-            <h1>Impulsa tu Carrera</h1>
-            <p>Crea tu perfil profesional en minutos.</p>
+<div class="registro-wrapper">
+  <div class="panel-izquierdo">
+    <div class="overlay-verde"></div>
+    <div class="overlay-gradiente"></div>
+
+    <div class="contenido-lateral">
+      <div class="marca">
+        <div class="logo-escudo">U</div>
+        <div class="textos-marca">
+          <span class="titulo-marca">Bolsa de Empleo</span>
+          <span class="subtitulo-marca">Univ. Técnica Estatal de Quevedo</span>
         </div>
+      </div>
+
+      <div class="hero-section">
+        <div class="badge-oficial">✦ Portal Oficial UTEQ</div>
+        <h2 class="hero-titulo">Tu carrera<br>profesional<br>empieza aquí</h2>
+        <p class="hero-texto">Accede a cientos de oportunidades laborales de empresas que valoran el talento de la UTEQ.</p>
+
+        <ul class="lista-beneficios">
+          <li><div class="numero-badge">01</div><span>Crea tu perfil profesional completo</span></li>
+          <li><div class="numero-badge">02</div><span>Explora ofertas de empresas aliadas</span></li>
+          <li><div class="numero-badge">03</div><span>Postula con respaldo institucional</span></li>
+        </ul>
+      </div>
     </div>
+  </div>
 
-    <div class="form-side">
-        <h2>Registro Candidato</h2>
-        <p class="subtitle">Completa tus datos personales para empezar.</p>
+  <div class="panel-derecho">
+    <div class="formulario-container">
 
-        <form (submit)="registrar()">
-            <div class="row">
-                <div class="input-group">
-                    <label>NOMBRE</label>
-                    <input type="text" name="nombre" [(ngModel)]="nombre" placeholder="Ej: Juan" required>
-                </div>
-                <div class="input-group">
-                    <label>APELLIDO</label>
-                    <input type="text" name="apellido" [(ngModel)]="apellido" placeholder="Ej: Pérez" required>
-                </div>
+      <div class="cabecera-form">
+        <div class="etiqueta-top">
+          <div class="punto-verde"></div>
+          <span>Registro de Postulante</span>
+        </div>
+        <h1 class="titulo-form">Crea tu perfil profesional</h1>
+        <p class="subtitulo-form">Completa tus datos personales para empezar.</p>
+      </div>
+
+      <form (submit)="registrar()" #registroForm="ngForm" class="grid-form">
+
+        <div class="form-row dos-columnas">
+          <div class="form-group">
+            <label>Nombre</label>
+            <div class="input-icon-wrapper">
+              <span class="material-icons icono-input">person</span>
+              <input type="text" name="nombre" [(ngModel)]="nombre" placeholder="Ej: Juan" class="input-moderno con-icono" required>
             </div>
-
-            <div class="input-group">
-                <label>CORREO ELECTRÓNICO</label>
-                <div class="email-wrapper">
-                    <input type="email" name="correo" [(ngModel)]="correo" placeholder="usuario@uteq.edu.ec" required>
-                    <button type="button" (click)="enviarCodigo()" [disabled]="enviandoCodigo">
-                        {{ enviandoCodigo ? 'Enviando...' : 'Enviar Código' }}
-                    </button>
-                </div>
+          </div>
+          <div class="form-group">
+            <label>Apellido</label>
+            <div class="input-icon-wrapper">
+              <span class="material-icons icono-input">person</span>
+              <input type="text" name="apellido" [(ngModel)]="apellido" placeholder="Ej: Pérez" class="input-moderno con-icono" required>
             </div>
+          </div>
+        </div>
 
-            <div class="input-group">
-                <label>CÓDIGO DE VERIFICACIÓN</label>
-                <input type="text" name="codigo" [(ngModel)]="codigoVerificacion"
-                       (input)="validarCodigoVisual()" maxlength="6"
-                       [class.is-valid]="codigoValido" [class.is-invalid]="codigoInvalido" required>
+        <div class="form-group">
+          <label>Correo Electrónico</label>
+          <div class="input-con-boton">
+            <div class="input-icon-wrapper">
+              <span class="material-icons icono-input">mail</span>
+              <input type="email" name="correo" [(ngModel)]="correo" placeholder="usuario@uteq.edu.ec" class="input-moderno con-icono" required>
             </div>
+            <button type="button" class="btn-enviar-codigo" (click)="enviarCodigo()" [disabled]="enviandoCodigo">
+              <span class="material-icons btn-icon">{{ enviandoCodigo ? 'hourglass_empty' : 'send' }}</span>
+              {{ enviandoCodigo ? 'Enviando...' : 'Enviar Código' }}
+            </button>
+          </div>
+        </div>
 
-            <div class="input-group">
-                <label>CONTRASEÑA</label>
-                <input type="password" name="pass" [(ngModel)]="contrasena" placeholder="********" required>
+        <div class="form-group">
+          <label>Código de Verificación</label>
+          <input type="text" name="codigo" [(ngModel)]="codigoVerificacion" (input)="validarCodigoVisual()" maxlength="6"
+                 class="input-moderno" [class.is-valid]="codigoValido" [class.is-invalid]="codigoInvalido"
+                 placeholder="Ingresa el código" required>
+        </div>
+
+        <div class="form-group">
+          <label>Contraseña</label>
+          <div class="input-icon-wrapper">
+            <span class="material-icons icono-input">lock</span>
+            <input type="password" name="pass" [(ngModel)]="contrasena" placeholder="********" class="input-moderno con-icono" required>
+          </div>
+        </div>
+
+        <div class="form-row dos-columnas">
+          <div class="form-group">
+            <label>Teléfono</label>
+            <div class="input-icon-wrapper">
+              <span class="material-icons icono-input">phone</span>
+              <input type="text" name="tel" [(ngModel)]="telefono" placeholder="099..." class="input-moderno con-icono">
             </div>
-
-            <div class="row">
-                <div class="input-group">
-                    <label>TELÉFONO</label>
-                    <input type="text" name="tel" [(ngModel)]="telefono" placeholder="099...">
-                </div>
-                <div class="input-group">
-                    <label>GÉNERO</label>
-                    <select name="gen" [(ngModel)]="genero">
-                        <option value="" disabled>Seleccione</option>
-                        <option value="Masculino">Masculino</option>
-                        <option value="Femenino">Femenino</option>
-                    </select>
-                </div>
-            </div>
-
-
-          <div class="input-group">
-            <label>PROVINCIA</label>
-            <select name="provincia" [(ngModel)]="idProvinciaSeleccionada" (change)="onProvinciaChange()" required>
-              <option value="" disabled selected>Seleccione Provincia</option>
-              <option *ngFor="let p of provincias" [value]="p.idProvincia">
-                {{p.nombreProvincia}}
-              </option>
+          </div>
+          <div class="form-group">
+            <label>Género</label>
+            <select name="gen" [(ngModel)]="genero" class="input-moderno">
+              <option value="" disabled>Seleccione</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
             </select>
           </div>
-
-        <div class="input-group">
-            <label>CIUDAD</label>
-           <select name="ciudad" [(ngModel)]="idCiudadSeleccionada" [disabled]="!idProvinciaSeleccionada" required>
-            <option [ngValue]="null" disabled>Seleccione Ciudad</option>
-            <option *ngFor="let c of ciudades" [ngValue]="c.idCiudad">
-                {{ c.nombreCiudad }}
-            </option>
-        </select>
         </div>
 
-            <div class="input-group">
-                <label>FECHA DE NACIMIENTO</label>
-                <input type="date" name="fechaNac" [(ngModel)]="fechaNac">
-            </div>
+        <div class="form-row dos-columnas">
+          <div class="form-group">
+            <label>Provincia</label>
+            <select name="provincia" [(ngModel)]="idProvinciaSeleccionada" (change)="onProvinciaChange()" class="input-moderno" required>
+              <option value="" disabled selected>Seleccione Provincia</option>
+              <option *ngFor="let p of provincias" [value]="p.idProvincia">{{p.nombreProvincia}}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Ciudad</label>
+            <select name="ciudad" [(ngModel)]="idCiudadSeleccionada" [disabled]="!idProvinciaSeleccionada" class="input-moderno" required>
+              <option [ngValue]="null" disabled>Seleccione Ciudad</option>
+              <option *ngFor="let c of ciudades" [ngValue]="c.idCiudad">{{ c.nombreCiudad }}</option>
+            </select>
+          </div>
+        </div>
 
+        <div class="form-group">
+          <label>Fecha de Nacimiento</label>
+          <div class="input-icon-wrapper">
+            <span class="material-icons icono-input">calendar_today</span>
+            <input type="date" name="fechaNac" [(ngModel)]="fechaNac" class="input-moderno con-icono">
+          </div>
+        </div>
 
-            <button type="submit" class="btn-register" [disabled]="!correoVerificado">
-                Registrar
-            </button>
+        <button type="submit" class="btn-registrar" [disabled]="!correoVerificado || !registroForm.form.valid">
+          Registrar <span class="material-icons">arrow_forward</span>
+        </button>
 
-            <div class="footer-links">
-                <p>¿Eres una empresa? <a routerLink="/registro-empresa">Regístrate aquí</a></p>
-                <p>¿Ya tienes una cuenta? <a routerLink="/login">Inicia Sesión</a></p>
-            </div>
-        </form>
+      </form>
+
+      <div class="enlaces-inferiores">
+        <p>¿Eres una empresa? <a routerLink="/registro-empresa">Regístrate aquí</a></p>
+        <p>¿Ya tienes una cuenta? <a routerLink="/login">Inicia Sesión</a></p>
+      </div>
+
     </div>
+  </div>
 </div>
-

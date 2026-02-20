@@ -1,148 +1,57 @@
-* {
-  box-sizing: border-box;
-  margin: 0; padding: 0;
-  font-family: 'Segoe UI', sans-serif;
-}
+/* Contenedor Principal */
+.registro-wrapper { display: flex; min-height: 100vh; font-family: 'Inter', system-ui, sans-serif; background-color: #f8fafc; overflow: hidden; }
 
-body {
-  background-color: #f0f2f5;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-}
+/* PANEL IZQUIERDO */
+.panel-izquierdo { width: 42%; position: relative; background-image: url('https://images.unsplash.com/photo-1733835085968-d586d44a31da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'); background-size: cover; background-position: center; display: none; }
+@media (min-width: 992px) { .panel-izquierdo { display: block; } }
+.overlay-morado { position: absolute; inset: 0; background-color: rgba(109, 40, 217, 0.5); }
+.overlay-gradiente-morado { position: absolute; inset: 0; background: linear-gradient(to top, rgba(46, 16, 101, 0.85) 0%, transparent 60%); }
 
-.container {
-  display: flex;
-  width: 950px;
-  background: #fff;
-  border-radius: 15px;
-  overflow: hidden;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-}
+.contenido-lateral { position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem 2.5rem; }
 
-.info-side {
-  flex: 1;
-  background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
-  color: white;
-  padding: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
+.marca { display: flex; align-items: center; gap: 10px; }
+.logo-escudo { width: 36px; height: 36px; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.3); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 1.1rem; }
+.textos-marca { display: flex; flex-direction: column; }
+.titulo-marca { color: white; font-weight: 700; font-size: 0.9rem; }
+.subtitulo-marca { color: #ddd6fe; font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
-.info-content {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
+.badge-oficial { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: 20px; padding: 4px 10px; color: #ddd6fe; font-size: 0.7rem; font-weight: 500; margin-bottom: 0.8rem; }
+.icono-pequeno { font-size: 0.9rem; }
+.hero-titulo { color: white; font-size: 1.9rem; font-weight: 800; line-height: 1.1; margin-bottom: 0.6rem; }
+.hero-texto { color: #ddd6fe; font-size: 0.85rem; line-height: 1.4; margin-bottom: 1.2rem; }
+.lista-beneficios { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.6rem; }
+.lista-beneficios li { display: flex; align-items: center; gap: 0.6rem; color: #ddd6fe; font-size: 0.85rem; }
+.emoji-bullet { font-size: 1rem; }
 
-.main-icon {
-  width: 120px;
-  margin-bottom: 25px;
-}
+/* PANEL DERECHO */
+.panel-derecho { flex: 1; display: flex; justify-content: center; align-items: center; padding: 1rem 2rem; overflow-y: auto; background-color: white; }
+.formulario-container { width: 100%; max-width: 580px; }
 
-.info-side h1 { font-size: 2.2rem; margin-bottom: 20px; }
-.info-side p { font-size: 1.1rem; opacity: 0.9; line-height: 1.6; }
+.etiqueta-top { display: flex; align-items: center; gap: 6px; margin-bottom: 0.3rem; }
+.punto-morado { width: 8px; height: 8px; background-color: #8b5cf6; border-radius: 50%; }
+.etiqueta-top span { color: #8b5cf6; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.titulo-form { color: #0f172a; font-size: 1.6rem; font-weight: 800; margin-bottom: 0.2rem; }
+.subtitulo-form { color: #64748b; font-size: 0.85rem; margin-bottom: 1rem; }
 
-.form-side {
-  flex: 1.3;
-  padding: 40px;
-}
+/* Formulario Grid */
+.grid-form { display: flex; flex-direction: column; gap: 0.8rem; }
+.form-row.dos-columnas { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label { font-size: 0.7rem; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.5px; }
 
-.form-side h2 { color: #333; margin-bottom: 8px; }
-.subtitle { color: #858796; font-size: 0.9rem; margin-bottom: 25px; }
+/* Inputs Modernos */
+.input-moderno { width: 100%; padding: 0.6rem 1rem; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 0.85rem; background-color: #f8fafc; outline: none; transition: all 0.2s; box-sizing: border-box; }
+.input-moderno:focus { border-color: #8b5cf6; background-color: white; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1); }
+.input-moderno:disabled { background-color: #e2e8f0; cursor: not-allowed; opacity: 0.7; }
+.input-icon-wrapper { position: relative; width: 100%; }
+.icono-input { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1rem; }
+.input-moderno.con-icono { padding-left: 2.2rem; }
 
-.divider {
-  border: 0;
-  border-top: 1px solid #e3e6f0;
-  margin: 20px 0;
-}
+/* Botón y enlaces */
+.btn-registrar { width: 100%; background-color: #8b5cf6; color: white; border: none; padding: 0.8rem; border-radius: 8px; font-size: 0.95rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+.btn-registrar:hover:not(:disabled) { background-color: #7c3aed; }
+.btn-registrar:disabled { background-color: #cbd5e1; cursor: not-allowed; }
 
-.input-group { margin-bottom: 15px; }
-.input-group label {
-  display: block;
-  font-size: 0.7rem;
-  font-weight: 800;
-  color: #4e73df;
-  margin-bottom: 5px;
-  letter-spacing: 0.05rem;
-}
-
-/* Estilos unificados para inputs, textareas y selectores [cite: 2026-01-13] */
-.input-group input,
-.input-group textarea,
-.input-group select {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #d1d3e2;
-  border-radius: 10px;
-  background-color: #fff;
-  outline: none;
-  transition: 0.3s;
-}
-
-.input-group select {
-  appearance: none;
-  cursor: pointer;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%234e73df' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  background-size: 16px 12px;
-}
-
-.input-group input:focus,
-.input-group select:focus {
-  border-color: #4e73df;
-  box-shadow: 0 0 0 0.2rem rgba(78,115,223,0.25);
-}
-
-.row { display: flex; gap: 15px; }
-.row .input-group { flex: 1; }
-
-.btn-register {
-  width: 100%;
-  padding: 14px;
-  background-color: #4e73df;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 10px;
-}
-
-.btn-register:hover:not(:disabled) { background-color: #2e59d9; }
-
-.btn-register:disabled {
-  background-color: #d1d3e2;
-  color: #858796;
-  cursor: not-allowed;
-}
-
-.footer-links { margin-top: 25px; text-align: center; font-size: 0.9rem; }
-.footer-links a { color: #4e73df; text-decoration: none; font-weight: bold; }
-
-.email-wrapper { display: flex; gap: 10px; }
-.email-wrapper input { flex: 2; }
-.email-wrapper button {
-  flex: 1;
-  background-color: #36b9cc;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 0.8rem;
-}
-
-.is-valid { border: 2px solid #1cc88a !important; background-color: #f6fff9 !important; }
-.is-invalid { border: 2px solid #e74a3b !important; background-color: #fff5f5 !important; }
-
-@media (max-width: 850px) {
-  .container { flex-direction: column; width: 95%; }
-}
+.enlaces-inferiores { text-align: center; margin-top: 1rem; display: flex; flex-direction: column; gap: 6px; }
+.enlaces-inferiores p { margin: 0; color: #64748b; font-size: 0.8rem; }
+.enlaces-inferiores a { color: #8b5cf6; font-weight: 700; text-decoration: none; }

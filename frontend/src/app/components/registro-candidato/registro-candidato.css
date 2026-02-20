@@ -1,190 +1,97 @@
+/* Contenedor Principal */
+.registro-wrapper { display: flex; height: 100vh; font-family: 'Inter', system-ui, sans-serif; background-color: #f8fafc; overflow: hidden; }
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+/* PANEL IZQUIERDO (AHORA EN VERDE ESMERALDA COMO EL DISEÑO) */
+.panel-izquierdo { width: 42%; position: relative; background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1200'); background-size: cover; background-position: center; display: none; }
+@media (min-width: 992px) { .panel-izquierdo { display: block; } }
 
-body {
-    background-color: #f4f7f9;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-}
+/* Capas de color verde */
+.overlay-verde { position: absolute; inset: 0; background-color: rgba(5, 150, 105, 0.5); }
+.overlay-gradiente { position: absolute; inset: 0; background: linear-gradient(to top, rgba(6, 78, 59, 0.85) 0%, transparent 60%); }
 
-.container {
-    display: flex;
-    width: 900px;
-    background: #fff;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-}
+.contenido-lateral { position: relative; z-index: 10; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 2.5rem; box-sizing: border-box; }
 
-/* Lado Azul */
-.info-side {
-    flex: 1;
-    background-color: #0056b3;
-    color: white;
-    padding: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-}
+.marca { display: flex; align-items: center; gap: 10px; }
+.logo-escudo { width: 44px; height: 44px; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.3); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 1.2rem; }
+.textos-marca { display: flex; flex-direction: column; }
+.titulo-marca { color: white; font-weight: 700; font-size: 1rem; }
+.subtitulo-marca { color: #a7f3d0; font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
-.main-icon {
-    width: 120px;
-    margin-bottom: 20px;
-    filter: brightness(0) invert(1);
-}
+.badge-oficial { display: inline-flex; align-items: center; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: 20px; padding: 6px 14px; color: #d1fae5; font-size: 0.72rem; font-weight: 500; margin-bottom: 1.25rem; }
+.hero-titulo { color: white; font-size: 2.5rem; font-weight: 800; line-height: 1.12; margin-bottom: 1rem; letter-spacing: -0.03em; }
+.hero-texto { color: #d1fae5; font-size: 0.9rem; line-height: 1.7; margin-bottom: 2rem; }
 
-.info-side h1 {
-    font-size: 2rem;
-    margin-bottom: 15px;
-}
+/* Lista con Badges Numéricos */
+.lista-beneficios { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.9rem; }
+.lista-beneficios li { display: flex; align-items: center; gap: 0.9rem; color: #d1fae5; font-size: 0.875rem; }
+.numero-badge { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #fff; font-size: 0.65rem; font-weight: 800; }
 
-.info-side p {
-    font-size: 1rem;
-    line-height: 1.5;
-    opacity: 0.9;
-}
+/* PANEL DERECHO */
+.panel-derecho { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 0 2rem; overflow-y: auto; background-color: white; box-sizing: border-box; }
+.formulario-container { width: 100%; max-width: 520px; margin: auto 0; padding: 1.5rem 0; }
 
-/* Formulario */
-.form-side {
-    flex: 1.2;
-    padding: 40px;
-}
+.etiqueta-top { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; }
+.punto-verde { width: 10px; height: 10px; background-color: #10b981; border-radius: 50%; }
+.etiqueta-top span { color: #10b981; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.titulo-form { color: #0f172a; font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.03em; }
+.subtitulo-form { color: #64748b; font-size: 0.9375rem; margin-bottom: 2rem; }
 
-.form-side h2 {
-    font-size: 1.8rem;
-    color: #333;
-    margin-bottom: 5px;
-}
+/* FORMULARIO Y GRIDS */
+.grid-form { display: flex; flex-direction: column; gap: 1.125rem; }
+.form-row.dos-columnas { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+.form-group label { font-size: 0.78rem; font-weight: 600; color: #374151; }
 
-.subtitle {
-    color: #666;
-    font-size: 0.9rem;
-    margin-bottom: 25px;
-}
+.input-moderno { width: 100%; padding: 0.65rem 1rem; border: 1.5px solid #e5e7eb; border-radius: 12px; font-size: 0.875rem; background-color: #f8fafc; outline: none; transition: all 0.2s; box-sizing: border-box; color: #0f172a; }
+.input-moderno:focus { border-color: #10b981; background-color: white; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1); }
+.input-icon-wrapper { position: relative; width: 100%; display: flex; }
+.icono-input { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1.1rem; }
+.input-moderno.con-icono { padding-left: 2.75rem; }
 
-.input-group {
-    margin-bottom: 15px;
+/* ====== LA MAGIA PARA ARREGLAR EL BOTÓN DE ENVIAR CÓDIGO ====== */
+.input-con-boton {
+  display: flex;
+  gap: 0.625rem;
+  align-items: stretch; /* Esto hace que el botón mida igual de alto que el input */
 }
+.input-con-boton .input-icon-wrapper {
+  flex: 1; /* El input toma todo el espacio posible */
+}
+.btn-enviar-codigo {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 0 1.1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.btn-enviar-codigo:hover:not(:disabled) {
+  background-color: #059669;
+}
+.btn-enviar-codigo:disabled {
+  background-color: #d1fae5;
+  color: #065f46;
+  cursor: not-allowed;
+}
+.btn-icon {
+  font-size: 1rem;
+}
+/* ============================================================== */
 
-.input-group label {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 5px;
-}
+/* Botón Principal de Registrar */
+.btn-registrar { width: 100%; background-color: #10b981; color: white; border: none; padding: 1rem; border-radius: 14px; font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 0.25rem; box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35); transition: all 0.2s; }
+.btn-registrar:hover:not(:disabled) { background-color: #059669; transform: translateY(-1px); }
+.btn-registrar:disabled { background-color: #cbd5e1; box-shadow: none; cursor: not-allowed; transform: none; }
 
-.input-group input, 
-.input-group select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #fafafa;
-    outline: none;
-    transition: all 0.3s;
-}
-
-/* ESTILOS NUEVOS PARA EL CORREO Y VALIDACIÓN */
-.email-wrapper {
-    display: flex;
-    gap: 10px;
-}
-
-#btnEnviarCodigo {
-    padding: 0 15px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    white-space: nowrap;
-}
-
-#btnEnviarCodigo:hover {
-    background-color: #218838;
-}
-
-#btnEnviarCodigo:disabled {
-    background-color: #ccc;
-}
-
-/* Clases de validación dinámica */
-.is-valid {
-    border: 2px solid #28a745 !important;
-    background-color: #f8fff9 !important;
-}
-
-.is-invalid {
-    border: 2px solid #dc3545 !important;
-    background-color: #fff8f8 !important;
-}
-
-/* Botón de registro deshabilitado */
-.btn-register:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-}
-/* FIN ESTILOS NUEVOS */
-
-.input-group input:focus {
-    border-color: #0056b3;
-}
-
-.row {
-    display: flex;
-    gap: 15px;
-}
-
-.row .input-group {
-    flex: 1;
-}
-
-.btn-register {
-    width: 100%;
-    padding: 12px;
-    background-color: #0069d9;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: background 0.3s;
-}
-
-.btn-register:hover:not(:disabled) {
-    background-color: #0056b3;
-}
-
-.footer-links {
-    margin-top: 20px;
-    text-align: center;
-    font-size: 0.85rem;
-}
-
-.footer-links a {
-    color: #0000cd;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-@media (max-width: 768px) {
-    .container {
-        flex-direction: column;
-        width: 95%;
-    }
-    .info-side {
-        padding: 20px;
-    }
-}
+/* Enlaces Inferiores */
+.enlaces-inferiores { text-align: center; margin-top: 1.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.enlaces-inferiores p { margin: 0; color: #64748b; font-size: 0.875rem; }
+.enlaces-inferiores a { color: #10b981; font-weight: 700; text-decoration: none; }
