@@ -1,23 +1,31 @@
-import { Component, OnInit,ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { UsuarioEmpresaService } from '../../services/usuario-empresa.service';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
-interface MenuItem {
+
+// 1. ACTUALIZAMOS LAS INTERFACES CON LOS NUEVOS CAMPOS VISUALES
+export interface MenuItem {
   icon: string;
   title: string;
   description: string;
-  color: string;
+  color?: string; // (Mantenido por compatibilidad)
+  colorHex?: string; // Nuevo: Color principal (Ej: #2563EB)
+  bgHex?: string;    // Nuevo: Color de fondo suavizado (Ej: #EFF6FF)
+  badge?: number | string; // Nuevo: Para mostrar notitas numéricas
   roles?: string[];
   path?: string;
-  permiso?: string; // <--- agg esto para validar
+  route?: string;    // Nuevo: Ruta completa para el routerLink
+  permiso?: string;
 }
 
-interface StatCard {
+export interface StatCard {
   label: string;
   value: number;
-  color: string;
+  color: string; // (Mantenido por compatibilidad)
+  colorHex?: string; // Nuevo: Color hexadecimal
+  icon?: string;     // Nuevo: Icono de Material Design
   roles?: string[];
 }
 
@@ -34,7 +42,6 @@ export class MenuprincipalComponent implements OnInit {
   rolUsuario: string = '';
   fotoMenu: string = '';
 
-  // Variable para controlar la visibilidad de las tarjetas
   dashboardHomeVisible: boolean = true;
 
   menuItems: MenuItem[] = [];
@@ -44,9 +51,8 @@ export class MenuprincipalComponent implements OnInit {
     public router: Router,
     public authService: AuthService,
     private cdr: ChangeDetectorRef,
-  private usuarioEmpresaService: UsuarioEmpresaService
+    private usuarioEmpresaService: UsuarioEmpresaService
   ) {
-    // Escucha de cambios de ruta
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
@@ -62,6 +68,7 @@ export class MenuprincipalComponent implements OnInit {
       this.cerrarSesion();
       return;
     }
+
     this.usuarioEmpresaService.logoActual$.subscribe(nuevaUrl => {
       if (nuevaUrl) {
         this.fotoMenu = nuevaUrl;
@@ -71,182 +78,190 @@ export class MenuprincipalComponent implements OnInit {
 
     this.verificarRutaActual();
     this.inicializarMenuPorRol();
-
   }
 
   private verificarRutaActual(): void {
-    // A veces Angular le pone un "/" extra al final de la URL dependiendo de la configuración.
-    // Con esto validamos ambas opciones de forma segura.
-    const urlActual = this.router.url.split('?')[0]; // Ignoramos parámetros si los hay
-
+    const urlActual = this.router.url.split('?')[0];
     this.dashboardHomeVisible = (urlActual === '/menu-principal' || urlActual === '/menu-principal/');
     this.cdr.detectChanges();
   }
 
-  // Esta función es la que usarás en el *ngIf de tu HTML
   isDashboardHome(): boolean {
     return this.dashboardHomeVisible;
   }
 
   inicializarMenuPorRol(): void {
+    // 2. ASIGNAMOS LOS COLORES MODERNOS DEL DISEÑO DE FIGMA
     const todasLasOpciones: MenuItem[] = [
+      // --- MÓDULOS DE EMPRESA ---
       {
         icon: 'business',
         title: 'Gestión de Perfil Empresarial',
         description: 'Administra la información de tu empresa',
-        color: 'from-blue-500 to-blue-600',
+        colorHex: '#2563EB', bgHex: '#EFF6FF',
         roles: ['EMPRESA'],
-        path: '/empresa/perfil'
-      },
-      {
-        icon: 'person',
-        title: 'Mi Perfil Profesional',
-        description: 'Gestiona tu hoja de vida y datos',
-        color: 'from-blue-500 to-blue-600',
-        roles: ['POSTULANTE'],
-        path: '/perfil-profesional'
+        path: '/empresa/perfil',
+        route: '/menu-principal/empresa/perfil'
       },
       {
         icon: 'work',
         title: 'Gestión de Ofertas Laborales',
         description: 'Crea y administra tus ofertas de empleo',
-        color: 'from-cyan-500 to-cyan-600',
+        colorHex: '#0891b2', bgHex: '#ecfeff',
         roles: ['EMPRESA'],
-        path: '/gestion-ofertas'
-      },
-      {
-        icon: 'search',
-        title: 'Búsqueda de Empleos',
-        description: 'Encuentra vacantes disponibles',
-        color: 'from-cyan-500 to-cyan-600',
-        roles: ['POSTULANTE'],
-        path: '/busqueda-empleo'
+        path: '/gestion-ofertas',
+        route: '/menu-principal/gestion-ofertas'
       },
       {
         icon: 'groups',
         title: 'Revisión de Postulaciones',
         description: 'Revisa los candidatos postulados',
-        color: 'from-teal-500 to-teal-600',
+        colorHex: '#10b981', bgHex: '#ecfdf5',
         roles: ['EMPRESA'],
-        path: '/revision-postulantes'
+        path: '/revision-postulantes',
+        route: '/menu-principal/revision-postulantes'
+      },
+
+      // --- MÓDULOS DE POSTULANTE ---
+      {
+        icon: 'person',
+        title: 'Mi Perfil Profesional',
+        description: 'Gestiona tu hoja de vida y datos',
+        colorHex: '#2563EB', bgHex: '#EFF6FF',
+        roles: ['POSTULANTE'],
+        path: '/perfil-profesional',
+        route: '/menu-principal/perfil-profesional'
+      },
+      {
+        icon: 'search',
+        title: 'Búsqueda de Empleos',
+        description: 'Encuentra vacantes disponibles',
+        colorHex: '#0891b2', bgHex: '#ecfeff',
+        roles: ['POSTULANTE'],
+        path: '/busqueda-empleo',
+        route: '/menu-principal/busqueda-empleo'
       },
       {
         icon: 'assignment',
         title: 'Mis Postulaciones',
         description: 'Revisa el estado de tus aplicaciones',
-        color: 'from-teal-500 to-teal-600',
+        colorHex: '#10b981', bgHex: '#ecfdf5',
         roles: ['POSTULANTE'],
-        path: '/mis-postulaciones'
+        path: '/mis-postulaciones',
+        route: '/menu-principal/mis-postulaciones'
       },
+
+      // --- COMPARTIDO ---
       {
         icon: 'notifications',
         title: 'Notificaciones',
         description: 'Revisa tus notificaciones y alertas',
-        color: 'from-purple-500 to-purple-600',
-        roles: ['EMPRESA', 'POSTULANTE']
+        colorHex: '#8b5cf6', bgHex: '#f5f3ff',
+        roles: ['EMPRESA', 'POSTULANTE'],
+        path: '/notificaciones',
+        route: '/menu-principal/notificaciones'
       },
 
+      // --- MÓDULOS DE ADMINISTRADOR ---
       {
         icon: 'admin_panel_settings',
         title: 'Auditorias',
         description: 'Control de empresas y graduados',
-        color: 'from-red-500 to-red-600',
+        colorHex: '#2563EB', bgHex: '#EFF6FF', badge: 4,
         roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
         path: '/PanelAuditorias/auditorias-users',
+        route: '/menu-principal/PanelAuditorias/auditorias-users',
         permiso: 'USERS'
       },
       {
         icon: 'settings_suggest',
         title: 'Gestión de Catálogos',
-        description: 'Gestión de habilidades, carreras y tipos de contrato',
-        color: 'from-emerald-500 to-green-600', // o 'from-indigo-500 to-indigo-600'
+        description: 'Gestión de habilidades, carreras y contratos',
+        colorHex: '#0891b2', bgHex: '#ecfeff',
         roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
         path: '/PanelAdmi/GestionCatalogos',
+        route: '/menu-principal/PanelAdmi/GestionCatalogos',
         permiso: 'CATALOGOS'
       },
       {
         icon: 'fact_check',
         title: 'Validación de Ofertas',
         description: 'Aprueba o rechaza nuevas vacantes',
-        color: 'from-orange-500 to-orange-600',
+        colorHex: '#d97706', bgHex: '#fffbeb', badge: 3,
         roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
         path: '/PanelAdmi/ValidarOfertas',
+        route: '/menu-principal/PanelAdmi/ValidarOfertas',
         permiso: 'VALIDACION_O'
       },
       {
-        icon: 'manage_accounts', // o 'admin_panel_settings' o supervisor_account
-        title: 'Gestión de Administradores',
+        icon: 'manage_accounts',
+        title: 'Gestión Administradores',
         description: 'Crear y gestionar administradores secundarios',
-        color: 'from-green-500 to-indigo-600',
+        colorHex: '#7c3aed', bgHex: '#f5f3ff',
         roles: ['ADMINISTRADOR'],
-        path: '/PanelAdmi/admin-MiniAdmi'
+        path: '/PanelAdmi/admin-MiniAdmi',
+        route: '/menu-principal/PanelAdmi/admin-MiniAdmi'
       },
       {
         icon: 'bar_chart',
         title: 'Reportes y Estadísticas',
         description: 'Métricas y análisis del sistema',
-        color: 'from-green-500 to-blue-600',
+        colorHex: '#059669', bgHex: '#ecfdf5',
         roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
         path: '/PanelAdmi/GestionReportes',
+        route: '/menu-principal/PanelAdmi/GestionReportes',
         permiso: 'REPORTES'
       },
       {
-        icon: 'manage_accounts', // o 'admin_panel_settings' o supervisor_account
+        icon: 'domain_verification',
         title: 'Validación Empresas',
-        description: 'Valida y gestiona las Empresas que se Registran',
-        color: 'from-green-500 to-indigo-600',
+        description: 'Valida y gestiona las Empresas registradas',
+        colorHex: '#dc2626', bgHex: '#fff1f2', badge: 2,
         roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
         path: '/PanelAdmi/ValidarEmpresa',
+        route: '/menu-principal/PanelAdmi/ValidarEmpresa',
         permiso: 'VALIDACION_E'
       },
-
       {
-        icon: 'manage_accounts', // o 'admin_panel_settings' o supervisor_account
+        icon: 'settings',
         title: 'Gestión Roles BD',
         description: 'Crea y gestiona tus Roles de Base de Dato',
-        color: 'from-green-500 to-indigo-600',
+        colorHex: '#0f172a', bgHex: '#f1f5f9',
         roles: ['ADMINISTRADOR'],
         path: '/GestionRolesbd',
-        //permiso: 'VALIDACION_E'
+        route: '/menu-principal/GestionRolesbd'
       }
-
-
     ];
 
     this.menuItems = todasLasOpciones.filter(item => {
-      // solo revisa si el rol está
       const rolCoincide = item.roles?.includes(this.rolUsuario);
-
-      // aqui se hace la validacion del permiso cfm
       if (rolCoincide && item.permiso) {
         return this.authService.tienePermiso(item.permiso);
       }
-
-      // si tiene rol pero no permisos definidos pasa libre
       return rolCoincide;
     });
 
+    // 3. ACTUALIZAMOS LOS KPIs SUPERIORES CON SUS ICONOS Y COLORES
     if (this.rolUsuario === 'EMPRESA') {
       this.statsCards = [
-        { label: 'Ofertas Activas', value: 12, color: 'from-blue-500 to-blue-600' },
-        { label: 'Postulaciones', value: 48, color: 'from-cyan-500 to-cyan-600' },
-        { label: 'En Revisión', value: 23, color: 'from-teal-500 to-teal-600' },
-        { label: 'Notificaciones', value: 5, color: 'from-purple-500 to-purple-600' }
+        { label: 'Ofertas Activas', value: 12, color: '', colorHex: '#2563EB', icon: 'work' },
+        { label: 'Postulaciones', value: 48, color: '', colorHex: '#0891b2', icon: 'groups' },
+        { label: 'En Revisión', value: 23, color: '', colorHex: '#10b981', icon: 'pending_actions' },
+        { label: 'Notificaciones', value: 5, color: '', colorHex: '#8b5cf6', icon: 'notifications' }
       ];
     } else if (this.rolUsuario === 'POSTULANTE') {
       this.statsCards = [
-        { label: 'Mis Postulaciones', value: 5, color: 'from-teal-500 to-teal-600' },
-        { label: 'En Proceso', value: 2, color: 'from-cyan-500 to-cyan-600' },
-        { label: 'Ofertas Guardadas', value: 10, color: 'from-blue-500 to-blue-600' },
-        { label: 'Alertas', value: 3, color: 'from-purple-500 to-purple-600' }
+        { label: 'Mis Postulaciones', value: 5, color: '', colorHex: '#2563EB', icon: 'assignment' },
+        { label: 'En Proceso', value: 2, color: '', colorHex: '#0891b2', icon: 'schedule' },
+        { label: 'Ofertas Guardadas', value: 10, color: '', colorHex: '#10b981', icon: 'bookmark' },
+        { label: 'Alertas', value: 3, color: '', colorHex: '#8b5cf6', icon: 'notifications' }
       ];
-    }
-    else if (this.rolUsuario === 'ADMINISTRADOR') {
+    } else if (this.rolUsuario === 'ADMINISTRADOR') {
       this.statsCards = [
-        { label: 'Ofertas Pendientes', value: 8, color: 'from-orange-500 to-orange-600' },
-        { label: 'Empresas Nuevas', value: 3, color: 'from-blue-500 to-blue-600' },
-        { label: 'Usuarios Totales', value: 150, color: 'from-teal-500 to-teal-600' },
-        { label: 'Reportes Hoy', value: 12, color: 'from-red-500 to-red-600' }
+        { label: 'Ofertas Pendientes', value: 8, color: '', colorHex: '#0f172a', icon: 'error_outline' },
+        { label: 'Empresas Nuevas', value: 3, color: '', colorHex: '#2563EB', icon: 'business' },
+        { label: 'Usuarios Totales', value: 150, color: '', colorHex: '#10b981', icon: 'groups' },
+        { label: 'Reportes Hoy', value: 12, color: '', colorHex: '#0f172a', icon: 'trending_up' }
       ];
     }
   }
@@ -255,45 +270,30 @@ export class MenuprincipalComponent implements OnInit {
     this.isSidebarOpen = !this.isSidebarOpen;
   }
 
-  // 1. ACTUALIZA EL CLIC DEL MENÚ
   onMenuItemClick(item: MenuItem): void {
     if (item.path) {
-      // ¡MAGIA AQUÍ! Ocultamos el dashboard en el milisegundo en que hace clic.
-      // No esperamos a que el router termine de pensar.
       this.dashboardHomeVisible = false;
-
-      // Usamos navigateByUrl para evitar errores de arreglos y rutas raras
       this.router.navigateByUrl('/menu-principal' + item.path).then(navegacionExitosa => {
         if (!navegacionExitosa) {
-          // Si por alguna razón la ruta falla (ej. bloqueada por un guard),
-          // volvemos a verificar dónde estamos realmente.
           this.verificarRutaActual();
         }
       });
     }
   }
 
-
-
   cerrarSesion() {
-    // 1. Usamos el servicio authService en lugar de this.http directamente
     this.authService.logout().subscribe({
       next: () => {
-        // 2. Limpiamos el rastro en el navegador
         localStorage.clear();
         sessionStorage.clear();
-
-        // 3. Redirigimos al login
         this.router.navigate(['/login']);
         console.log("⏪ Conexión de BD reseteada al default y sesión cerrada");
       },
       error: (err) => {
         console.error("Error al cerrar sesión en el servidor", err);
-        // Limpiamos y salimos incluso si falla la red por seguridad
         localStorage.clear();
         this.router.navigate(['/login']);
       }
     });
   }
-
 }

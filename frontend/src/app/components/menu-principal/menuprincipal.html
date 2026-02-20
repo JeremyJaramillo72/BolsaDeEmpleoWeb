@@ -1,127 +1,136 @@
-<div class="flex h-screen bg-gray-50">
-  <!-- Sidebar -->
-  <div [ngClass]="isSidebarOpen ? 'w-72' : 'w-20'"
-       class="bg-gradient-to-b from-blue-600 to-blue-700 transition-all duration-300 shadow-xl">
-    <div class="p-6">
-      <div class="flex items-center justify-between mb-8">
-        <div *ngIf="isSidebarOpen" class="text-white">
-          <h2 class="text-2xl font-bold">Bolsa de Empleos</h2>
-          <p class="text-blue-200 text-sm mt-1">Panel {{ rolUsuario | titlecase }}</p>
-        </div>
-        <button
-          (click)="toggleSidebar()"
-          class="text-white hover:bg-blue-500 p-2 rounded-lg transition-colors">
-          <span class="material-icons">{{ isSidebarOpen ? 'close' : 'menu' }}</span>
-        </button>
+<div class="layout-container">
+
+  <aside class="sidebar" [class.collapsed]="!isSidebarOpen">
+
+    <div class="sidebar-header">
+      <div class="brand-logo">
+        <span class="material-icons">shield</span>
+      </div>
+      <div class="brand-text" *ngIf="isSidebarOpen">
+        <h2>Bolsa de Empleo</h2>
+        <p>UTEQ</p>
+      </div>
+    </div>
+
+    <div class="sidebar-profile" *ngIf="isSidebarOpen">
+      <div class="sp-avatar">{{ nombreUsuario.charAt(0) | uppercase }}</div>
+      <div class="sp-info">
+        <span class="sp-name">{{ nombreUsuario }}</span>
+        <span class="sp-role">{{ rolUsuario | titlecase }}</span>
+      </div>
+    </div>
+
+    <button class="collapse-btn" (click)="toggleSidebar()">
+      <span class="material-icons">{{ isSidebarOpen ? 'chevron_left' : 'chevron_right' }}</span>
+    </button>
+
+    <nav class="sidebar-nav">
+
+      <div class="menu-label" *ngIf="isSidebarOpen">MENÚ PRINCIPAL</div>
+
+      <a routerLink="/menu-principal"
+         [routerLinkActiveOptions]="{exact: true}"
+         routerLinkActive="active"
+         class="nav-item"
+         (click)="dashboardHomeVisible = true">
+        <span class="material-icons nav-icon">grid_view</span>
+        <span class="nav-text" *ngIf="isSidebarOpen">Inicio</span>
+      </a>
+
+      <a *ngFor="let item of menuItems"
+         (click)="onMenuItemClick(item)"
+         [routerLink]="item.route"
+         routerLinkActive="active"
+         class="nav-item">
+
+        <span class="material-icons nav-icon" [ngStyle]="{'color': item.colorHex || '#64748b'}">{{ item.icon }}</span>
+        <span class="nav-text" *ngIf="isSidebarOpen">{{ item.title }}</span>
+
+        <div class="badge" *ngIf="isSidebarOpen && item.badge">{{ item.badge }}</div>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a (click)="cerrarSesion()" class="nav-item logout">
+        <span class="material-icons nav-icon">logout</span>
+        <span class="nav-text" *ngIf="isSidebarOpen">Cerrar Sesión</span>
+      </a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <h2>Panel de Control</h2>
+        <p>Bienvenido al sistema de administración UTEQ</p>
       </div>
 
+      <div class="topbar-right">
+        <button class="icon-btn">
+          <span class="material-icons">notifications_none</span>
+          <span class="red-dot">3</span>
+        </button>
 
-      <div *ngIf="isSidebarOpen" class="space-y-3">
-        <button
-          *ngFor="let item of menuItems"
-          (click)="onMenuItemClick(item)"
-          class="w-full text-left p-4 rounded-xl bg-white bg-opacity-10 hover:bg-opacity-20 transition-all duration-200 text-white group">
-          <div class="flex items-center space-x-3">
-            <div [ngClass]="'bg-gradient-to-r ' + item.color"
-                 class="p-2 rounded-lg">
-              <span class="material-icons text-white">{{ item.icon }}</span>
+        <div class="user-profile">
+          <div class="avatar" *ngIf="!fotoMenu">
+            {{ nombreUsuario.charAt(0) | uppercase }}
+          </div>
+          <img *ngIf="fotoMenu" [src]="fotoMenu" class="avatar-img" alt="Logo">
+
+          <div class="user-info">
+            <span class="user-name">{{ nombreUsuario }}</span>
+            <span class="user-role">{{ rolUsuario | titlecase }}</span>
+          </div>
+          <span class="material-icons text-gray">expand_more</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="scroll-area">
+      <div class="dashboard-wrapper animate-fade" *ngIf="isDashboardHome()">
+
+        <div class="welcome-header">
+          <h1>Bienvenido, <span class="text-primary">{{ nombreUsuario }}</span> 👋</h1>
+          <p>Accede rápidamente a cualquier módulo del sistema desde aquí.</p>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card" *ngFor="let stat of statsCards">
+            <div class="stat-icon-wrap" [ngStyle]="{'background-color': (stat.colorHex || '#2563EB') + '15'}">
+              <span class="material-icons" [ngStyle]="{'color': stat.colorHex || '#2563EB'}">{{ stat.icon || 'analytics' }}</span>
             </div>
-            <div class="flex-1">
-              <p class="font-semibold text-sm">{{ item.title }}</p>
+            <div class="stat-data">
+              <span class="stat-label">{{ stat.label }}</span>
+              <span class="stat-value">{{ stat.value }}</span>
             </div>
           </div>
-        </button>
-      </div>
-
-      <!-- Menu Items - Sidebar colapsado -->
-      <div *ngIf="!isSidebarOpen" class="space-y-4">
-        <button
-          *ngFor= "let item of menuItems"
-          (click)="onMenuItemClick(item)"
-          class="w-full p-3 rounded-lg bg-white bg-opacity-10 hover:bg-opacity-20 transition-all duration-200 text-white flex justify-center">
-          <span class="material-icons">{{ item.icon }}</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Botón Cerrar Sesión -->
-    <div *ngIf="isSidebarOpen" class="absolute bottom-0 w-72 p-6 border-t border-blue-500">
-      <button
-        (click)="cerrarSesion()"
-        class="w-full flex items-center space-x-3 p-3 rounded-lg text-white hover:bg-white hover:bg-opacity-10 transition-all">
-        <span class="material-icons">logout</span>
-        <span class="font-medium">Cerrar Sesión</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- Main Content -->
-  <div class="flex-1 overflow-auto">
-    <!-- Header -->
-    <div class="bg-white shadow-sm border-b border-gray-200 p-6">
-      <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-3xl font-bold text-gray-800">Bienvenido {{ nombreUsuario }}</h1>
-          <p class="text-gray-600 mt-1">
-            {{ rolUsuario === 'EMPRESA' ? 'Gestiona tu empresa y encuentra el mejor talento' : 'Encuentra tu próxima oportunidad laboral hoy mismo' }}
-          </p>
         </div>
-        <div class="flex items-center space-x-4">
-          <button class="relative p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors">
-            <span class="material-icons text-gray-600">notifications</span>
-            <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
-          </button>
-          <div class="flex items-center space-x-3 p-3 bg-gray-100 rounded-full">
-            <span class="material-icons text-gray-600">person</span>
-            <span class="text-sm font-medium text-gray-700">{{ nombreUsuario }}</span>
+
+        <div class="modules-grid">
+          <div class="module-card" *ngFor="let item of menuItems" (click)="onMenuItemClick(item)">
+
+            <div class="module-badge" *ngIf="item.badge">{{ item.badge }}</div>
+
+            <div class="module-icon-wrap" [ngStyle]="{'background-color': item.bgHex || '#EFF6FF'}">
+              <span class="material-icons" [ngStyle]="{'color': item.colorHex || '#2563EB'}">{{ item.icon }}</span>
+            </div>
+
+            <h3 class="module-title">{{ item.title }}</h3>
+            <p class="module-desc">{{ item.description || 'Administración de este módulo.' }}</p>
+
+            <div class="module-action" [ngStyle]="{'color': item.colorHex || '#2563EB'}">
+              Acceder <span class="material-icons">arrow_forward</span>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Router Outlet - Contenido dinámico -->
-    <div class="p-8">
-      <router-outlet></router-outlet>
-    </div>
-    <!-- <div class="main-content">
-      <router-outlet></router-outlet>
-    </div>
-    -->
-    <!-- Dashboard Home Cards - Solo se muestra cuando estamos en la ruta principal -->
-    <div *ngIf="isDashboardHome()" class="p-8 space-y-8 animate-fade-in">
-      <!-- Cards Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <button
-          *ngFor="let item of menuItems"
-          (click)="onMenuItemClick(item)"
-          class="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 group text-left">
-          <div [ngClass]="'bg-gradient-to-r ' + item.color"
-               class="w-14 h-14 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <span class="material-icons text-white text-3xl">{{ item.icon }}</span>
-          </div>
-          <h3 class="text-xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">
-            {{ item.title }}
-          </h3>
-          <p class="text-gray-600 text-sm">
-            {{ item.description }}
-          </p>
-          <div class="mt-4 flex items-center text-blue-600 font-medium text-sm group-hover:translate-x-2 transition-transform">
-            <span>Acceder</span>
-            <span class="material-icons text-sm ml-2">arrow_forward</span>
-          </div>
-        </button>
       </div>
 
-      <!-- Stats Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
-        <div
-          *ngFor="let stat of statsCards"
-          [ngClass]="'bg-gradient-to-br ' + stat.color"
-          class="p-6 rounded-2xl text-white shadow-lg">
-          <p class="text-white text-opacity-80 text-sm mb-2">{{ stat.label }}</p>
-          <p class="text-4xl font-bold">{{ stat.value }}</p>
-        </div>
+      <div class="router-wrapper" [class.hidden]="isDashboardHome()">
+        <router-outlet></router-outlet>
       </div>
+
     </div>
-  </div>
+  </main>
 </div>

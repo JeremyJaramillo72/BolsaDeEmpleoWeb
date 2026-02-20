@@ -1,19 +1,20 @@
 <main class="main-content">
 
-  <div *ngIf="!mostrarFormulario">
-    <header class="topbar">
-      <div class="welcome-text">
-        <h2>Mis Ofertas Laborales</h2>
-        <p>Crea, edita y gestiona tus vacantes activas</p>
-      </div>
+  <div *ngIf="!mostrarFormulario" class="fade-in">
+
+    <header class="page-header">
+      <h2>Mis Ofertas Laborales</h2>
+      <p>Crea, edita y gestiona tus vacantes activas</p>
     </header>
 
     <div class="layout-wrapper">
+
       <aside class="sidebar-filters">
         <div class="filter-header">
-          <span class="material-icons text-gray-500">tune</span>
+          <span class="material-icons">tune</span>
           <h3>Filtros</h3>
         </div>
+
         <div class="filter-group">
           <label>Buscar vacante</label>
           <div class="search-input-wrapper">
@@ -21,21 +22,27 @@
             <input type="text" [(ngModel)]="textoBusqueda" placeholder="Título o palabra clave...">
           </div>
         </div>
+
         <div class="filter-group">
           <label>Estado de la oferta</label>
-          <select [(ngModel)]="filtroEstado">
-            <option value="Todos">Todas las ofertas</option>
-            <option value="activa">Activas</option>
-            <option value="pendiente">Pendientes</option>
-            <option value="cerrada">Cerradas</option>
-          </select>
+          <div class="select-wrapper">
+            <select [(ngModel)]="filtroEstado">
+              <option value="Todos">Todas las ofertas</option>
+              <option value="activa">Activas</option>
+              <option value="pendiente">Pendientes</option>
+              <option value="cerrada">Cerradas</option>
+            </select>
+            <span class="material-icons select-icon">expand_more</span>
+          </div>
         </div>
+
         <button class="btn-clear-filters" (click)="textoBusqueda = ''; filtroEstado = 'Todos'">
           Limpiar Filtros
         </button>
       </aside>
 
       <section class="main-offers-content">
+
         <div class="action-bar">
           <div class="stats-text">
             Mostrando <strong>{{ ofertasFiltradas.length }}</strong> ofertas
@@ -46,16 +53,17 @@
         </div>
 
         <div class="offers-grid">
+
           <div *ngIf="ofertasFiltradas.length === 0" class="no-data">
-            <span class="material-icons text-6xl mb-2 text-gray-300">folder_open</span>
+            <span class="material-icons">folder_open</span>
             <p>No se encontraron ofertas con estos filtros.</p>
           </div>
 
-          <div class="offer-card-candidate-style" *ngFor="let oferta of ofertasFiltradas">
-            <div class="card-main-info">
+          <div class="offer-card" *ngFor="let oferta of ofertasFiltradas">
+            <div class="card-content">
+
               <div class="card-header-row">
                 <h3>{{ oferta.titulo }}</h3>
-
                 <span class="status-badge"
                       [ngClass]="{
                         'badge-draft': oferta.estadoOferta === 'pendiente',
@@ -64,46 +72,51 @@
                       }">
                   {{ oferta.estadoOferta | titlecase }}
                 </span>
-
               </div>
 
-              <div class="details-horizontal-row">
-                <span class="detail-item"><span class="material-icons text-accent text-sm">location_on</span> {{ oferta.ciudad || 'Por definir' }}</span>
-                <span class="detail-item"><span class="material-icons text-accent text-sm">schedule</span> {{ oferta.modalidad || 'Presencial' }} • {{ oferta.jornada || 'Jornada Completa' }}</span>
-                <span class="detail-item"><span class="material-icons text-accent text-sm">payments</span> ${{ oferta.salarioMin || 0 }} - ${{ oferta.salarioMax || 0 }}</span>
+              <div class="details-row">
+                <span class="detail-item">
+                  <span class="material-icons icon-detail">location_on</span> {{ oferta.ciudad || 'Por definir' }}
+                </span>
+                <span class="detail-item">
+                  <span class="material-icons icon-detail">schedule</span> {{ oferta.modalidad || 'Presencial' }} • {{ oferta.jornada || 'Jornada Completa' }}
+                </span>
+                <span class="detail-item">
+                  <span class="material-icons icon-detail">payments</span> ${{ oferta.salarioMin || 0 }} - ${{ oferta.salarioMax || 0 }}
+                </span>
               </div>
-              <p class="description-truncated">{{ oferta.descripcion || 'Sin descripción detallada.' }}</p>
 
-              <div class="card-footer-info">
-                <small class="text-muted"><span class="material-icons text-sm">event</span> Cierra: {{ oferta.fechaCierre || 'Sin fecha' }}</small>
-                <span class="applicant-counter"><span class="material-icons text-sm">group</span> <strong>{{ oferta.postulantes || 0 }}</strong> postulantes</span>
+              <p class="description-text">{{ oferta.descripcion || 'Sin descripción detallada.' }}</p>
+
+              <div class="card-footer">
+                <span class="footer-item"><span class="material-icons">event</span> Cierra: {{ oferta.fechaCierre || 'Sin fecha' }}</span>
+                <span class="footer-item applicant-counter"><span class="material-icons">group</span> <strong>{{ oferta.postulantes || 0 }}</strong> postulantes</span>
               </div>
             </div>
-            <div class="card-actions-right">
-              <button class="btn-primary-action" (click)="editarOferta(oferta)">
-                Gestionar
-              </button>
+
+            <div class="card-action">
+              <button class="btn-manage" (click)="editarOferta(oferta)">Gestionar</button>
             </div>
           </div>
+
         </div>
       </section>
     </div>
   </div>
 
-  <div *ngIf="mostrarFormulario" class="form-fullpage-container animate-fade-in">
-
+  <div *ngIf="mostrarFormulario" class="form-container fade-in">
     <div class="form-header-bar">
       <div>
         <button class="btn-back" (click)="cerrarFormulario()">
           <span class="material-icons">arrow_back</span> Volver a mis ofertas
         </button>
-        <h2 class="form-page-title">
+        <h2 class="page-title">
           {{ nuevaOferta.idOferta ? 'Editar Oferta Laboral' : 'Crear Nueva Oferta Laboral' }}
         </h2>
-        <p class="text-muted">Publica una vacante clara y detallada para atraer al mejor talento.</p>
+        <p class="subtitle">Publica una vacante clara y detallada para atraer al mejor talento.</p>
       </div>
 
-      <div class="form-header-actions">
+      <div class="form-actions">
         <button type="button" class="btn-text" (click)="cerrarFormulario()">Cancelar</button>
         <button type="button" class="btn-primary" (click)="guardar()">
           <span class="material-icons">{{ nuevaOferta.idOferta ? 'save' : 'send' }}</span>
@@ -112,207 +125,129 @@
       </div>
     </div>
 
-    <form class="form-sections-wrapper" (ngSubmit)="guardar()">
-
-      <div class="form-section-card">
-        <h3 class="section-title"><span class="material-icons">info</span> Información Principal</h3>
-
+    <form class="form-body" (ngSubmit)="guardar()">
+      <div class="form-card">
+        <h3 class="section-title"><span class="material-icons text-blue">info</span> Información Principal</h3>
         <div class="form-group full-width">
           <label>Título del Puesto <span class="required">*</span></label>
-          <input type="text" [(ngModel)]="nuevaOferta.titulo" name="titulo" class="input-large" required placeholder="Ej: Desarrollador Backend Senior con Spring Boot">
+          <input type="text" [(ngModel)]="nuevaOferta.titulo" name="titulo" class="input-modern" required placeholder="Ej: Desarrollador Backend Senior con Spring Boot">
         </div>
-
-        <div class="form-row three-cols">
+        <div class="grid-3-cols">
           <div class="form-group">
             <label>Categoría</label>
-            <select [(ngModel)]="nuevaOferta.idCategoria" name="cat">
-              <option *ngFor="let cat of listaCategorias" [value]="cat.idCategoria">
-                {{ cat.nombreCategoria }}
-              </option>
-            </select>
+            <div class="select-wrapper">
+              <select [(ngModel)]="nuevaOferta.idCategoria" name="cat" class="input-modern"><option *ngFor="let cat of listaCategorias" [value]="cat.idCategoria">{{ cat.nombreCategoria }}</option></select>
+              <span class="material-icons select-icon">expand_more</span>
+            </div>
           </div>
-
           <div class="form-group">
             <label>Modalidad</label>
-            <select [(ngModel)]="nuevaOferta.idModalidad" name="mod">
-              <option *ngFor="let mod of listaModalidades" [value]="mod.idModalidad">
-                {{ mod.nombreModalidad }}
-              </option>
-            </select>
+            <div class="select-wrapper">
+              <select [(ngModel)]="nuevaOferta.idModalidad" name="mod" class="input-modern"><option *ngFor="let mod of listaModalidades" [value]="mod.idModalidad">{{ mod.nombreModalidad }}</option></select>
+              <span class="material-icons select-icon">expand_more</span>
+            </div>
           </div>
           <div class="form-group">
             <label>Jornada</label>
-            <select [(ngModel)]="nuevaOferta.idJornada" name="jor">
-              <option *ngFor="let jor of listaJornadas" [value]="jor.idJornada">
-                {{ jor.nombreJornada }}
-              </option>
-            </select>
-          </div>
-
-            <div class="form-group">
-              <label>Provincia</label>
-              <select [(ngModel)]="tempIdProvincia" name="provincia" (change)="onProvinciaChange()">
-                <option [value]="0">Seleccione una provincia...</option>
-                <option *ngFor="let prov of listaProvincias" [value]="prov.idProvincia">
-                  {{ prov.nombreProvincia }}
-                </option>
-              </select>
+            <div class="select-wrapper">
+              <select [(ngModel)]="nuevaOferta.idJornada" name="jor" class="input-modern"><option *ngFor="let jor of listaJornadas" [value]="jor.idJornada">{{ jor.nombreJornada }}</option></select>
+              <span class="material-icons select-icon">expand_more</span>
             </div>
-
+          </div>
+          <div class="form-group">
+            <label>Provincia</label>
+            <div class="select-wrapper">
+              <select [(ngModel)]="tempIdProvincia" name="provincia" (change)="onProvinciaChange()" class="input-modern"><option [value]="0">Seleccione provincia...</option><option *ngFor="let prov of listaProvincias" [value]="prov.idProvincia">{{ prov.nombreProvincia }}</option></select>
+              <span class="material-icons select-icon">expand_more</span>
+            </div>
+          </div>
           <div class="form-group">
             <label>Ciudad</label>
-            <select [(ngModel)]="nuevaOferta.idCiudad" name="ciu" [disabled]="listaCiudades.length === 0">
-              <option [value]="null">
-                {{ listaCiudades.length === 0 ? 'Primero elija una provincia' : 'Seleccione una ciudad...' }}
-              </option>
-              <option *ngFor="let ciu of listaCiudades" [value]="ciu.idCiudad"> {{ ciu.nombreCiudad }}
-              </option>
-            </select>
+            <div class="select-wrapper">
+              <select [(ngModel)]="nuevaOferta.idCiudad" name="ciu" [disabled]="listaCiudades.length === 0" class="input-modern"><option [value]="null">{{ listaCiudades.length === 0 ? 'Elija provincia' : 'Seleccione ciudad...' }}</option><option *ngFor="let ciu of listaCiudades" [value]="ciu.idCiudad">{{ ciu.nombreCiudad }}</option></select>
+              <span class="material-icons select-icon">expand_more</span>
+            </div>
           </div>
-
           <div class="form-group" *ngIf="nuevaOferta.idOferta">
-            <label>Estado de la Oferta</label>
-            <select [(ngModel)]="nuevaOferta.estadoOferta" name="estado_of">
-              <option value="pendiente" *ngIf="estadoOriginal === 'pendiente'">Pendiente</option>
-
-              <option value="activa" *ngIf="estadoOriginal === 'activa'">Activa</option>
-
-              <option value="cerrada">Cerrada</option>
-            </select>
+            <label>Estado</label>
+            <div class="select-wrapper">
+              <select [(ngModel)]="nuevaOferta.estadoOferta" name="estado_of" class="input-modern">
+                <option value="pendiente" *ngIf="estadoOriginal === 'pendiente'">Pendiente</option>
+                <option value="activa" *ngIf="estadoOriginal === 'activa'">Activa</option>
+                <option value="cerrada">Cerrada</option>
+              </select>
+              <span class="material-icons select-icon">expand_more</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="form-section-card">
-        <h3 class="section-title"><span class="material-icons">work</span> Condiciones del Puesto</h3>
-
-        <div class="form-row three-cols">
-          <div class="form-group">
-            <label>Salario Mínimo ($)</label>
-            <input type="number" [(ngModel)]="nuevaOferta.salarioMin" name="smin" placeholder="Ej: 800">
-          </div>
-          <div class="form-group">
-            <label>Salario Máximo ($)</label>
-            <input type="number" [(ngModel)]="nuevaOferta.salarioMax" name="smax" placeholder="Ej: 1200">
-          </div>
-          <div class="form-group">
-            <label>Fecha de Cierre</label>
-            <input type="date" [(ngModel)]="nuevaOferta.fechaCierre" name="fcierre">
-          </div>
+      <div class="form-card">
+        <h3 class="section-title"><span class="material-icons text-blue">work</span> Condiciones del Puesto</h3>
+        <div class="grid-3-cols">
+          <div class="form-group"><label>Salario Mínimo ($)</label><input type="number" [(ngModel)]="nuevaOferta.salarioMin" name="smin" class="input-modern" placeholder="Ej: 800"></div>
+          <div class="form-group"><label>Salario Máximo ($)</label><input type="number" [(ngModel)]="nuevaOferta.salarioMax" name="smax" class="input-modern" placeholder="Ej: 1200"></div>
+          <div class="form-group"><label>Fecha de Cierre</label><input type="date" [(ngModel)]="nuevaOferta.fechaCierre" name="fcierre" class="input-modern"></div>
         </div>
-
-        <div class="form-row two-cols">
-          <div class="form-group">
-            <label>Cantidad de Vacantes</label>
-            <input type="number" [(ngModel)]="nuevaOferta.cantidadVacantes" name="vacantes" placeholder="Ej: 1">
-          </div>
-          <div class="form-group">
-            <label>Experiencia Mínima (Años)</label>
-            <input type="number" [(ngModel)]="nuevaOferta.experienciaMinima" name="exp" placeholder="Ej: 2">
-          </div>
+        <div class="grid-2-cols mt-4">
+          <div class="form-group"><label>Vacantes</label><input type="number" [(ngModel)]="nuevaOferta.cantidadVacantes" name="vacantes" class="input-modern" placeholder="Ej: 1"></div>
+          <div class="form-group"><label>Exp. Mínima (Años)</label><input type="number" [(ngModel)]="nuevaOferta.experienciaMinima" name="exp" class="input-modern" placeholder="Ej: 2"></div>
         </div>
       </div>
 
-      <div class="form-section-card">
-        <h3 class="section-title"><span class="material-icons">description</span> Descripción de la Oferta</h3>
+      <div class="form-card">
+        <h3 class="section-title"><span class="material-icons text-blue">description</span> Descripción de la Oferta</h3>
         <div class="form-group full-width">
           <label>Funciones y responsabilidades <span class="required">*</span></label>
-          <textarea rows="5" [(ngModel)]="nuevaOferta.descripcion" name="desc" placeholder="Describe el rol, el día a día, y los beneficios que ofrece tu empresa..."></textarea>
+          <textarea rows="5" [(ngModel)]="nuevaOferta.descripcion" name="desc" class="input-modern textarea-modern" placeholder="Describe el rol, el día a día..."></textarea>
         </div>
       </div>
 
-      <div class="form-row two-cols grid-gap-large mt-4">
-
-        <div class="modern-builder-card">
+      <div class="grid-2-cols mt-4 align-start">
+        <div class="builder-card">
           <div class="builder-header">
-            <div class="icon-box blue-icon">
-              <span class="material-icons">psychology</span>
-            </div>
-            <div>
-              <h4>Habilidades Técnicas</h4>
-              <p>Perfil técnico ideal</p>
-            </div>
+            <div class="icon-box bg-blue-light text-blue"><span class="material-icons">psychology</span></div>
+            <div><h4>Habilidades Técnicas</h4><p>Perfil técnico ideal</p></div>
           </div>
-
-          <div class="builder-controls">
-            <select [(ngModel)]="tempIdTipoHabilidad" name="tempTipoId" class="modern-input" (change)="onTipoHabilidadChange()">
-              <option [value]="0">Seleccione área de habilidad...</option>
-              <option *ngFor="let tipo of listaTiposHabilidad" [value]="tipo.idTipoHabilidad">
-                {{ tipo.nombreTipo }}
-              </option>
-            </select>
-
-            <select [(ngModel)]="tempIdHabilidad" name="tempId" class="modern-input" [disabled]="listaHabilidadesFiltradas.length === 0">
-              <option [value]="0">
-                {{ listaHabilidadesFiltradas.length === 0 ? 'Primero elija un área' : 'Elegir habilidad...' }}
-              </option>
-              <option *ngFor="let hab of listaHabilidadesFiltradas" [value]="hab.idHabilidad">
-                {{ hab.nombreHabilidad }}
-              </option>
-            </select>
-
-            <div class="control-row-inline">
-              <select [(ngModel)]="tempNivel" name="tempNivel" class="modern-input flex-1">
-                <option value="Básico">Básico</option>
-                <option value="Intermedio">Intermedio</option>
-                <option value="Avanzado">Avanzado</option>
-              </select>
-              <label class="modern-checkbox flex-1">
-                <input type="checkbox" [(ngModel)]="tempObligatorio" name="tempObl">
-                <span>Excluyente</span>
-              </label>
+          <div class="builder-body">
+            <div class="select-wrapper"><select [(ngModel)]="tempIdTipoHabilidad" name="tempTipoId" class="input-modern" (change)="onTipoHabilidadChange()"><option [value]="0">Área de habilidad...</option><option *ngFor="let tipo of listaTiposHabilidad" [value]="tipo.idTipoHabilidad">{{ tipo.nombreTipo }}</option></select><span class="material-icons select-icon">expand_more</span></div>
+            <div class="select-wrapper mt-3"><select [(ngModel)]="tempIdHabilidad" name="tempId" class="input-modern" [disabled]="listaHabilidadesFiltradas.length === 0"><option [value]="0">{{ listaHabilidadesFiltradas.length === 0 ? 'Primero elija un área' : 'Elegir habilidad...' }}</option><option *ngFor="let hab of listaHabilidadesFiltradas" [value]="hab.idHabilidad">{{ hab.nombreHabilidad }}</option></select><span class="material-icons select-icon">expand_more</span></div>
+            <div class="flex-row mt-3">
+              <div class="select-wrapper flex-1"><select [(ngModel)]="tempNivel" name="tempNivel" class="input-modern"><option value="Básico">Básico</option><option value="Intermedio">Intermedio</option><option value="Avanzado">Avanzado</option></select><span class="material-icons select-icon">expand_more</span></div>
+              <label class="checkbox-modern"><input type="checkbox" [(ngModel)]="tempObligatorio" name="tempObl"><span>Excluyente</span></label>
             </div>
-
-            <button type="button" class="btn-add-modern blue-btn" (click)="agregarSkill()">
-              <span class="material-icons">add_circle</span> Agregar Habilidad
-            </button>
+            <button type="button" class="btn-builder btn-blue" (click)="agregarSkill()"><span class="material-icons">add_circle</span> Agregar Habilidad</button>
           </div>
-
-          <div class="builder-tags-area">
-            <p *ngIf="nuevaOferta.habilidades.length === 0" class="empty-state">No hay habilidades agregadas.</p>
-            <div class="modern-tag blue-tag" *ngFor="let skill of nuevaOferta.habilidades; let i = index">
-              <span class="tag-text">
-                <strong>{{ skill.nombreHabilidad }}</strong> ({{ skill.nivelRequerido }})
-                <b *ngIf="skill.esObligatorio" class="required-asterisk">*</b>
-              </span>
+          <div class="builder-tags">
+            <p *ngIf="nuevaOferta.habilidades.length === 0" class="empty-text">No hay habilidades agregadas.</p>
+            <div class="tag tag-blue" *ngFor="let skill of nuevaOferta.habilidades; let i = index">
+              <span><strong>{{ skill.nombreHabilidad }}</strong> ({{ skill.nivelRequerido }}) <b *ngIf="skill.esObligatorio" class="required">*</b></span>
               <span class="material-icons tag-close" (click)="removerSkill(i)">close</span>
             </div>
           </div>
         </div>
 
-        <div class="modern-builder-card">
+        <div class="builder-card">
           <div class="builder-header">
-            <div class="icon-box green-icon">
-              <span class="material-icons">format_list_bulleted</span>
-            </div>
-            <div>
-              <h4>Requisitos Específicos</h4>
-              <p>Requisitos libres o blandos</p>
-            </div>
+            <div class="icon-box bg-green-light text-green"><span class="material-icons">format_list_bulleted</span></div>
+            <div><h4>Requisitos Específicos</h4><p>Requisitos libres o blandos</p></div>
           </div>
-
-          <div class="builder-controls">
+          <div class="builder-body">
             <div class="search-input-wrapper">
               <span class="material-icons icon-search">edit_note</span>
-              <input type="text" [(ngModel)]="tempRequisitoManual" name="tempReq" class="modern-input" placeholder="Ej: Disponibilidad para viajar..." (keyup.enter)="agregarRequisitoManual()">
+              <input type="text" [(ngModel)]="tempRequisitoManual" name="tempReq" class="input-modern" placeholder="Ej: Disponibilidad para viajar..." (keyup.enter)="agregarRequisitoManual()">
             </div>
-
-            <button type="button" class="btn-add-modern green-btn" (click)="agregarRequisitoManual()">
-              <span class="material-icons">add_circle</span> Agregar Requisito
-            </button>
+            <button type="button" class="btn-builder btn-green mt-3" (click)="agregarRequisitoManual()"><span class="material-icons">add_circle</span> Agregar Requisito</button>
           </div>
-
-          <div class="builder-tags-area">
-            <p *ngIf="nuevaOferta.requisitos_manuales.length === 0" class="empty-state">No hay requisitos agregados.</p>
-            <div class="modern-tag green-tag" *ngFor="let req of nuevaOferta.requisitos_manuales; let i = index">
-              <span class="tag-text">{{ req.descripcion }}</span>
+          <div class="builder-tags">
+            <p *ngIf="nuevaOferta.requisitos_manuales.length === 0" class="empty-text">No hay requisitos agregados.</p>
+            <div class="tag tag-green" *ngFor="let req of nuevaOferta.requisitos_manuales; let i = index">
+              <span>{{ req.descripcion }}</span>
               <span class="material-icons tag-close" (click)="removerRequisitoManual(i)">close</span>
             </div>
           </div>
         </div>
-
       </div>
-
     </form>
   </div>
 </main>
