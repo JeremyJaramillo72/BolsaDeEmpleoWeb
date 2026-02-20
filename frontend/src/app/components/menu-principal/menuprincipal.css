@@ -56,22 +56,61 @@
 .collapse-btn:hover { color: #2563EB; border-color: #2563EB; }
 .collapse-btn .material-icons { font-size: 1.1rem; }
 
-.sidebar-header { padding: 1.2rem 1.5rem; display: flex; align-items: center; gap: 10px; height: 72px; }
-.brand-logo { width: 36px; height: 36px; background-color: #2563EB; border-radius: 10px; color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.brand-text { display: flex; flex-direction: column; overflow: hidden; white-space: nowrap; }
-.brand-text h2 { font-size: 1rem; font-weight: 800; color: #0F172A; line-height: 1.2; }
-.brand-text p { font-size: 0.6rem; font-weight: 700; color: #64748B; letter-spacing: 0.5px; margin-top: 2px;}
+/* =========================================================
+   REEMPLAZA ESTO EN TU CSS (Línea 23 aprox)
+========================================================= */
 
-/* NUEVO: Tarjeta de perfil en Sidebar */
-.sidebar-profile {
-  margin: 0 1rem 1rem 1rem; padding: 0.8rem;
-  background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px;
-  display: flex; align-items: center; gap: 10px;
+/* 1. CABECERA DEL SIDEBAR (Bolsa de Empleo UTEQ) */
+.sidebar-header {
+  padding: 1.8rem 1.5rem; /* Más espacio arriba y abajo */
+  display: flex;
+  align-items: center;
+  gap: 14px; /* Más separación entre logo y texto */
+  min-height: 85px; /* Cabecera más alta */
 }
-.sp-avatar { width: 32px; height: 32px; background: #2563EB; color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; flex-shrink: 0;}
+.brand-logo {
+  width: 44px; /* Logo más grande */
+  height: 44px;
+  background-color: #2563EB;
+  border-radius: 12px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.brand-logo .material-icons { font-size: 1.5rem; }
+.brand-text { display: flex; flex-direction: column; overflow: hidden; white-space: nowrap; }
+.brand-text h2 { font-size: 1.15rem; font-weight: 800; color: #0F172A; line-height: 1.2; }
+.brand-text p { font-size: 0.7rem; font-weight: 700; color: #64748B; letter-spacing: 0.5px; margin-top: 3px;}
+
+/* 2. TARJETA DE PERFIL (Importadora Castro / Empresa) */
+.sidebar-profile {
+  margin: 0.5rem 1.2rem 1.5rem 1.2rem; /* Más margen a los lados y abajo */
+  padding: 1rem 1.2rem; /* Más espacio interno (padding) */
+  background-color: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px; /* Bordes un poco más suaves */
+  display: flex;
+  align-items: center;
+  gap: 14px; /* Separación entre el cuadrito azul y el texto */
+}
+.sp-avatar {
+  width: 42px; /* Cuadrito azul más grande */
+  height: 42px;
+  background: #2563EB;
+  color: white;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
 .sp-info { display: flex; flex-direction: column; overflow: hidden; white-space: nowrap;}
-.sp-name { font-size: 0.85rem; font-weight: 700; color: #0F172A; }
-.sp-role { font-size: 0.65rem; color: #64748B; }
+.sp-name { font-size: 0.95rem; font-weight: 700; color: #0F172A; margin-bottom: 2px; } /* Letra más grandecita */
+.sp-role { font-size: 0.75rem; color: #64748B; }
 
 .nav-item {
   display: flex; align-items: center; gap: 12px;

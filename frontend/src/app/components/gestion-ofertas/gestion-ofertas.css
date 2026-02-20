@@ -76,7 +76,11 @@
 /* Iconos de detalles en tono gris azulado corporativo */
 .details-row { display: flex; flex-wrap: wrap; gap: 1.5rem; font-size: 0.9rem; color: #475569; font-weight: 500;}
 .detail-item { display: flex; align-items: center; gap: 6px; }
-.icon-detail { color: #64748B; font-size: 1.15rem; }
+
+.icon-detail {
+  color: #F43F5E;
+  font-size: 1.15rem;
+}
 
 .description-text { color: #64748B; font-size: 0.9rem; line-height: 1.5; margin: 8px 0 0 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
