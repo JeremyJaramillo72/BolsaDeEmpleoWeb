@@ -138,7 +138,7 @@ export class MenuprincipalComponent implements OnInit {
         description: 'Encuentra vacantes disponibles',
         colorHex: '#0891b2', bgHex: '#ecfeff',
         roles: ['POSTULANTE'],
-        path: '/busqueda-empleo',
+        path: '/Busqueda/empleo',
         route: '/menu-principal/busqueda-empleo'
       },
       {
@@ -147,7 +147,7 @@ export class MenuprincipalComponent implements OnInit {
         description: 'Revisa el estado de tus aplicaciones',
         colorHex: '#10b981', bgHex: '#ecfdf5',
         roles: ['POSTULANTE'],
-        path: '/mis-postulaciones',
+        path: '/postulacion/empleo',
         route: '/menu-principal/mis-postulaciones'
       },
 

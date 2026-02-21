@@ -1,7 +1,7 @@
 import {
   Title
-} from "./chunk-A7XIH57L.js";
-import "./chunk-DUEZOJWU.js";
+} from "./chunk-HJ4AS44F.js";
+import "./chunk-EXT7PKEE.js";
 import {
   HashLocationStrategy,
   Location,
@@ -10,10 +10,10 @@ import {
   PathLocationStrategy,
   PlatformNavigation,
   ViewportScroller
-} from "./chunk-4G4RC47C.js";
+} from "./chunk-CG3O6GXM.js";
 import {
   LOCATION_INITIALIZED
-} from "./chunk-MBYSBEQK.js";
+} from "./chunk-GHY4JBQB.js";
 import {
   APP_BOOTSTRAP_LISTENER,
   ApplicationRef,
@@ -86,12 +86,12 @@ import {
   ɵɵloadQuery,
   ɵɵqueryRefresh,
   ɵɵsanitizeUrlOrResourceUrl
-} from "./chunk-JI5FFLX7.js";
+} from "./chunk-PBQRXIMG.js";
 import {
   defer,
   isObservable
-} from "./chunk-HWYXSU2G.js";
-import "./chunk-JRFR6BLO.js";
+} from "./chunk-53B2AV33.js";
+import "./chunk-D5HPMNDN.js";
 import {
   BehaviorSubject,
   EMPTY,
@@ -122,7 +122,7 @@ import {
   takeUntil,
   tap,
   throwError
-} from "./chunk-MARUHEWW.js";
+} from "./chunk-W3LQWAEF.js";
 import {
   __spreadProps,
   __spreadValues
@@ -4712,7 +4712,7 @@ var Router = class _Router {
     try {
       return this.urlSerializer.parse(url);
     } catch (e) {
-      this.console.warn(formatRuntimeError(4018, ngDevMode && `Error parsing URL ${url}. Falling back to '/' instead. 
+      this.console.warn(formatRuntimeError(4018, ngDevMode && `Error parsing URL ${url}. Falling back to '/' instead.
 ` + e));
       return this.urlSerializer.parse("/");
     }

@@ -28,7 +28,13 @@
       Categorías
     </button>
 
-
+    <button
+      class="tab-button"
+      [class.active]="tabActiva === 'carreras'"
+      (click)="cambiarTab('carreras')">
+      <span class="material-icons">school</span>
+      Carreras
+    </button>
 
     <button
       class="tab-button"
@@ -118,7 +124,91 @@
       </div>
     </div>
 
+    <!-- ========== TAB CARRERAS ========== -->
+    <div class="catalog-section" *ngIf="tabActiva === 'carreras'">
+      <div class="section-card">
+        <div class="section-header">
+          <h3><span class="section-icon">🎓</span> Carreras Universitarias</h3>
+        </div>
 
+        <!-- 🔍 FILTRO POR FACULTAD -->
+        <div class="filter-section" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+          <label><strong>Filtrar por Facultad:</strong></label>
+          <select class="form-control" (change)="onFacultadChange(+$any($event.target).value)">
+            <option value="">📋 Todas las carreras</option>
+            <option *ngFor="let fac of facultadesDisponibles" [value]="fac.idFacultad">
+              {{ fac.nombreFacultad }}
+            </option>
+          </select>
+        </div>
+
+        <hr>
+
+        <!-- ➕ FORMULARIO PARA AGREGAR NUEVA CARRERA -->
+        <div class="form-section" style="margin-bottom: 25px; padding: 20px; background: #e8f5e9; border-radius: 8px;">
+          <h4 style="margin-bottom: 15px;">➕ Agregar Nueva Carrera</h4>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>Nombre de la Carrera</label>
+              <input
+                type="text"
+                [(ngModel)]="nuevaCarrera.nombreCarrera"
+                class="form-control"
+                placeholder="Ej: Ingeniería en Sistemas">
+            </div>
+
+            <div class="form-group">
+              <label>Facultad</label>
+              <select
+                [(ngModel)]="nuevaCarrera.idFacultad"
+                class="form-control">
+                <option [value]="null">Seleccione una facultad...</option>
+                <option *ngFor="let fac of facultadesDisponibles" [value]="fac.idFacultad">
+                  {{ fac.nombreFacultad }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <button
+            class="btn btn-primary"
+            (click)="agregarCarrera()"
+            style="margin-top: 10px;">
+            <span class="material-icons" style="vertical-align: middle;">add</span>
+            Agregar Carrera
+          </button>
+        </div>
+
+        <hr>
+
+        <!-- 📋 LISTA DE CARRERAS FILTRADAS -->
+        <div class="items-list">
+          <div class="item-card-extended" *ngFor="let car of carrerasFiltradas">
+            <div class="item-info">
+              <span class="item-icon">🎓</span>
+              <div class="item-details">
+                <strong>{{ car.nombreCarrera }}</strong>
+                <small>Facultad: {{ obtenerNombreFacultad(car.idFacultad) }}</small>
+              </div>
+            </div>
+            <button
+              class="btn-delete"
+              (click)="eliminarCarrera(car.idCarrera)"
+              title="Eliminar carrera">
+              <span class="material-icons">delete</span>
+            </button>
+          </div>
+
+          <!-- MENSAJE CUANDO NO HAY CARRERAS -->
+          <div class="empty-state" *ngIf="carrerasFiltradas.length === 0">
+            <span class="material-icons">search_off</span>
+            <p *ngIf="carreras.length === 0">No hay carreras registradas en el sistema.</p>
+            <p *ngIf="carreras.length > 0">No hay carreras para la facultad seleccionada.</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- ========== TAB FACULTADES ========== -->
     <div class="catalog-section" *ngIf="tabActiva === 'facultades'">
@@ -291,6 +381,50 @@
           <div class="empty-state" *ngIf="modalidades.length === 0">
             <span class="material-icons">computer</span>
             <p>No hay modalidades registradas</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== TAB ROLES ========== -->
+    <div class="catalog-section" *ngIf="tabActiva === 'roles'">
+      <div class="section-card">
+        <div class="section-header">
+          <h3>
+            <span class="section-icon">🛡️</span>
+            Roles del Sistema
+          </h3>
+        </div>
+
+        <div class="form-inline">
+          <div class="form-group">
+            <label>Nombre del Rol</label>
+            <input
+              type="text"
+              [(ngModel)]="nuevoRol.nombreRol"
+              class="form-control"
+              placeholder="Ej: ADMINISTRADOR">
+          </div>
+          <button class="btn-add" (click)="agregarRol()">
+            <span class="material-icons">add</span>
+            Agregar
+          </button>
+        </div>
+
+        <div class="items-list">
+          <div class="item-card" *ngFor="let rol of roles">
+            <div class="item-info">
+              <span class="item-icon">🛡️</span>
+              <span class="item-name">{{ rol.nombreRol }}</span>
+            </div>
+            <button class="btn-delete-small" (click)="eliminarRol(rol.idRol!)">
+              <span class="material-icons">delete</span>
+            </button>
+          </div>
+
+          <div class="empty-state" *ngIf="roles.length === 0">
+            <span class="material-icons">inbox</span>
+            <p>No hay roles registrados</p>
           </div>
         </div>
       </div>

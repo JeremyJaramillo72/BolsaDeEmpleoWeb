@@ -144,19 +144,40 @@ public class llenarCmbs {
         }
     }
 
-
-    /*@GetMapping("/facultad/{idFacultad}")
-    public ResponseEntity<?> listarCarrerasPorFacultad(@PathVariable Integer idFacultad) {
-
+    // Agregar este endpoint en tu CarreraController o AdminController
+    @GetMapping("/carreras/facultad/{idFacultad}")
+    public ResponseEntity<List<Carrera>> getCarrerasPorFacultad(@PathVariable Integer idFacultad) {
         try {
             List<Carrera> carreras = carreraRepository.findByFacultadIdFacultad(idFacultad);
-            return ResponseEntity.ok(carreras);
 
+            if (carreras.isEmpty()) {
+                return ResponseEntity.noContent().build(); // 204 si no hay carreras
+            }
+
+            return ResponseEntity.ok(carreras);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al obtener carreras"));
+            System.err.println("Error al obtener carreras por facultad: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-    }*/
+    }
+
+    // Agregar este endpoint en tu CarreraController o AdminController
+
+    @GetMapping("/carreras/catalogo")
+    public ResponseEntity<List<Carrera>> getCarrerasCatalogo() {
+        try {
+            List<Carrera> carreras = carreraRepository.findAll();
+
+            if (carreras.isEmpty()) {
+                return ResponseEntity.noContent().build(); // 204 si no hay carreras
+            }
+
+            return ResponseEntity.ok(carreras);
+        } catch (Exception e) {
+            System.err.println("Error al obtener catálogo de carreras: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
 
     @PostMapping("/usuarios/exportar")
@@ -203,22 +224,7 @@ public class llenarCmbs {
         }
     }
 
-    @DeleteMapping("/categorias/{id}")
-    public ResponseEntity<?> eliminarCategoria(@PathVariable Integer id) {
-        try {
-            // Verificamos si existe antes de intentar borrar
-            if (categoriaRepository.existsById(id)) {
-                categoriaRepository.deleteById(id);
-                return ResponseEntity.ok(Map.of("mensaje", "Categoría eliminada correctamente"));
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "La categoría con ID " + id + " no existe"));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "No se pudo eliminar la categoría: " + e.getMessage()));
-        }
-    }
+
 
     @PostMapping("/facultades")
     public ResponseEntity<?> crearFacultad(@RequestBody Facultad nuevaFacultad) {
@@ -284,6 +290,111 @@ public class llenarCmbs {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error al crear carrera: " + e.getMessage()));
+        }
+    }
+
+
+    // Metodos para Delete
+    @DeleteMapping("/categorias/{id}")
+    public ResponseEntity<?> eliminarCategoria(@PathVariable Integer id) {
+        try {
+            // Verificamos si existe antes de intentar borrar
+            if (categoriaRepository.existsById(id)) {
+                categoriaRepository.deleteById(id);
+                return ResponseEntity.ok(Map.of("mensaje", "Categoría eliminada correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "La categoría con ID " + id + " no existe"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se pudo eliminar la categoría: " + e.getMessage()));
+        }
+    }
+
+    // Eliminar facultades
+    @DeleteMapping("/facultades/{id}")
+    public ResponseEntity<?> eliminarFacultad(@PathVariable Integer id) {
+        try {
+            if (facultadRepository.existsById(id)) {
+                facultadRepository.deleteById(id);
+                return ResponseEntity.ok(Map.of("mensaje", "Facultad eliminada correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "La facultad con ID " + id + " no existe"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se puede eliminar la facultad porque tiene carreras asociadas o hubo un error en el servidor"));
+        }
+    }
+
+    // Eliminar idiomas
+    @DeleteMapping("/idiomas/{id}")
+    public ResponseEntity<?> eliminarIdioma(@PathVariable Integer id) {
+        try {
+            if (idiomaRepository.existsById(id)) {
+                idiomaRepository.deleteById(id);
+                return ResponseEntity.ok(Map.of("mensaje", "Idioma eliminado correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "El idioma con ID " + id + " no existe"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se pudo eliminar el idioma: " + e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/jornadas/{id}")
+    public ResponseEntity<?> eliminarJornada(@PathVariable Integer id) {
+        try {
+            if (jornadaRepository.existsById(id)) {
+                jornadaRepository.deleteById(id);
+                return ResponseEntity.ok(Map.of("mensaje", "Jornada laboral eliminada correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "La jornada con ID " + id + " no existe"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se puede eliminar la jornada porque está siendo utilizada en registros del sistema"));
+        }
+    }
+
+    @DeleteMapping("/modalidades/{id}")
+    public ResponseEntity<?> eliminarModalidad(@PathVariable Integer id) {
+        try {
+            if (modalidadRepository.existsById(id)) {
+                modalidadRepository.deleteById(id);
+                return ResponseEntity.ok(Map.of("mensaje", "Modalidad eliminada correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "La modalidad con ID " + id + " no existe"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se puede eliminar la modalidad porque está en uso por otros registros"));
+        }
+    }
+
+    // DELETE CARRERAS
+    @DeleteMapping("/carreras/{id}")
+    public ResponseEntity<?> eliminarCarrera(@PathVariable Integer id) {
+        try {
+            // 1. Verificamos si la carrera existe
+            if (carreraRepository.existsById(id)) {
+                carreraRepository.deleteById(id);
+
+                return ResponseEntity.ok(Map.of("mensaje", "Carrera eliminada correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "La carrera con ID " + id + " no existe"));
+            }
+        } catch (Exception e) {
+            // Error común: La carrera está asignada a estudiantes o egresados
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se puede eliminar la carrera porque tiene registros vinculados (estudiantes u ofertas)"));
         }
     }
 }

@@ -50,7 +50,9 @@ export const routes: Routes = [
       },
       {   path: 'busqueda-empleo', component: PerfilProfesionalComponent },
       {   path: 'mis-postulaciones', component: PerfilProfesionalComponent },
-      {   path: 'GestionRolesbd', component: RolesBdComponent }
+      {   path: 'GestionRolesbd', component: RolesBdComponent },
+      {   path: 'Busqueda/empleo', component: BusquedaEmpleoComponent },
+      {   path: 'postulacion/empleo', component: MisPostulacionesComponent }
     ]
   },
   { path: '', redirectTo: '/login', pathMatch: 'full' },

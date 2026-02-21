@@ -3,7 +3,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs'; // Agregamos 'of' para el mock de estadísticas
 import { EmpresaResumen } from '../components/validar-empresa/validar-empresa';
-import {observableToBeFn} from 'rxjs/internal/testing/TestScheduler';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +17,7 @@ export class AdminService {
   private apiAdminUrl = 'http://localhost:8080/api/admin';
 
   private apiRolesbd = 'http://localhost:8080/api/rolesbd';
+  private apiRolesAplicativo ='http://localhost:8080/api/academico/roles';
   private apiOfertasUrl = 'http://localhost:8080/api/ofertas';
 
   constructor(private http: HttpClient) { }
@@ -90,10 +90,21 @@ export class AdminService {
   }
 
   // --- CARRERAS ---
-  getCarrerasCatalogo(): Observable<any> {
-    return this.http.get(`${this.apiAcademicoUrl}/carreras`);
+// Agregar este método en tu admin.service.ts
+
+  // Agregar este método en tu admin.service.ts
+
+  getCarrerasCatalogo(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiAcademicoUrl}/carreras/catalogo`);
   }
 
+  //http://localhost:8080/api/academico/carreras/catalogo
+
+  getCarrerasPorFacultad(idFacultad: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiAcademicoUrl}/carreras/facultad/${idFacultad}`);
+  }
+
+  //http://localhost:8080/api/academico/carreras/catalogo/carreras/facultad/${3}
   agregarCarrera(carrera: { nombreCarrera: string; idFacultad: number }): Observable<any> {
     return this.http.post(
       `${this.apiAcademicoUrl}/aggCarreras`,
@@ -159,6 +170,22 @@ export class AdminService {
   eliminarModalidad(id: number): Observable<any> {
     return this.http.delete(`${this.apiAcademicoUrl}/modalidades/${id}`); // CORREGIDO
   }
+
+  // Roles a Nivel de Aplicativo
+  // Agregar estos 3 métodos en tu admin.service.ts
+
+  getRolesCatalogo(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiRolesAplicativo}/catalogo`);
+  }
+
+  agregarRol(rol: any): Observable<any> {
+    return this.http.post<any>(`${this.apiRolesAplicativo}/agregar`, rol);
+  }
+
+  eliminarRol(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiRolesAplicativo}/eliminar/${id}`);
+  }
+  //http://localhost:8080/api/academico/roles/eliminar/5
 
   // ==========================================
   // 📊 REPORTES (Corregido para usar apiAdminUrl)

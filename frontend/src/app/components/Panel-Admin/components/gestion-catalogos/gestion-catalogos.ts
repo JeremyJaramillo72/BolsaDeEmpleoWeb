@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
@@ -37,6 +37,11 @@ interface Carrera {
   idFacultad: number;
 }
 
+interface Rol {
+  idRol?: number;
+  nombreRol: string;
+}
+
 @Component({
   selector: 'app-gestion-catalogos',
   standalone: true,
@@ -52,33 +57,36 @@ export class GestionCatalogosComponent implements OnInit {
   // Catálogos
   categorias: Catalogo[] = [];
   carreras: any[] = [];
+  carrerasFiltradas: any[] = []; // 👈 NUEVA: Para mostrar carreras filtradas por facultad
   facultades: Catalogo[] = [];
   idiomas: Catalogo[] = [];
   jornadas: Catalogo[] = [];
   modalidades: Catalogo[] = [];
+  roles: Rol[] = [];
 
   // Lista de facultades para el select de carreras
   facultadesDisponibles: any[] = [];
 
   // Formularios temporales
   nuevaCategoria: Catalogo = { nombre: '' };
-  nuevaCarrera: any = { nombre: '', id_facultad: null };
+  nuevaCarrera: any = { nombreCarrera: '', idFacultad: null };
   nuevaFacultad: Catalogo = { nombre: '' };
   nuevoIdioma: Catalogo = { nombre: '' };
   nuevaJornada: Catalogo = { nombre: '' };
   nuevaModalidad: Catalogo = { nombre: '' };
 
-
+  nuevoRol: Rol = { nombreRol: '' }; //
 
   // Estados de carga
   cargando = false;
   mensajeExito = '';
   mensajeError = '';
 
-  constructor(private adminService: AdminService) {}
+  constructor(private adminService: AdminService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.cargarTodosCatalogos();
+    this.cdr.detectChanges();
   }
 
   // ========== MÉTODOS DE CARGA ==========
@@ -89,28 +97,38 @@ export class GestionCatalogosComponent implements OnInit {
     this.cargarIdiomas();
     this.cargarJornadas();
     this.cargarModalidades();
+    this.cargarRoles();
   }
 
   cargarCategorias(): void {
     this.adminService.getCategoriasCatalogo().subscribe({
-      next: (data) => this.categorias = data,
+      next: (data) => {
+        this.categorias = [...data];
+        this.cdr.detectChanges();
+      },
       error: (err) => this.mostrarError('Error al cargar categorías')
     });
   }
 
   cargarCarreras(): void {
     this.adminService.getCarrerasCatalogo().subscribe({
-      next: (data) => this.carreras = data,
+      next: (data) => {
+        this.carreras = [...data];
+        this.carrerasFiltradas = [...data]; // Inicialmente mostrar todas
+        this.cdr.detectChanges();
+      },
       error: (err) => this.mostrarError('Error al cargar carreras')
     });
   }
 
+
+
   cargarFacultades(): void {
     this.adminService.getFacultadesCatalogo().subscribe({
       next: (data) => {
-        // Creamos nueva referencia para forzar la actualización en la vista
         this.facultades = [...data];
         this.facultadesDisponibles = [...data];
+        this.cdr.detectChanges();
       },
       error: (err) => this.mostrarError('Error al cargar facultades')
     });
@@ -119,8 +137,8 @@ export class GestionCatalogosComponent implements OnInit {
   cargarIdiomas(): void {
     this.adminService.getIdiomasCatalogo().subscribe({
       next: (data) => {
-        // Creamos una nueva referencia del arreglo para forzar la detección de cambios
         this.idiomas = [...data];
+        this.cdr.detectChanges();
       },
       error: (err) => this.mostrarError('Error al cargar idiomas')
     });
@@ -129,8 +147,8 @@ export class GestionCatalogosComponent implements OnInit {
   cargarJornadas(): void {
     this.adminService.getJornadasCatalogo().subscribe({
       next: (data) => {
-        // Usamos el operador spread para asegurar la actualización de la vista
         this.jornadas = [...data];
+        this.cdr.detectChanges();
       },
       error: (err) => this.mostrarError('Error al cargar jornadas')
     });
@@ -139,11 +157,39 @@ export class GestionCatalogosComponent implements OnInit {
   cargarModalidades(): void {
     this.adminService.getModalidadesCatalogo().subscribe({
       next: (data) => {
-        // Creamos nueva referencia para asegurar que Angular detecte el cambio
         this.modalidades = [...data];
+        this.cdr.detectChanges();
       },
       error: (err) => this.mostrarError('Error al cargar modalidades')
     });
+  }
+
+  cargarRoles(): void {
+    this.adminService.getRolesCatalogo().subscribe({
+      next: (data) => {
+        this.roles = [...data];
+        this.cdr.detectChanges();
+      },
+      error: (err) => this.mostrarError('Error al cargar roles')
+    });
+  }
+
+  // ========== 🆕 MÉTODO PARA FILTRAR CARRERAS POR FACULTAD ==========
+  onFacultadChange(idFacultad: number): void {
+    if (idFacultad) {
+      this.adminService.getCarrerasPorFacultad(idFacultad).subscribe({
+        next: (data) => {
+          this.carrerasFiltradas = [...data];
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.mostrarError('Error al cargar las carreras de esta facultad');
+          this.carrerasFiltradas = [];
+        }
+      });
+    } else {
+      this.carrerasFiltradas = [...this.carreras]; // Mostrar todas si no hay filtro
+    }
   }
 
   // ========== MÉTODOS DE AGREGAR ==========
@@ -153,7 +199,6 @@ export class GestionCatalogosComponent implements OnInit {
       return;
     }
 
-    // Mapeo al nombre de la entidad en Java
     const categoriaParaEnviar = {
       nombreCategoria: this.nuevaCategoria.nombre.trim()
     };
@@ -161,13 +206,12 @@ export class GestionCatalogosComponent implements OnInit {
     this.adminService.agregarCategoria(categoriaParaEnviar).subscribe({
       next: (response) => {
         this.mostrarExito('Categoría agregada exitosamente');
+        this.nuevaCategoria.nombre = '';
 
-        // Retraso para sincronización con la BD
+        // 🔄 Recarga automática
         setTimeout(() => {
           this.cargarCategorias();
         }, 300);
-
-        this.nuevaCategoria.nombre = ''; // Limpiar input
       },
       error: (err) => this.mostrarError('Error al agregar categoría')
     });
@@ -187,13 +231,16 @@ export class GestionCatalogosComponent implements OnInit {
     this.adminService.agregarCarrera(carreraParaEnviar).subscribe({
       next: () => {
         this.mostrarExito('Carrera agregada exitosamente');
-        this.cargarCarreras();
         this.nuevaCarrera = { nombreCarrera: '', idFacultad: null };
+
+        // 🔄 Recarga automática
+        setTimeout(() => {
+          this.cargarCarreras();
+        }, 300);
       },
       error: () => this.mostrarError('Error al agregar carrera')
     });
   }
-
 
   agregarFacultad(): void {
     if (!this.nuevaFacultad.nombre.trim()) {
@@ -201,7 +248,6 @@ export class GestionCatalogosComponent implements OnInit {
       return;
     }
 
-    // Mapeo al nombre que espera tu Backend en Java
     const facultadParaEnviar = {
       nombreFacultad: this.nuevaFacultad.nombre.trim()
     };
@@ -209,47 +255,36 @@ export class GestionCatalogosComponent implements OnInit {
     this.adminService.agregarFacultad(facultadParaEnviar).subscribe({
       next: (response) => {
         this.mostrarExito('Facultad agregada exitosamente');
+        this.nuevaFacultad.nombre = '';
 
-        // ✨ Sincronización con la base de datos
+        // 🔄 Recarga automática
         setTimeout(() => {
           this.cargarFacultades();
         }, 300);
-
-        this.nuevaFacultad.nombre = ''; // Limpiar input
       },
       error: (err) => this.mostrarError('Error al agregar facultad')
     });
   }
 
-  // ========== AGREGAR IDIOMA ==========
-  // ========== AGREGAR IDIOMA ==========
   agregarIdioma(): void {
-    // 1. Validación de entrada
     if (!this.nuevoIdioma.nombre?.trim()) {
       this.mostrarError('El nombre del idioma es obligatorio');
       return;
     }
 
-    // 2. Mapeo del objeto según tu Entidad de Java (nombreIdioma)
     const idiomaParaEnviar = {
       nombreIdioma: this.nuevoIdioma.nombre.trim()
     };
 
-    // 3. Llamada al servicio
     this.adminService.agregarIdioma(idiomaParaEnviar).subscribe({
       next: (response) => {
-        // Notificación de éxito al usuario
         this.mostrarExito('Idioma agregado exitosamente');
+        this.nuevoIdioma.nombre = '';
 
-        // ✨ IMPLEMENTACIÓN DEL RETRASO:
-        // Esperamos 300ms para que PostgreSQL confirme el commit
-        // antes de refrescar la lista en pantalla.
+        // 🔄 Recarga automática
         setTimeout(() => {
           this.cargarIdiomas();
         }, 300);
-
-        // 4. Limpieza del formulario
-        this.nuevoIdioma.nombre = '';
       },
       error: (err) => {
         console.error('Error en la inserción:', err);
@@ -264,7 +299,6 @@ export class GestionCatalogosComponent implements OnInit {
       return;
     }
 
-    // Mapeo al nombre de la propiedad en tu entidad Java
     const jornadaParaEnviar = {
       nombreJornada: this.nuevaJornada.nombre.trim()
     };
@@ -272,13 +306,12 @@ export class GestionCatalogosComponent implements OnInit {
     this.adminService.agregarJornada(jornadaParaEnviar).subscribe({
       next: (response) => {
         this.mostrarExito('Jornada agregada exitosamente');
+        this.nuevaJornada.nombre = '';
 
-        // ✨ Sincronización en tiempo real con la base de datos
+        // 🔄 Recarga automática
         setTimeout(() => {
           this.cargarJornadas();
         }, 300);
-
-        this.nuevaJornada.nombre = ''; // Limpiar el input
       },
       error: (err) => {
         console.error(err);
@@ -293,7 +326,6 @@ export class GestionCatalogosComponent implements OnInit {
       return;
     }
 
-    // Mapeo al atributo 'nombreModalidad' de tu entidad Java
     const modalidadParaEnviar = {
       nombreModalidad: this.nuevaModalidad.nombre.trim()
     };
@@ -301,15 +333,30 @@ export class GestionCatalogosComponent implements OnInit {
     this.adminService.agregarModalidad(modalidadParaEnviar).subscribe({
       next: (response) => {
         this.mostrarExito('Modalidad agregada exitosamente');
+        this.nuevaModalidad.nombre = '';
 
-        // Espera de 300ms para asegurar la persistencia en PostgreSQL
+        // 🔄 Recarga automática
         setTimeout(() => {
           this.cargarModalidades();
         }, 300);
-
-        this.nuevaModalidad.nombre = ''; // Limpiar input
       },
       error: (err) => this.mostrarError('Error al guardar la modalidad')
+    });
+  }
+
+  agregarRol(): void {
+    if (!this.nuevoRol.nombreRol?.trim()) {
+      this.mostrarError('El nombre del rol es obligatorio');
+      return;
+    }
+
+    this.adminService.agregarRol({ nombreRol: this.nuevoRol.nombreRol.trim() }).subscribe({
+      next: () => {
+        this.mostrarExito('Rol agregado exitosamente');
+        this.nuevoRol.nombreRol = '';
+        setTimeout(() => this.cargarRoles(), 300);
+      },
+      error: () => this.mostrarError('Error al agregar rol')
     });
   }
 
@@ -319,10 +366,9 @@ export class GestionCatalogosComponent implements OnInit {
       this.adminService.eliminarCategoria(id).subscribe({
         next: () => {
           this.mostrarExito('Categoría eliminada exitosamente');
-          // Optimización: quitar de la lista inmediatamente
           this.categorias = this.categorias.filter(c => c.idCategoria !== id);
 
-          // El refresco del servidor se queda como respaldo
+          // 🔄 Recarga automática
           setTimeout(() => this.cargarCategorias(), 300);
         },
         error: (err) => this.mostrarError('Error al eliminar categoría')
@@ -335,7 +381,11 @@ export class GestionCatalogosComponent implements OnInit {
       this.adminService.eliminarCarrera(id).subscribe({
         next: () => {
           this.mostrarExito('Carrera eliminada exitosamente');
-          this.cargarCarreras();
+
+          // 🔄 Recarga automática
+          setTimeout(() => {
+            this.cargarCarreras();
+          }, 300);
         },
         error: (err) => this.mostrarError('Error al eliminar carrera')
       });
@@ -348,7 +398,7 @@ export class GestionCatalogosComponent implements OnInit {
         next: () => {
           this.mostrarExito('Facultad eliminada exitosamente');
 
-          // Refresco con delay para asegurar que el borrado se procesó
+          // 🔄 Recarga automática
           setTimeout(() => {
             this.cargarFacultades();
           }, 300);
@@ -360,11 +410,14 @@ export class GestionCatalogosComponent implements OnInit {
 
   eliminarIdioma(id: number): void {
     if (confirm('¿Está seguro de eliminar este idioma?')) {
-      // Usamos el ID correcto que viene de la base de datos
       this.adminService.eliminarIdioma(id).subscribe({
         next: () => {
           this.mostrarExito('Idioma eliminado exitosamente');
-          this.cargarIdiomas();
+
+          // 🔄 Recarga automática
+          setTimeout(() => {
+            this.cargarIdiomas();
+          }, 300);
         },
         error: (err) => this.mostrarError('Error al eliminar idioma')
       });
@@ -377,7 +430,7 @@ export class GestionCatalogosComponent implements OnInit {
         next: () => {
           this.mostrarExito('Jornada eliminada exitosamente');
 
-          // Refresco con delay para confirmar el borrado en el servidor
+          // 🔄 Recarga automática
           setTimeout(() => {
             this.cargarJornadas();
           }, 300);
@@ -392,9 +445,25 @@ export class GestionCatalogosComponent implements OnInit {
       this.adminService.eliminarModalidad(id).subscribe({
         next: () => {
           this.mostrarExito('Modalidad eliminada exitosamente');
-          this.cargarModalidades();
+
+          // 🔄 Recarga automática
+          setTimeout(() => {
+            this.cargarModalidades();
+          }, 300);
         },
         error: (err) => this.mostrarError('Error al eliminar modalidad')
+      });
+    }
+  }
+
+  eliminarRol(id: number): void {
+    if (confirm('¿Está seguro de eliminar este rol?')) {
+      this.adminService.eliminarRol(id).subscribe({
+        next: () => {
+          this.mostrarExito('Rol eliminado exitosamente');
+          setTimeout(() => this.cargarRoles(), 300);
+        },
+        error: () => this.mostrarError('Error al eliminar rol')
       });
     }
   }

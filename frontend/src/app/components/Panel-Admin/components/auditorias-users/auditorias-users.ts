@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
@@ -79,7 +79,7 @@ export class AdminUsuariosComponent implements OnInit {
   columnaOrden: string = 'fechaRegistro';
   direccionOrden: 'asc' | 'desc' = 'desc';
 
-  constructor(private adminService: AdminService) {}
+  constructor(private adminService: AdminService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.cargarUsuarios();
@@ -110,6 +110,7 @@ export class AdminUsuariosComponent implements OnInit {
 
         this.aplicarFiltros();
         this.cargando = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error al cargar usuarios:', err);
