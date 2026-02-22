@@ -7,33 +7,41 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "postulacion", schema = "postulaciones")
 @Data
-public class Postulacion {@Id
-@GeneratedValue(strategy = GenerationType.IDENTITY)
-@Column(name = "id_validacion_doc") //
-private Integer idValidacionDoc;
+public class Postulacion {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_postulacion")
+    private Integer idPostulacion;
 
     @ManyToOne
-    @JoinColumn(name = "id_documentacion", nullable = false)
-    private documentacion_academica documentacion;
+    @JoinColumn(name = "id_usuario", nullable = false)
+    private Usuario usuario;
 
     @ManyToOne
-    @JoinColumn(name = "id_postulacion", nullable = false)
-    private Postulacion postulacion;
+    @JoinColumn(name = "id_oferta", nullable = false)
+    private OfertaLaboral ofertaLaboral;
 
+    @Column(name = "archivo_cv", length = 500)
+    private String archivoCv;
 
-    @Column(name = "estado_validacion", length = 20) //
+    @Column(name = "fecha_postulacion")
+    private LocalDateTime fechaPostulacion;
+
+    @Column(name = "estado_validacion", length = 20)
     private String estadoValidacion;
 
-    @Column(name = "observaciones", columnDefinition = "TEXT") //
+    @Column(name = "observaciones", columnDefinition = "TEXT")
     private String observaciones;
-
-    @Column(name = "fecha_revision") //
-    private LocalDateTime fechaRevision;
 
     @PrePersist
     public void prePersist() {
-        if (this.fechaRevision == null) {
-            this.fechaRevision = LocalDateTime.now();
+        if (this.fechaPostulacion == null) {
+            this.fechaPostulacion = LocalDateTime.now();
+        }
+        if (this.estadoValidacion == null) {
+            this.estadoValidacion = "Pendiente";
         }
     }
 }
+

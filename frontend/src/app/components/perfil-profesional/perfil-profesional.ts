@@ -68,6 +68,7 @@ export class PerfilProfesionalComponent implements OnInit {
   }
 
   cargarDatosDesdeBackend(id: number): void {
+    // Cargar datos básicos del usuario
     this.perfilService.obtenerDatosUsuario(id).subscribe({
       next: (data) => {
         // 2. Mapeamos la respuesta de Spring Boot al objeto perfil
@@ -81,6 +82,45 @@ export class PerfilProfesionalComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error al recuperar datos del servidor:', err);
+      }
+    });
+
+    // Cargar idiomas guardados
+    this.perfilService.obtenerIdiomasGuardados(id).subscribe({
+      next: (idiomas) => {
+        this.perfil.idiomas = idiomas.map((i: any) => ({
+          id_idioma: i.idioma.idIdioma,
+          nombre_idioma: i.idioma.nombreIdioma,
+          nivel: i.nivel,
+          archivo: null,
+          nombreArchivo: i.archivoCertificado ? 'Certificado cargado' : '',
+          codigoCertificado: i.codigoCertificado || ''
+        }));
+        this.actualizarProgreso();
+      },
+      error: (err) => {
+        console.error('Error al cargar idiomas:', err);
+      }
+    });
+
+    // Cargar experiencias laborales guardadas
+    this.perfilService.obtenerExperienciasGuardadas(id).subscribe({
+      next: (experiencias) => {
+        this.perfil.experiencias = experiencias.map((e: any) => ({
+          id_cargo: e.cargo.idCargo,
+          id_empresa_catalogo: e.catalogoEmpresa.idEmpresaCatalogo,
+          nombre_cargo: e.cargo.nombreCargo,
+          nombre_empresa: e.catalogoEmpresa.nombreEmpresa,
+          descripcion: e.descripcion,
+          fecha_inicio: e.fechaInicio,
+          fecha_fin: e.fechaFin,
+          ubicacion: e.ubicacion,
+          nombreArchivo: e.archivoComprobante ? 'Comprobante cargado' : ''
+        }));
+        this.actualizarProgreso();
+      },
+      error: (err) => {
+        console.error('Error al cargar experiencias:', err);
       }
     });
   }
@@ -106,6 +146,13 @@ export class PerfilProfesionalComponent implements OnInit {
     if (this.perfil.idiomas && this.perfil.idiomas.length > 0) {
       this.perfil.idiomas.forEach((i: any) => {
         peticiones.push(this.perfilService.registrarIdioma(Number(idUsuario), i));
+      });
+    }
+
+    // Peticiones de Experiencias Laborales
+    if (this.perfil.experiencias && this.perfil.experiencias.length > 0) {
+      this.perfil.experiencias.forEach((e: any) => {
+        peticiones.push(this.perfilService.registrarExperiencia(Number(idUsuario), e));
       });
     }
 

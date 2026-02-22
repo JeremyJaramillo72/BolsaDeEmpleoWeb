@@ -1,26 +1,231 @@
-<div class="container">
-  <h2>Búsqueda de Empleo</h2>
-  <div class="ofertas-list">
-    <div  class="card">
-      <div class="card-header">
-        <h3>Titulo Oferta</h3>
+<main class="main-content">
+
+  <header class="topbar">
+    <div class="welcome-text">
+      <h2>Búsqueda de Empleo</h2>
+      <p>Encuentra la oferta laboral que se adapte a tu perfil profesional.</p>
+    </div>
+  </header>
+
+  <div class="layout-wrapper">
+
+    <!-- SIDEBAR DE FILTROS -->
+    <aside class="sidebar-filters">
+      <div class="filter-header">
+        <span class="material-icons">tune</span>
+        <h3>Filtros</h3>
       </div>
-      <div class="card-body">
-        <p> oferta descripcion </p>
-        <div class="extra-info">
-          <p><strong>Modalidad:</strong> oferta modalidad</p>
-          <p><strong>Categoría:</strong> oferta categoria </p>
-          <p><strong>Jornada:</strong> oferta jornada </p>
-          <p><strong>Salario Promedio:</strong> oferta salarioPromedio </p>
+
+      <!-- BOTÓN MIS FAVORITAS -->
+      <button class="btn-favoritas" (click)="toggleVerFavoritas()" [class.activo]="soloFavoritas">
+        <span class="material-icons">{{ soloFavoritas ? 'bookmark' : 'bookmark_border' }}</span>
+        Mis Favoritas
+        <span class="badge-count" *ngIf="totalFavoritas > 0">{{ totalFavoritas }}</span>
+      </button>
+
+      <div class="filter-group">
+        <label>Buscar por título</label>
+        <div class="search-input-wrapper">
+          <span class="material-icons icon-search">search</span>
+          <input type="text" [(ngModel)]="filtroTitulo" placeholder="Título o palabra clave...">
         </div>
       </div>
-      <div class="card-footer">
-        <button class="btn btn-primary" >Aplicar</button>
-        <button class="btn btn-secondary">Guardar en Favoritos</button>
-        <button class="btn btn-info" >
-          Expandir Info
+
+      <div class="filter-group">
+        <label>Modalidad</label>
+        <select [(ngModel)]="filtroModalidad">
+          <option value="">Todas las modalidades</option>
+          <option *ngFor="let m of modalidades" [value]="m">{{ m }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Jornada</label>
+        <select [(ngModel)]="filtroJornada">
+          <option value="">Todas las jornadas</option>
+          <option *ngFor="let j of jornadas" [value]="j">{{ j }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Categoría</label>
+        <select [(ngModel)]="filtroCategoria">
+          <option value="">Todas las categorías</option>
+          <option *ngFor="let c of categorias" [value]="c">{{ c }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Ordenar por fecha</label>
+        <select [(ngModel)]="filtroFecha">
+          <option value="reciente">Más reciente primero</option>
+          <option value="antiguo">Más antiguo primero</option>
+        </select>
+      </div>
+
+      <button class="btn-clear-filters" (click)="limpiarFiltros()">Limpiar Filtros</button>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <section class="main-offers-content">
+
+      <div class="action-bar">
+        <div class="stats-text">
+          <span *ngIf="!soloFavoritas">Mostrando <strong>{{ ofertasFiltradas.length }}</strong> ofertas disponibles</span>
+          <span *ngIf="soloFavoritas">Mostrando <strong>{{ ofertasFiltradas.length }}</strong> ofertas guardadas</span>
+        </div>
+      </div>
+
+      <div class="offers-grid">
+
+        <!-- CARGANDO -->
+        <div *ngIf="cargando" class="no-data">
+          <span class="material-icons spin">sync</span>
+          <p>Cargando ofertas...</p>
+        </div>
+
+        <!-- ERROR DE CONEXIÓN -->
+        <div *ngIf="errorConexion" class="no-data error-card">
+          <span class="material-icons">cloud_off</span>
+          <p>No se pudo conectar con el servidor.</p>
+          <p style="font-size:0.85rem; color:#94a3b8;">Verifica que el backend esté corriendo en <strong>localhost:8080</strong></p>
+          <button class="btn-clear-filters" style="margin-top:1rem" (click)="cargarOfertas()">
+            Reintentar
+          </button>
+        </div>
+
+        <!-- SIN RESULTADOS -->
+        <div *ngIf="!cargando && !errorConexion && ofertasFiltradas.length === 0" class="no-data">
+          <span class="material-icons">{{ soloFavoritas ? 'bookmark_border' : 'inbox' }}</span>
+          <p *ngIf="!soloFavoritas">No se encontraron ofertas con estos filtros.</p>
+          <p *ngIf="soloFavoritas">No tienes ofertas guardadas aún.</p>
+        </div>
+
+        <div class="modern-card" *ngFor="let oferta of ofertasFiltradas">
+
+          <div class="header-row">
+            <h3>{{ oferta.titulo }}</h3>
+            <div class="badges-group">
+              <span class="status-badge badge-active">{{ oferta.estadoOferta | titlecase }}</span>
+              <!-- Badge si ya postuló -->
+              <span class="status-badge badge-postulado" *ngIf="yaPostulo(oferta)">
+                <span class="material-icons" style="font-size:0.85rem">check_circle</span>
+                {{ oferta.estadoValidacion ?? 'Postulado' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- DESCRIPCIÓN -->
+          <p class="card-description">{{ oferta.descripcion }}</p>
+
+          <!-- TAGS con texto directo de la vista -->
+          <div class="tags-row">
+            <span class="tag tag-modalidad">
+              <span class="material-icons text-sm">work_outline</span>
+              {{ oferta.nombreModalidad }}
+            </span>
+            <span class="tag tag-jornada">
+              <span class="material-icons text-sm">schedule</span>
+              {{ oferta.nombreJornada }}
+            </span>
+            <span class="tag tag-categoria">
+              <span class="material-icons text-sm">category</span>
+              {{ oferta.nombreCategoria }}
+            </span>
+          </div>
+
+          <!-- META INFO -->
+          <div class="meta-row">
+            <p class="meta-info">
+              <span class="material-icons">event_available</span>
+              Inicio: {{ oferta.fechaInicio | date:'dd/MM/yyyy' }}
+            </p>
+            <p class="meta-info">
+              <span class="material-icons">event_busy</span>
+              Cierra: {{ oferta.fechaCierre | date:'dd/MM/yyyy' }}
+            </p>
+            <p class="meta-info" *ngIf="oferta.salarioMin && oferta.salarioMax">
+              <span class="material-icons">payments</span>
+              ${{ oferta.salarioMin | number:'1.0-0' }} - ${{ oferta.salarioMax | number:'1.0-0' }}
+            </p>
+            <p class="meta-info" *ngIf="oferta.cantidadVacantes">
+              <span class="material-icons">people</span>
+              {{ oferta.cantidadVacantes }} vacante(s)
+            </p>
+            <p class="meta-info" *ngIf="oferta.experienciaMinima">
+              <span class="material-icons">workspace_premium</span>
+              {{ oferta.experienciaMinima }} año(s) de experiencia
+            </p>
+          </div>
+
+          <!-- ACCIONES -->
+          <div class="card-actions">
+            <!-- Si ya postuló, mostrar botón deshabilitado -->
+            <button class="btn-postular" *ngIf="!yaPostulo(oferta)" (click)="abrirModalPostulacion(oferta)">
+              <span class="material-icons">send</span> Postular
+            </button>
+            <button class="btn-postular btn-ya-postulado" *ngIf="yaPostulo(oferta)" disabled>
+              <span class="material-icons">how_to_reg</span> Ya postulaste
+            </button>
+            <button class="btn-favorito" (click)="toggleFavorito(oferta)" [class.activo]="oferta.esFavorito">
+              <span class="material-icons">{{ oferta.esFavorito ? 'bookmark' : 'bookmark_border' }}</span>
+              {{ oferta.esFavorito ? 'Guardado' : 'Guardar' }}
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- MODAL DE POSTULACIÓN -->
+  <div class="modal-overlay" *ngIf="mostrarModalPostulacion" (click)="cerrarModalPostulacion()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <h3>Postular a: {{ ofertaSeleccionada?.titulo }}</h3>
+        <button class="btn-close-modal" (click)="cerrarModalPostulacion()">
+          <span class="material-icons">close</span>
         </button>
       </div>
+
+      <div class="modal-body">
+        <div
+          class="drop-zone"
+          [class.drag-over]="isDragOver"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)">
+
+          <span class="material-icons drop-icon">upload_file</span>
+          <p class="drop-text">Arrastra el archivo aquí</p>
+          <p class="drop-subtext">Solo archivos PDF</p>
+
+          <div *ngIf="archivoSeleccionado" class="file-selected">
+            <span class="material-icons">picture_as_pdf</span>
+            {{ archivoSeleccionado.name }}
+          </div>
+        </div>
+
+        <div class="upload-btn-wrapper">
+          <label for="file-input" class="btn-upload">
+            <span class="material-icons">folder_open</span>
+            Buscar documento PDF
+          </label>
+          <input id="file-input" type="file" accept=".pdf" (change)="onFileSelected($event)" hidden>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancelar" (click)="cerrarModalPostulacion()">
+          <span class="material-icons">cancel</span> Cancelar
+        </button>
+        <button class="btn-enviar" (click)="enviarPostulacion()" [disabled]="!archivoSeleccionado">
+          <span class="material-icons">send</span> Enviar Postulación
+        </button>
+      </div>
+
     </div>
   </div>
-</div>
+
+</main>

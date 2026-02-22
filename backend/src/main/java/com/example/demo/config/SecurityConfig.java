@@ -41,6 +41,8 @@ public class SecurityConfig {
                                 "/api/perfil/**",
                                 "/api/academico/**",
                                 "/api/perfil-idioma/**",
+                                "/api/exp-laboral/**",
+                                "/api/postulaciones/**",
                                 "/api/empresa-perfil/**",
                                 "/api/ofertas/**",
                                 "/api/admins/**",

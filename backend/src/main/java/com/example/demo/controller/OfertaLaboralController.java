@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.IOfertaResumen;
 import com.example.demo.dto.OfertaLaboralDTO;
 import com.example.demo.model.OfertaLaboral;
+import com.example.demo.repository.Views.IOfertaDetallada;
 import com.example.demo.repository.Views.IOfertaEmpresaDTO;
 import com.example.demo.repository.Views.IPostulanteOfertaDTO;
 import com.example.demo.service.IOfertaLaboralService;
@@ -59,6 +60,28 @@ public class OfertaLaboralController {
         } catch(Exception e) {
             e.printStackTrace(); // Imprime el error en consola para verlo si vuelve a fallar
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/completo/{idUsuario}")
+    public ResponseEntity<?> listarOfertasCompleto(@PathVariable Long idUsuario) {
+        try {
+            List<IOfertaDetallada> resultado = ofertaService.listarOfertasCompleto(idUsuario);
+            return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/{idOferta}/favorita/{idUsuario}")
+    public ResponseEntity<?> toggleFavorita(
+            @PathVariable Integer idOferta,
+            @PathVariable Long idUsuario) {
+        try {
+            String resultado = ofertaService.toggleFavorita(idOferta, idUsuario);
+            return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
         }
     }
 }

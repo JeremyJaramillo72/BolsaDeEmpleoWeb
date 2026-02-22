@@ -62,16 +62,35 @@ export class PerfilService {
     return this.http.post(`http://localhost:8080/api/perfil-idioma/registrar`, formData);
   }
 
-  // En perfil.service.ts
   getCargosCatalogo(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/cargos`);
+    return this.http.get(`http://localhost:8080/api/academico/cargos`);
   }
 
   getEmpresasCatalogo(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/empresas`);
+    return this.http.get(`http://localhost:8080/api/academico/empresas`);
   }
 
+  registrarExperiencia(idUsuario: number, exp: any): Observable<any> {
+    const formData = new FormData();
+    formData.append('idUsuario', idUsuario.toString());
+    formData.append('idCargo', exp.id_cargo.toString());
+    formData.append('idEmpresaCatalogo', exp.id_empresa_catalogo.toString());
+    formData.append('fechaInicio', exp.fecha_inicio);
+    if (exp.fecha_fin) formData.append('fechaFin', exp.fecha_fin);
+    formData.append('descripcion', exp.descripcion);
+    formData.append('ubicacion', exp.ubicacion || '');
+    if (exp.archivo_comprobante) formData.append('archivo', exp.archivo_comprobante);
+    return this.http.post(`http://localhost:8080/api/exp-laboral/registrar`, formData);
+  }
 
+  // Métodos para obtener datos ya guardados
+  obtenerIdiomasGuardados(idUsuario: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/idiomas/${idUsuario}`);
+  }
+
+  obtenerExperienciasGuardadas(idUsuario: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/experiencias/${idUsuario}`);
+  }
 
 
 }

@@ -54,7 +54,7 @@
       <label>Empresa *</label>
       <select [(ngModel)]="nuevaExperiencia.id_empresa_catalogo" class="form-control">
         <option [ngValue]="null" disabled>Seleccionar empresa...</option>
-        <option *ngFor="let empresa of empresasDisponibles" [value]="empresa.idEmpresa">
+        <option *ngFor="let empresa of empresasDisponibles" [value]="empresa.idEmpresaCatalogo">
           {{ empresa.nombreEmpresa }}
         </option>
       </select>

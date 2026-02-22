@@ -8,6 +8,7 @@ import com.example.demo.model.Usuario;
 import com.example.demo.model.UsuarioEmpresa;
 import com.example.demo.repository.Views.IOfertaEmpresaDTO;
 import com.example.demo.repository.Views.IPostulanteOfertaDTO;
+import com.example.demo.repository.Views.IOfertaDetallada;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -84,4 +85,10 @@ public interface OfertaLaboralRepository extends JpaRepository<OfertaLaboral, In
 
     @Query(value = "select * from ofertas.fn_mostrar_postulantes_oferta(:idOferta)", nativeQuery = true)
     List<IPostulanteOfertaDTO> obtenerPostulantesPorOferta(@Param("idOferta") Long idOferta);
+
+    @Query(value = "SELECT * FROM ofertas.fn_listar_ofertas_completo(:idUsuario)", nativeQuery = true)
+    List<IOfertaDetallada> listarOfertasCompleto(@Param("idUsuario") Long idUsuario);
+
+    @Query(value = "SELECT ofertas.sp_toggle_favorita_confirmacion(:idOferta, :idUsuario)", nativeQuery = true)
+    String toggleFavorita(@Param("idOferta") Integer idOferta, @Param("idUsuario") Long idUsuario);
 }

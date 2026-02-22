@@ -44,6 +44,12 @@ public class llenarCmbs {
     @Autowired
     private RolesRepository rolesRepository;
 
+    @Autowired
+    private CargoRepository cargoRepository;
+
+    @Autowired
+    private CatalogoEmpresaRepository catalogoEmpresaRepository;
+
 
     @GetMapping("/provincias")
     public List <Provincia> listaProvincias(){
@@ -94,6 +100,16 @@ public class llenarCmbs {
     @GetMapping("/modalidades")
     public List<ModalidadOferta> listarModalidades() {
         return modalidadRepository.findAll();
+    }
+
+    @GetMapping("/cargos")
+    public List<Cargo> listarCargos() {
+        return cargoRepository.findAll();
+    }
+
+    @GetMapping("/empresas")
+    public List<CatalogoEmpresa> listarEmpresasCatalogo() {
+        return catalogoEmpresaRepository.findAll();
     }
 
     @GetMapping("/usuarios/estadisticas")

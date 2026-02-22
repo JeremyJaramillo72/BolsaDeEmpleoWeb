@@ -6,6 +6,7 @@ import com.example.demo.repository.OfertaLaboralRepository;
 import com.example.demo.repository.Views.IOfertaEmpresaDTO;
 import com.example.demo.repository.Views.IPostulanteOfertaDTO;
 import com.example.demo.dto.IOfertaResumen;
+import com.example.demo.repository.Views.IOfertaDetallada;
 
 import java.util.List;
 
@@ -21,4 +22,7 @@ public interface IOfertaLaboralService {
 
     void cambiarEstadoOferta(Long idOferta, String nuevoEstadoOferta);
 
+    List<IOfertaDetallada> listarOfertasCompleto(Long idUsuario);
+
+    String toggleFavorita(Integer idOferta, Long idUsuario);
 }

@@ -24,9 +24,8 @@ public class documentacion_academica {
     @Column(name = "fecha_registro")
     private LocalDate fechaRegistro;
 
-    @Lob // 👈 Indica que es un objeto pesado (Large Object)
-    @Column(name = "archivo_titulo")
-    private byte[] archivoTitulo; // 👈 Cambiado a byte[] para guardar el binario
+    @Column(name = "archivo_titulo", length = 500)
+    private String archivoTitulo; // URL de Cloudinary
 
     @PrePersist
     public void prePersist() {

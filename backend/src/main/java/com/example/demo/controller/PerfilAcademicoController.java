@@ -1,6 +1,6 @@
 package com.example.demo.controller;
 
-import com.example.demo.service.IPerfilAcademicoService;
+import com.example.demo.service.Impl.PerfilAcademicoServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -20,7 +20,7 @@ import java.util.Map;
 public class PerfilAcademicoController {
 
     @Autowired
-    private IPerfilAcademicoService perfilAcademicoService;
+    private PerfilAcademicoServiceImpl perfilAcademicoService;
 
     @PostMapping(value = "/registrar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> registrarPerfil(
@@ -39,20 +39,24 @@ public class PerfilAcademicoController {
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
 
-            // Llamamos al servicio (que a su vez ejecuta el Procedure en PostgreSQL)
+            // 1. Subir el archivo a Cloudinary y obtener la URL
+            String urlArchivo = perfilAcademicoService.subirArchivoCloudinary(archivo);
+
+            // 2. Guardar en la base de datos con la URL de Cloudinary
             perfilAcademicoService.registrarNuevoTitulo(
                     idUsuario,
                     idCarrera,
                     fechaGraduacion,
                     numeroSenescyt,
-                    archivo.getBytes() // Convertimos el MultipartFile a arreglo de bytes
+                    urlArchivo
             );
 
             response.put("mensaje", "Título y documentación registrados exitosamente");
+            response.put("urlArchivo", urlArchivo);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
 
         } catch (IOException e) {
-            response.put("error", "Error al procesar el archivo binario: " + e.getMessage());
+            response.put("error", "Error al subir el archivo a Cloudinary: " + e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
             response.put("error", "Error en el servidor: " + e.getMessage());

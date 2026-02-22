@@ -3,6 +3,7 @@ package com.example.demo.service.Impl;
 import com.example.demo.dto.OfertaLaboralDTO;
 import com.example.demo.model.*;
 import com.example.demo.repository.*;
+import com.example.demo.repository.Views.IOfertaDetallada;
 import com.example.demo.repository.Views.IOfertaEmpresaDTO;
 import com.example.demo.repository.Views.IPostulanteOfertaDTO;
 import com.example.demo.service.IOfertaLaboralService;
@@ -142,5 +143,21 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
     public void cambiarEstadoOferta(Long idOferta, String nuevoEstado) {
 
         ofertaRepository.actualizarEstadoDirecto(idOferta, nuevoEstado);
+    }
+
+
+
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<IOfertaDetallada> listarOfertasCompleto(Long idUsuario) {
+        return ofertaRepository.listarOfertasCompleto(idUsuario);
+    }
+
+    @Override
+    @Transactional
+    public String toggleFavorita(Integer idOferta, Long idUsuario) {
+        return ofertaRepository.toggleFavorita(idOferta, idUsuario);
     }
 }

@@ -1,28 +1,98 @@
-<div class="container">
-  <h2>Mis Postulaciones</h2>
-  <div class="postulaciones-list">
-    <div class="card">
-      <div class="card-header">
-        <h3>Nombre de la Oferta</h3>
-      </div>
-      <div class="card-body">
-        <p><strong>Fecha:</strong> 23/23/34</p>
-        <p><strong>Estado:</strong> aso</p>
-        <div class="extra-info">
-          <!-- Asumir info completa de oferta -->
-          <p><strong>Descripción:</strong>sdf </p>
-          <p><strong>Modalidad:</strong> sdfsdf</p>
-          <p><strong>Categoría:</strong> sdfs</p>
-          <p><strong>Jornada:</strong> sdf</p>
-          <p><strong>Salario Promedio:</strong> sdfsdf</p>
-        </div>
-      </div>
-      <div class="card-footer">
-        <button class="btn btn-info">
-          Ver Info Completa
-        </button>
-        <button class="btn btn-danger" >Cancelar Postulación</button>
+<main class="main-content">
+
+  <header class="topbar">
+    <div class="welcome-text">
+      <h2>Mis Postulaciones</h2>
+      <p>Revisa el estado de todas tus postulaciones enviadas.</p>
+    </div>
+  </header>
+
+  <section class="main-offers-content">
+
+    <div class="action-bar">
+      <div class="stats-text">
+        Total: <strong>{{ postulaciones.length }}</strong> postulación(es)
       </div>
     </div>
-  </div>
-</div>
+
+    <div class="offers-grid">
+
+      <!-- CARGANDO -->
+      <div *ngIf="cargando" class="no-data">
+        <span class="material-icons spin">sync</span>
+        <p>Cargando postulaciones...</p>
+      </div>
+
+      <!-- ERROR -->
+      <div *ngIf="errorConexion" class="no-data error-card">
+        <span class="material-icons">cloud_off</span>
+        <p>No se pudo conectar con el servidor.</p>
+        <button class="btn-reintentar" (click)="cargarPostulaciones()">Reintentar</button>
+      </div>
+
+      <!-- SIN POSTULACIONES -->
+      <div *ngIf="!cargando && !errorConexion && postulaciones.length === 0" class="no-data">
+        <span class="material-icons">inbox</span>
+        <p>Aún no tienes postulaciones enviadas.</p>
+      </div>
+
+      <!-- TARJETAS -->
+      <div class="modern-card" *ngFor="let p of postulaciones">
+
+        <div class="header-row">
+          <h3>{{ p.titulo }}</h3>
+          <span class="status-badge" [ngClass]="getEstadoBadgeClass(p.estadoValidacion)">
+            {{ p.estadoValidacion ?? 'Pendiente' | titlecase }}
+          </span>
+        </div>
+
+        <p class="card-description">{{ p.descripcion }}</p>
+
+        <div class="tags-row">
+          <span class="tag tag-modalidad">
+            <span class="material-icons">work_outline</span>
+            {{ p.nombreModalidad }}
+          </span>
+          <span class="tag tag-jornada">
+            <span class="material-icons">schedule</span>
+            {{ p.nombreJornada }}
+          </span>
+          <span class="tag tag-categoria">
+            <span class="material-icons">category</span>
+            {{ p.nombreCategoria }}
+          </span>
+        </div>
+
+        <div class="meta-row">
+          <p class="meta-info">
+            <span class="material-icons">event_available</span>
+            Inicio: {{ p.fechaInicio | date:'dd/MM/yyyy' }}
+          </p>
+          <p class="meta-info">
+            <span class="material-icons">event_busy</span>
+            Cierra: {{ p.fechaCierre | date:'dd/MM/yyyy' }}
+          </p>
+          <p class="meta-info" *ngIf="p.salarioMin && p.salarioMax">
+            <span class="material-icons">payments</span>
+            ${{ p.salarioMin | number:'1.0-0' }} - ${{ p.salarioMax | number:'1.0-0' }}
+          </p>
+          <p class="meta-info" *ngIf="p.experienciaMinima">
+            <span class="material-icons">workspace_premium</span>
+            {{ p.experienciaMinima }} año(s) de experiencia
+          </p>
+        </div>
+
+        <div class="card-actions">
+          <button class="btn-documento" (click)="verDocumento(p)">
+            <span class="material-icons">picture_as_pdf</span> Ver Documento
+          </button>
+          <button class="btn-cancelar-post" (click)="cancelarPostulacion(p)">
+            <span class="material-icons">cancel</span> Cancelar Postulación
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</main>

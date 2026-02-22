@@ -13,12 +13,19 @@ public class UsuarioIdiomaServiceImpl implements IUsuarioIdiomaService {
     @Autowired
     private UsuarioIdiomaRepository usuarioIdiomaRepository;
 
+    @Autowired
+    private CloudinaryService cloudinaryService;
+
     @Override
     @Transactional
     public void registrarIdiomaConCertificado(Long idU, Integer idI, String nivel, MultipartFile archivo, String cod) {
         try {
-            byte[] contenidoArchivo = (archivo != null) ? archivo.getBytes() : null;
-            usuarioIdiomaRepository.registrarIdiomaPro(idU, idI, nivel, contenidoArchivo, cod);
+            // Si hay archivo, lo subimos a Cloudinary y usamos la URL
+            String urlArchivo = null;
+            if (archivo != null && !archivo.isEmpty()) {
+                urlArchivo = cloudinaryService.subirImagenEArchivo(archivo);
+            }
+            usuarioIdiomaRepository.registrarIdiomaPro(idU, idI, nivel, urlArchivo, cod);
         } catch (Exception e) {
             throw new RuntimeException("Error al procesar el idioma: " + e.getMessage());
         }

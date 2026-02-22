@@ -113,7 +113,7 @@ export class ExperienciaLaboralComponent implements OnInit {
       return;
     }
 
-    const empresa = this.empresasDisponibles.find(e => e.idEmpresa == this.nuevaExperiencia.id_empresa_catalogo);
+    const empresa = this.empresasDisponibles.find(e => e.idEmpresaCatalogo == this.nuevaExperiencia.id_empresa_catalogo);
 
     // Crear un registro de experiencia por cada cargo
     this.cargosTemporales.forEach(cargo => {

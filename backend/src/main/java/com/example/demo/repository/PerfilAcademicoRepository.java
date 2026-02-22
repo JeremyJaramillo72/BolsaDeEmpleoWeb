@@ -14,12 +14,12 @@ public interface PerfilAcademicoRepository extends JpaRepository<PerfilAcademico
 
     @Transactional
     @Modifying
-    @Query(value = "CALL usuarios.sp_registrar_perfil_academico(:idUsuario, :idCarrera, :fechaGrad, :numSenescyt, :archivo)", nativeQuery = true)
+    @Query(value = "CALL usuarios.sp_registrar_perfil_academico(:idUsuario, :idCarrera, :fechaGrad, :numSenescyt, :urlArchivo)", nativeQuery = true)
     void registrarPerfilCompletoPro(
             @Param("idUsuario") Long idUsuario,
             @Param("idCarrera") Integer idCarrera,
             @Param("fechaGrad") LocalDate fechaGraduacion,
             @Param("numSenescyt") String numeroSenescyt,
-            @Param("archivo") byte[] archivo
+            @Param("urlArchivo") String urlArchivo
     );
 }

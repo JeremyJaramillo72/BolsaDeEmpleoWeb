@@ -24,9 +24,8 @@ public class UsuarioIdioma {
     @Column(name = "nivel", nullable = false, columnDefinition = "VARCHAR(30)")
     private String nivel; // Ej: "A2 - Básico", "B2 - Intermedio", "C1 - Avanzado"
 
-    @Lob
-    @Column(name = "archivo_certificado", columnDefinition = "BYTEA")
-    private byte[] archivoCertificado;
+    @Column(name = "archivo_certificado", length = 500)
+    private String archivoCertificado; // URL de Cloudinary
 
     @Column(name = "codigo_certificado", columnDefinition = "VARCHAR(50)")
     private String codigoCertificado; // Código de verificación del examen (ej. TOEFL ID)

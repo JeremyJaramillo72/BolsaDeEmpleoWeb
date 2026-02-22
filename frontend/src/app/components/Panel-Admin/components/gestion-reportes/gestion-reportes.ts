@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgFor, NgIf } from '@angular/common';
 import { HttpClient, HttpClientModule, HttpParams } from '@angular/common/http';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+//import jsPDF from 'jspdf';
+//import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-gestion-reportes',
@@ -150,7 +150,7 @@ export class GestionReportesComponent {
       return;
     }
 
-    const doc = new jsPDF();
+   /*const doc = new jsPDF();
 
     autoTable(doc, {
       head: [this.columnas],
@@ -160,7 +160,7 @@ export class GestionReportesComponent {
       styles: { fontSize: 8 }
     });
 
-    doc.save(`reporte_${this.tipoReporte}.pdf`);
+    doc.save(`reporte_${this.tipoReporte}.pdf`);*/
   }
 
 }

@@ -9,7 +9,7 @@ public interface IPerfilAcademicoService {
      * @param idCarrera ID de la carrera seleccionada en el combo.
      * @param fecha Fecha de graduación ingresada.
      * @param senescyt Número de registro SENESCYT.
-     * @param archivo Contenido binario del título (byte[]).
+     * @param urlArchivo URL del archivo subido a Cloudinary.
      */
-    void registrarNuevoTitulo(Long idUsuario, Integer idCarrera, LocalDate fecha, String senescyt, byte[] archivo);
+    void registrarNuevoTitulo(Long idUsuario, Integer idCarrera, LocalDate fecha, String senescyt, String urlArchivo);
 }
