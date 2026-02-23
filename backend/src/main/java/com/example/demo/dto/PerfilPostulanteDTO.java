@@ -20,4 +20,7 @@ public class PerfilPostulanteDTO {
     private String experienciaLaboral;
     private String cursosRealizados;
     private String idiomas;
+    private String estadoPostulacion;
+    private String mensajeEvaluacion;
+
 }

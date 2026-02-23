@@ -19,6 +19,8 @@ import {RolesBdComponent} from './components/Panel-Admin/components/roles-bd/rol
 
 import { BusquedaEmpleoComponent } from './components/busqueda-empleo/busqueda-empleo';
 import { MisPostulacionesComponent } from './components/mis-postulaciones/mis-postulaciones';
+import {ListaPostulantesComponent} from './components/revision-postulantes/lista-postulantes/lista-postulantes';
+import {PerfilCandidatoComponent} from './components/revision-postulantes/perfil-candidato/perfil-candidato';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -36,6 +38,8 @@ export const routes: Routes = [
       { path: 'PanelAuditorias/auditorias-users', component: AdminUsuariosComponent },
       { path: 'PanelAdmi/admin-MiniAdmi', component: AdminMiniAdmiComponent },
       {path: 'revision-postulantes', component: RevisionPostulantesComponent},
+      { path: 'oferta/:idOferta/candidatos', component: ListaPostulantesComponent },
+      { path: 'postulacion/:idPostulacion/perfil', component: PerfilCandidatoComponent },
       {
         path: 'PanelAdmi/GestionCatalogos',
         component: GestionCatalogosComponent

@@ -1,13 +1,17 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ItemEvaluacionDTO;
 import com.example.demo.dto.PerfilPostulanteDTO;
+import com.example.demo.dto.PostulanteResumenDTO;
 import com.example.demo.service.IPostulacionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/api/empresa")
+@RequestMapping("/api/revision-postulante")
 @CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class RevisionPostulantesController {
@@ -23,5 +27,38 @@ public class RevisionPostulantesController {
         }
 
         return ResponseEntity.ok(perfil);
+    }
+    @GetMapping("/ofertas/{idOferta}/postulantes")
+    public ResponseEntity<List<PostulanteResumenDTO>> obtenerCandidatosDeOferta(@PathVariable Long idOferta) {
+
+        List<PostulanteResumenDTO> lista = iPostulacionService.listarCandidatosPorOferta(idOferta);
+
+        return ResponseEntity.ok(lista);
+    }
+    @PostMapping("/postulaciones/{idPostulacion}/evaluar-item")
+    public ResponseEntity<Void> evaluarItemDetalle(
+            @PathVariable Long idPostulacion,
+            @RequestBody ItemEvaluacionDTO dto) {
+        iPostulacionService.evaluarItemIndividual(idPostulacion, dto);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/postulaciones/{idPostulacion}/evaluar")
+    public ResponseEntity<Void> evaluarPostulacionGeneral(
+            @PathVariable Long idPostulacion,
+            @RequestBody ItemEvaluacionDTO dto) {
+        try {
+            iPostulacionService.evaluarPostulacionGeneral(
+                    idPostulacion,
+                    dto.getEstado(),
+                    dto.getObservacion()
+            );
+            return ResponseEntity.ok().build();
+
+        } catch (Exception e) {
+            System.err.println("Error al evaluar la postulación general: " + e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }
