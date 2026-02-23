@@ -119,7 +119,7 @@ export class BusquedaEmpleoComponent implements OnInit {
 
   get ofertasFiltradas(): OfertaDetalladaDTO[] {
     let resultado = this.ofertas.filter(o =>
-      o.estadoOferta?.toLowerCase() === 'activa'
+      o.estadoOferta?.toLowerCase() === 'aprobado'
     );
 
     // Filtro de favoritas

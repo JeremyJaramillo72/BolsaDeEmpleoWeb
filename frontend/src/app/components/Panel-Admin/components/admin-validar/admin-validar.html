@@ -9,13 +9,13 @@
       </div>
 
       <div class="tabs-estados">
-        <button class="btn-tab" [class.active]="estadoActual === 'PENDIENTE'" (click)="cambiarTab('PENDIENTE')">
+        <button class="btn-tab" [class.active]="estadoActual === 'pendiente'" (click)="cambiarTab('pendiente')">
           <span class="tab-dot pendiente"></span> Pendientes
         </button>
-        <button class="btn-tab" [class.active]="estadoActual === 'APROBADA'" (click)="cambiarTab('APROBADA')">
+        <button class="btn-tab" [class.active]="estadoActual === 'aprobado'" (click)="cambiarTab('aprobado')">
           <span class="tab-dot aprobada"></span> Aprobadas
         </button>
-        <button class="btn-tab" [class.active]="estadoActual === 'RECHAZADA'" (click)="cambiarTab('RECHAZADA')">
+        <button class="btn-tab" [class.active]="estadoActual === 'rechazada'" (click)="cambiarTab('rechazada')">
           <span class="tab-dot rechazada"></span> Rechazadas
         </button>
       </div>
@@ -88,7 +88,7 @@
           <span class="btn-ver-label">Ver detalles</span>
         </button>
 
-        <div class="dropdown" *ngIf="estadoActual === 'PENDIENTE'" [class.open]="menuAbiertoId === item.idOferta">
+        <div class="dropdown" *ngIf="estadoActual === 'pendiente'" [class.open]="menuAbiertoId === item.idOferta">
           <button class="btn-menu" (click)="toggleMenu(item.idOferta, $event)" title="Más acciones">
             <span class="material-icons">more_vert</span>
           </button>
@@ -213,7 +213,7 @@
       <div class="desc-box">{{ ofertaSeleccionada?.descripcion }}</div>
     </div>
 
-    <div class="sidebar-actions" *ngIf="estadoActual === 'PENDIENTE'">
+    <div class="sidebar-actions" *ngIf="estadoActual === 'pendiente'">
       <button (click)="aprobar(ofertaSeleccionada)" class="btn-action approve">
         <span class="material-icons">check_circle</span>
         Aprobar oferta

@@ -26,7 +26,7 @@ export class AdminValidarComponent implements OnInit {
   filtroTexto: string = '';
   soloHoy: boolean = false;
   fechaFiltro: string = '';   // ← fecha personalizada YYYY-MM-DD
-  estadoActual: string = 'PENDIENTE';
+  estadoActual: string = 'pendiente';
 
   constructor(
     private adminService: AdminService,
@@ -35,7 +35,7 @@ export class AdminValidarComponent implements OnInit {
   { }
 
   ngOnInit(): void {
-    this.cargarOfertas('PENDIENTE');
+    this.cargarOfertas('pendiente');
   }
 
   // Cierra el menú si el usuario hace clic fuera
@@ -86,13 +86,13 @@ export class AdminValidarComponent implements OnInit {
 
   aprobar(oferta: any) {
     if (!confirm(`¿Aprobar la oferta "${oferta.titulo}"?`)) return;
-    this.procesar(oferta, 'APROBADA');
+    this.procesar(oferta, 'aprobado');
     this.crd.detectChanges();
   }
 
   rechazar(oferta: any) {
     if (!confirm(`¿Rechazar la oferta "${oferta.titulo}"?`)) return;
-    this.procesar(oferta, 'RECHAZADA');
+    this.procesar(oferta, 'rechazada');
     this.crd.detectChanges();
   }
 
