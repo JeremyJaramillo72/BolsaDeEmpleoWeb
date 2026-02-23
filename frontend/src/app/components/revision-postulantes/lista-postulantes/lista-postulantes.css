@@ -1,0 +1,38 @@
+.main-content { padding: 0; font-family: 'Inter', system-ui, sans-serif; color: #0F172A;}
+.fade-in { animation: fadeIn 0.4s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.top-navigation { margin-bottom: 1.5rem; }
+.btn-back { background: transparent; border: none; color: #64748B; font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 0; transition: color 0.2s;}
+.btn-back:hover { color: #2563EB; }
+
+.header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+.header-section h1 { margin: 0 0 5px 0; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px;}
+.header-section p { margin: 0; color: #64748B; font-size: 0.95rem;}
+.badge-count { background: #EFF6FF; color: #2563EB; padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.95rem; }
+
+.table-card { background: white; border-radius: 16px; box-shadow: 0 2px 4px -1px rgba(0,0,0,0.03); border: 1px solid #E2E8F0; overflow: hidden; }
+.table-responsive { overflow-x: auto; }
+.modern-table { width: 100%; border-collapse: collapse; text-align: left; }
+.modern-table th { background: #F8FAFC; padding: 1.2rem 1.5rem; font-weight: 700; color: #475569; font-size: 0.85rem; text-transform: uppercase; border-bottom: 1px solid #E2E8F0; }
+.modern-table td { padding: 1.2rem 1.5rem; border-bottom: 1px solid #E2E8F0; vertical-align: middle; color: #334155; font-size: 0.95rem;}
+.modern-table tr:last-child td { border-bottom: none; }
+.modern-table tr:hover td { background: #F8FAFC; }
+.text-center { text-align: center; }
+
+.user-info { display: flex; align-items: center; gap: 12px; }
+.avatar { width: 40px; height: 40px; background: #2563EB; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+.user-name { font-weight: 700; color: #0F172A; }
+
+.status-badge { padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
+.status-pendiente { background: #FFF7ED; color: #C2410C; }
+.status-revisado { background: #F0FDF4; color: #15803D; }
+
+.btn-action { background: #EFF6FF; color: #2563EB; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; transition: all 0.2s; }
+.btn-action:hover { background: #2563EB; color: white; }
+.text-sm { font-size: 1.1rem; } .ml-1 { margin-left: 4px; }
+
+.empty-state { text-align: center; padding: 4rem !important; color: #94A3B8; }
+.empty-state .material-icons { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+.animate-spin { animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }

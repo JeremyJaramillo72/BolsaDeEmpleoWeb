@@ -1,0 +1,71 @@
+<main class="main-content fade-in">
+
+  <div class="top-navigation">
+    <button class="btn-back" (click)="volver()">
+      <span class="material-icons">arrow_back</span> Volver a ofertas
+    </button>
+  </div>
+
+  <div class="header-section">
+    <div>
+      <h1>Candidatos Postulados</h1>
+      <p>Revisa quiénes han aplicado a esta vacante.</p>
+    </div>
+    <div class="badge-count">
+      {{ postulantes.length }} Candidatos
+    </div>
+  </div>
+
+  <div class="table-card">
+    <div class="table-responsive">
+      <table class="modern-table">
+        <thead>
+        <tr>
+          <th>Candidato</th>
+          <th>Profesión</th>
+          <th>Fecha de Aplicación</th>
+          <th>Estado</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngIf="cargando">
+          <td colspan="5" class="empty-state">
+            <span class="material-icons animate-spin">sync</span>
+            <p>Cargando candidatos...</p>
+          </td>
+        </tr>
+
+        <tr *ngIf="!cargando && postulantes.length === 0">
+          <td colspan="5" class="empty-state">
+            <span class="material-icons">inbox</span>
+            <p>Aún no hay candidatos para esta oferta.</p>
+          </td>
+        </tr>
+
+        <tr *ngFor="let p of postulantes">
+          <td>
+            <div class="user-info">
+              <div class="avatar">{{ p.nombreCompleto.charAt(0) }}</div>
+              <span class="user-name">{{ p.nombreCompleto }}</span>
+            </div>
+          </td>
+          <td>{{ p.profesion }}</td>
+          <td>{{ p.fechaPostulacion | date:'dd/MM/yyyy' }}</td>
+          <td>
+              <span class="status-badge"
+                    [ngClass]="{'status-pendiente': p.estado === 'Pendiente', 'status-revisado': p.estado !== 'Pendiente'}">
+                {{ p.estado }}
+              </span>
+          </td>
+          <td class="text-center">
+            <button class="btn-action" (click)="verPerfilCompleto(p.idPostulacion)">
+              Ver Perfil <span class="material-icons text-sm ml-1">arrow_forward</span>
+            </button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>

@@ -1,0 +1,196 @@
+<main class="main-content fade-in">
+  <div class="top-navigation">
+    <button class="btn-back" (click)="volver()">
+      <span class="material-icons">arrow_back</span> Volver a la lista de postulantes
+    </button>
+  </div>
+
+  <div *ngIf="cargando" class="loading-state">
+    <span class="material-icons animate-spin">sync</span>
+    <p>Cargando perfil completo...</p>
+  </div>
+
+  <div *ngIf="!cargando && perfil" class="profile-layout">
+    <div class="info-column">
+
+      <div class="card profile-header">
+        <div class="avatar-container">
+          <img *ngIf="perfil?.urlFotoPerfil" [src]="perfil.urlFotoPerfil" alt="Foto" class="avatar-img">
+          <div *ngIf="!perfil?.urlFotoPerfil" class="avatar-placeholder">
+            {{ perfil?.nombre?.[0] | uppercase }}{{ perfil?.apellido?.[0] | uppercase }}
+          </div>
+        </div>
+        <div class="header-details">
+          <h2>{{ perfil?.nombre }} {{ perfil?.apellido }}</h2>
+          <div class="contact-info">
+            <span class="badge-contact"><span class="material-icons">email</span> {{ perfil?.correo }}</span>
+            <span class="badge-contact"><span class="material-icons">phone</span> {{ perfil?.telefono }}</span>
+            <span class="badge-contact"><span class="material-icons">person</span> {{ perfil?.genero }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card section-card">
+        <h3 class="section-title"><span class="material-icons">work_outline</span> Experiencia Laboral</h3>
+        <div *ngIf="experienciaList.length === 0" class="empty-info">No ha registrado experiencia.</div>
+
+        <div class="timeline">
+          <div class="timeline-item" *ngFor="let exp of experienciaList">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="item-header">
+                <div>
+                  <h4>{{ exp.cargo }}</h4>
+                  <p class="company-text">{{ exp.empresa }} • {{ exp.ubicacion }}</p>
+                  <p class="date-text">{{ exp.fecha_inicio | date:'MMM yyyy' }} - {{ exp.fecha_fin ? (exp.fecha_fin | date:'MMM yyyy') : 'Actualidad' }}</p>
+                </div>
+                <div class="item-actions">
+                  <a *ngIf="exp.archivo_comprobante" [href]="exp.archivo_comprobante" target="_blank" class="btn-ver-pdf">
+                    <span class="material-icons">description</span> Ver PDF
+                  </a>
+                  <div class="eval-group">
+                    <button class="btn-eval approve" [ngClass]="{'active-green': exp.estado_v === 'Aprobado'}" (click)="evaluarItem('experiencia', exp.id_exp_laboral, 'Aprobado')" title="Aprobar"><span class="material-icons">check</span></button>
+                    <button class="btn-eval reject" [ngClass]="{'active-red': exp.estado_v === 'Rechazado'}" (click)="evaluarItem('experiencia', exp.id_exp_laboral, 'Rechazado')" title="Rechazar"><span class="material-icons">close</span></button>
+                  </div>
+                </div>
+              </div>
+              <p class="description-text">{{ exp.descripcion }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card section-card">
+        <h3 class="section-title"><span class="material-icons">school</span> Formación Académica</h3>
+        <div *ngIf="formacionList.length === 0" class="empty-info">No ha registrado formación académica.</div>
+
+        <div class="timeline">
+          <div class="timeline-item" *ngFor="let form of formacionList">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="item-header">
+                <div>
+                  <h4>{{ form.carrera }}</h4>
+                  <p class="company-text">{{ form.facultad }}</p>
+                  <p class="date-text" *ngIf="form.registro_senescyt">Senescyt: {{ form.registro_senescyt }}</p>
+                  <p class="date-text" *ngIf="form.fecha_graduacion">Graduación: {{ form.fecha_graduacion | date:'yyyy' }}</p>
+                </div>
+                <div class="item-actions">
+                  <div class="eval-group">
+                    <button class="btn-eval approve" [ngClass]="{'active-green': form.estado_v === 'Aprobado'}" (click)="evaluarItem('documentacion', form.id_academico, 'Aprobado')" title="Aprobar"><span class="material-icons">check</span></button>
+                    <button class="btn-eval reject" [ngClass]="{'active-red': form.estado_v === 'Rechazado'}" (click)="evaluarItem('documentacion', form.id_academico, 'Rechazado')" title="Rechazar"><span class="material-icons">close</span></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2-col">
+        <div class="card section-card">
+          <h3 class="section-title"><span class="material-icons">military_tech</span> Cursos</h3>
+          <div *ngIf="cursosList.length === 0" class="empty-info">Sin cursos registrados.</div>
+          <ul class="modern-list">
+            <li *ngFor="let curso of cursosList" class="modern-list-item">
+              <div class="item-info">
+                <strong>{{ curso.curso }}</strong>
+                <span class="text-muted">{{ curso.institucion }} • {{ curso.duracion_horas }}h</span>
+              </div>
+              <div class="item-actions">
+                <a *ngIf="curso.archivo_certificado" [href]="curso.archivo_certificado" target="_blank" class="btn-ver-pdf">Ver PDF</a>
+                <div class="eval-group">
+                  <button class="btn-eval approve" [ngClass]="{'active-green': curso.estado_v === 'Aprobado'}" (click)="evaluarItem('curso', curso.id_curso, 'Aprobado')"><span class="material-icons">check</span></button>
+                  <button class="btn-eval reject" [ngClass]="{'active-red': curso.estado_v === 'Rechazado'}" (click)="evaluarItem('curso', curso.id_curso, 'Rechazado')"><span class="material-icons">close</span></button>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="card section-card">
+          <h3 class="section-title"><span class="material-icons">language</span> Idiomas</h3>
+          <div *ngIf="idiomasList.length === 0" class="empty-info">Sin idiomas registrados.</div>
+          <ul class="modern-list">
+            <li *ngFor="let idioma of idiomasList" class="modern-list-item">
+              <div class="item-info">
+                <strong>{{ idioma.idioma | titlecase }}</strong>
+                <span class="badge-level">{{ idioma.nivel }}</span>
+              </div>
+              <div class="item-actions">
+                <a *ngIf="idioma.archivo_certificado" [href]="idioma.archivo_certificado" target="_blank" class="btn-ver-pdf">Ver PDF</a>
+                <div class="eval-group">
+                  <button class="btn-eval approve" [ngClass]="{'active-green': idioma.estado_v === 'Aprobado'}" (click)="evaluarItem('idioma', idioma.id_usuario_idioma, 'Aprobado')"><span class="material-icons">check</span></button>
+                  <button class="btn-eval reject" [ngClass]="{'active-red': idioma.estado_v === 'Rechazado'}" (click)="evaluarItem('idioma', idioma.id_usuario_idioma, 'Rechazado')"><span class="material-icons">close</span></button>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card evaluation-card mt-3">
+        <h3 class="section-title"><span class="material-icons">gavel</span> Dictamen Final</h3>
+        <p class="text-muted" style="margin-top: 0; margin-bottom: 10px;">Escribe una observación general y toma una decisión final sobre el candidato.</p>
+        <textarea [(ngModel)]="mensajeEvaluacion" class="textarea-eval" rows="3" placeholder="Ej: Perfil validado, avanzar a entrevista..."></textarea>
+        <div class="evaluation-actions">
+          <button class="btn-reject-final" (click)="enviarEvaluacion('Rechazado')" [disabled]="enviando">Rechazar Postulación</button>
+          <button class="btn-approve-final" (click)="enviarEvaluacion('Aprobado')" [disabled]="enviando">Aprobar Candidato</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pdf-column">
+      <div class="card pdf-card">
+        <div class="pdf-header">
+          <h3 class="section-title"><span class="material-icons">picture_as_pdf</span> Currículum Principal</h3>
+          <a *ngIf="perfil.archivoCv" [href]="perfil.archivoCv" target="_blank" class="btn-download">Descargar</a>
+        </div>
+        <div class="iframe-container" *ngIf="cvUrlSegura">
+          <iframe [src]="cvUrlSegura" width="100%" height="100%"></iframe>
+        </div>
+        <div *ngIf="!cvUrlSegura" class="empty-state-pdf">
+          <span class="material-icons">description</span>
+          <p>El candidato no subió CV en PDF.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" *ngIf="mostrarModalItem">
+    <div class="modal-content fade-in-up">
+      <div class="modal-header">
+        <h3>{{ itemActual?.estado === 'Aprobado' ? 'Aprobar' : 'Rechazar' }} {{ itemActual?.tipo | titlecase }}</h3>
+        <button class="btn-close-modal" (click)="cerrarModalItem()"><span class="material-icons">close</span></button>
+      </div>
+
+      <div class="modal-body">
+        <p *ngIf="itemActual?.estado === 'Aprobado'" class="text-muted" style="margin: 0; font-size: 0.9rem;">
+          La observación es opcional. ¿Deseas agregar algún comentario?
+        </p>
+        <p *ngIf="itemActual?.estado === 'Rechazado'" class="text-required">
+          <span class="material-icons" style="font-size: 1rem; vertical-align: middle;">error_outline</span>
+          Debes ingresar el motivo del rechazo.
+        </p>
+
+        <textarea
+          [(ngModel)]="observacionItem"
+          class="textarea-eval"
+          [ngClass]="{'input-error': errorObservacion}"
+          rows="3"
+          placeholder="Escribe tu observación aquí...">
+        </textarea>
+
+        <span class="error-text" *ngIf="errorObservacion">Este campo es obligatorio para rechazar.</span>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="cerrarModalItem()">Cancelar</button>
+        <button class="btn-confirm"
+                [ngClass]="itemActual?.estado === 'Aprobado' ? 'btn-approve-final' : 'btn-reject-final'"
+                (click)="confirmarEvaluacionItem()">
+          Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
