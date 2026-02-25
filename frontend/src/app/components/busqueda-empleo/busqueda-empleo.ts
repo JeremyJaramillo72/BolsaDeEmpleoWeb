@@ -177,6 +177,8 @@ export class BusquedaEmpleoComponent implements OnInit {
           const json = typeof res === 'string' ? JSON.parse(res) : res;
           if (json.success) {
             oferta.esFavorito = !oferta.esFavorito;
+            this.cdr.detectChanges();
+
           } else {
             console.error('Error en toggle favorita:', json.mensaje);
           }
@@ -187,7 +189,7 @@ export class BusquedaEmpleoComponent implements OnInit {
 
       error: (e: any) => console.error('Error toggle favorita:', e)
     });
-    this.cdr.detectChanges();
+
   }
 
   yaPostulo(oferta: OfertaDetalladaDTO): boolean {
