@@ -1,121 +1,89 @@
 <div class="page-container">
+  <header class="page-header">
+    <h1>Gestión de Reportes Dinámicos</h1>
+    <p>Visualice y exporte datos en tiempo real.</p>
+  </header>
 
-  <h1>Gestión de Reportes</h1>
-
-  <!-- TABS -->
-  <div class="tabs-container">
-    <button type="button"
-            class="tab-button"
-            [class.active]="tipoReporte==='ofertas'"
-            (click)="cambiarTipoReporte('ofertas')">
-      Ofertas
+  <nav class="tabs-container">
+    <button type="button" class="tab-btn" [class.active]="tipoReporte === 'ofertas'" (click)="cambiarTipoReporte('ofertas')">
+      OFERTAS LABORALES
     </button>
-
-    <button type="button"
-            class="tab-button"
-            [class.active]="tipoReporte==='postulaciones'"
-            (click)="cambiarTipoReporte('postulaciones')">
-      Postulaciones
+    <button type="button" class="tab-btn" [class.active]="tipoReporte === 'postulaciones'" (click)="cambiarTipoReporte('postulaciones')">
+      POSTULACIONES
     </button>
+  </nav>
 
-    <button type="button"
-            class="tab-button"
-            [class.active]="tipoReporte==='usuarios'"
-            (click)="cambiarTipoReporte('usuarios')">
-      Usuarios
-    </button>
-  </div>
+  <section class="control-panel">
+    <div class="filters-grid">
+      <ng-container *ngIf="tipoReporte === 'ofertas'">
+        <div class="input-field">
+          <label>ID Categoría</label>
+          <input type="number" [(ngModel)]="filtrosOfertas.idCategoria">
+        </div>
+        <div class="input-field">
+          <label>ID Ciudad</label>
+          <input type="number" [(ngModel)]="filtrosOfertas.idCiudad">
+        </div>
+        <div class="input-field">
+          <label>Búsqueda</label>
+          <input type="text" [(ngModel)]="filtrosOfertas.busqueda">
+        </div>
+      </ng-container>
 
-  <!-- FILTROS -->
-  <div class="section-card">
-
-    <!-- OFERTAS -->
-    <div *ngIf="tipoReporte==='ofertas'" class="form-grid-4">
-
-      <input class="form-control"
-             placeholder="Estado"
-             [(ngModel)]="filtrosOfertas.estado">
-
-      <input class="form-control"
-             placeholder="Categoría"
-             [(ngModel)]="filtrosOfertas.categoria">
-
-      <input class="form-control"
-             placeholder="Ciudad"
-             [(ngModel)]="filtrosOfertas.ciudad">
-
+      <ng-container *ngIf="tipoReporte === 'postulaciones'">
+        <div class="input-field">
+          <label>ID Oferta</label>
+          <input type="number" [(ngModel)]="filtrosPostulaciones.idOferta">
+        </div>
+        <div class="input-field">
+          <label>Estado</label>
+          <select [(ngModel)]="filtrosPostulaciones.estado">
+            <option value="">Todos</option>
+            <option value="Pendiente">Pendiente</option>
+            <option value="Aprobado">Aprobado</option>
+          </select>
+        </div>
+      </ng-container>
     </div>
 
-    <!-- POSTULACIONES -->
-    <div *ngIf="tipoReporte==='postulaciones'" class="form-grid-4">
+    <hr class="hr-black">
 
-      <input class="form-control"
-             placeholder="Estado Validación"
-             [(ngModel)]="filtrosPostulaciones.estadoValidacion">
-
-    </div>
-
-    <!-- USUARIOS -->
-    <div *ngIf="tipoReporte==='usuarios'" class="form-grid-4">
-
-      <input class="form-control"
-             placeholder="Correo"
-             [(ngModel)]="filtrosUsuarios.correo">
-
-    </div>
-
-    <!-- BOTONES -->
-    <div class="actions-row">
-      <button type="button"
-              class="btn-secondary"
-              (click)="limpiar()">
-        Limpiar
+    <div class="button-bar">
+      <button class="btn btn-white" (click)="limpiar()">Limpiar</button>
+      <button class="btn btn-cyan" [disabled]="resultados.length === 0" (click)="mostrandoGrafico = !mostrandoGrafico">
+        {{ mostrandoGrafico ? 'Ver Tabla' : 'Estadísticas' }}
       </button>
-
-      <button type="button"
-              class="btn-primary"
-              [disabled]="cargando"
-              (click)="vistaPrevia()">
-        {{ cargando ? 'Cargando...' : 'Vista previa' }}
-      </button>
-
-      <button type="button"
-              class="btn-success"
-              [disabled]="resultados.length===0"
-              (click)="exportarPDF()">
-        Exportar PDF
+      <button class="btn btn-indigo" [disabled]="cargando" (click)="vistaPrevia()">
+        {{ cargando ? 'Consultando...' : 'Vista Previa' }}
       </button>
     </div>
+  </section>
 
-  </div>
+  <section class="table-section" *ngIf="mostrandoResultados && !mostrandoGrafico">
+    <div class="table-wrapper">
+      <table>
+        <thead>
+        <tr><th *ngFor="let col of columnas">{{ col | titlecase }}</th></tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let fila of resultados">
+          <td *ngFor="let col of columnas">{{ fila[col] }}</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-  <!-- MENSAJE ERROR -->
-  <div *ngIf="mensajeError" class="error-message">
-    {{ mensajeError }}
-  </div>
-
-  <!-- RESULTADOS -->
-  <div *ngIf="mostrandoResultados">
-
-    <p>{{ resultados.length }} registros encontrados</p>
-
-    <table class="data-table" *ngIf="resultados.length > 0">
-      <thead>
-      <tr>
-        <th *ngFor="let col of columnas">
-          {{ col }}
-        </th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr *ngFor="let fila of resultados">
-        <td *ngFor="let col of columnas">
-          {{ fila[col] }}
-        </td>
-      </tr>
-      </tbody>
-    </table>
-
-  </div>
-
+  <section class="stats-section" *ngIf="mostrandoGrafico">
+    <div class="chart-area">
+      <div class="chart-row" *ngFor="let stat of estadisticas">
+        <span class="label">{{ stat.etiqueta }}</span>
+        <div class="track">
+          <div class="fill" [style.width.%]="stat.porcentaje">
+            <span class="val">{{ stat.cantidad }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>

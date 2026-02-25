@@ -1,6 +1,5 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.ReporteUsuarioDTO;
 import com.example.demo.repository.ReporteUsuarioRepository;
 import org.springframework.stereotype.Service;
 
@@ -15,8 +14,5 @@ public class ReporteUsuarioService {
         this.repository = repository;
     }
 
-    public List<ReporteUsuarioDTO> generarReporte(String correo) {
-        return repository.obtenerReporteUsuarios(correo);
     }
-}
 

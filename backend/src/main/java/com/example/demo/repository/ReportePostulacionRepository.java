@@ -1,35 +1,25 @@
 package com.example.demo.repository;
 
-import com.example.demo.dto.ReportePostulacionDTO;
 import com.example.demo.model.Postulacion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
-@org.springframework.stereotype.Repository
-public interface ReportePostulacionRepository
-        extends JpaRepository<Postulacion, Long> {
-
-    @Query(value = """
-        SELECT 
-            o.titulo AS titulo,
-            u.nombre AS nombre,
-            u.apellido AS apellido,
-            p.fecha_postulacion AS fechaPostulacion,
-            p.estado_validacion AS estadoValidacion
-        FROM postulacion p
-        INNER JOIN oferta_laboral o 
-            ON o.id_oferta = p.id_oferta
-        INNER JOIN usuario u 
-            ON u.id_usuario = p.id_usuario
-        WHERE (:estadoValidacion IS NULL 
-               OR :estadoValidacion = '' 
-               OR p.estado_validacion = :estadoValidacion)
-        ORDER BY p.fecha_postulacion DESC
-        """, nativeQuery = true)
-    List<ReportePostulacionDTO> obtenerReportePostulaciones(
-            @Param("estadoValidacion") String estadoValidacion
+@Repository
+public interface ReportePostulacionRepository extends JpaRepository<Postulacion, Long> {
+    @Query(value = "SELECT * FROM postulaciones.fn_reporte_postulaciones_dinamico02(:idOferta, :idCarrera, :estado, :desde, :hasta, :limit, :offset)",
+            nativeQuery = true)
+    List<Object[]> ejecutarReporte(
+            @Param("idOferta") Long idOferta,
+            @Param("idCarrera") Integer idCarrera,
+            @Param("estado") String estado,
+            @Param("desde") LocalDate desde,
+            @Param("hasta") LocalDate hasta,
+            @Param("limit") Integer limit,
+            @Param("offset") Integer offset
     );
 }
