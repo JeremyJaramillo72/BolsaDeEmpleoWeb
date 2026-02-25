@@ -16,7 +16,6 @@ public class RolesBdServiceImpl implements IRolesBdService {
 
     @Override
     public List<Map<String, Object>> listarRolesPersonalizados() {
-        // Obtenemos los roles que pueden loguearse y que no son los predefinidos
         String sql = "SELECT " +
                 "r.rolname AS \"nombreRol\", " +
                 "r.rolname AS \"idRol\", " +
