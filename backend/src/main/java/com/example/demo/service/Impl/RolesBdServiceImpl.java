@@ -17,12 +17,20 @@ public class RolesBdServiceImpl implements IRolesBdService {
     @Override
     public List<Map<String, Object>> listarRolesPersonalizados() {
         // Obtenemos los roles que pueden loguearse y que no son los predefinidos
-        String sql = "SELECT rolname as \"nombreRol\", " +
-                "rolname as \"idRol\", " +
-                "CURRENT_DATE as \"fechaCreacion\" " +
-                "FROM pg_roles " +
-                "WHERE rolcanlogin = true " +
-                "AND rolname NOT IN ('postgres', 'grupo_administrador', 'grupo_empresa', 'grupo_postulante', 'grupo_gerente', 'grupo_supervisor')";
+        String sql = "SELECT " +
+                "r.rolname AS \"nombreRol\", " +
+                "r.rolname AS \"idRol\", " +
+                "CURRENT_DATE AS \"fechaCreacion\", " +
+                "COUNT(DISTINCT am.member) AS \"usuariosAsignados\", " +
+                "(SELECT COUNT(*) FROM information_schema.role_table_grants rtg " +
+                " WHERE rtg.grantee = r.rolname) AS \"totalPermisos\" " +
+                "FROM pg_catalog.pg_roles r " +
+                "LEFT JOIN pg_catalog.pg_auth_members am ON am.roleid = r.oid " +
+                "WHERE r.rolcanlogin = false " +
+                "AND r.rolname NOT LIKE 'pg_%' " +
+                "AND r.rolname <> 'postgres' " +
+                "GROUP BY r.rolname " +
+                "ORDER BY r.rolname";
 
         return jdbcTemplate.queryForList(sql);
     }
@@ -74,22 +82,17 @@ public class RolesBdServiceImpl implements IRolesBdService {
     }
 
     @Override
-    @Transactional
     public void crearYAsignarPermisos(Map<String, Object> datos) {
-        // Extraemos los datos del JSON enviado por Angular
-        String roleName = (String) datos.get("nombreRol"); // Coincide con nuevoRol.nombre
-        String password = "clave_temporal_123";
+        String roleName = (String) datos.get("nombreRol");
 
-        // El rol base viene como ID (String nombre del rol)
         Object rolBaseObj = datos.get("rolBaseId");
         String baseRole = rolBaseObj != null ? rolBaseObj.toString() : null;
 
-        // Extraemos la estructura de permisos
         Map<String, Object> permisosRoot = (Map<String, Object>) datos.get("permisos");
         List<Map<String, Object>> esquemas = (List<Map<String, Object>>) permisosRoot.get("esquemas");
 
-        // 1. Crear el Rol en Postgres
-        jdbcTemplate.execute("CREATE ROLE \"" + roleName + "\" WITH LOGIN PASSWORD '" + password + "'");
+        // 1. Crear Rol de GRUPO (sin login, sin password)
+        jdbcTemplate.execute("CREATE ROLE \"" + roleName + "\"");
 
         // 2. Heredar del rol base si se seleccionó uno
         if (baseRole != null && !baseRole.isEmpty() && !baseRole.equals("null")) {
@@ -101,16 +104,13 @@ public class RolesBdServiceImpl implements IRolesBdService {
             for (Map<String, Object> esquema : esquemas) {
                 String schemaName = (String) esquema.get("nombre");
 
-                // GRANT USAGE para poder entrar al esquema
                 jdbcTemplate.execute("GRANT USAGE ON SCHEMA " + schemaName + " TO \"" + roleName + "\"");
 
                 boolean esGlobal = (boolean) esquema.get("global");
 
                 if (esGlobal) {
-                    // Si es global, damos permisos de lectura/escritura a todo el esquema
                     jdbcTemplate.execute("GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA " + schemaName + " TO \"" + roleName + "\"");
                 } else {
-                    // Si no, iteramos tablas específicas
                     List<Map<String, Object>> tablas = (List<Map<String, Object>>) esquema.get("tablas");
                     if (tablas != null) {
                         for (Map<String, Object> tabla : tablas) {
@@ -126,11 +126,33 @@ public class RolesBdServiceImpl implements IRolesBdService {
                 }
             }
         }
+
+        // 4. ✅ Asignar usuarios al rol de grupo
+        List<Integer> usuariosIds = (List<Integer>) datos.get("usuariosIds");
+        if (usuariosIds != null && !usuariosIds.isEmpty()) {
+            for (Integer usuarioId : usuariosIds) {
+                try {
+                    String loginName = jdbcTemplate.queryForObject(
+                            "SELECT login_name FROM seguridad.seguridad WHERE id_usuario = ?",
+                            String.class,
+                            usuarioId
+                    );
+
+                    if (loginName != null) {
+                        jdbcTemplate.execute("GRANT \"" + roleName + "\" TO \"" + loginName + "\"");
+                        System.out.println("✅ Rol asignado a: " + loginName);
+                    }
+                } catch (Exception e) {
+                    System.out.println("⚠️ No se pudo asignar rol al usuario ID " + usuarioId + ": " + e.getMessage());
+                }
+            }
+        }
     }
 
     @Override
     public void eliminarRol(String roleName) {
         // REASSIGN es vital para evitar errores de dependencias al borrar roles
+        System.out.println("🗑️ Intentando eliminar rol: " + roleName);
         jdbcTemplate.execute("REASSIGN OWNED BY \"" + roleName + "\" TO postgres");
         jdbcTemplate.execute("DROP OWNED BY \"" + roleName + "\"");
         jdbcTemplate.execute("DROP ROLE \"" + roleName + "\"");

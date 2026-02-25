@@ -50,6 +50,10 @@
               <span>{{ rol.totalPermisos }} permisos asignados</span>
             </div>
             <div class="info-item">
+              <span class="material-icons">people</span>
+              <span>{{ rol.usuariosAsignados }} usuario(s) asignado(s)</span>
+            </div>
+            <div class="info-item">
               <span class="material-icons">calendar_today</span>
               <span>{{ rol.fechaCreacion | date:'dd/MM/yyyy' }}</span>
             </div>
@@ -81,7 +85,7 @@
         </h3>
       </div>
 
-      <!-- Formulario Básico -->
+      <!-- ========== FORMULARIO BÁSICO ========== -->
       <div class="form-section">
         <h4 class="subsection-title">Información del Rol</h4>
 
@@ -95,31 +99,87 @@
               placeholder="Ej: rol_soporte_tecnico">
             <small class="form-hint">Use solo minúsculas, números y guiones bajos</small>
           </div>
-
+          <!--
           <div class="form-group">
-            <label>Heredar de Rol Base</label>
+            <label>Heredar Permisos de Rol Base</label>
             <select [(ngModel)]="nuevoRol.rolBaseId" class="form-control">
               <option [ngValue]="null">Sin herencia</option>
               <option *ngFor="let rolBase of rolesBase" [value]="rolBase.id">
                 {{ rolBase.nombre }}
               </option>
             </select>
+            <small class="form-hint">El rol heredará los permisos del rol base seleccionado</small>
+          </div>
+          -->
+        </div>
+      </div>
+
+      <hr class="section-divider">
+
+      <!-- ========== SECCIÓN DE USUARIOS ========== -->
+      <div class="form-section">
+        <h4 class="subsection-title">
+          <span class="material-icons">people</span>
+          Asignar Usuarios a este Rol
+          <span class="users-count" *ngIf="totalUsuariosSeleccionados > 0">
+            ({{ totalUsuariosSeleccionados }} seleccionado{{ totalUsuariosSeleccionados > 1 ? 's' : '' }})
+          </span>
+        </h4>
+
+        <!-- Búsqueda y acciones -->
+        <div class="usuarios-header">
+          <div class="search-box-usuarios">
+            <span class="material-icons">search</span>
+            <input
+              type="text"
+              [(ngModel)]="busquedaUsuario"
+              (ngModelChange)="filtrarUsuarios()"
+              placeholder="Buscar usuario por nombre o email..."
+              class="search-input">
           </div>
 
-          <div class="form-group full-width">
-            <label>Descripción</label>
-            <textarea
-              [(ngModel)]="nuevoRol.descripcion"
-              class="form-control"
-              rows="2"
-              placeholder="Descripción opcional del propósito del rol..."></textarea>
+          <div class="usuarios-actions">
+            <button class="btn-select-all" (click)="toggleTodosUsuarios(true)">
+              <span class="material-icons">done_all</span>
+              Seleccionar Todos
+            </button>
+            <button class="btn-deselect-all" (click)="toggleTodosUsuarios(false)">
+              <span class="material-icons">clear</span>
+              Deseleccionar Todos
+            </button>
+          </div>
+        </div>
+
+        <!-- Lista de usuarios con checkboxes -->
+        <div class="usuarios-container">
+          <div class="usuario-item" *ngFor="let usuario of usuariosFiltrados">
+            <label class="usuario-checkbox">
+              <input
+                type="checkbox"
+                [(ngModel)]="usuario.seleccionado">
+              <div class="usuario-info">
+                <div class="usuario-avatar">
+                  {{ usuario.nombreCompleto.charAt(0).toUpperCase() }}
+                </div>
+                <div class="usuario-details">
+                  <span class="usuario-nombre">{{ usuario.nombreCompleto }}</span>
+                  <span class="usuario-email">{{ usuario.email }}</span>
+                </div>
+                <span class="usuario-rol-actual">{{ usuario.rolActual }}</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="empty-usuarios" *ngIf="usuariosFiltrados.length === 0">
+            <span class="material-icons">person_search</span>
+            <p>No se encontraron usuarios con ese criterio de búsqueda</p>
           </div>
         </div>
       </div>
 
       <hr class="section-divider">
 
-      <!-- Permisos de Esquemas -->
+      <!-- ========== PERMISOS DE ESQUEMAS ========== -->
       <div class="form-section">
         <h4 class="subsection-title">
           <span class="material-icons">database</span>
@@ -240,7 +300,7 @@
         </div>
       </div>
 
-      <!-- Acciones -->
+      <!-- ========== ACCIONES ========== -->
       <div class="form-actions">
         <button class="btn-secondary" (click)="irALista()">
           Cancelar

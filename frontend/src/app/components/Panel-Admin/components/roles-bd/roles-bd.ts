@@ -30,12 +30,22 @@ interface RolBase {
   descripcion: string;
 }
 
+// ========== ✨ NUEVO: Interface para usuarios del sistema ==========
+interface Usuario {
+  id: number;
+  nombreCompleto: string;
+  email: string;
+  rolActual: string;
+  seleccionado: boolean;
+}
+
 interface RolCreado {
   id: number;
   nombre: string;
   rolBase: string;
   fechaCreacion: string;
   totalPermisos: number;
+  usuariosAsignados: number; // ✨ NUEVO: contador de usuarios asignados
 }
 
 @Component({
@@ -56,11 +66,16 @@ export class RolesBdComponent implements OnInit {
   // Roles base disponibles
   rolesBase: RolBase[] = [];
 
-  // Formulario de nuevo rol
+  // ========== ✨ NUEVO: Variables para gestión de usuarios ==========
+  usuariosDisponibles: Usuario[] = [];
+  usuariosFiltrados: Usuario[] = [];
+  busquedaUsuario: string = '';
+  // ================================================================
+
+  // Formulario de nuevo rol - ✨ MODIFICADO: eliminado campo 'descripcion'
   nuevoRol = {
     nombre: '',
-    rolBaseId: null,
-    descripcion: ''
+    rolBaseId: null
   };
 
   // Esquemas y tablas
@@ -75,12 +90,13 @@ export class RolesBdComponent implements OnInit {
   // Rol en edición
   rolEnEdicion: RolCreado | null = null;
 
-  constructor(private adminService: AdminService,   private cdr: ChangeDetectorRef) {}
+  constructor(private adminService: AdminService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.cargarRolesCreados();
     this.cargarRolesBase();
     this.cargarEsquemas();
+    this.cargarUsuarios(); // ✨ NUEVO: cargar usuarios del sistema
   }
 
   // ========== CARGA DE DATOS ==========
@@ -90,11 +106,12 @@ export class RolesBdComponent implements OnInit {
     this.adminService.obtenerRolesBD().subscribe({
       next: (data) => {
         this.rolesCreados = data.map((rol: any) => ({
-          id: rol.idRol,          // Ahora recibirá el nombre del rol como string
-          nombre: rol.nombreRol,  // Recibirá el nombre del rol
+          id: rol.idRol,
+          nombre: rol.nombreRol,
           rolBase: rol.rolBase || 'Ninguno',
           fechaCreacion: rol.fechaCreacion,
-          totalPermisos: rol.totalPermisos || 0
+          totalPermisos: rol.totalPermisos || 0,
+          usuariosAsignados: rol.usuariosAsignados || 0 // ✨ NUEVO
         }));
         this.cargando = false;
         this.cdr.detectChanges();
@@ -113,14 +130,41 @@ export class RolesBdComponent implements OnInit {
         this.rolesBase = data.map((rol: any) => ({
           id: rol.idRol,
           nombre: rol.nombreRol,
-          descripcion: rol.descripcion || ''
+          descripcion: rol.descripcion || 'Rol de grupo en PostgreSQL' // ✨ MODIFICADO: descripción más clara
         }));
       },
       error: (err) => {
         console.error('Error al cargar roles base:', err);
+        // ✨ NUEVO: roles base por defecto si falla
+        this.rolesBase = [
+          { id: 1, nombre: 'grupo_postulante', descripcion: 'Permisos base para postulantes' },
+          { id: 2, nombre: 'grupo_empresa', descripcion: 'Permisos base para empresas' },
+          { id: 3, nombre: 'grupo_admin', descripcion: 'Permisos base para administradores' }
+        ];
       }
     });
   }
+
+  // ========== ✨ NUEVO: Cargar usuarios del sistema ==========
+  cargarUsuarios(): void {
+    this.adminService.obtenerTodosUsuarios().subscribe({
+      next: (data) => {
+        this.usuariosDisponibles = data.map((usuario: any) => ({
+          id: usuario.idUsuario,
+          nombreCompleto: `${usuario.nombre} ${usuario.apellido}`,
+          email: usuario.correo,
+          rolActual: usuario.rol ? usuario.rol.nombreRol : 'Sin Rol',
+          seleccionado: false
+        }));
+        this.usuariosFiltrados = [...this.usuariosDisponibles];
+      },
+      error: (err) => {
+        console.error('Error al cargar usuarios:', err);
+        this.mostrarError('Error al cargar usuarios del sistema');
+      }
+    });
+  }
+  // ============================================================
 
   cargarEsquemas(): void {
     this.adminService.obtenerEsquemasYTablas().subscribe({
@@ -144,7 +188,6 @@ export class RolesBdComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error al cargar esquemas:', err);
-        // Cargar esquemas por defecto
         this.cargarEsquemasDefault();
       }
     });
@@ -168,6 +211,32 @@ export class RolesBdComponent implements OnInit {
     ];
   }
 
+  // ========== ✨ NUEVO: GESTIÓN DE USUARIOS ==========
+  filtrarUsuarios(): void {
+    if (!this.busquedaUsuario.trim()) {
+      this.usuariosFiltrados = [...this.usuariosDisponibles];
+    } else {
+      const busqueda = this.busquedaUsuario.toLowerCase();
+      this.usuariosFiltrados = this.usuariosDisponibles.filter(u =>
+        u.nombreCompleto.toLowerCase().includes(busqueda) ||
+        u.email.toLowerCase().includes(busqueda)
+      );
+    }
+  }
+
+  toggleTodosUsuarios(seleccionar: boolean): void {
+    this.usuariosFiltrados.forEach(u => u.seleccionado = seleccionar);
+  }
+
+  get usuariosSeleccionados(): Usuario[] {
+    return this.usuariosDisponibles.filter(u => u.seleccionado);
+  }
+
+  get totalUsuariosSeleccionados(): number {
+    return this.usuariosSeleccionados.length;
+  }
+  // ==================================================
+
   // ========== GESTIÓN DE VISTAS ==========
   irACrear(): void {
     this.vistaActual = 'CREAR';
@@ -179,10 +248,12 @@ export class RolesBdComponent implements OnInit {
     this.limpiarFormulario();
   }
 
+  // ✨ MODIFICADO: ahora también carga usuarios del rol
   irAEditar(rol: RolCreado): void {
     this.vistaActual = 'EDITAR';
     this.rolEnEdicion = rol;
     this.cargarPermisosRol(rol.id);
+    this.cargarUsuariosDelRol(rol.id); // ✨ NUEVO
   }
 
   // ========== GESTIÓN DE ESQUEMAS ==========
@@ -213,20 +284,16 @@ export class RolesBdComponent implements OnInit {
   }
 
   cambiarPermisoTabla(esquema: Esquema, tabla: Tabla): void {
-    // Verificar si todos los permisos de todas las tablas están activos
     const todosActivos = esquema.tablas.every(t =>
       t.permisos.select && t.permisos.insert && t.permisos.update && t.permisos.delete
     );
 
-    // Verificar si al menos un permiso está activo
     const algunoActivo = esquema.tablas.some(t =>
       t.permisos.select || t.permisos.insert || t.permisos.update || t.permisos.delete
     );
 
-    // Actualizar permiso global
     esquema.permisoGlobal = todosActivos;
 
-    // Si hay algún permiso activo, activar USAGE
     if (algunoActivo) {
       esquema.usage = true;
     }
@@ -241,7 +308,7 @@ export class RolesBdComponent implements OnInit {
     };
   }
 
-  // ========== CREAR ROL ==========
+  // ========== ✨ MODIFICADO: CREAR/ACTUALIZAR ROL (ahora incluye usuarios) ==========
   guardarRol(): void {
     // Validaciones
     if (!this.nuevoRol.nombre.trim()) {
@@ -249,28 +316,47 @@ export class RolesBdComponent implements OnInit {
       return;
     }
 
-    // Validar que tenga permisos
     const tienePermisos = this.esquemas.some(e => e.usage);
     if (!tienePermisos) {
       this.mostrarError('Debe asignar al menos un permiso al rol');
       return;
     }
 
+    // ✨ NUEVO: validar que tenga usuarios seleccionados
+    if (this.totalUsuariosSeleccionados === 0) {
+      this.mostrarError('Debe seleccionar al menos un usuario para asignar este rol');
+      return;
+    }
+
     this.guardando = true;
 
-    // Construir objeto de permisos
     const permisos = this.construirObjetoPermisos();
+    const usuariosIds = this.usuariosSeleccionados.map(u => u.id); // ✨ NUEVO
 
     const datosRol = {
       nombreRol: this.nuevoRol.nombre,
       rolBaseId: this.nuevoRol.rolBaseId,
-      descripcion: this.nuevoRol.descripcion,
-      permisos: permisos
+      permisos: permisos,
+      usuariosIds: usuariosIds // ✨ NUEVO: incluir IDs de usuarios
     };
+
+    // ✨ NUEVO: diferenciar entre crear y actualizar
+    if (this.vistaActual === 'CREAR') {
+      this.crearRol(datosRol);
+    } else {
+      this.actualizarRol(datosRol);
+    }
+  }
+
+  // ✨ NUEVO: método separado para crear
+  crearRol(datosRol: any): void {
+    // Filtrar al usuario logueado para que no se autoasigne
+    const idUsuarioActual = Number(localStorage.getItem('idUsuario'));
+    datosRol.usuariosIds = datosRol.usuariosIds.filter((id: number) => id !== idUsuarioActual);
 
     this.adminService.crearRolBD(datosRol).subscribe({
       next: (response) => {
-        this.mostrarExito('Rol creado exitosamente');
+        this.mostrarExito(`Rol creado exitosamente. ${this.totalUsuariosSeleccionados} usuario(s) asignado(s).`);
         this.cargarRolesCreados();
         this.irALista();
         this.guardando = false;
@@ -282,6 +368,26 @@ export class RolesBdComponent implements OnInit {
       }
     });
   }
+
+  // ✨ NUEVO: método separado para actualizar
+  actualizarRol(datosRol: any): void {
+    if (!this.rolEnEdicion) return;
+
+    this.adminService.actualizarRolBD(this.rolEnEdicion.id, datosRol).subscribe({
+      next: (response) => {
+        this.mostrarExito('Rol actualizado exitosamente');
+        this.cargarRolesCreados();
+        this.irALista();
+        this.guardando = false;
+      },
+      error: (err) => {
+        console.error('Error al actualizar rol:', err);
+        this.mostrarError('Error al actualizar rol');
+        this.guardando = false;
+      }
+    });
+  }
+  // ============================================================================
 
   construirObjetoPermisos(): any {
     const permisos: any = {
@@ -298,7 +404,6 @@ export class RolesBdComponent implements OnInit {
         };
 
         if (!esquema.permisoGlobal) {
-          // Solo agregar tablas con permisos específicos
           esquema.tablas.forEach(tabla => {
             const permisosActivos = [];
             if (tabla.permisos.select) permisosActivos.push('SELECT');
@@ -322,12 +427,14 @@ export class RolesBdComponent implements OnInit {
     return permisos;
   }
 
-  // ========== CARGAR PERMISOS PARA EDITAR ==========
+  // ========== ✨ MODIFICADO: CARGAR PERMISOS PARA EDITAR ==========
   cargarPermisosRol(idRol: number): void {
     this.adminService.obtenerPermisosRol(idRol).subscribe({
       next: (data) => {
-        // Aplicar permisos cargados a los esquemas
         this.aplicarPermisosAEsquemas(data);
+        // ✨ NUEVO: cargar también el nombre y rol base
+        this.nuevoRol.nombre = data.nombreRol || '';
+        this.nuevoRol.rolBaseId = data.rolBaseId || null;
       },
       error: (err) => {
         console.error('Error al cargar permisos:', err);
@@ -336,8 +443,24 @@ export class RolesBdComponent implements OnInit {
     });
   }
 
+  // ========== ✨ NUEVO: Cargar usuarios que tienen este rol ==========
+  cargarUsuariosDelRol(idRol: number): void {
+    this.adminService.obtenerUsuariosDelRol(idRol).subscribe({
+      next: (data) => {
+        const idsUsuariosDelRol = data.map((u: any) => u.idUsuario);
+        this.usuariosDisponibles.forEach(usuario => {
+          usuario.seleccionado = idsUsuariosDelRol.includes(usuario.id);
+        });
+        this.usuariosFiltrados = [...this.usuariosDisponibles];
+      },
+      error: (err) => {
+        console.error('Error al cargar usuarios del rol:', err);
+      }
+    });
+  }
+  // =================================================================
+
   aplicarPermisosAEsquemas(permisos: any): void {
-    // Resetear todo primero
     this.esquemas.forEach(e => {
       e.usage = false;
       e.permisoGlobal = false;
@@ -346,7 +469,6 @@ export class RolesBdComponent implements OnInit {
       });
     });
 
-    // Aplicar permisos del backend
     if (permisos.esquemas) {
       permisos.esquemas.forEach((esquemaPermiso: any) => {
         const esquema = this.esquemas.find(e => e.nombre === esquemaPermiso.nombre);
@@ -372,9 +494,10 @@ export class RolesBdComponent implements OnInit {
     }
   }
 
-  // ========== ELIMINAR ROL ==========
+  // ========== ✨ MODIFICADO: ELIMINAR ROL (ahora muestra usuarios afectados) ==========
   eliminarRol(rol: RolCreado): void {
-    if (!confirm(`¿Está seguro de eliminar el rol "${rol.nombre}"? Esta acción no se puede deshacer.`)) {
+    // ✨ MODIFICADO: mensaje más informativo
+    if (!confirm(`¿Está seguro de eliminar el rol "${rol.nombre}"? Los ${rol.usuariosAsignados} usuario(s) asignado(s) perderán este rol. Esta acción no se puede deshacer.`)) {
       return;
     }
 
@@ -390,13 +513,18 @@ export class RolesBdComponent implements OnInit {
     });
   }
 
-  // ========== UTILIDADES ==========
+  // ========== ✨ MODIFICADO: UTILIDADES ==========
   limpiarFormulario(): void {
     this.nuevoRol = {
       nombre: '',
-      rolBaseId: null,
-      descripcion: ''
+      rolBaseId: null
+      // ✨ ELIMINADO: ya no tiene 'descripcion'
     };
+
+    // ✨ NUEVO: resetear búsqueda y selección de usuarios
+    this.busquedaUsuario = '';
+    this.usuariosDisponibles.forEach(u => u.seleccionado = false);
+    this.usuariosFiltrados = [...this.usuariosDisponibles];
 
     this.esquemas.forEach(esquema => {
       esquema.usage = false;

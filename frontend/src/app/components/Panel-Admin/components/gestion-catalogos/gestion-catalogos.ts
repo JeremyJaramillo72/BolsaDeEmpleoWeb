@@ -57,7 +57,7 @@ export class GestionCatalogosComponent implements OnInit {
   // Catálogos
   categorias: Catalogo[] = [];
   carreras: any[] = [];
-  carrerasFiltradas: any[] = []; // 👈 NUEVA: Para mostrar carreras filtradas por facultad
+  carrerasFiltradas: any[] = [];
   facultades: Catalogo[] = [];
   idiomas: Catalogo[] = [];
   jornadas: Catalogo[] = [];

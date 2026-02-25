@@ -285,6 +285,16 @@ export class AdminService {
     return this.http.delete(`${this.apiRolesbd}/roles-bd/${idRol}`);
   }
 
+  //Nuevos metodos para roles de base datos
+  actualizarRolBD(idRol: number, datos: any): Observable<any> {
+    return this.http.put(`${this.apiRolesbd}/admin/roles-bd/${idRol}`, datos);
+  }
+
+  obtenerUsuariosDelRol(idRol: number): Observable<any> {
+    // Retorna lista de usuarios que tienen asignado este rol
+    return this.http.get(`${this.apiRolesbd}/admin/roles-bd/${idRol}/usuarios`);
+  }
+
   // VALIDAR OFERTASSS
   obtenerOfertasPorEstado (estado: string  ): Observable<any []>
   {

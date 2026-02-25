@@ -726,3 +726,209 @@ input:checked + .slider:before {
     justify-content: center;
   }
 }
+
+
+/* ===== SECCIÓN DE USUARIOS ===== */
+.users-count {
+  color: #4f46e5;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.usuarios-header {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-box-usuarios {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  padding: 10px 16px;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.search-box-usuarios:focus-within {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-box-usuarios .material-icons {
+  color: #64748b;
+  font-size: 22px;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: #1e293b;
+  outline: none;
+}
+
+.usuarios-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-select-all, .btn-deselect-all {
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.btn-select-all {
+  background: #4f46e5;
+  color: white;
+}
+
+.btn-select-all:hover {
+  background: #4338ca;
+}
+
+.btn-deselect-all {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.btn-deselect-all:hover {
+  background: #e2e8f0;
+}
+
+/* ===== LISTA DE USUARIOS ===== */
+.usuarios-container {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px;
+  background: white;
+}
+
+.usuario-item {
+  margin-bottom: 8px;
+}
+
+.usuario-checkbox {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.usuario-checkbox:hover {
+  background: #f8faff;
+  border-color: #667eea;
+}
+
+.usuario-checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #4f46e5;
+  margin-right: 15px;
+}
+
+.usuario-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.usuario-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.usuario-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.usuario-nombre {
+  color: #1e293b;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.usuario-email {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.usuario-rol-actual {
+  background: #f1f5f9;
+  color: #475569;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.empty-usuarios {
+  text-align: center;
+  padding: 40px 20px;
+  color: #94a3b8;
+}
+
+.empty-usuarios .material-icons {
+  font-size: 64px;
+  margin-bottom: 15px;
+  opacity: 0.5;
+}
+
+.empty-usuarios p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Scrollbar personalizado */
+.usuarios-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.usuarios-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.usuarios-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.usuarios-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

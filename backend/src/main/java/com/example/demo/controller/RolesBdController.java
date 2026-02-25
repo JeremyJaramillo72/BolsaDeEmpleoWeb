@@ -64,10 +64,13 @@ public class RolesBdController {
     @PostMapping("/roles-bd")
     public ResponseEntity<?> crearRolBD(@RequestBody Map<String, Object> datos) {
         try {
+            System.out.println("🔥 CONTROLLER HIT - datos recibidos: " + datos); // ← AGREGA
             rolesBdService.crearYAsignarPermisos(datos);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of("mensaje", "Rol de base de datos creado y configurado con éxito"));
         } catch (Exception e) {
+            System.out.println("❌ ERROR EN CONTROLLER: " + e.getMessage()); // ← AGREGA
+            e.printStackTrace(); // ← AGREGA - esto muestra el stack trace completo
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "Error al crear el rol: " + e.getMessage()));
         }
