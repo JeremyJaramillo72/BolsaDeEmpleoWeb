@@ -1,49 +1,54 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.FiltroReporteOfertaDTO;
 import com.example.demo.dto.ReporteOfertaDTO;
 import com.example.demo.repository.ReporteOfertaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ReporteOfertaService {
 
-    @Autowired
-    private ReporteOfertaRepository reporteRepository;
+    private final ReporteOfertaRepository reporteOfertaRepository;
 
-    // MÉTODO UNIFICADO: Usado tanto para vista previa como para exportar
-    public List<ReporteOfertaDTO> obtenerReporteDinamico(
-            Integer idCiudad, Integer idCategoria, String busqueda,
-            Integer pagina, Integer tamano) {
+    public List<ReporteOfertaDTO> obtenerReporte(FiltroReporteOfertaDTO filtro) {
 
-        // Si no mandan página/tamaño (como en exportación), ponemos valores por defecto
-        int limit = (tamano != null) ? tamano : 1000;
-        int offset = (pagina != null) ? pagina * limit : 0;
+        // Validación 1: rango salarial
+        if (filtro.getSalarioMin() != null && filtro.getSalarioMax() != null) {
+            if (filtro.getSalarioMax().compareTo(filtro.getSalarioMin()) < 0) {
+                throw new IllegalArgumentException(
+                        "El salario máximo no puede ser menor al salario mínimo"
+                );
+            }
+        }
 
-        List<Object[]> resultados = reporteRepository.consultarReporteDinamico(
-                idCiudad, null, idCategoria, null, null, null, busqueda, limit, offset
-        );
+        // Validación 2: rango de fechas
+        if (filtro.getFechaInicio() != null && filtro.getFechaFin() != null) {
+            if (filtro.getFechaFin().isBefore(filtro.getFechaInicio())) {
+                throw new IllegalArgumentException(
+                        "La fecha fin no puede ser anterior a la fecha inicio"
+                );
+            }
+        }
 
-        return resultados.stream().map(row -> new ReporteOfertaDTO(
-                row[0] != null ? ((Number) row[0]).longValue() : null,
-                (String) row[1],
-                (String) row[2],
-                (String) row[3],
-                (String) row[4],
-                (String) row[5],
-                (String) row[6],
-                (BigDecimal) row[7],
-                (BigDecimal) row[8],
-                (BigDecimal) row[9],
-                row[10] != null ? ((Date) row[10]).toLocalDate() : null,
-                row[11] != null ? ((Date) row[11]).toLocalDate() : null,
-                row[12] != null ? ((Number) row[12]).longValue() : 0L
-        )).collect(Collectors.toList());
+        // Validación 3: fechas no pueden ser futuras
+        if (filtro.getFechaInicio() != null
+                && filtro.getFechaInicio().isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException(
+                    "La fecha inicio no puede ser una fecha futura"
+            );
+        }
+        if (filtro.getFechaFin() != null
+                && filtro.getFechaFin().isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException(
+                    "La fecha fin no puede ser una fecha futura"
+            );
+        }
+
+        return reporteOfertaRepository.ejecutarReporte(filtro);
     }
 }

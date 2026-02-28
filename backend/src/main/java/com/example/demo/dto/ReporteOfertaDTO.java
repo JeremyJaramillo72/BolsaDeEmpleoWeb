@@ -3,29 +3,30 @@ package com.example.demo.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-/**
- * @Data genera automáticamente: Getters, Setters, RequiredArgsConstructor,
- * ToString, EqualsAndHashCode.
- */
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class ReporteOfertaDTO {
 
-    private Long idOferta;
-    private String titulo;
-    private String empresaNombre;
-    private String ciudad;
-    private String categoria;        // Usado en TS para el gráfico
-    private String modalidad;
-    private String estado;
-    private BigDecimal salarioMinimo;
-    private BigDecimal salarioMaximo;
-    private BigDecimal salarioPromedio; // Requerido por el Exportador
-    private LocalDate fechaPublicacion;
-    private LocalDate fechaExpiracion;
-    private Long totalRegistros;     // Usado para paginación
+    private Long        idOferta;
+    private String      titulo;
+    private String      nombreEmpresa;
+    private String      nombreProvincia;
+    private String      nombreCiudad;
+    private String      nombreModalidad;
+    private String      nombreJornada;
+    private String      nombreCategoria;
+    private BigDecimal  salarioMin;
+    private BigDecimal  salarioMax;
+    private Integer     cantidadVacantes;
+    private Integer     experienciaMinima;
+    private LocalDate   fechaInicio;
+    private LocalDate   fechaCierre;
+    private String      estadoOferta;
+    private LocalDateTime fechaCreacion;
 }

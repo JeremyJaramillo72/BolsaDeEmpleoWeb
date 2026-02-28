@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface CategoriaOfertaRepository extends JpaRepository<CategoriaOferta, Integer> {
-    // Hereda findAll(), save(), deleteById(), etc.
+public interface CategoriaOfertaRepository
+        extends JpaRepository<CategoriaOferta, Integer> {
 }

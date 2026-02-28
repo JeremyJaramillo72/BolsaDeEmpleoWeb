@@ -1,35 +1,59 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.FiltroReportePostulacionDTO;
 import com.example.demo.dto.ReportePostulacionDTO;
 import com.example.demo.repository.ReportePostulacionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ReportePostulacionService {
-    @Autowired
-    private ReportePostulacionRepository repository;
 
-    public List<ReportePostulacionDTO> obtenerReporte(Long idOferta, Integer idCarrera, String estado,
-                                                      LocalDate desde, LocalDate hasta, Integer page, Integer size) {
-        // Paginación por defecto
-        int limit = (size != null) ? size : 10;
-        int offset = (page != null) ? page * limit : 0;
+    private final ReportePostulacionRepository reportePostulacionRepository;
 
-        List<Object[]> rows = repository.ejecutarReporte(idOferta, idCarrera, estado, desde, hasta, limit, offset);
+    public List<ReportePostulacionDTO> obtenerReporte(
+            FiltroReportePostulacionDTO filtro) {
 
-        return rows.stream().map(row -> new ReportePostulacionDTO(
-                ((Number) row[0]).longValue(),      // id_postulacion
-                (String) row[1],                    // oferta_titulo
-                (String) row[2],                    // usuario_nombre
-                (String) row[3],                    // carrera_nombre
-                (String) row[4],                    // estado_validacion
-                row[5] != null ? ((java.sql.Timestamp) row[5]).toLocalDateTime() : null, // fecha_postulacion
-                ((Number) row[6]).longValue()       // total_registros (COUNT OVER)
-        )).collect(Collectors.toList());
+        // Validación 1: rango de fechas
+        if (filtro.getFechaInicio() != null && filtro.getFechaFin() != null) {
+            if (filtro.getFechaFin().isBefore(filtro.getFechaInicio())) {
+                throw new IllegalArgumentException(
+                        "La fecha fin no puede ser anterior a la fecha inicio"
+                );
+            }
+        }
+
+        // Validación 2: fechas no futuras
+        if (filtro.getFechaInicio() != null
+                && filtro.getFechaInicio().isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException(
+                    "La fecha inicio no puede ser una fecha futura"
+            );
+        }
+        if (filtro.getFechaFin() != null
+                && filtro.getFechaFin().isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException(
+                    "La fecha fin no puede ser una fecha futura"
+            );
+        }
+
+        // Validación 3: estado de validación solo acepta valores conocidos
+        if (filtro.getEstadoValidacion() != null
+                && !filtro.getEstadoValidacion().isBlank()) {
+            List<String> estadosValidos =
+                    List.of("Pendiente", "Revisado", "Aceptado", "Rechazado");
+            if (!estadosValidos.contains(filtro.getEstadoValidacion())) {
+                throw new IllegalArgumentException(
+                        "Estado de validación no válido: "
+                                + filtro.getEstadoValidacion()
+                );
+            }
+        }
+
+        return reportePostulacionRepository.ejecutarReporte(filtro);
     }
 }

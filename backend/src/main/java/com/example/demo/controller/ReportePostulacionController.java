@@ -1,41 +1,45 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.FiltroReportePostulacionDTO;
 import com.example.demo.dto.ReportePostulacionDTO;
 import com.example.demo.service.ReportePostulacionService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.HashMap;
+
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequestMapping("/api/reporte-postulaciones")
-@CrossOrigin(origins = "http://localhost:4200", allowedHeaders = "*")
+@RequestMapping("/api/reportes")
+@CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class ReportePostulacionController {
 
-    @Autowired
-    private ReportePostulacionService service;
+    private final ReportePostulacionService reportePostulacionService;
 
-    @GetMapping("/tabla")
-    public ResponseEntity<?> verTabla(
-            @RequestParam(required = false) Long idOferta,
-            @RequestParam(required = false) Integer idCarrera,
-            @RequestParam(required = false) String estado,
-            @RequestParam(defaultValue = "0") Integer page,
-            @RequestParam(defaultValue = "10") Integer size) {
-        try {
-            List<ReportePostulacionDTO> lista = service.obtenerReporte(idOferta, idCarrera, estado, null, null, page, size);
+    @GetMapping("/postulaciones")
+    public ResponseEntity<List<ReportePostulacionDTO>> obtenerReporte(
+            @RequestParam(required = false) Integer idCiudad,
+            @RequestParam(required = false) Integer idCategoria,
+            @RequestParam(required = false) Integer idModalidad,
+            @RequestParam(required = false) String  estadoValidacion,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin
+    ) {
+        FiltroReportePostulacionDTO filtro = new FiltroReportePostulacionDTO();
+        filtro.setIdCiudad(idCiudad);
+        filtro.setIdCategoria(idCategoria);
+        filtro.setIdModalidad(idModalidad);
+        filtro.setEstadoValidacion(estadoValidacion);
+        filtro.setFechaInicio(fechaInicio);
+        filtro.setFechaFin(fechaFin);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("datos", lista);
-            // El total de registros viene dentro de cualquier objeto de la lista (gracias al COUNT OVER)
-            response.put("total", lista.isEmpty() ? 0 : lista.get(0).getTotalRegistros());
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error en base de datos: " + e.getMessage());
-        }
+        return ResponseEntity.ok(
+                reportePostulacionService.obtenerReporte(filtro)
+        );
     }
 }

@@ -34,7 +34,8 @@
     "jspdf-autotable": "^5.0.7",
     "material-icons": "^1.13.14",
     "rxjs": "~7.8.0",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@angular/build": "^21.0.5",

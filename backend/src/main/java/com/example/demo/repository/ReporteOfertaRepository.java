@@ -1,33 +1,109 @@
 package com.example.demo.repository;
 
-import com.example.demo.model.OfertaLaboral;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import com.example.demo.dto.FiltroReporteOfertaDTO;
+import com.example.demo.dto.ReporteOfertaDTO;
+import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 
-    @Repository
-    public interface ReporteOfertaRepository extends JpaRepository<OfertaLaboral, Long> {
+@Repository
+@RequiredArgsConstructor
+public class ReporteOfertaRepository {
 
-        // Opción A: Función que retorna tabla (Recomendada para Reportes)
-        @Query(value = "SELECT * FROM ofertas.fn_reporte_ofertas_dinamico(:idCiudad, :idModalidad, :idCategoria, :idJornada, :fechaDesde, :fechaHasta, :busqueda, :limit, :offset)",
-                nativeQuery = true)
-        List<Object[]> consultarReporteDinamico(
-                @Param("idCiudad") Integer idCiudad,
-                @Param("idModalidad") Integer idModalidad,
-                @Param("idCategoria") Integer idCategoria,
-                @Param("idJornada") Integer idJornada,
-                @Param("fechaDesde") LocalDate fechaDesde,
-                @Param("fechaHasta") LocalDate fechaHasta,
-                @Param("busqueda") String busqueda,
-                @Param("limit") Integer limit,
-                @Param("offset") Integer offset
-        );
+    private final JdbcTemplate jdbcTemplate;
 
-        // Opción B: Si fuera un PROCEDIMIENTO real (No recomendado para tablas de reporte)
-        // @Procedure(procedureName = "ofertas.sp_generar_reporte")
-        // void ejecutarProcesamiento(@Param("id") Long id);
+    // RowMapper separado — más limpio y reutilizable
+    private static final class ReporteOfertaRowMapper
+            implements RowMapper<ReporteOfertaDTO> {
+
+        @Override
+        public ReporteOfertaDTO mapRow(ResultSet rs, int rowNum)
+                throws SQLException {
+
+            ReporteOfertaDTO dto = new ReporteOfertaDTO();
+
+            dto.setIdOferta(rs.getLong("id_oferta"));
+            dto.setTitulo(rs.getString("titulo"));
+            dto.setNombreEmpresa(rs.getString("nombre_empresa"));
+            dto.setNombreProvincia(rs.getString("nombre_provincia"));
+            dto.setNombreCiudad(rs.getString("nombre_ciudad"));
+            dto.setNombreModalidad(rs.getString("nombre_modalidad"));
+            dto.setNombreJornada(rs.getString("nombre_jornada"));
+            dto.setNombreCategoria(rs.getString("nombre_categoria"));
+
+            // BigDecimal — puede ser null si la BD lo permite
+            BigDecimal sMin = rs.getBigDecimal("salario_min");
+            dto.setSalarioMin(rs.wasNull() ? null : sMin);
+
+            BigDecimal sMax = rs.getBigDecimal("salario_max");
+            dto.setSalarioMax(rs.wasNull() ? null : sMax);
+
+            dto.setCantidadVacantes(rs.getInt("cantidad_vacantes"));
+            dto.setExperienciaMinima(rs.getInt("experiencia_minima"));
+
+            // Fechas — conversión segura de sql.Date a LocalDate
+            Date fechaInicio = rs.getDate("fecha_inicio");
+            dto.setFechaInicio(fechaInicio != null
+                    ? fechaInicio.toLocalDate() : null);
+
+            Date fechaCierre = rs.getDate("fecha_cierre");
+            dto.setFechaCierre(fechaCierre != null
+                    ? fechaCierre.toLocalDate() : null);
+
+            dto.setEstadoOferta(rs.getString("estado_oferta"));
+
+            // Timestamp — conversión segura a LocalDateTime
+            Timestamp fechaCreacion = rs.getTimestamp("fecha_creacion");
+            dto.setFechaCreacion(fechaCreacion != null
+                    ? fechaCreacion.toLocalDateTime() : null);
+
+            return dto;
+        }
     }
+
+    public List<ReporteOfertaDTO> ejecutarReporte(FiltroReporteOfertaDTO filtro) {
+
+        // Parámetros posicionales con cast explícito en PostgreSQL
+        // Cada ? corresponde exactamente a un parámetro de la función
+        String sql = """
+                SELECT *
+                FROM ofertas.fn_reporte_ofertas_laborales(
+                    ?::integer,
+                    ?::integer,
+                    ?::integer,
+                    ?::integer,
+                    ?::date,
+                    ?::date,
+                    ?::numeric,
+                    ?::numeric,
+                    ?::varchar
+                )
+                """;
+
+        return jdbcTemplate.query(
+                sql,
+                new ReporteOfertaRowMapper(),
+                // Orden exacto igual al de la función en PostgreSQL
+                filtro.getIdCiudad(),
+                filtro.getIdCategoria(),
+                filtro.getIdModalidad(),
+                filtro.getIdJornada(),
+                // LocalDate → sql.Date para JDBC — null se pasa como null directamente
+                filtro.getFechaInicio() != null
+                        ? Date.valueOf(filtro.getFechaInicio()) : null,
+                filtro.getFechaFin() != null
+                        ? Date.valueOf(filtro.getFechaFin()) : null,
+                filtro.getSalarioMin(),
+                filtro.getSalarioMax(),
+                filtro.getEstadoOferta()
+        );
+    }
+}
