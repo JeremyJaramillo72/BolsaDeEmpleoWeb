@@ -9,7 +9,9 @@
           <factory-entry name="demo" value="4ed83c52-8c5c-4e9d-b47e-eed99c734f05" />
           <factory-entry name="entityManagerFactory" value="4ed83c52-8c5c-4e9d-b47e-eed99c734f05" />
         </datasource-mapping>
-        <naming-strategy-map />
+        <naming-strategy-map>
+          <unit-entry name="entityManagerFactory" />
+        </naming-strategy-map>
       </configuration>
     </facet>
   </component>

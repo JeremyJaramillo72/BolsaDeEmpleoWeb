@@ -1,0 +1,45 @@
+<div class="notification-wrapper"> <button class="bell-btn" (click)="toggleDropdown($event)"> <span class="material-icons">notifications</span>
+  <span class="badge" *ngIf="notificationService.cantidadSinLeer > 0">
+      {{ notificationService.cantidadSinLeer }}
+    </span>
+</button>
+
+  <div class="dropdown-menu" *ngIf="dropdownOpen">
+    <div class="dropdown-header">
+      <h4>Notificaciones</h4>
+      <button class="btn-mark-all" (click)="marcarTodas()" *ngIf="activeTab === 'nuevas' && notificacionesNuevas.length > 0">Marcar todas leídas</button>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-btn" [class.active]="activeTab === 'nuevas'" (click)="activeTab = 'nuevas'">
+        Nuevas
+        <span class="tab-count" *ngIf="notificacionesNuevas.length > 0">{{ notificacionesNuevas.length }}</span>
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'leidas'" (click)="activeTab = 'leidas'">
+        Leídas
+        <span class="tab-count" *ngIf="notificacionesLeidas.length > 0">{{ notificacionesLeidas.length }}</span>
+      </button>
+    </div>
+
+    <div class="dropdown-body">
+      <div *ngIf="listaActual.length === 0" class="empty-state">
+        {{ activeTab === 'nuevas' ? 'No tienes notificaciones nuevas' : 'No tienes notificaciones leídas' }}
+      </div>
+
+      <div *ngFor="let item of listaActual"
+           class="notif-item"
+           [class.unread]="!item.leida"
+           (click)="clickNotificacion(item)">
+        <div class="notif-icon">
+          <span class="material-icons">{{ item.icono || 'notifications' }}</span>
+        </div>
+        <div class="notif-content">
+          <span class="notif-title">{{ item.titulo }}</span>
+          <p class="notif-message">{{ item.mensaje }}</p>
+        </div>
+        <span class="notif-time">{{ tiempoTranscurrido(item.fechaCreacion) }}</span>
+        <div class="unread-dot" *ngIf="!item.leida"></div>
+      </div>
+    </div>
+  </div>
+</div>

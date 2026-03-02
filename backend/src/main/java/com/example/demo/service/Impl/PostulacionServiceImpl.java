@@ -3,6 +3,7 @@ package com.example.demo.service.Impl;
 import com.example.demo.dto.ItemEvaluacionDTO;
 import com.example.demo.dto.PerfilPostulanteDTO;
 import com.example.demo.dto.PostulanteResumenDTO;
+import com.example.demo.model.Postulacion;
 import com.example.demo.repository.Impl.PostulacionCustomRepository;
 import com.example.demo.repository.PostulacionRepository;
 import com.example.demo.service.IPostulacionService;
@@ -10,8 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
+import com.example.demo.service.NotificacionService;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +22,8 @@ public class PostulacionServiceImpl implements IPostulacionService {
     private final PostulacionRepository postulacionRepository;
     private final CloudinaryService cloudinaryService;
     private final PostulacionCustomRepository postulacionCustomRepository;
+    private final NotificacionService notificacionService;
+
 
     @Override
     @Transactional
@@ -33,6 +37,29 @@ public class PostulacionServiceImpl implements IPostulacionService {
 
 
         postulacionRepository.registrarPostulacionPro(idUsuario, idOferta, urlCv);
+        try {
+            List<Object[]> datosOferta = postulacionRepository.obtenerDatosEmpresaPorOfertaId(idOferta);
+
+            if (!datosOferta.isEmpty()) {
+                Object[] fila = datosOferta.get(0);
+                Long idUsuarioEmpresa = ((Number) fila[0]).longValue();
+                String tituloOferta = (String) fila[1];
+
+                notificacionService.crearYEnviarNotificacion(
+                        idUsuarioEmpresa,                    // Para la empresa
+                        "nueva_postulacion",                 // El tipo de plantilla
+                        Map.of("titulo", tituloOferta),      // Variables para el texto
+                        Map.of("idOferta", idOferta, "idCandidato", idUsuario), // Datos extra
+                        "/menu-principal/gestion-ofertas",    // Ruta donde la empresa ve sus ofertas/postulantes
+                        "person_add"                         // Icono
+                );
+            }
+        } catch (Exception e) {
+            // Si la notificación falla, no bloqueamos la postulación del candidato
+            System.err.println("Error enviando notificación a la empresa: " + e.getMessage());
+        }
+
+
     }
 
     @Override
@@ -66,10 +93,37 @@ public class PostulacionServiceImpl implements IPostulacionService {
                 dto.getObservacion()
         );
     }
-
     @Override
+    @Transactional
     public void evaluarPostulacionGeneral(Long idPostulacion, String estado, String mensaje) {
 
         postulacionCustomRepository.evaluarPostulacionGeneral(idPostulacion, estado, mensaje);
+
+        if ("aprobado".equalsIgnoreCase(estado)) {
+            try {
+                List<Object[]> datos = postulacionRepository.obtenerDatosParaNotificacion(Math.toIntExact(idPostulacion));
+
+                if (!datos.isEmpty()) {
+                    Object[] fila = datos.get(0);
+                    Long idCandidatoReal = (Long) fila[0];
+                    String tituloOfertaReal = (String) fila[1];
+                    String nombreEmpresaReal = (String) fila[2];
+
+                    notificacionService.crearYEnviarNotificacion(
+                            idCandidatoReal,
+                            "postulacion_aprobada",
+                            Map.of(
+                                    "oferta", tituloOfertaReal,
+                                    "empresa", nombreEmpresaReal
+                            ),
+                            Map.of("idPostulacion", idPostulacion),
+                            "/menu-principal/mis-postulaciones",
+                            "check_circle"
+                    );
+                }
+            } catch (Exception e) {
+                System.err.println("Error enviando notificacion de postulacion aprobada: " + e.getMessage());
+            }
+        }
     }
 }

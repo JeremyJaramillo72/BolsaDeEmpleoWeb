@@ -5,6 +5,8 @@ import { UsuarioEmpresaService } from '../../services/usuario-empresa.service';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 
+import { NotificationService } from '../../services/notification.service';
+import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
 // 1. ACTUALIZAMOS LAS INTERFACES CON LOS NUEVOS CAMPOS VISUALES
 export interface MenuItem {
   icon: string;
@@ -32,7 +34,7 @@ export interface StatCard {
 @Component({
   selector: 'app-menuprincipal',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, NotificationBellComponent],
   templateUrl: './menuprincipal.html',
   styleUrls: ['./menuprincipal.css']
 })
@@ -51,7 +53,8 @@ export class MenuprincipalComponent implements OnInit {
     public router: Router,
     public authService: AuthService,
     private cdr: ChangeDetectorRef,
-    private usuarioEmpresaService: UsuarioEmpresaService
+    private usuarioEmpresaService: UsuarioEmpresaService,
+    public notificationService: NotificationService
   ) {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -78,6 +81,9 @@ export class MenuprincipalComponent implements OnInit {
 
     this.verificarRutaActual();
     this.inicializarMenuPorRol();
+    this.notificationService.notificaciones$.subscribe(() => {
+      this.actualizarKPIsNotificaciones();
+    });
   }
 
   private verificarRutaActual(): void {
@@ -88,6 +94,15 @@ export class MenuprincipalComponent implements OnInit {
 
   isDashboardHome(): boolean {
     return this.dashboardHomeVisible;
+  }
+
+  private actualizarKPIsNotificaciones() {
+    // Actualiza la tarjetita de arriba con el número real de notificaciones
+    const statNotif = this.statsCards.find(stat => stat.icon === 'notifications');
+    if (statNotif) {
+      statNotif.value = this.notificationService.cantidadSinLeer;
+      this.cdr.detectChanges();
+    }
   }
 
   inicializarMenuPorRol(): void {
@@ -292,6 +307,7 @@ export class MenuprincipalComponent implements OnInit {
   }
 
   cerrarSesion() {
+    this.notificationService.desconectar(); //cerrando ws
     this.authService.logout().subscribe({
       next: () => {
         localStorage.clear();

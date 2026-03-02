@@ -225,8 +225,8 @@
 
 .table-header {
   display: grid;
-  grid-template-columns: 2fr 1.6fr 1fr 1fr 160px;
-  padding: 0.75rem 1.25rem;
+  grid-template-columns: 2fr 1.6fr 1fr 1fr 200px; /* más ancho para acciones */
+  padding: 0.85rem 1.4rem;
   background: var(--gray-100);
   border-radius: 8px 8px 0 0;
   font-weight: 600;
@@ -238,15 +238,20 @@
 
 .table-row {
   display: grid;
-  grid-template-columns: 2fr 1.6fr 1fr 1fr 160px;
-  padding: 1rem 1.25rem;
+  grid-template-columns: 2fr 1.6fr 1fr 1fr 200px;
+  padding: 1.2rem 1.4rem;          /* más alto */
   border-bottom: 1px solid var(--gray-200);
   align-items: center;
-  transition: background 0.15s;
+  transition: background 0.15s, border-left 0.15s;
+  border-left: 3px solid transparent;  /* borde izquierdo invisible por defecto */
 }
 
 .table-row:last-child { border-bottom: none; }
-.table-row:hover { background: var(--gray-50); }
+/* Hover más marcado */
+.table-row:hover {
+  background: #eef4ff;              /* azul muy suave */
+  border-left-color: var(--blue);   /* línea azul a la izquierda */
+}
 
 /* Columna Info */
 .col-info {
@@ -261,7 +266,13 @@
   font-size: 0.975rem;
   line-height: 1.3;
 }
-
+/* Títulos de oferta más visibles */
+.offer-title {
+  font-weight: 700;
+  color: var(--blue);
+  font-size: 1rem;        /* antes 0.975rem */
+  line-height: 1.3;
+}
 .offer-id {
   font-size: 0.78rem;
   color: var(--gray-400);
@@ -288,6 +299,14 @@
   font-size: 0.875rem;
 }
 
+/* Empresa más legible */
+.col-empresa {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  color: #0f172a;
+  font-size: 0.925rem;    /* antes 0.9rem */
+}
 .location-icon {
   font-size: 1rem !important;
   color: var(--gray-400);
@@ -296,7 +315,7 @@
 /* Columna Fecha */
 .col-fecha {
   color: #1e293b;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   font-weight: 500;
 }
 
@@ -762,4 +781,43 @@
   .info-section { grid-template-columns: 1fr; }
 
   .sidebar-actions { grid-template-columns: 1fr; }
+}
+/* Acciones — botón inline para estados aprobado/rechazado */
+.btn-action-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0 0.9rem;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.btn-action-inline .material-icons { font-size: 1rem; }
+
+.btn-action-inline.approve {
+  background: var(--green-light);
+  color: var(--green);
+}
+.btn-action-inline.approve:hover {
+  background: var(--green);
+  color: white;
+}
+
+.btn-action-inline.reject {
+  background: var(--red-light);
+  color: var(--red);
+}
+.btn-action-inline.reject:hover {
+  background: var(--red);
+  color: white;
+}
+/* Sidebar: botón full-width cuando es único */
+.btn-action.full-width {
+  grid-column: 1 / -1;
 }

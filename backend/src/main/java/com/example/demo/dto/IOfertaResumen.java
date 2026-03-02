@@ -25,4 +25,5 @@ public interface IOfertaResumen {
     String getNombreModalidad();
     String getNombreJornada();
     String getNombreCategoria();
+
 }

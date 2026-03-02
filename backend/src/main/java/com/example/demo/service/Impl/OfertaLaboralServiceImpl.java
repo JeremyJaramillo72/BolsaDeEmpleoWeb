@@ -8,7 +8,7 @@ import com.example.demo.repository.Views.IOfertaEmpresaDTO;
 import com.example.demo.repository.Views.IPostulanteOfertaDTO;
 import com.example.demo.service.IOfertaLaboralService;
 import lombok.RequiredArgsConstructor;
-
+import com.example.demo.service.NotificacionService;
 import com.example.demo.dto.IOfertaResumen;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,12 +17,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
     private final OfertaLaboralRepository ofertaRepository;
+    private final UsuarioEmpresaRepository usuarioEmpresaRepository;
     private final ObjectMapper objectMapper;
+    private final NotificacionService notificacionService;
 
     @Override
     @Transactional
@@ -92,6 +95,30 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
                     habilidadesJson,
                     requisitosJson
             );
+
+            // Notificar a administradores sobre oferta pendiente de revisión
+            try {
+                String nombreEmpresa = "Empresa";
+                UsuarioEmpresa empresa = usuarioEmpresaRepository.findById(dto.getIdEmpresa()).orElse(null);
+                if (empresa != null && empresa.getUsuario() != null) {
+                    nombreEmpresa = empresa.getUsuario().getNombre();
+                }
+
+                Map<String, String> variables = Map.of(
+                        "empresa", nombreEmpresa,
+                        "titulo", dto.getTitulo()
+                );
+                Map<String, Object> datos = Map.of("idEmpresa", dto.getIdEmpresa());
+                String enlace = "/menu-principal/PanelAdmi/ValidarOfertas";
+
+                for (String rol : List.of("ADMINISTRADOR", "SUPERVISOR", "GERENTE")) {
+                    notificacionService.notificarUsuariosPorRol(
+                            rol, "oferta_pendiente", variables, datos, enlace, "assignment_late"
+                    );
+                }
+            } catch (Exception e) {
+                System.err.println("Error al notificar admins sobre oferta pendiente: " + e.getMessage());
+            }
         } else {
             ofertaRepository.actualizarOferta(
                     dto.getIdOferta(),
@@ -142,9 +169,39 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
     @Transactional
     public void cambiarEstadoOferta(Long idOferta, String nuevoEstado) {
 
+        // 1. Se actualiza el estado (Esto ya no se va a deshacer si la notificación falla)
         ofertaRepository.actualizarEstadoDirecto(idOferta, nuevoEstado);
-    }
 
+
+        if ("aprobado".equalsIgnoreCase(nuevoEstado)) {
+            try {
+                List<Object[]> datos = ofertaRepository.obtenerDatosEmpresaPorOferta(idOferta);
+
+                if (!datos.isEmpty()) {
+                    Object[] fila = datos.get(0);
+
+                    Long idUsuarioEmpresa = ((Number) fila[0]).longValue();
+                    String tituloOferta = (String) fila[1];
+
+                    notificacionService.crearYEnviarNotificacion(
+                            idUsuarioEmpresa,
+                            "oferta_aprobada",
+                            Map.of(
+                                    "titulo", tituloOferta,
+                                    "estado", nuevoEstado
+                            ),
+                            Map.of("idOferta", idOferta),
+                            "/menu-principal/gestion-ofertas",
+                            "campaign"
+                    );
+                }
+            } catch (Exception e) {
+                // El catch absorbe el error. La notificación no se enviará, pero la oferta SÍ quedará aprobada.
+                System.err.println(" Error al enviar notificación de oferta aprobada: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
 
 
 

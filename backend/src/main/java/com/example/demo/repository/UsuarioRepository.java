@@ -18,27 +18,27 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     Optional<Usuario> findByCorreo(String correo);
 
-
+    // Sincronizado con sp_registrar_postulante
     @Procedure(procedureName = "usuarios.sp_registrar_postulante")
     void registrarPostulantePro(
             @Param("p_nombre") String nombre,
             @Param("p_apellido") String apellido,
             @Param("p_contrasena") String contra,
             @Param("p_correo") String correo,
-            @Param("p_fecha_nacimiento") Date fecha,
+            @Param("p_fecha_nacimiento") Date fecha, // Ajustado snake_case
             @Param("p_genero") String genero,
             @Param("p_telefono") String telf,
-            @Param("p_id_ciudad") Integer idCiudad,
-            @Param("p_id_rol") Integer idRol
+            @Param("p_id_ciudad") Integer idCiudad,   // Ajustado snake_case
+            @Param("p_id_rol") Integer idRol         // Ajustado snake_case
     );
 
-
+    // Sincronizado con sp_registrar_empresa_completa (7 parámetros)
     @Procedure(procedureName = "empresas.sp_registrar_empresa_completa")
     void registrarEmpresaPro(
             @Param("p_correo") String correo,
             @Param("p_contrasena") String contra,
-            @Param("p_id_ciudad") Integer idCiudad,
-            @Param("p_nombre") String nombreEmp,
+            @Param("p_id_ciudad") Integer idCiudad,   // Ajustado snake_case
+            @Param("p_nombre") String nombreEmp, // Ajustado snake_case
             @Param("p_descripcion") String desc,
             @Param("p_ruc") String ruc,
             @Param("p_sitioweb") String web
@@ -55,7 +55,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
             @Param("p_telefono") String telf,
             @Param("p_id_ciudad") Integer idCiudad,
             @Param("p_id_rol") Integer idRol,
-            @Param("p_permisos_ui") String permisosUi
+            @Param("p_permisos_ui") String permisosUi // <--- ¡EL NUEVO PARAMETRO!
     );
     @Modifying
     @Transactional
@@ -73,9 +73,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
             @Param("p_contrasena") String contra,
             @Param("p_correo") String correo,
             @Param("p_telefono") String telf,
-            @Param("p_id_ciudad") Integer idCiudad
+            @Param("p_id_ciudad") Integer idCiudad // Ponlo como Integer aquí
     );
     List<Usuario> findByRol_IdRolNotIn(List<Integer> idsNoDeseados);
 
-
+    List<Usuario> findByRol_NombreRol(String nombreRol);
 }

@@ -88,23 +88,39 @@
           <span class="btn-ver-label">Ver detalles</span>
         </button>
 
+        <!-- Pendiente: aprobar o rechazar -->
         <div class="dropdown" *ngIf="estadoActual === 'pendiente'" [class.open]="menuAbiertoId === item.idOferta">
           <button class="btn-menu" (click)="toggleMenu(item.idOferta, $event)" title="Más acciones">
             <span class="material-icons">more_vert</span>
           </button>
           <div class="dropdown-menu">
             <button class="dropdown-item approve" (click)="aprobar(item); cerrarMenu()">
-              <span class="material-icons">check_circle</span>
-              Aprobar oferta
+              <span class="material-icons">check_circle</span> Aprobar oferta
             </button>
             <button class="dropdown-item reject" (click)="rechazar(item); cerrarMenu()">
-              <span class="material-icons">cancel</span>
-              Rechazar oferta
+              <span class="material-icons">cancel</span> Rechazar oferta
             </button>
           </div>
         </div>
+
+        <!-- Aprobada: solo opción de rechazar -->
+        <button *ngIf="estadoActual === 'aprobado'"
+                class="btn-action-inline reject"
+                (click)="rechazar(item)"
+                title="Rechazar oferta">
+          <span class="material-icons">cancel</span>
+          Rechazar
+        </button>
+
+        <!-- Rechazada: solo opción de aprobar -->
+        <button *ngIf="estadoActual === 'rechazada'"
+                class="btn-action-inline approve"
+                (click)="aprobar(item)"
+                title="Aprobar oferta">
+          <span class="material-icons">check_circle</span>
+          Aprobar
+        </button>
       </div>
-    </div>
 
     <div *ngIf="ofertasFiltradas.length === 0" class="empty-state">
       <span class="material-icons">inbox</span>
@@ -213,16 +229,32 @@
       <div class="desc-box">{{ ofertaSeleccionada?.descripcion }}</div>
     </div>
 
-    <div class="sidebar-actions" *ngIf="estadoActual === 'pendiente'">
-      <button (click)="aprobar(ofertaSeleccionada)" class="btn-action approve">
-        <span class="material-icons">check_circle</span>
-        Aprobar oferta
-      </button>
-      <button (click)="rechazar(ofertaSeleccionada)" class="btn-action reject">
-        <span class="material-icons">cancel</span>
-        Rechazar oferta
-      </button>
+    <div class="sidebar-actions">
+      <!-- Pendiente -->
+      <ng-container *ngIf="estadoActual === 'pendiente'">
+        <button (click)="aprobar(ofertaSeleccionada)" class="btn-action approve">
+          <span class="material-icons">check_circle</span> Aprobar oferta
+        </button>
+        <button (click)="rechazar(ofertaSeleccionada)" class="btn-action reject">
+          <span class="material-icons">cancel</span> Rechazar oferta
+        </button>
+      </ng-container>
+
+      <!-- Aprobada: solo rechazar -->
+      <ng-container *ngIf="estadoActual === 'aprobado'">
+        <button (click)="rechazar(ofertaSeleccionada)" class="btn-action reject full-width">
+          <span class="material-icons">cancel</span> Rechazar oferta
+        </button>
+      </ng-container>
+
+      <!-- Rechazada: solo aprobar -->
+      <ng-container *ngIf="estadoActual === 'rechazada'">
+        <button (click)="aprobar(ofertaSeleccionada)" class="btn-action approve full-width">
+          <span class="material-icons">check_circle</span> Aprobar oferta
+        </button>
+      </ng-container>
     </div>
 
   </div>
+</div>
 </div>

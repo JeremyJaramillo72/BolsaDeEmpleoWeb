@@ -1,5 +1,6 @@
 package com.example.demo.model;
 
+import com.example.demo.dto.IOfertaResumen;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -43,5 +44,7 @@ public class Postulacion {
             this.estadoValidacion = "Pendiente";
         }
     }
+
+
 }
 

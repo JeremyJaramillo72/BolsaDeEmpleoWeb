@@ -7,6 +7,9 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @Service
 @AllArgsConstructor
 public class EmailService {
@@ -62,5 +65,29 @@ public class EmailService {
 
         mensaje.setText(texto);
         mailSender.send(mensaje);
+    }
+
+    public void sendSimpleEmail(String to, String subject, String text) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(text);
+        mailSender.send(message);
+    }
+    public void notificarLoginAdmin(String adminEmail, String ipAddress, String location) {
+        String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        String subject = "ALERTA DE SEGURIDAD: Nuevo inicio de sesión de Administrador";
+        String body = String.format("""
+            Se ha detectado un inicio de sesión en la cuenta de Administrador.
+            
+            Detalles:
+            - Hora: %s
+            - IP: %s
+            - Ubicación aproximada: %s
+            
+            Si no fuiste tú, por favor cambia tu contraseña inmediatamente y contacta a soporte.
+            """, time, ipAddress, location);
+
+        sendSimpleEmail(adminEmail, subject, body);
     }
 }
