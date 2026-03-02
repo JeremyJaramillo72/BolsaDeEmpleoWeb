@@ -93,11 +93,25 @@ export class PerfilProfesionalComponent implements OnInit {
 
 
   cargarCatalogos(): void {
-    this.perfilService.getFacultades().subscribe(res => this.facultades = res);
-    this.perfilService.getIdiomasCatalogo().subscribe(res => this.idiomasDisponibles = res);
-    this.perfilService.getCargosCatalogo().subscribe(res => this.cargosDisponibles = res);
-    this.perfilService.getEmpresasCatalogo().subscribe(res => this.empresasDisponibles = res);
-    this.perfilService.getProvincias().subscribe(res => this.provincias = res);
+    this.perfilService.getFacultades().subscribe({
+      next: res => this.facultades = res,
+      error: err => console.warn('No se pudieron cargar las facultades')
+    });
+
+    this.perfilService.getIdiomasCatalogo().subscribe({
+      next: res => this.idiomasDisponibles = res,
+      error: err => console.error('Error crítico al cargar idiomas', err) // <- Esto evita la pantalla blanca
+    });
+
+    this.perfilService.getCargosCatalogo().subscribe({
+      next: res => this.cargosDisponibles = res,
+      error: err => console.warn('No se pudieron cargar los cargos')
+    });
+
+    this.perfilService.getEmpresasCatalogo().subscribe({
+      next: res => this.empresasDisponibles = res,
+      error: err => console.warn('No se pudieron cargar las empresas')
+    });
   }
 
   cargarDatosDesdeBackend(): void {
