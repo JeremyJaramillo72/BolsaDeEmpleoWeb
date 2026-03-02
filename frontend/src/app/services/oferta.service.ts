@@ -61,13 +61,13 @@ export interface OfertaDetalladaDTO {
   idPostulacion?: number | null;
   estadoValidacion?: string | null;
   observaciones?: string | null;
-  // Campos extra (ciudad, habilidades, requisitos)
-  nombreCiudad?: string;
-  habilidades?: any[];
-  requisitos_manuales?: any[];
-  // Campo UI
+  // Habilidades y requisitos
+  habilidades?: OfertaHabilidadDTO[];
+  requisitos_manuales?: RequisitoManualDTO[];
+  // Campos UI
   esFavorito?: boolean;
   mostrarDetalles?: boolean;
+  nombreCiudad?: string;
 }
 
 @Injectable({
@@ -124,6 +124,14 @@ export class OfertaService {
     return this.http.get<OfertaDetalladaDTO[]>(`${this.apiUrl}/completo/${idUsuario}`);
   }
 
+  obtenerExtraInfo(idOferta: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${idOferta}/extra`);
+  }
+
+  obtenerPerfilPostulante(idPostulacion: number): Observable<any> {
+    return this.http.get<any>(`http://localhost:8080/api/revision-postulante/postulaciones/${idPostulacion}/resumen`);
+  }
+
   toggleFavorita(idOferta: number, idUsuario: number): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/${idOferta}/favorita/${idUsuario}`, {});
   }
@@ -145,13 +153,5 @@ export class OfertaService {
 
   obtenerArchivoCV(idPostulacion: number): Observable<any> {
     return this.http.get(`http://localhost:8080/api/postulaciones/archivo/${idPostulacion}`);
-  }
-
-  obtenerExtraInfo(idOferta: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${idOferta}/extra`);
-  }
-
-  obtenerPerfilPostulante(idPostulacion: number): Observable<any> {
-    return this.http.get<any>(`http://localhost:8080/api/revision-postulante/postulaciones/${idPostulacion}/resumen`);
   }
 }

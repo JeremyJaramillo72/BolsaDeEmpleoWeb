@@ -9,6 +9,7 @@ import com.example.demo.repository.Views.IOfertaDetallada;
 import com.example.demo.repository.Views.IOfertaEmpresaDTO;
 import com.example.demo.repository.Views.IPostulanteOfertaDTO;
 import com.example.demo.service.IOfertaLaboralService;
+import com.example.demo.service.NotificacionService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

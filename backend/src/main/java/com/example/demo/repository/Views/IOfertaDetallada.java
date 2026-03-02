@@ -21,4 +21,5 @@ public interface IOfertaDetallada {
     String getEstadoFav();
     Long getIdPostulacion();
     String getEstadoValidacion();
+    String getObservaciones();
 }

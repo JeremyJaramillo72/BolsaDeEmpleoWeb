@@ -167,11 +167,11 @@
 
           <!-- ACCIONES -->
           <div class="card-actions">
-            <!-- Ya postuló -->
+            <!-- Ya postuló (pendiente o aceptado) -->
             <button class="btn-postular btn-ya-postulado" *ngIf="yaPostulo(oferta)" disabled>
               <span class="material-icons">how_to_reg</span> Ya postulaste
             </button>
-            <!-- Fuera de rango de fechas -->
+            <!-- Fuera del rango de fechas -->
             <button class="btn-postular btn-fecha-cerrada" *ngIf="!yaPostulo(oferta) && !puedePostular(oferta)" disabled>
               <span class="material-icons">event_busy</span> {{ mensajeFecha(oferta) }}
             </button>
@@ -201,7 +201,7 @@
                   <span class="excluyente-chip" *ngIf="hab.esObligatorio"> *</span>
                 </span>
               </div>
-              <p class="leyenda-excluyente" *ngIf="tieneExcluyentes(oferta.habilidades)">
+              <p class="leyenda-excluyente" *ngIf="oferta.habilidades && oferta.habilidades.length > 0 && tieneExcluyentes(oferta.habilidades)">
                 <span class="required">*</span> Excluyente
               </p>
             </div>
@@ -213,15 +213,13 @@
                 Requisitos Específicos
               </h4>
               <ul class="requisitos-list">
-                <li *ngFor="let req of oferta.requisitos_manuales">
-                  {{ req.descripcion }}
-                  <span class="req-obligatorio" *ngIf="req.esObligatorio"> · Obligatorio</span>
-                </li>
+                <li *ngFor="let req of oferta.requisitos_manuales">{{ req.descripcion }}</li>
               </ul>
             </div>
 
             <p class="empty-details" *ngIf="(!oferta.habilidades || oferta.habilidades.length === 0) && (!oferta.requisitos_manuales || oferta.requisitos_manuales.length === 0)">
-              <span class="material-icons">info</span> No hay requisitos adicionales.
+              <span class="material-icons">info</span>
+              No hay información adicional disponible para esta oferta.
             </p>
 
           </div>

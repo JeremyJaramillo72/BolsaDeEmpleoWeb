@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { OfertaService, OfertaDetalladaDTO } from '../../services/oferta.service';
-
 @Component({
   selector: 'app-busqueda-empleo',
   standalone: true,
@@ -33,6 +32,7 @@ export class BusquedaEmpleoComponent implements OnInit {
   cargando: boolean = false;
   soloFavoritas: boolean = false;
 
+  // TODO: obtener idUsuario desde el servicio de autenticación
   private idUsuario: number = 0;
 
   constructor(
@@ -42,11 +42,22 @@ export class BusquedaEmpleoComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Verificar TODAS las keys del localStorage
+    console.log('=== localStorage completo ===');
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      console.log(`  ${key}: ${localStorage.getItem(key!)}`);
+    }
+
     const idGuardado = localStorage.getItem('idUsuario');
+    console.log('idUsuario encontrado:', idGuardado);
+
     if (idGuardado) {
       this.idUsuario = Number(idGuardado);
+      console.log('idUsuario como número:', this.idUsuario);
       this.cargarOfertas();
     } else {
+      console.warn('No se encontró idUsuario en localStorage, redirigiendo...');
       this.router.navigate(['/login']);
     }
   }
@@ -59,56 +70,62 @@ export class BusquedaEmpleoComponent implements OnInit {
       next: (data: any[]) => {
         this.cargando = false;
 
+        if (!data || data.length === 0) return;
+
         this.ofertas = data.map((o: any) => ({
-          idOferta:            o.idOferta          ?? o.id_oferta,
-          titulo:              o.titulo,
-          descripcion:         o.descripcion,
-          cantidadVacantes:    o.cantidadVacantes  ?? o.cantidad_vacantes,
-          experienciaMinima:   o.experienciaMinima ?? o.experiencia_minima,
-          fechaInicio:         o.fechaInicio       ?? o.fecha_inicio,
-          fechaCierre:         o.fechaCierre       ?? o.fecha_cierre,
-          nombreModalidad:     o.nombreModalidad   ?? o.nombre_modalidad,
-          nombreJornada:       o.nombreJornada     ?? o.nombre_jornada,
-          nombreCategoria:     o.nombreCategoria   ?? o.nombre_categoria,
-          salarioMin:          o.salarioMin        ?? o.salario_min,
-          salarioMax:          o.salarioMax        ?? o.salario_max,
-          estadoOferta:        o.estadoOferta      ?? o.estado_oferta,
-          idFavoritas:         o.idFavoritas       ?? o.id_favoritas,
-          estadoFav:           o.estadoFav         ?? o.estado_fav,
-          idPostulacion:       o.idPostulacion     ?? o.id_postulacion,
-          estadoValidacion:    o.estadoValidacion  ?? o.estado_validacion,
-          observaciones:       o.observaciones     ?? null,
-          esFavorito:         (o.idFavoritas ?? o.id_favoritas) != null,
-          mostrarDetalles:     false,
-          habilidades:         [],
+          idOferta:          o.idOferta          ?? o.id_oferta,
+          titulo:            o.titulo,
+          descripcion:       o.descripcion,
+          cantidadVacantes:  o.cantidadVacantes  ?? o.cantidad_vacantes,
+          experienciaMinima: o.experienciaMinima ?? o.experiencia_minima,
+          fechaInicio:       o.fechaInicio       ?? o.fecha_inicio,
+          fechaCierre:       o.fechaCierre       ?? o.fecha_cierre,
+          nombreModalidad:   o.nombreModalidad   ?? o.nombre_modalidad,
+          nombreJornada:     o.nombreJornada     ?? o.nombre_jornada,
+          nombreCategoria:   o.nombreCategoria   ?? o.nombre_categoria,
+          salarioMin:        o.salarioMin        ?? o.salario_min,
+          salarioMax:        o.salarioMax        ?? o.salario_max,
+          estadoOferta:      o.estadoOferta      ?? o.estado_oferta,
+          idFavoritas:       o.idFavoritas       ?? o.id_favoritas,
+          estadoFav:         o.estadoFav         ?? o.estado_fav,
+          idPostulacion:     o.idPostulacion     ?? o.id_postulacion,
+          estadoValidacion:  o.estadoValidacion  ?? o.estado_validacion,
+          esFavorito:       (o.idFavoritas ?? o.id_favoritas) != null,
+          mostrarDetalles:  false,
+          habilidades:      [],
           requisitos_manuales: [],
-          nombreCiudad:        ''
+          nombreCiudad:     ''
         }));
 
         this.modalidades = [...new Set(this.ofertas.map(o => o.nombreModalidad).filter(Boolean))] as string[];
         this.jornadas    = [...new Set(this.ofertas.map(o => o.nombreJornada).filter(Boolean))] as string[];
         this.categorias  = [...new Set(this.ofertas.map(o => o.nombreCategoria).filter(Boolean))] as string[];
+
         this.cdr.detectChanges();
         this.cargarInfoExtra();
       },
       error: (e: any) => {
         this.cargando = false;
         this.errorConexion = true;
-        console.error('Error cargando ofertas:', e);
+        console.error('❌ Error HTTP:', e.status, e.message);
       }
     });
   }
 
   cargarInfoExtra(): void {
     if (this.ofertas.length === 0) return;
-    const peticiones = this.ofertas.map(o => this.ofertaService.obtenerExtraInfo(o.idOferta));
+
+    const peticiones = this.ofertas.map(o =>
+      this.ofertaService.obtenerExtraInfo(o.idOferta)
+    );
+
     forkJoin(peticiones).subscribe({
       next: (resultados: any[]) => {
         resultados.forEach((extra, i) => {
           if (extra) {
-            this.ofertas[i].nombreCiudad        = extra.nombreCiudad ?? '';
-            this.ofertas[i].habilidades         = extra.habilidades  ?? [];
-            this.ofertas[i].requisitos_manuales = extra.requisitos   ?? [];
+            this.ofertas[i].nombreCiudad     = extra.nombreCiudad  ?? '';
+            this.ofertas[i].habilidades      = extra.habilidades   ?? [];
+            this.ofertas[i].requisitos_manuales = extra.requisitos ?? [];
           }
         });
         this.cdr.detectChanges();
@@ -199,9 +216,10 @@ export class BusquedaEmpleoComponent implements OnInit {
   }
 
   puedePostular(oferta: OfertaDetalladaDTO): boolean {
-    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
-    const inicio = oferta.fechaInicio ? new Date(oferta.fechaInicio) : null;
-    const cierre = oferta.fechaCierre ? new Date(oferta.fechaCierre) : null;
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const inicio  = oferta.fechaInicio  ? new Date(oferta.fechaInicio)  : null;
+    const cierre  = oferta.fechaCierre  ? new Date(oferta.fechaCierre)  : null;
     if (inicio) inicio.setHours(0, 0, 0, 0);
     if (cierre) cierre.setHours(0, 0, 0, 0);
     if (inicio && hoy < inicio) return false;
@@ -210,7 +228,8 @@ export class BusquedaEmpleoComponent implements OnInit {
   }
 
   mensajeFecha(oferta: OfertaDetalladaDTO): string {
-    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
     const inicio = oferta.fechaInicio ? new Date(oferta.fechaInicio) : null;
     const cierre = oferta.fechaCierre ? new Date(oferta.fechaCierre) : null;
     if (inicio) inicio.setHours(0, 0, 0, 0);
@@ -218,10 +237,6 @@ export class BusquedaEmpleoComponent implements OnInit {
     if (inicio && hoy < inicio) return 'Aún no disponible';
     if (cierre && hoy > cierre) return 'Convocatoria cerrada';
     return '';
-  }
-
-  tieneExcluyentes(habilidades: any[]): boolean {
-    return habilidades?.some(h => h.esObligatorio) ?? false;
   }
 
   abrirModalPostulacion(oferta: OfertaDetalladaDTO): void {
@@ -288,5 +303,9 @@ export class BusquedaEmpleoComponent implements OnInit {
         alert('Error al enviar la postulación. Por favor intente nuevamente.');
       }
     });
+  }
+
+  tieneExcluyentes(habilidades: any[]): boolean {
+    return habilidades.some(h => h.esObligatorio);
   }
 }
