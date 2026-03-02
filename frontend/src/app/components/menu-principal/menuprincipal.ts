@@ -121,6 +121,16 @@ export class MenuprincipalComponent implements OnInit {
         path: '/revision-postulantes',
         route: '/menu-principal/revision-postulantes'
       },
+      {
+        icon: 'work',
+        title: 'Reportes de Empresa',
+        description: 'Métricas y análisis del sistema',
+        colorHex: '#059669', bgHex: '#ecfdf5',
+        roles: ['EMPRESA'],
+        path: '/Empresa/ReportesEmpresa',
+        route: '/components/Reportes-Empresa/Reporte-Empresa'
+      },
+
 
       // --- MÓDULOS DE POSTULANTE ---
       {

@@ -12,7 +12,7 @@ import { AdminUsuariosComponent} from './components/Panel-Admin/components/audit
 import {AdminMiniAdmiComponent} from './components/Panel-Admin/components/admin-mini-admi/admin-mini-admi';
 import  {GestionCatalogosComponent} from './components/Panel-Admin/components/gestion-catalogos/gestion-catalogos';
 import {GestionReportesComponent} from './components/Panel-Admin/components/gestion-reportes/gestion-reportes';
-
+import { ReporteEmpresaComponent} from './components/Reporte-Empresa/Reporte-Empresa';
 import {ValidarEmpresaComponent} from './components/Panel-Admin/components/validar-empresa/validar-empresa';
 import {RevisionPostulantesComponent} from './components/revision-postulantes/revision-postulantes';
 import {RolesBdComponent} from './components/Panel-Admin/components/roles-bd/roles-bd';
@@ -48,6 +48,12 @@ export const routes: Routes = [
         path: 'PanelAdmi/GestionReportes',
         component: GestionReportesComponent
       },
+
+      {
+        path: 'Empresa/ReportesEmpresa',
+        component: ReporteEmpresaComponent
+      },
+
       {
         path: 'PanelAdmi/ValidarEmpresa',
         component: ValidarEmpresaComponent
