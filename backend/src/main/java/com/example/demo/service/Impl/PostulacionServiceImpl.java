@@ -6,6 +6,7 @@ import com.example.demo.dto.PostulanteResumenDTO;
 import com.example.demo.model.Postulacion;
 import com.example.demo.repository.Impl.PostulacionCustomRepository;
 import com.example.demo.repository.PostulacionRepository;
+import com.example.demo.service.AzureStorageConfig;
 import com.example.demo.service.IPostulacionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,7 @@ import java.util.Map;
 public class PostulacionServiceImpl implements IPostulacionService {
 
     private final PostulacionRepository postulacionRepository;
-    private final CloudinaryService cloudinaryService;
+    private final AzureStorageConfig azureStorageConfig;
     private final PostulacionCustomRepository postulacionCustomRepository;
     private final NotificacionService notificacionService;
 
@@ -29,13 +30,9 @@ public class PostulacionServiceImpl implements IPostulacionService {
     @Transactional
     public void registrarPostulacion(Long idUsuario, Integer idOferta, MultipartFile archivo) throws Exception {
         String urlCv = null;
-
-
         if (archivo != null && !archivo.isEmpty()) {
-            urlCv = cloudinaryService.subirImagenEArchivo(archivo);
+            urlCv = azureStorageConfig.subirDocumento(archivo);
         }
-
-
         postulacionRepository.registrarPostulacionPro(idUsuario, idOferta, urlCv);
         try {
             List<Object[]> datosOferta = postulacionRepository.obtenerDatosEmpresaPorOfertaId(idOferta);
@@ -125,5 +122,10 @@ public class PostulacionServiceImpl implements IPostulacionService {
                 System.err.println("Error enviando notificacion de postulacion aprobada: " + e.getMessage());
             }
         }
+    }
+
+    @Override
+    public PostulacionCustomRepository.ResumenPostulacion obtenerResumenPostulacion(Long idPostulacion) {
+        return postulacionCustomRepository.obtenerResumenPostulacion(idPostulacion);
     }
 }

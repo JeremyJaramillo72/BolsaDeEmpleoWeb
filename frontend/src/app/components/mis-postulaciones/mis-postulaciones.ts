@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { OfertaService, OfertaDetalladaDTO } from '../../services/oferta.service';
 
 @Component({
@@ -18,6 +19,12 @@ export class MisPostulacionesComponent implements OnInit {
   errorConexion: boolean = false;
   private idUsuario: number = 0;
 
+  // Modal de validación
+  mostrarModal: boolean = false;
+  cargandoModal: boolean = false;
+  perfilModal: any = null;
+  tituloOfertaModal: string = '';
+
   constructor(
     private ofertaService: OfertaService,
     private router: Router,
@@ -32,7 +39,6 @@ export class MisPostulacionesComponent implements OnInit {
     } else {
       this.router.navigate(['/login']);
     }
-
   }
 
   cargarPostulaciones(): void {
@@ -42,34 +48,39 @@ export class MisPostulacionesComponent implements OnInit {
     this.ofertaService.listarOfertasCompleto(this.idUsuario).subscribe({
       next: (data: any[]) => {
         this.cargando = false;
-        // Filtrar solo las que tienen postulación y NO están canceladas
         this.postulaciones = data
           .filter((o: any) => {
             const tienePostulacion = (o.idPostulacion ?? o.id_postulacion) != null;
             const estado = (o.estadoValidacion ?? o.estado_validacion)?.toLowerCase();
-            const noCancelada = estado !== 'cancelada';
-            return tienePostulacion && noCancelada;
+            return tienePostulacion && estado !== 'cancelada';
           })
           .map((o: any) => ({
-            idOferta:          o.idOferta          ?? o.id_oferta,
-            titulo:            o.titulo,
-            descripcion:       o.descripcion,
-            cantidadVacantes:  o.cantidadVacantes  ?? o.cantidad_vacantes,
-            experienciaMinima: o.experienciaMinima ?? o.experiencia_minima,
-            fechaInicio:       o.fechaInicio       ?? o.fecha_inicio,
-            fechaCierre:       o.fechaCierre       ?? o.fecha_cierre,
-            nombreModalidad:   o.nombreModalidad   ?? o.nombre_modalidad,
-            nombreJornada:     o.nombreJornada     ?? o.nombre_jornada,
-            nombreCategoria:   o.nombreCategoria   ?? o.nombre_categoria,
-            salarioMin:        o.salarioMin        ?? o.salario_min,
-            salarioMax:        o.salarioMax        ?? o.salario_max,
-            estadoOferta:      o.estadoOferta      ?? o.estado_oferta,
-            idFavoritas:       o.idFavoritas       ?? o.id_favoritas,
-            estadoFav:         o.estadoFav         ?? o.estado_fav,
-            idPostulacion:     o.idPostulacion     ?? o.id_postulacion,
-            estadoValidacion:  o.estadoValidacion  ?? o.estado_validacion,
-            esFavorito:       (o.idFavoritas ?? o.id_favoritas) != null
+            idOferta:            o.idOferta          ?? o.id_oferta,
+            titulo:              o.titulo,
+            descripcion:         o.descripcion,
+            cantidadVacantes:    o.cantidadVacantes  ?? o.cantidad_vacantes,
+            experienciaMinima:   o.experienciaMinima ?? o.experiencia_minima,
+            fechaInicio:         o.fechaInicio       ?? o.fecha_inicio,
+            fechaCierre:         o.fechaCierre       ?? o.fecha_cierre,
+            nombreModalidad:     o.nombreModalidad   ?? o.nombre_modalidad,
+            nombreJornada:       o.nombreJornada     ?? o.nombre_jornada,
+            nombreCategoria:     o.nombreCategoria   ?? o.nombre_categoria,
+            salarioMin:          o.salarioMin        ?? o.salario_min,
+            salarioMax:          o.salarioMax        ?? o.salario_max,
+            estadoOferta:        o.estadoOferta      ?? o.estado_oferta,
+            idFavoritas:         o.idFavoritas       ?? o.id_favoritas,
+            estadoFav:           o.estadoFav         ?? o.estado_fav,
+            idPostulacion:       o.idPostulacion     ?? o.id_postulacion,
+            estadoValidacion:    o.estadoValidacion  ?? o.estado_validacion,
+            observaciones:       o.observaciones     ?? null,
+            esFavorito:         (o.idFavoritas ?? o.id_favoritas) != null,
+            mostrarDetalles:     false,
+            habilidades:         [],
+            requisitos_manuales: [],
+            nombreCiudad:        ''
           }));
+        this.cdr.detectChanges();
+        this.cargarInfoExtra();
       },
       error: (e: any) => {
         this.cargando = false;
@@ -79,51 +90,113 @@ export class MisPostulacionesComponent implements OnInit {
     });
   }
 
+  cargarInfoExtra(): void {
+    if (this.postulaciones.length === 0) return;
+    const peticiones = this.postulaciones.map(p => this.ofertaService.obtenerExtraInfo(p.idOferta));
+    forkJoin(peticiones).subscribe({
+      next: (resultados: any[]) => {
+        resultados.forEach((extra, i) => {
+          if (extra) {
+            this.postulaciones[i].nombreCiudad        = extra.nombreCiudad ?? '';
+            this.postulaciones[i].habilidades         = extra.habilidades  ?? [];
+            this.postulaciones[i].requisitos_manuales = extra.requisitos   ?? [];
+          }
+        });
+        this.cdr.detectChanges();
+      },
+      error: (e: any) => console.error('Error al cargar info extra:', e)
+    });
+  }
+
   getEstadoBadgeClass(estado: string | null | undefined): string {
     switch (estado?.toLowerCase()) {
-      case 'aprobado':   return 'badge-aprobado';
+      case 'aceptado':   return 'badge-aprobado';
       case 'rechazado':  return 'badge-rechazado';
       case 'pendiente':  return 'badge-pendiente';
       default:           return 'badge-pendiente';
     }
   }
 
-  verDocumento(postulacion: OfertaDetalladaDTO): void {
-    if (!postulacion.idPostulacion) {
-      alert('No se encontró el ID de postulación');
-      return;
+  getEstadoItemClass(estado: string | null | undefined): string {
+    switch (estado?.toLowerCase()) {
+      case 'aceptado':  return 'item-aprobado';
+      case 'rechazado': return 'item-rechazado';
+      default:          return 'item-pendiente';
     }
+  }
 
-    this.ofertaService.obtenerArchivoCV(postulacion.idPostulacion).subscribe({
-      next: (response) => {
-        if (response.url) {
-          // Abrir el archivo en una nueva ventana
-          window.open(response.url, '_blank');
-        } else {
-          alert('No se encontró archivo adjunto para esta postulación');
-        }
+  getEstadoItemIcon(estado: string | null | undefined): string {
+    switch (estado?.toLowerCase()) {
+      case 'aceptado':  return 'check_circle';
+      case 'rechazado': return 'cancel';
+      default:          return 'hourglass_empty';
+    }
+  }
+
+  tieneExcluyentes(habilidades: any[]): boolean {
+    return habilidades?.some(h => h.esObligatorio) ?? false;
+  }
+
+  // ── Modal de validación ─────────────────────────────────────────────────
+
+  verValidacion(postulacion: OfertaDetalladaDTO): void {
+    if (!postulacion.idPostulacion) return;
+    this.tituloOfertaModal = postulacion.titulo ?? '';
+    this.perfilModal = null;
+    this.mostrarModal = true;
+    this.cargandoModal = true;
+
+    console.log('▶ Llamando resumen con idPostulacion:', postulacion.idPostulacion);
+
+    this.ofertaService.obtenerPerfilPostulante(postulacion.idPostulacion).subscribe({
+      next: (data: any) => {
+        console.log('✅ Respuesta resumen raw:', data);
+        console.log('   formacionAcademica raw:', data.formacionAcademica);
+        console.log('   experienciaLaboral raw:', data.experienciaLaboral);
+        console.log('   cursosRealizados raw:',   data.cursosRealizados);
+        console.log('   idiomas raw:',             data.idiomas);
+
+        const parsear = (v: any) => {
+          if (!v) return [];
+          if (typeof v === 'string') { try { return JSON.parse(v); } catch (err) { console.error('parse error:', err, v); return []; } }
+          return Array.isArray(v) ? v : [];
+        };
+        this.perfilModal = {
+          ...data,
+          formacionAcademica: parsear(data.formacionAcademica),
+          experienciaLaboral: parsear(data.experienciaLaboral),
+          cursosRealizados:   parsear(data.cursosRealizados),
+          idiomas:            parsear(data.idiomas)
+        };
+        console.log('   formacionAcademica parsed:', this.perfilModal.formacionAcademica);
+        this.cargandoModal = false;
+        this.cdr.detectChanges();
       },
-      error: (error) => {
-        console.error('Error al obtener archivo:', error);
-        alert('No se pudo recuperar el archivo');
+      error: (e: any) => {
+        this.cargandoModal = false;
+        console.error('❌ Error al obtener resumen:', e.status, e.message, e.error);
       }
     });
   }
 
-  cancelarPostulacion(postulacion: OfertaDetalladaDTO): void {
-    if (!postulacion.idPostulacion) {
-      alert('No se encontró el ID de postulación');
-      return;
-    }
+  cerrarModal(): void {
+    this.mostrarModal = false;
+    this.perfilModal = null;
+  }
 
-    if (!confirm(`¿Está seguro de cancelar la postulación para "${postulacion.titulo}"?`)) {
-      return;
-    }
+  abrirDocumento(url: string): void {
+    if (url) window.open(url, '_blank');
+  }
+
+  // ── Cancelar postulación ────────────────────────────────────────────────
+
+  cancelarPostulacion(postulacion: OfertaDetalladaDTO): void {
+    if (!postulacion.idPostulacion) return;
+    if (!confirm(`¿Está seguro de cancelar la postulación para "${postulacion.titulo}"?`)) return;
 
     this.ofertaService.cancelarPostulacion(postulacion.idPostulacion).subscribe({
-      next: (response) => {
+      next: () => {
         alert('Postulación cancelada exitosamente');
-        // Recargar postulaciones para actualizar el estado
         this.cargarPostulaciones();
       },
       error: (error) => {

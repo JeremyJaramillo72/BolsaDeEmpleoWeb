@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.IOfertaResumen;
+import com.example.demo.dto.OfertaExtraInfoDTO;
 import com.example.demo.dto.OfertaLaboralDTO;
 import com.example.demo.model.OfertaLaboral;
 import com.example.demo.repository.Views.IOfertaDetallada;
@@ -68,6 +69,16 @@ public class OfertaLaboralController {
         try {
             List<IOfertaDetallada> resultado = ofertaService.listarOfertasCompleto(idUsuario);
             return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{idOferta}/extra")
+    public ResponseEntity<?> obtenerExtraInfo(@PathVariable Integer idOferta) {
+        try {
+            OfertaExtraInfoDTO extra = ofertaService.obtenerExtraInfo(idOferta);
+            return ResponseEntity.ok(extra);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error: " + e.getMessage());
         }

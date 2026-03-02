@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { OfertaService, OfertaDetalladaDTO } from '../../services/oferta.service';
 
 @Component({
@@ -32,7 +33,6 @@ export class BusquedaEmpleoComponent implements OnInit {
   cargando: boolean = false;
   soloFavoritas: boolean = false;
 
-  // TODO: obtener idUsuario desde el servicio de autenticación
   private idUsuario: number = 0;
 
   constructor(
@@ -42,78 +42,78 @@ export class BusquedaEmpleoComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Verificar TODAS las keys del localStorage
-    console.log('=== localStorage completo ===');
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      console.log(`  ${key}: ${localStorage.getItem(key!)}`);
-    }
-
     const idGuardado = localStorage.getItem('idUsuario');
-    console.log('idUsuario encontrado:', idGuardado);
-
     if (idGuardado) {
       this.idUsuario = Number(idGuardado);
-      console.log('idUsuario como número:', this.idUsuario);
       this.cargarOfertas();
     } else {
-      console.warn('No se encontró idUsuario en localStorage, redirigiendo...');
       this.router.navigate(['/login']);
     }
   }
 
   cargarOfertas(): void {
-    const url = `http://localhost:8080/api/ofertas/completo/${this.idUsuario}`;
-    console.log('Llamando al endpoint:', url);
+    this.cargando = true;
+    this.errorConexion = false;
 
     this.ofertaService.listarOfertasCompleto(this.idUsuario).subscribe({
       next: (data: any[]) => {
-        console.log('✅ Respuesta recibida, total registros:', data?.length);
-        console.log('Raw data:', data);
-
-        if (!data || data.length === 0) {
-          console.warn('⚠️ El backend retornó un array vacío');
-          return;
-        }
-
-        console.log('Keys del primer registro:', Object.keys(data[0]));
-        console.log('Primer registro completo:', JSON.stringify(data[0]));
+        this.cargando = false;
 
         this.ofertas = data.map((o: any) => ({
-          idOferta:          o.idOferta          ?? o.id_oferta,
-          titulo:            o.titulo,
-          descripcion:       o.descripcion,
-          cantidadVacantes:  o.cantidadVacantes  ?? o.cantidad_vacantes,
-          experienciaMinima: o.experienciaMinima ?? o.experiencia_minima,
-          fechaInicio:       o.fechaInicio       ?? o.fecha_inicio,
-          fechaCierre:       o.fechaCierre       ?? o.fecha_cierre,
-          nombreModalidad:   o.nombreModalidad   ?? o.nombre_modalidad,
-          nombreJornada:     o.nombreJornada     ?? o.nombre_jornada,
-          nombreCategoria:   o.nombreCategoria   ?? o.nombre_categoria,
-          salarioMin:        o.salarioMin        ?? o.salario_min,
-          salarioMax:        o.salarioMax        ?? o.salario_max,
-          estadoOferta:      o.estadoOferta      ?? o.estado_oferta,
-          idFavoritas:       o.idFavoritas       ?? o.id_favoritas,
-          estadoFav:         o.estadoFav         ?? o.estado_fav,
-          idPostulacion:     o.idPostulacion     ?? o.id_postulacion,
-          estadoValidacion:  o.estadoValidacion  ?? o.estado_validacion,
-          esFavorito:       (o.idFavoritas ?? o.id_favoritas) != null
+          idOferta:            o.idOferta          ?? o.id_oferta,
+          titulo:              o.titulo,
+          descripcion:         o.descripcion,
+          cantidadVacantes:    o.cantidadVacantes  ?? o.cantidad_vacantes,
+          experienciaMinima:   o.experienciaMinima ?? o.experiencia_minima,
+          fechaInicio:         o.fechaInicio       ?? o.fecha_inicio,
+          fechaCierre:         o.fechaCierre       ?? o.fecha_cierre,
+          nombreModalidad:     o.nombreModalidad   ?? o.nombre_modalidad,
+          nombreJornada:       o.nombreJornada     ?? o.nombre_jornada,
+          nombreCategoria:     o.nombreCategoria   ?? o.nombre_categoria,
+          salarioMin:          o.salarioMin        ?? o.salario_min,
+          salarioMax:          o.salarioMax        ?? o.salario_max,
+          estadoOferta:        o.estadoOferta      ?? o.estado_oferta,
+          idFavoritas:         o.idFavoritas       ?? o.id_favoritas,
+          estadoFav:           o.estadoFav         ?? o.estado_fav,
+          idPostulacion:       o.idPostulacion     ?? o.id_postulacion,
+          estadoValidacion:    o.estadoValidacion  ?? o.estado_validacion,
+          observaciones:       o.observaciones     ?? null,
+          esFavorito:         (o.idFavoritas ?? o.id_favoritas) != null,
+          mostrarDetalles:     false,
+          habilidades:         [],
+          requisitos_manuales: [],
+          nombreCiudad:        ''
         }));
-
-        console.log('Ofertas mapeadas:', this.ofertas.length);
-        console.log('Estados únicos:', [...new Set(this.ofertas.map(o => o.estadoOferta))]);
 
         this.modalidades = [...new Set(this.ofertas.map(o => o.nombreModalidad).filter(Boolean))] as string[];
         this.jornadas    = [...new Set(this.ofertas.map(o => o.nombreJornada).filter(Boolean))] as string[];
         this.categorias  = [...new Set(this.ofertas.map(o => o.nombreCategoria).filter(Boolean))] as string[];
         this.cdr.detectChanges();
+        this.cargarInfoExtra();
       },
       error: (e: any) => {
-        console.error('❌ Error HTTP:', e.status, e.statusText);
-        console.error('URL:', e.url);
-        console.error('Mensaje:', e.message);
-        console.error('Error completo:', e);
+        this.cargando = false;
+        this.errorConexion = true;
+        console.error('Error cargando ofertas:', e);
       }
+    });
+  }
+
+  cargarInfoExtra(): void {
+    if (this.ofertas.length === 0) return;
+    const peticiones = this.ofertas.map(o => this.ofertaService.obtenerExtraInfo(o.idOferta));
+    forkJoin(peticiones).subscribe({
+      next: (resultados: any[]) => {
+        resultados.forEach((extra, i) => {
+          if (extra) {
+            this.ofertas[i].nombreCiudad        = extra.nombreCiudad ?? '';
+            this.ofertas[i].habilidades         = extra.habilidades  ?? [];
+            this.ofertas[i].requisitos_manuales = extra.requisitos   ?? [];
+          }
+        });
+        this.cdr.detectChanges();
+      },
+      error: (e: any) => console.error('Error al cargar info extra:', e)
     });
   }
 
@@ -193,7 +193,35 @@ export class BusquedaEmpleoComponent implements OnInit {
   }
 
   yaPostulo(oferta: OfertaDetalladaDTO): boolean {
-    return oferta.idPostulacion != null;
+    if (oferta.idPostulacion == null) return false;
+    const estado = oferta.estadoValidacion?.toLowerCase() ?? 'pendiente';
+    return estado === 'pendiente' || estado === 'aceptado';
+  }
+
+  puedePostular(oferta: OfertaDetalladaDTO): boolean {
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const inicio = oferta.fechaInicio ? new Date(oferta.fechaInicio) : null;
+    const cierre = oferta.fechaCierre ? new Date(oferta.fechaCierre) : null;
+    if (inicio) inicio.setHours(0, 0, 0, 0);
+    if (cierre) cierre.setHours(0, 0, 0, 0);
+    if (inicio && hoy < inicio) return false;
+    if (cierre && hoy > cierre) return false;
+    return true;
+  }
+
+  mensajeFecha(oferta: OfertaDetalladaDTO): string {
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    const inicio = oferta.fechaInicio ? new Date(oferta.fechaInicio) : null;
+    const cierre = oferta.fechaCierre ? new Date(oferta.fechaCierre) : null;
+    if (inicio) inicio.setHours(0, 0, 0, 0);
+    if (cierre) cierre.setHours(0, 0, 0, 0);
+    if (inicio && hoy < inicio) return 'Aún no disponible';
+    if (cierre && hoy > cierre) return 'Convocatoria cerrada';
+    return '';
+  }
+
+  tieneExcluyentes(habilidades: any[]): boolean {
+    return habilidades?.some(h => h.esObligatorio) ?? false;
   }
 
   abrirModalPostulacion(oferta: OfertaDetalladaDTO): void {

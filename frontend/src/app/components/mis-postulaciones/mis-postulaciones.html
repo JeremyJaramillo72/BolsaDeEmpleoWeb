@@ -50,20 +50,24 @@
 
         <div class="tags-row">
           <span class="tag tag-modalidad">
-            <span class="material-icons">work_outline</span>
+            <span class="material-icons text-sm">work_outline</span>
             {{ p.nombreModalidad }}
           </span>
           <span class="tag tag-jornada">
-            <span class="material-icons">schedule</span>
+            <span class="material-icons text-sm">schedule</span>
             {{ p.nombreJornada }}
           </span>
           <span class="tag tag-categoria">
-            <span class="material-icons">category</span>
+            <span class="material-icons text-sm">category</span>
             {{ p.nombreCategoria }}
           </span>
         </div>
 
         <div class="meta-row">
+          <p class="meta-info" *ngIf="p.nombreCiudad">
+            <span class="material-icons">location_on</span>
+            {{ p.nombreCiudad }}
+          </p>
           <p class="meta-info">
             <span class="material-icons">event_available</span>
             Inicio: {{ p.fechaInicio | date:'dd/MM/yyyy' }}
@@ -82,17 +86,252 @@
           </p>
         </div>
 
+        <!-- Observación de la empresa (solo lectura) -->
+        <div class="obs-empresa" *ngIf="p.observaciones">
+          <span class="material-icons">comment</span>
+          <div>
+            <span class="obs-label">Observación de la empresa</span>
+            <p>{{ p.observaciones }}</p>
+          </div>
+        </div>
+
         <div class="card-actions">
-          <button class="btn-documento" (click)="verDocumento(p)">
-            <span class="material-icons">picture_as_pdf</span> Ver Documento
+          <button class="btn-validacion" (click)="verValidacion(p)">
+            <span class="material-icons">fact_check</span> Ver Validación
+          </button>
+          <button class="btn-ver-mas" (click)="p.mostrarDetalles = !p.mostrarDetalles">
+            <span class="material-icons">{{ p.mostrarDetalles ? 'expand_less' : 'expand_more' }}</span>
+            {{ p.mostrarDetalles ? 'Ver menos' : 'Ver más' }}
           </button>
           <button class="btn-cancelar-post" (click)="cancelarPostulacion(p)">
-            <span class="material-icons">cancel</span> Cancelar Postulación
+            <span class="material-icons">cancel</span> Cancelar
           </button>
         </div>
 
-      </div>
+        <!-- DETALLES EXPANDIBLES -->
+        <div class="card-details" *ngIf="p.mostrarDetalles">
+
+          <!-- HABILIDADES -->
+          <div class="details-section" *ngIf="p.habilidades && p.habilidades.length > 0">
+            <h4 class="details-title">
+              <span class="material-icons">psychology</span> Habilidades Requeridas
+            </h4>
+            <div class="habilidades-list">
+              <span class="habilidad-chip" *ngFor="let hab of p.habilidades">
+                <strong>{{ hab.nombreHabilidad }}</strong>
+                <span class="nivel-chip"> · {{ hab.nivelRequerido }}</span>
+                <span class="excluyente-chip" *ngIf="hab.esObligatorio"> *</span>
+              </span>
+            </div>
+            <p class="leyenda-excluyente" *ngIf="tieneExcluyentes(p.habilidades)">
+              <span class="required">*</span> Excluyente
+            </p>
+          </div>
+
+          <!-- REQUISITOS -->
+          <div class="details-section" *ngIf="p.requisitos_manuales && p.requisitos_manuales.length > 0">
+            <h4 class="details-title">
+              <span class="material-icons">format_list_bulleted</span> Requisitos Específicos
+            </h4>
+            <ul class="requisitos-list">
+              <li *ngFor="let req of p.requisitos_manuales">
+                {{ req.descripcion }}
+                <span class="req-obligatorio" *ngIf="req.esObligatorio"> · Obligatorio</span>
+              </li>
+            </ul>
+          </div>
+
+          <p class="empty-details"
+             *ngIf="(!p.habilidades || p.habilidades.length === 0) && (!p.requisitos_manuales || p.requisitos_manuales.length === 0)">
+            <span class="material-icons">info</span> No hay requisitos adicionales.
+          </p>
+
+        </div>
+
+      </div><!-- /modern-card -->
     </div>
   </section>
+
+  <!-- ── MODAL DE VALIDACIÓN ─────────────────────────────────────────── -->
+  <div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+
+      <!-- HEADER -->
+      <div class="modal-header">
+        <div class="modal-header-info">
+          <span class="material-icons modal-header-icon">fact_check</span>
+          <div>
+            <h3>Estado de Validación</h3>
+            <p class="modal-subtitulo">{{ tituloOfertaModal }}</p>
+          </div>
+        </div>
+        <button class="btn-close-modal" (click)="cerrarModal()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <!-- CARGANDO -->
+      <div class="modal-loading" *ngIf="cargandoModal">
+        <span class="material-icons spin">sync</span>
+        <p>Cargando información...</p>
+      </div>
+
+      <!-- CONTENIDO -->
+      <div class="modal-body" *ngIf="!cargandoModal && perfilModal">
+
+        <!-- DATOS BÁSICOS -->
+        <div class="modal-section perfil-basico">
+          <div class="perfil-foto-wrap">
+            <img *ngIf="perfilModal.urlFotoPerfil" [src]="perfilModal.urlFotoPerfil" class="foto-perfil" alt="Foto perfil">
+            <div *ngIf="!perfilModal.urlFotoPerfil" class="foto-perfil-placeholder">
+              <span class="material-icons">person</span>
+            </div>
+          </div>
+          <div class="perfil-datos">
+            <h4>{{ perfilModal.nombre }} {{ perfilModal.apellido }}</h4>
+            <p><span class="material-icons">email</span> {{ perfilModal.correo }}</p>
+            <p *ngIf="perfilModal.fechaPostulacion">
+              <span class="material-icons">calendar_today</span>
+              Postulado el {{ perfilModal.fechaPostulacion | date:'dd/MM/yyyy' }}
+            </p>
+          </div>
+          <div class="cv-wrap" *ngIf="perfilModal.archivoCv">
+            <button class="btn-ver-cv" (click)="abrirDocumento(perfilModal.archivoCv)">
+              <span class="material-icons">picture_as_pdf</span> Ver documento
+            </button>
+          </div>
+        </div>
+
+        <!-- OBSERVACIÓN GENERAL DE LA EMPRESA -->
+        <div class="modal-obs-general" *ngIf="perfilModal.mensajeEvaluacion">
+          <span class="material-icons">comment</span>
+          <div>
+            <span class="obs-label">Retroalimentación de la empresa</span>
+            <p>{{ perfilModal.mensajeEvaluacion }}</p>
+          </div>
+        </div>
+
+        <!-- FORMACIÓN ACADÉMICA -->
+        <div class="modal-section" *ngIf="perfilModal.formacionAcademica?.length">
+          <h4 class="modal-section-title">
+            <span class="material-icons">school</span> Formación Académica
+          </h4>
+          <div class="item-validacion" *ngFor="let f of perfilModal.formacionAcademica">
+            <div class="item-val-header">
+              <span class="item-val-icon material-icons" [ngClass]="getEstadoItemClass(f.estado_v)">
+                {{ getEstadoItemIcon(f.estado_v) }}
+              </span>
+              <div class="item-val-info">
+                <strong>{{ f.nombre }}</strong>
+              </div>
+              <div class="item-val-actions">
+                <button class="btn-doc-mini" *ngIf="f.archivo" (click)="abrirDocumento(f.archivo)" title="Ver título">
+                  <span class="material-icons">attach_file</span>
+                </button>
+                <span class="estado-chip" [ngClass]="getEstadoItemClass(f.estado_v)">
+                  {{ f.estado_v ?? 'Pendiente' | titlecase }}
+                </span>
+              </div>
+            </div>
+            <p class="item-val-observacion" *ngIf="f.observacion_v">
+              <span class="material-icons">subdirectory_arrow_right</span>{{ f.observacion_v }}
+            </p>
+          </div>
+        </div>
+
+        <!-- EXPERIENCIA LABORAL -->
+        <div class="modal-section" *ngIf="perfilModal.experienciaLaboral?.length">
+          <h4 class="modal-section-title">
+            <span class="material-icons">work</span> Experiencia Laboral
+          </h4>
+          <div class="item-validacion" *ngFor="let e of perfilModal.experienciaLaboral">
+            <div class="item-val-header">
+              <span class="item-val-icon material-icons" [ngClass]="getEstadoItemClass(e.estado_v)">
+                {{ getEstadoItemIcon(e.estado_v) }}
+              </span>
+              <div class="item-val-info">
+                <strong>{{ e.nombre }}</strong>
+              </div>
+              <div class="item-val-actions">
+                <button class="btn-doc-mini" *ngIf="e.archivo" (click)="abrirDocumento(e.archivo)" title="Ver comprobante">
+                  <span class="material-icons">attach_file</span>
+                </button>
+                <span class="estado-chip" [ngClass]="getEstadoItemClass(e.estado_v)">
+                  {{ e.estado_v ?? 'Pendiente' | titlecase }}
+                </span>
+              </div>
+            </div>
+            <p class="item-val-observacion" *ngIf="e.observacion_v">
+              <span class="material-icons">subdirectory_arrow_right</span>{{ e.observacion_v }}
+            </p>
+          </div>
+        </div>
+
+        <!-- CURSOS -->
+        <div class="modal-section" *ngIf="perfilModal.cursosRealizados?.length">
+          <h4 class="modal-section-title">
+            <span class="material-icons">menu_book</span> Cursos Realizados
+          </h4>
+          <div class="item-validacion" *ngFor="let c of perfilModal.cursosRealizados">
+            <div class="item-val-header">
+              <span class="item-val-icon material-icons" [ngClass]="getEstadoItemClass(c.estado_v)">
+                {{ getEstadoItemIcon(c.estado_v) }}
+              </span>
+              <div class="item-val-info">
+                <strong>{{ c.nombre }}</strong>
+              </div>
+              <div class="item-val-actions">
+                <button class="btn-doc-mini" *ngIf="c.archivo" (click)="abrirDocumento(c.archivo)" title="Ver certificado">
+                  <span class="material-icons">attach_file</span>
+                </button>
+                <span class="estado-chip" [ngClass]="getEstadoItemClass(c.estado_v)">
+                  {{ c.estado_v ?? 'Pendiente' | titlecase }}
+                </span>
+              </div>
+            </div>
+            <p class="item-val-observacion" *ngIf="c.observacion_v">
+              <span class="material-icons">subdirectory_arrow_right</span>{{ c.observacion_v }}
+            </p>
+          </div>
+        </div>
+
+        <!-- IDIOMAS -->
+        <div class="modal-section" *ngIf="perfilModal.idiomas?.length">
+          <h4 class="modal-section-title">
+            <span class="material-icons">language</span> Idiomas
+          </h4>
+          <div class="item-validacion" *ngFor="let i of perfilModal.idiomas">
+            <div class="item-val-header">
+              <span class="item-val-icon material-icons" [ngClass]="getEstadoItemClass(i.estado_v)">
+                {{ getEstadoItemIcon(i.estado_v) }}
+              </span>
+              <div class="item-val-info">
+                <strong>{{ i.nombre }}</strong>
+              </div>
+              <div class="item-val-actions">
+                <button class="btn-doc-mini" *ngIf="i.archivo" (click)="abrirDocumento(i.archivo)" title="Ver certificado">
+                  <span class="material-icons">attach_file</span>
+                </button>
+                <span class="estado-chip" [ngClass]="getEstadoItemClass(i.estado_v)">
+                  {{ i.estado_v ?? 'Pendiente' | titlecase }}
+                </span>
+              </div>
+            </div>
+            <p class="item-val-observacion" *ngIf="i.observacion_v">
+              <span class="material-icons">subdirectory_arrow_right</span>{{ i.observacion_v }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Sin ítems -->
+        <p class="modal-empty"
+           *ngIf="!perfilModal.formacionAcademica?.length && !perfilModal.experienciaLaboral?.length
+                  && !perfilModal.cursosRealizados?.length && !perfilModal.idiomas?.length">
+          <span class="material-icons">info</span> No hay ítems validados aún.
+        </p>
+
+      </div><!-- /modal-body -->
+    </div><!-- /modal-container -->
+  </div><!-- /modal-overlay -->
 
 </main>

@@ -1,5 +1,7 @@
 package com.example.demo.service.Impl;
 
+import com.example.demo.dto.IOfertaResumen;
+import com.example.demo.dto.OfertaExtraInfoDTO;
 import com.example.demo.dto.OfertaLaboralDTO;
 import com.example.demo.model.*;
 import com.example.demo.repository.*;
@@ -7,6 +9,8 @@ import com.example.demo.repository.Views.IOfertaDetallada;
 import com.example.demo.repository.Views.IOfertaEmpresaDTO;
 import com.example.demo.repository.Views.IPostulanteOfertaDTO;
 import com.example.demo.service.IOfertaLaboralService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import com.example.demo.service.NotificacionService;
 import com.example.demo.dto.IOfertaResumen;
@@ -206,6 +210,7 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
 
 
 
+
     @Override
     @Transactional(readOnly = true)
     public List<IOfertaDetallada> listarOfertasCompleto(Long idUsuario) {
@@ -216,5 +221,15 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
     @Transactional
     public String toggleFavorita(Integer idOferta, Long idUsuario) {
         return ofertaRepository.toggleFavorita(idOferta, idUsuario);
+    }
+
+    @Override
+    public OfertaExtraInfoDTO obtenerExtraInfo(Integer idOferta) {
+        try {
+            String json = ofertaRepository.obtenerExtraInfoOferta(idOferta);
+            return objectMapper.readValue(json, OfertaExtraInfoDTO.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error al parsear info extra de oferta: " + e.getMessage(), e);
+        }
     }
 }

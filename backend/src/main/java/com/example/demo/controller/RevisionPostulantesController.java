@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.ItemEvaluacionDTO;
 import com.example.demo.dto.PerfilPostulanteDTO;
 import com.example.demo.dto.PostulanteResumenDTO;
+import com.example.demo.repository.Impl.PostulacionCustomRepository;
 import com.example.demo.service.IPostulacionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,17 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RevisionPostulantesController {
     private final IPostulacionService iPostulacionService;
+
+    @GetMapping("/postulaciones/{idPostulacion}/resumen")
+    public ResponseEntity<?> verResumenPostulacion(@PathVariable Long idPostulacion) {
+        try {
+            PostulacionCustomRepository.ResumenPostulacion resumen = iPostulacionService.obtenerResumenPostulacion(idPostulacion);
+            if (resumen == null) return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(resumen);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
 
     @GetMapping("/postulaciones/{idPostulacion}/perfil-completo")
     public ResponseEntity<PerfilPostulanteDTO> verPerfilCompleto(@PathVariable Long idPostulacion) {

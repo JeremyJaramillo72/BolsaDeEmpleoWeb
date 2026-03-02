@@ -60,8 +60,14 @@ export interface OfertaDetalladaDTO {
   // Datos de postulación
   idPostulacion?: number | null;
   estadoValidacion?: string | null;
+  observaciones?: string | null;
+  // Campos extra (ciudad, habilidades, requisitos)
+  nombreCiudad?: string;
+  habilidades?: any[];
+  requisitos_manuales?: any[];
   // Campo UI
-  esFavorito?: boolean;  // Campo UI para favoritos
+  esFavorito?: boolean;
+  mostrarDetalles?: boolean;
 }
 
 @Injectable({
@@ -139,5 +145,13 @@ export class OfertaService {
 
   obtenerArchivoCV(idPostulacion: number): Observable<any> {
     return this.http.get(`http://localhost:8080/api/postulaciones/archivo/${idPostulacion}`);
+  }
+
+  obtenerExtraInfo(idOferta: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${idOferta}/extra`);
+  }
+
+  obtenerPerfilPostulante(idPostulacion: number): Observable<any> {
+    return this.http.get<any>(`http://localhost:8080/api/revision-postulante/postulaciones/${idPostulacion}/resumen`);
   }
 }
