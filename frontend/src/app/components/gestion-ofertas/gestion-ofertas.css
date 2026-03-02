@@ -1,6 +1,4 @@
-/* ==========================================
-   CONFIGURACIÓN Y UTILIDADES
-========================================== */
+
 .main-content { padding: 0; background-color: transparent; font-family: 'Inter', system-ui, sans-serif; }
 .fade-in { animation: fadeIn 0.4s ease; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -13,20 +11,15 @@
 .flex-1 { flex: 1; }
 .required { color: #EF4444; }
 
-/* ==========================================
-   CABECERAS
-========================================== */
-/* Aquí subimos el título eliminando el margin-top y reduciendo el bottom */
+
 .page-header { margin-top: -10px; margin-bottom: 1.5rem; }
 .page-header h2 { font-size: 1.5rem; font-weight: 800; color: #0F172A; margin: 0 0 5px 0; letter-spacing: -0.5px; }
 .page-header p { font-size: 0.95rem; color: #64748B; margin: 0; }
 
-/* ==========================================
-   LAYOUT LISTA (SIDEBAR + OFERTAS)
-========================================== */
+
 .layout-wrapper { display: flex; gap: 2rem; align-items: flex-start; }
 
-/* Sidebar Filtros */
+
 .sidebar-filters { width: 280px; flex-shrink: 0; background: #FFFFFF; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); border: 1px solid #E2E8F0; }
 .filter-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; color: #0F172A; }
 .filter-header h3 { margin: 0; font-size: 1.1rem; font-weight: 700; }
@@ -46,7 +39,7 @@
 .btn-clear-filters { width: 100%; padding: 0.75rem; background: #F1F5F9; border: none; border-radius: 10px; color: #475569; font-weight: 700; font-size: 0.9rem; cursor: pointer; margin-top: 1rem; transition: background 0.2s; }
 .btn-clear-filters:hover { background: #E2E8F0; color: #0F172A;}
 
-/* Contenido Principal (Ofertas) */
+
 .main-offers-content { flex: 1; display: flex; flex-direction: column; }
 .action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
 .stats-text { color: #64748B; font-size: 0.95rem; }
@@ -55,7 +48,7 @@
 .btn-primary { background: #2563EB; color: white; border: none; padding: 0.7rem 1.2rem; border-radius: 10px; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 4px 10px rgba(37,99,235,0.2); }
 .btn-primary:hover { background: #1D4ED8; transform: translateY(-1px); }
 
-/* Grilla y Tarjetas de Ofertas */
+
 .offers-grid { display: flex; flex-direction: column; gap: 1.2rem; }
 .no-data { text-align: center; padding: 4rem 2rem; background: white; border-radius: 16px; border: 2px dashed #E2E8F0; color: #94A3B8; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
 .no-data .material-icons { font-size: 3rem; color: #CBD5E1; }
@@ -67,13 +60,13 @@
 .card-header-row { display: flex; align-items: center; gap: 12px; margin-bottom: 4px;}
 .card-header-row h3 { font-size: 1.2rem; color: #0F172A; font-weight: 800; margin: 0; }
 
-/* Badges de Estado ajustados para que el pendiente no sea tan rosa fuerte */
+
 .status-badge { font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
 .badge-active { background: #DCFCE7; color: #166534; }
-.badge-draft { background: #FEF2F2; color: #E11D48; } /* Rojo sutil elegante */
+.badge-draft { background: #FEF2F2; color: #E11D48; }
 .badge-closed { background: #F1F5F9; color: #64748B; }
 
-/* Iconos de detalles en tono gris azulado corporativo */
+
 .details-row { display: flex; flex-wrap: wrap; gap: 1.5rem; font-size: 0.9rem; color: #475569; font-weight: 500;}
 .detail-item { display: flex; align-items: center; gap: 6px; }
 
@@ -96,9 +89,7 @@
 .btn-manage:hover { background: #2563EB; color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
 
 
-/* ==========================================
-   FORMULARIO (CREAR/EDITAR)
-========================================== */
+
 .form-container { max-width: 1000px; margin: 0 auto; padding-bottom: 2rem; }
 
 .form-header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid #E2E8F0; }
@@ -125,7 +116,7 @@
 .input-modern:focus { border-color: #2563EB; background: white; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
 .textarea-modern { resize: vertical; min-height: 100px; }
 
-/* Builders de Habilidades/Requisitos */
+
 .builder-card { background: white; border: 1px solid #E2E8F0; border-radius: 16px; padding: 1.5rem; box-shadow: 0 2px 4px -1px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 1.2rem; }
 .builder-header { display: flex; align-items: center; gap: 12px; }
 .icon-box { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }

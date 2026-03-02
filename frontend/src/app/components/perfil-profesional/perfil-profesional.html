@@ -1,39 +1,218 @@
-<div class="container">
-  <wbr>
-  <!-- Contenedor Principal -->
-  <div class="profile-container">
-    <!-- Sidebar -->
-    <app-sidebar
-      [nombre]="perfil.nombre"
-      [rol]="perfil.rol"
-      [completitud]="completitudPerfil"
-      (fotoSubida)="actualizarProgreso()">
-    </app-sidebar>
+<div class="profile-container">
+  <div class="content-grid">
 
-    <!-- Main Content -->
-    <main class="main-content">
-      <!-- Información Personal -->
-      <app-info-personal
-        [perfil]="perfil"
-        (datosCambiados)="actualizarProgreso()">
-      </app-info-personal>
-
-      <!-- Información Académica -->
-      <app-info-academica
-        [perfil]="perfil"
-        (datosCambiados)="actualizarProgreso()">
-      </app-info-academica>
-
-      <app-idiomas [perfil]="perfil" (datosCambiados)="actualizarProgreso()"></app-idiomas>
-
-      <app-experiencia-laboral
-        [perfil]="perfil" (datosCambiados)="actualizarProgreso()">
-      </app-experiencia-laboral>
-      <!-- Botones finales -->
-      <div class="save-section">
-        <button class="btn-cancel" (click)="cancelarCambios()">Cancelar Cambios</button>
-        <button class="btn-save" (click)="guardarPerfil()">💾 Guardar Perfil Completo</button>
+    <div class="sidebar-column">
+      <div class="custom-card summary-card sticky-card">
+        <div class="logo-circle" (click)="triggerFileInput()" title="Clic para subir foto" style="position: relative; border-style: solid;">
+          <input type="file" id="fotoInput" accept="image/*" style="display: none" (change)="seleccionarImagen($event)">
+          <img *ngIf="fotoUrl" [src]="fotoUrl" alt="Foto del Postulante">
+          <div *ngIf="!fotoUrl" class="empty-photo">
+            <span class="material-icons">add_a_photo</span>
+            <small>Subir Foto</small>
+          </div>
+          <div class="edit-overlay-icon">
+            <span class="material-icons">photo_camera</span>
+          </div>
+        </div>
+        <h2>{{ perfil.nombreCompleto || 'Tu Nombre Completo' }}</h2>
+        <p class="role-text">{{ rol || 'Postulante' }}</p>
+        <div class="divider"></div>
+        <div class="progress-section">
+          <div class="progress-label">
+            <span>Completitud del Perfil</span>
+            <span class="percentage">{{ completitudPerfil || 0 }}%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" [style.width.%]="completitudPerfil"></div>
+          </div>
+        </div>
       </div>
-    </main>
+    </div>
+
+    <div class="form-column">
+
+      <div class="custom-card form-card">
+        <div class="card-header">
+          <div class="icon-box"><span class="material-icons">person</span></div>
+          <div>
+            <h1>Información Personal</h1>
+            <p>Tus datos básicos y de contacto profesional</p>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>Nombre Completo</label><input type="text" [(ngModel)]="perfil.nombreCompleto" (ngModelChange)="onInputChange()"></div>
+          <div class="form-group"><label>Fecha de Nacimiento</label><input type="date" [(ngModel)]="perfil.fechaNacimiento" (ngModelChange)="onInputChange()"></div>
+          <div class="form-group">
+            <label>Género</label>
+            <select [(ngModel)]="perfil.genero" (ngModelChange)="onInputChange()">
+              <option value="">Seleccionar...</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Email Corporativo</label><input type="email" [(ngModel)]="perfil.correo" (ngModelChange)="onInputChange()"></div>
+          <div class="form-group"><label>Teléfono Móvil</label><input type="tel" [(ngModel)]="perfil.telefono" (ngModelChange)="onInputChange()"></div>
+
+          <div class="form-group">
+            <label>Ubicación Profesional</label>
+            <input type="text" [(ngModel)]="perfil.direccion" (ngModelChange)="onInputChange()" placeholder="Ej: Quito, Ecuador">
+          </div>
+        </div>
+      </div>
+
+      <div class="custom-card form-card mt-4">
+        <div class="card-header" style="justify-content: space-between; margin-bottom: 16px;">
+          <div style="display: flex; gap: 16px; align-items: center;">
+            <div class="icon-box"><span class="material-icons">school</span></div>
+            <div>
+              <h1>Información Académica</h1>
+              <p>Tu formación universitaria, institutos y títulos</p>
+            </div>
+          </div>
+          <button (click)="abrirModalAcademica()" class="btn-add-section" type="button">
+            <span class="material-icons">add</span> Añadir Formación
+          </button>
+        </div>
+
+        <div class="registered-items" *ngIf="perfil.titulos?.length > 0">
+          <div *ngFor="let titulo of perfil.titulos; let i = index" class="document-item-card">
+            <div class="card-left-icon status-valid"><span class="material-icons">verified_user</span></div>
+            <div class="card-content">
+              <h3>{{ titulo.nombreCarrera || 'Título' }}</h3>
+              <p>{{ titulo.nombreFacultad || 'Facultad' }} | Graduado: {{ titulo.fechaGraduacion | date: 'yyyy' }}</p>
+            </div>
+            <div class="card-actions">
+              <button class="btn-ver-pdf" (click)="verPdf(titulo.nombreArchivo)" *ngIf="titulo.nombreArchivo">
+                <span class="material-icons">description</span> Ver PDF
+              </button>
+              <button class="btn-eliminar" (click)="eliminarTitulo(i, titulo.id_academico)">
+                <span class="material-icons">delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!perfil.titulos || perfil.titulos.length === 0" style="text-align: center; padding: 20px; color: #64748b;">
+          <span class="material-icons" style="font-size: 40px; opacity: 0.5;">school</span>
+          <p>No tienes formación académica registrada.</p>
+        </div>
+      </div>
+
+      <div class="custom-card form-card mt-4">
+        <div class="card-header" style="justify-content: space-between; margin-bottom: 16px;">
+          <div style="display: flex; gap: 16px; align-items: center;">
+            <div class="icon-box"><span class="material-icons">language</span></div>
+            <div>
+              <h1>Idiomas</h1>
+              <p>Lenguajes que dominas y certificaciones</p>
+            </div>
+          </div>
+          <button (click)="abrirModalIdioma()" class="btn-add-section" type="button">
+            <span class="material-icons">add</span> Añadir Idioma
+          </button>
+        </div>
+
+        <div class="registered-items" *ngIf="perfil.idiomas?.length > 0">
+          <div *ngFor="let item of perfil.idiomas; let i = index" class="document-item-card">
+            <div class="card-left-icon status-valid"><span class="material-icons">translate</span></div>
+            <div class="card-content">
+              <h3>{{ item.nombre_idioma }}</h3>
+              <p>Nivel de Dominio: {{ item.nivel }}</p>
+            </div>
+            <div class="card-actions">
+              <button class="btn-ver-pdf" (click)="verPdf(item.nombreArchivo)" *ngIf="item.nombreArchivo">
+                <span class="material-icons">description</span> Ver PDF
+              </button>
+              <button class="btn-eliminar" (click)="eliminarIdioma(i, item.id_registro_idioma)">
+                <span class="material-icons">delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!perfil.idiomas || perfil.idiomas.length === 0" style="text-align: center; padding: 20px; color: #64748b;">
+          <span class="material-icons" style="font-size: 40px; opacity: 0.5;">g_translate</span>
+          <p>No tienes idiomas registrados.</p>
+        </div>
+      </div>
+
+      <div class="custom-card form-card mt-4">
+        <div class="card-header" style="justify-content: space-between; margin-bottom: 16px;">
+          <div style="display: flex; gap: 16px; align-items: center;">
+            <div class="icon-box"><span class="material-icons">work</span></div>
+            <div>
+              <h1>Experiencia Laboral</h1>
+              <p>Tu trayectoria profesional y cargos anteriores</p>
+            </div>
+          </div>
+          <button (click)="abrirModalExperiencia()" class="btn-add-section" type="button">
+            <span class="material-icons">add</span> Añadir Experiencia
+          </button>
+        </div>
+
+        <div class="registered-items" *ngIf="perfil.experiencias?.length > 0">
+          <div *ngFor="let item of perfil.experiencias; let i = index" class="document-item-card">
+            <div class="card-left-icon status-valid"><span class="material-icons">badge</span></div>
+            <div class="card-content">
+              <h3>{{ item.nombre_cargo }} - {{ item.nombre_empresa }}</h3>
+              <p>{{ item.fecha_inicio | date: 'MM/yyyy' }} - {{ item.fecha_fin ? (item.fecha_fin | date: 'MM/yyyy') : 'Actualidad' }} | {{ item.ubicacion || '---' }}</p>
+            </div>
+            <div class="card-actions">
+              <button class="btn-ver-pdf" (click)="verPdf(item.nombreArchivo)" *ngIf="item.nombreArchivo">
+                <span class="material-icons">description</span> Ver PDF
+              </button>
+              <button class="btn-eliminar" (click)="eliminarExperiencia(i, item.id_experiencia)">
+                <span class="material-icons">delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!perfil.experiencias || perfil.experiencias.length === 0" style="text-align: center; padding: 20px; color: #64748b;">
+          <span class="material-icons" style="font-size: 40px; opacity: 0.5;">work_outline</span>
+          <p>No tienes experiencias laborales registradas.</p>
+        </div>
+      </div>
+
+      <div class="custom-card form-card mt-4">
+        <div class="card-header" style="justify-content: space-between; margin-bottom: 16px;">
+          <div style="display: flex; gap: 16px; align-items: center;">
+            <div class="icon-box"><span class="material-icons">workspace_premium</span></div>
+            <div>
+              <h1>Cursos y Certificaciones</h1>
+              <p>Formación adicional, talleres y certificaciones obtenidas</p>
+            </div>
+          </div>
+          <button (click)="abrirModalCurso()" class="btn-add-section" type="button">
+            <span class="material-icons">add</span> Añadir Curso
+          </button>
+        </div>
+
+        <div class="registered-items" *ngIf="perfil.cursos?.length > 0">
+          <div *ngFor="let item of perfil.cursos; let i = index" class="document-item-card">
+            <div class="card-left-icon status-valid"><span class="material-icons">military_tech</span></div>
+            <div class="card-content">
+              <h3>{{ item.nombre_curso }}</h3>
+              <p>{{ item.institucion }} | Duración: {{ item.horas_duracion }} horas</p>
+            </div>
+            <div class="card-actions">
+              <button class="btn-ver-pdf" (click)="verPdf(item.nombreArchivo)" *ngIf="item.nombreArchivo">
+                <span class="material-icons">description</span> Ver PDF
+              </button>
+              <button class="btn-eliminar" (click)="eliminarCurso(i, item.id_curso)">
+                <span class="material-icons">delete</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!perfil.cursos || perfil.cursos.length === 0" style="text-align: center; padding: 20px; color: #64748b;">
+          <span class="material-icons" style="font-size: 40px; opacity: 0.5;">emoji_events</span>
+          <p>No tienes cursos o certificaciones registradas.</p>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>

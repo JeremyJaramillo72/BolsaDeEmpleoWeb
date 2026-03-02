@@ -7,7 +7,7 @@ import com.azure.storage.blob.BlobServiceClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
+import com.azure.storage.blob.models.BlobHttpHeaders;
 import java.io.IOException;
 import java.util.UUID;
 @Service
@@ -19,8 +19,6 @@ public class AzureStorageConfig {
     private String containerName;
 
     public String subirDocumento(MultipartFile archivo) throws IOException {
-
-        // 1. Extraemos el nombre original y le ponemos un código único para que no se sobreescriban
         String nombreOriginal = archivo.getOriginalFilename();
         String extension = "";
         if (nombreOriginal != null && nombreOriginal.contains(".")) {
@@ -28,19 +26,22 @@ public class AzureStorageConfig {
         }
         String nombreUnico = UUID.randomUUID().toString() + extension;
 
-        // 2. Nos conectamos a Azure
         BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
                 .connectionString(connectionString)
                 .buildClient();
 
-        // 3. Apuntamos a la carpeta (contenedor) y preparamos el nuevo archivo
         BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName);
         BlobClient blobClient = containerClient.getBlobClient(nombreUnico);
 
-        // 4. ¡Subimos el archivo a la nube! (el 'true' permite sobreescribir si por casualidad hay uno igual)
+        // 1. Subimos el archivo a Azure
         blobClient.upload(archivo.getInputStream(), archivo.getSize(), true);
 
-        // 5. Retornamos la URL pública directa para guardarla en la Base de Datos
+        // 2. ¡EL SECRETO PARA LOS PDF! Le decimos a Azure qué tipo de archivo es
+        BlobHttpHeaders headers = new BlobHttpHeaders();
+        // Obtiene automáticamente "application/pdf" desde tu Angular
+        headers.setContentType(archivo.getContentType());
+        blobClient.setHttpHeaders(headers);
+
         return blobClient.getBlobUrl();
     }
 }

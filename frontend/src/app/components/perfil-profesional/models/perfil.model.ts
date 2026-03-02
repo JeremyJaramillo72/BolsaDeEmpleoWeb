@@ -13,7 +13,7 @@ export interface PerfilProfesional {
   registroSenescyt: string;
 }
 
-// Exportamos interfaces vacías para futura implementación
+
 export interface ExperienciaLaboral {}
 export interface Idioma {}
 export interface Certificado {}

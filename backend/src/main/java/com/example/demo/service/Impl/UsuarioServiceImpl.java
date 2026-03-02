@@ -48,12 +48,11 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 usuario.getCiudad() != null ? usuario.getCiudad().getIdCiudad() : null,
                 idRolParaGuardar
         );
-        // 2. BUSCAMOS EL ID GENERADO (Vital para el SP de seguridad)
+
         Usuario usuarioGuardado = usuarioRepository.findByCorreo(usuario.getCorreo())
                 .orElseThrow(() -> new RuntimeException("Error al recuperar usuario registrado."));
 
-        // 3. CREAMOS EL USUARIO DE BASE DE DATOS AUTOMÁTICAMENTE
-        // Llamamos a tu SP: registroUsuarioLogin(correo, id, rol)
+
         jdbcTemplate.update("CALL seguridad.registroUsuarioLogin(?, ?, ?)",
                 usuarioGuardado.getCorreo(),
                 usuarioGuardado.getIdUsuario().intValue(),
@@ -87,7 +86,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
         try {
             if (usuario.getPermisosUi() != null && !usuario.getPermisosUi().isEmpty()) {
 
-                // --- CAMINO PARA ADMINISTRADORES / INTERNOS ---
+
                 usuarioRepository.registrarAdminInternoPro(
                         usuario.getNombre(),
                         usuario.getApellido(),
@@ -102,7 +101,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 );
 
             } else {
-                // --- CAMINO PARA USUARIOS NORMALES ---
+
                 usuarioRepository.registrarPostulantePro(
                         usuario.getNombre(),
                         usuario.getApellido(),
@@ -150,11 +149,11 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 web
         );
 
-        // 2. Buscamos el ID
+
         Usuario usuarioGuardado = usuarioRepository.findByCorreo(usuario.getCorreo())
                 .orElseThrow(() -> new RuntimeException("Error al recuperar empresa registrada."));
 
-        // 3. CREAMOS EL USUARIO DE BASE DE DATOS (Rol 2 para empresas)
+
         jdbcTemplate.update("CALL seguridad.registroUsuarioLogin(?, ?, ?)",
                 usuarioGuardado.getCorreo(),
                 usuarioGuardado.getIdUsuario().intValue(),
@@ -166,7 +165,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        usuario.setEstadoValidacion(nuevoEstado); // "Inactivo" o "Activo"
+        usuario.setEstadoValidacion(nuevoEstado);
         usuarioRepository.save(usuario);
     }
 

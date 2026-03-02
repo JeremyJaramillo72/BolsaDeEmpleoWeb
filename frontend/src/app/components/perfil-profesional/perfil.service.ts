@@ -1,96 +1,56 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
+import {UsuarioEmpresaDTO} from '../../services/usuario-empresa.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PerfilService {
-  private apiUrl = 'http://localhost:8080/api/perfil'; // 👈 Tu endpoint de Spring Boot
+  private apiUrl = 'http://localhost:8080/api/perfil';
+  private apiCatalogos = 'http://localhost:8080/api/academico';
 
   constructor(private http: HttpClient) { }
+  private logoSource = new BehaviorSubject<string>('');
+  logoActual$ = this.logoSource.asObservable();
 
-  // Recupera el objeto Usuario desde el backend
   obtenerDatosUsuario(id: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/${id}`);
   }
 
-  getFacultades(): Observable<any[]> {
-    return this.http.get<any[]>(`http://localhost:8080/api/academico/facultades`);
-  }
-  getCarrerasPorFacultad(idFacultad: number): Observable<any[]> {
-    return this.http.get<any[]>(`http://localhost:8080/api/academico/carreras/${idFacultad}`);
-  }
 
-  registrarTitulo(idUsuario: number, titulo: any): Observable<any> {
-    const formData = new FormData();
+  getFacultades(): Observable<any[]> { return this.http.get<any[]>(`${this.apiCatalogos}/facultades`); }
+  getCarrerasPorFacultad(idFacultad: number): Observable<any[]> { return this.http.get<any[]>(`${this.apiCatalogos}/carreras/${idFacultad}`); }
+  getIdiomasCatalogo(): Observable<any[]> { return this.http.get<any[]>(`${this.apiCatalogos}/idiomas`); }
+  getCargosCatalogo(): Observable<any> { return this.http.get(`${this.apiCatalogos}/cargos`); }
+  getEmpresasCatalogo(): Observable<any> { return this.http.get(`${this.apiCatalogos}/empresas`); }
+  getProvincias(): Observable<any[]> { return this.http.get<any[]>(`${this.apiCatalogos}/provincias`); }
+  getCiudadesPorProvincia(idProvincia: number): Observable<any[]> { return this.http.get<any[]>(`${this.apiCatalogos}/ciudades/${idProvincia}`); }
 
-    // Agregamos los 5 parámetros que espera tu Controller
+
+  registrarItemPerfil(idUsuario: number, tipoItem: string, formData: FormData): Observable<any> {
     formData.append('idUsuario', idUsuario.toString());
-    formData.append('idCarrera', titulo.id_carrera);
-    formData.append('fechaGraduacion', titulo.fechaGraduacion);
-    formData.append('numeroSenescyt', titulo.registroSenescyt);
-    formData.append('archivo', titulo.archivoReferencia); // El archivo binario real
-
-    return this.http.post(`http://localhost:8080/api/perfil-academico/registrar`, formData);
-  }
-
-  getIdiomasCatalogo(): Observable<any[]> {
-    // Ajusta la URL según tu controlador de Spring Boot (ej: IdiomaController)
-    return this.http.get<any[]>(`http://localhost:8080/api/academico/idiomas`);
-  }
-
-  // PerfilService
-
-
-  registrarIdioma(idUsuario: number, idioma: any): Observable<any> {
-    const formData = new FormData();
-
-    // Empaquetamos los datos para el controlador
-    formData.append('idUsuario', idUsuario.toString());
-    formData.append('idIdioma', idioma.id_idioma.toString());
-    formData.append('nivel', idioma.nivel);
-
-    // Si existe un código de certificado, lo enviamos (opcional)
-    formData.append('codigoCertificado', idioma.codigoCertificado || '');
-
-    // Adjuntamos el archivo binario si el usuario lo subió
-    if (idioma.archivo) {
-      formData.append('archivo', idioma.archivo);
+    let endpoint = '';
+    switch (tipoItem) {
+      case 'academico': endpoint = '/perfil-academico/registrar'; break;
+      case 'idioma': endpoint = '/perfils-idioma/registrars'; break;
+      case 'experiencia': endpoint = '/exp-laboral/registrar'; break;
+      case 'curso': endpoint = '/perfil-curso/registrar'; break;
     }
-    // Enviamos la petición POST a la ruta que habilitamos en SecurityConfig
-    return this.http.post(`http://localhost:8080/api/perfil-idioma/registrar`, formData);
+    return this.http.post(`http://localhost:8080/api${endpoint}`, formData);
   }
 
-  getCargosCatalogo(): Observable<any> {
-    return this.http.get(`http://localhost:8080/api/academico/cargos`);
+  actualizarLogo(url: string) {
+    this.logoSource.next(url);
   }
 
-  getEmpresasCatalogo(): Observable<any> {
-    return this.http.get(`http://localhost:8080/api/academico/empresas`);
-  }
-
-  registrarExperiencia(idUsuario: number, exp: any): Observable<any> {
+  subirLogoProfesional(id: number, archivo: File) {
     const formData = new FormData();
-    formData.append('idUsuario', idUsuario.toString());
-    formData.append('idCargo', exp.id_cargo.toString());
-    formData.append('idEmpresaCatalogo', exp.id_empresa_catalogo.toString());
-    formData.append('fechaInicio', exp.fecha_inicio);
-    if (exp.fecha_fin) formData.append('fechaFin', exp.fecha_fin);
-    formData.append('descripcion', exp.descripcion);
-    formData.append('ubicacion', exp.ubicacion || '');
-    if (exp.archivo_comprobante) formData.append('archivo', exp.archivo_comprobante);
-    return this.http.post(`http://localhost:8080/api/exp-laboral/registrar`, formData);
+    formData.append('archivo', archivo);
+
+    return this.http.post(`http://localhost:8080/api/perfil/${id}/foto`, formData);
   }
-
-  // Métodos para obtener datos ya guardados
-  obtenerIdiomasGuardados(idUsuario: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/idiomas/${idUsuario}`);
+  eliminarItemPerfil(idUsuario: number, tipoItem: string, idItem: number): Observable<any> {
+    return this.http.delete(`http://localhost:8080/api/perfil/${idUsuario}/item/${tipoItem}/${idItem}`);
   }
-
-  obtenerExperienciasGuardadas(idUsuario: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/experiencias/${idUsuario}`);
-  }
-
-
 }
