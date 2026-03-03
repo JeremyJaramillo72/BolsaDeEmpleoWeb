@@ -13,12 +13,8 @@ import com.example.demo.service.NotificacionService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import com.example.demo.service.NotificacionService;
-import com.example.demo.dto.IOfertaResumen;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 
 import java.util.List;
@@ -28,6 +24,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
     private final OfertaLaboralRepository ofertaRepository;
+    private final PostulacionRepository postulacionRepository;
     private final UsuarioEmpresaRepository usuarioEmpresaRepository;
     private final ObjectMapper objectMapper;
     private final NotificacionService notificacionService;
@@ -180,7 +177,7 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
 
         if ("aprobado".equalsIgnoreCase(nuevoEstado)) {
             try {
-                List<Object[]> datos = ofertaRepository.obtenerDatosEmpresaPorOferta(idOferta);
+                List<Object[]> datos = postulacionRepository.obtenerDatosEmpresaPorOfertaId(Math.toIntExact(idOferta));
 
                 if (!datos.isEmpty()) {
                     Object[] fila = datos.get(0);
