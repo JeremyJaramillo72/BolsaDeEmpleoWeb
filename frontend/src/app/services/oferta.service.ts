@@ -11,6 +11,7 @@ export interface OfertaHabilidadDTO {
 
 export interface RequisitoManualDTO {
   descripcion: string;
+  esObligatorio?: boolean;
 }
 
 export interface OfertaLaboralDTO {
