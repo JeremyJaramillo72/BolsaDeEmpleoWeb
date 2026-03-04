@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
@@ -25,8 +26,11 @@ private final PerfilProfesionalRepository perfilProfesionalRepository;
     public PerfilProfesionalDTO obtenerPerfil(Long idUsuario) {
         return perfilProfesionalRepository.obtenerPerfilCompleto(idUsuario);
     }
+
+    @Transactional
     @Override
     public void procesarYRegistrar(Long idUsuario, String tipoItem, Map<String, Object> datos, MultipartFile archivo) {
+
         try {
             String jsonDatos = objectMapper.writeValueAsString(datos);
             String urlArchivo = null;
@@ -37,17 +41,38 @@ private final PerfilProfesionalRepository perfilProfesionalRepository;
             perfilProfesionalRepository.registrarItemPerfil(idUsuario, tipoItem, jsonDatos, urlArchivo);
 
         } catch (Exception e) {
-            throw new RuntimeException("Error al procesar el registro de " + tipoItem, e);
+            e.printStackTrace();
         }
+
     }
+    @Transactional
     @Override
     public void eliminarItem(Long idUsuario, String tipoItem, Integer idItem) {
         try {
             perfilProfesionalRepository.eliminarItemPerfil(idUsuario, tipoItem, idItem);
         } catch (Exception e) {
-            throw new RuntimeException("error al intentar eliminar el registro de " + tipoItem, e);
+            e.printStackTrace();
         }
     }
 
+    @Transactional
+    @Override
+    public Integer RegistrarCatalogoEmpresa(String nombreEmpresa,String ruc,Integer idcategoria)
+    {
+        try {
+          return  perfilProfesionalRepository.crearEmpresa(nombreEmpresa,ruc,idcategoria);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    @Transactional
+    @Override
+    public Integer RegistrarCargo(String cargo){
+    try {
+        return perfilProfesionalRepository.crearCargo(cargo);
 
+    } catch (Exception e) {
+        throw new RuntimeException(e);
+    }
+    }
 }

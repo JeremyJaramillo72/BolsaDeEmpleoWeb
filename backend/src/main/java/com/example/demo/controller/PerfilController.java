@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
-// Importa aquí tu repositorio y entidad según tus paquetes reales
+
 import com.example.demo.repository.UsuarioRepository;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -57,12 +57,14 @@ public class PerfilController {
 
     @PostMapping("/perfil-idioma/registrars")
     public ResponseEntity<?> registrarIdiomas(
+
             @RequestParam("idUsuario") Long idUsuario,
             @RequestParam("idIdioma") Integer idIdioma,
             @RequestParam("nivel") String nivel,
             @RequestParam(value = "codigoCertificado", required = false) String codigoCertificado,
             @RequestParam(value = "archivo", required = false) MultipartFile archivo) {
 
+        try {
         Map<String, Object> datos = new HashMap<>();
         datos.put("id_idioma", idIdioma);
         datos.put("nivel", nivel);
@@ -70,6 +72,13 @@ public class PerfilController {
 
         iPerfilProfesionalService.procesarYRegistrar(idUsuario, "idioma", datos, archivo);
         return ResponseEntity.ok(Map.of("mensaje", "Idioma guardado exitosamente"));
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("Error a guardar idiomas");
+
+        }
+
     }
 
     @PostMapping("/exp-laboral/registrar")
@@ -142,6 +151,48 @@ public class PerfilController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body("error al eliminar el elemento");
+        }
+    }
+
+
+    @PostMapping("/perfil/cargos/crear")
+    public ResponseEntity<?> crearNuevoCargo(@RequestBody Map<String, Object> payload) {
+        try {
+            String nombreCargo = (String) payload.get("nombreCargo");
+
+            Integer nuevoId = iPerfilProfesionalService.RegistrarCargo(nombreCargo);
+
+            return ResponseEntity.ok(Map.of(
+                    "idCargo", nuevoId,
+                    "nombreCargo", nombreCargo
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("error interno del servidor");
+        }
+    }
+
+    @PostMapping("/perfil/empresas/crear")
+    public ResponseEntity<?> crearNuevaEmpresa(@RequestBody Map<String, Object> payload) {
+        try {
+            String nombre = (String) payload.get("nombre_empresa");
+            String ruc = (String) payload.get("ruc");
+            Integer idCat = payload.get("id_categoria") != null ?
+                    Integer.valueOf(payload.get("id_categoria").toString()) : null;
+
+            Integer nuevoId = iPerfilProfesionalService.RegistrarCatalogoEmpresa(nombre, ruc, idCat);
+
+            return ResponseEntity.ok(Map.of(
+                    "idEmpresaCatalogo", nuevoId,
+                    "nombreEmpresa", nombre
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("error al procesar la empresa");
         }
     }
 

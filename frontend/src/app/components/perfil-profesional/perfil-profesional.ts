@@ -35,7 +35,12 @@ export class PerfilProfesionalComponent implements OnInit {
   rol: string = 'Postulante';
   fotoUrl: string | ArrayBuffer | null = null;
   idUsuarioLogueado: number = 0;
+  mostrarNuevoCargo: boolean = false;
+  nuevoNombreCargo: string = '';
 
+  mostrarNuevaEmpresa: boolean = false;
+
+  nuevaEmpresaObj: any = { nombre_empresa: '', ruc: '', id_categoria: null };
 
   facultades: any[] = [];
   carrerasPorTitulo: any[][] = [];
@@ -45,6 +50,8 @@ export class PerfilProfesionalComponent implements OnInit {
   empresasDisponibles: any[] = [];
   provincias: any[] = [];
   ciudades: any[] = [];
+  ciudadesExp: any[] = [];
+  categorias: any[] = [];
 
 
   modalAcademica: boolean = false;
@@ -57,13 +64,15 @@ export class PerfilProfesionalComponent implements OnInit {
 
   modalCurso: boolean = false;
   nuevoCurso: any = { nombre_curso: '', institucion: '', horas_duracion: null, archivo: null, nombreArchivo: '' };
-
   nuevoIdioma: any = { id_idioma: null, nivel: null, archivo: null, nombreArchivo: '' };
+
 
   cargoActual: number | null = null;
   cargosTemporales: any[] = [];
   nuevaExperiencia: any = {
     id_empresa_catalogo: null,
+    id_provincia: null,
+    id_ciudad: null,
     ubicacion: '',
     fecha_inicio: '',
     fecha_fin: '',
@@ -100,7 +109,7 @@ export class PerfilProfesionalComponent implements OnInit {
 
     this.perfilService.getIdiomasCatalogo().subscribe({
       next: res => this.idiomasDisponibles = res,
-      error: err => console.error('Error crítico al cargar idiomas', err) // <- Esto evita la pantalla blanca
+      error: err => console.error('Error crítico al cargar idiomas', err)
     });
 
     this.perfilService.getCargosCatalogo().subscribe({
@@ -111,6 +120,14 @@ export class PerfilProfesionalComponent implements OnInit {
     this.perfilService.getEmpresasCatalogo().subscribe({
       next: res => this.empresasDisponibles = res,
       error: err => console.warn('No se pudieron cargar las empresas')
+    });
+    this.perfilService.obtenerCategorias().subscribe({
+      next: res => this.categorias = res,
+      error: err => console.warn('No se pudieron cargar las categorías')
+    });
+    this.perfilService.obtenerProvincias().subscribe({
+      next: res => this.provincias = res,
+      error: err => console.warn('No se pudieron cargar las provincias')
     });
   }
 
@@ -188,6 +205,64 @@ export class PerfilProfesionalComponent implements OnInit {
     });
   }
 
+  onProvinciaExpChange() {
+    this.nuevaExperiencia.id_ciudad = null;
+    this.ciudadesExp = [];
+
+    if (this.nuevaExperiencia.id_provincia > 0) {
+      this.perfilService.getCiudadesPorProvincia(this.nuevaExperiencia.id_provincia).subscribe(res => {
+        this.ciudadesExp = res;
+      });
+    }
+  }
+
+  guardarNuevoCargoCatalogo(): void {
+    if (!this.nuevoNombreCargo) return;
+    const payload = { nombreCargo: this.nuevoNombreCargo };
+
+    this.perfilService.crearNuevoCargo(payload).subscribe({
+      next: (res: any) => {
+        this.cargosDisponibles.push(res);
+        this.cargoActual = res.idCargo;
+        this.agregarCargoTemporal();
+        this.mostrarNuevoCargo = false;
+        this.nuevoNombreCargo = '';
+      },
+      error: err => {
+        console.error('Error detallado:', err);
+        alert(err.error?.error || 'Error al crear el cargo en el servidor');
+      }
+    });
+  }
+
+  guardarNuevaEmpresaCatalogo(): void {
+
+    if (!this.nuevaEmpresaObj.nombre_empresa || this.nuevaEmpresaObj.nombre_empresa.trim() === '') {
+      alert('Por favor, escribe el nombre de la nueva empresa.');
+      return;
+    }
+
+
+    console.log("Enviando nueva empresa:", this.nuevaEmpresaObj);
+
+    this.perfilService.crearNuevaEmpresa(this.nuevaEmpresaObj).subscribe({
+      next: (res: any) => {
+        // 3. Notificamos al usuario que se guardó bien
+        alert('¡Empresa creada y seleccionada exitosamente!');
+
+        this.empresasDisponibles.push(res);
+        this.nuevaExperiencia.id_empresa_catalogo = res.idEmpresaCatalogo;
+
+        this.mostrarNuevaEmpresa = false;
+        this.nuevaEmpresaObj = { nombre_empresa: '', ruc: '', id_categoria: null };
+        this.cdr.detectChanges();
+      },
+      error: err => {
+        console.error('Error detallado al crear empresa:', err);
+        alert(err.error?.error || 'Error al crear la empresa en el servidor');
+      }
+    });
+  }
 
 
   abrirModalAcademica() { this.modalAcademica = true; }
@@ -445,13 +520,22 @@ export class PerfilProfesionalComponent implements OnInit {
       return;
     }
 
+    let ubicacionFinal = '';
+    if (this.nuevaExperiencia.id_provincia && this.nuevaExperiencia.id_ciudad) {
+      const prov = this.provincias.find(p => p.idProvincia == this.nuevaExperiencia.id_provincia)?.nombreProvincia || '';
+      const ciud = this.ciudadesExp.find(c => c.idCiudad == this.nuevaExperiencia.id_ciudad)?.nombreCiudad || '';
+      ubicacionFinal = `${prov} - ${ciud}`;
+    } else {
+      ubicacionFinal = this.nuevaExperiencia.ubicacion;
+    }
+
     const formData = new FormData();
     formData.append('idCargo', this.cargosTemporales[0].id_cargo.toString());
     formData.append('idEmpresaCatalogo', this.nuevaExperiencia.id_empresa_catalogo.toString());
     formData.append('fechaInicio', this.nuevaExperiencia.fecha_inicio);
     if (this.nuevaExperiencia.fecha_fin) formData.append('fechaFin', this.nuevaExperiencia.fecha_fin);
     formData.append('descripcion', this.nuevaExperiencia.descripcion);
-    formData.append('ubicacion', this.nuevaExperiencia.ubicacion || '');
+    formData.append('ubicacion', ubicacionFinal);
     if (this.nuevaExperiencia.archivo_comprobante) formData.append('archivo', this.nuevaExperiencia.archivo_comprobante);
 
     this.perfilService.registrarItemPerfil(this.idUsuarioLogueado, 'experiencia', formData).subscribe({
@@ -460,7 +544,7 @@ export class PerfilProfesionalComponent implements OnInit {
         this.cargarDatosDesdeBackend();
         this.cerrarModales();
         this.cargosTemporales = [];
-        this.nuevaExperiencia = { id_empresa_catalogo: null, ubicacion: '', fecha_inicio: '', fecha_fin: '', descripcion: '', archivo_comprobante: null, nombreArchivo: '' };
+        this.nuevaExperiencia = { id_empresa_catalogo: null, id_provincia: null, id_ciudad: null, ubicacion: '', fecha_inicio: '', fecha_fin: '', descripcion: '', archivo_comprobante: null, nombreArchivo: '' };
       },
       error: (err) => { console.error(err); alert('Error al guardar la experiencia.'); }
     });

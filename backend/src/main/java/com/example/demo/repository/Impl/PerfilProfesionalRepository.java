@@ -49,4 +49,14 @@ public class PerfilProfesionalRepository {
 
         jdbcTemplate.query(sql, rs -> {}, idUsuario, tipoItem, idItem);
     }
+
+    public Integer crearCargo(String nombreCargo) {
+        String sql = "select catalogos.fn_crear_cargo(?)";
+        return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> rs.getInt(1), nombreCargo);
+    }
+
+    public Integer crearEmpresa(String nombreEmpresa, String ruc, Integer idCategoria) {
+        String sql = "select empresas.fn_crear_empresa(?, ?, ?)";
+        return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> rs.getInt(1), nombreEmpresa, ruc, idCategoria);
+    }
 }
