@@ -1,8 +1,27 @@
 
 :host {
+  /* Palette and tokens aligned with admin-validar */
+  --blue: #2563eb;
+  --blue-light: #eff6ff;
+  --blue-border: #bfdbfe;
+  --green: #16a34a;
+  --green-light: #dcfce7;
+  --red: #dc2626;
+  --red-light: #fee2e2;
+  --location-color: #F43F5E;
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-700: #334155;
+  --gray-900: #0f172a;
+  --radius: 10px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.07);
+
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   display: block;
-  background-color: #f8fafc;
+  background-color: var(--gray-50);
   min-height: 100vh;
   padding: 2rem;
   box-sizing: border-box;
@@ -35,8 +54,9 @@
 
 .title-section h2 {
   margin: 0;
-  color: #1e293b;
+  color: var(--gray-700);
   font-size: 1.5rem;
+  font-weight: 600; /* un poco menos pesado para no competir con filas */
 }
 
 .icon-header {
@@ -86,9 +106,9 @@
 .card {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--shadow);
   overflow: hidden; /* Para que los bordes redondeados corten la tabla */
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--gray-200);
 }
 
 /* --- TABLA MODERNA --- */
@@ -102,9 +122,9 @@
   background-color: #f8fafc;
   color: #0257f5;
   font-weight: 600;
-  text-transform: uppercase;
+  text-transform: none; /* Usar tipo Oración, no todo en mayúsculas */
   font-size: 0.75rem;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.02em;
   padding: 1rem;
   border-bottom: 1px solid #e2e8f0;
 }
@@ -117,7 +137,8 @@
 }
 
 .modern-table tr:hover {
-  background-color: #f8fafc;
+  background-color: #dde8f8; /* match admin-validar hover */
+  transform: translateY(0);
 }
 
 .modern-table tr:last-child td {
@@ -126,7 +147,7 @@
 
 .font-bold {
   font-weight: 600;
-  color: #1e293b;
+  color: var(--gray-700);
 }
 
 .text-center {
@@ -174,14 +195,14 @@
 }
 
 .status-pill.active {
-  background-color: #dcfce7;
-  color: #15803d;
+  background-color: var(--green-light);
+  color: var(--green);
   border-color: #bbf7d0;
 }
 
 .status-pill.inactive {
-  background-color: #fee2e2;
-  color: #b91c1c;
+  background-color: var(--red-light);
+  color: var(--red);
   border-color: #fecaca;
 }
 
@@ -216,6 +237,20 @@
 
 .form-header h3 { margin: 0 0 0.5rem 0; color: #1e293b; }
 .form-header p { margin: 0; color: #64748b; font-size: 0.9rem; }
+
+/* Pagination controls like admin-validar */
+.pagination-container { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-top:1px solid var(--gray-200); background:#fff; }
+.pagination-info { color: var(--gray-400); font-size:0.9rem; }
+.pagination-controls { display:flex; gap:0.4rem; align-items:center; }
+.page-btn { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:8px; border:1px solid var(--gray-200); background:white; color:var(--gray-600); cursor:pointer; }
+.page-btn .material-icons { color: var(--blue); }
+.page-number { min-width:36px; padding:0 8px; background:var(--gray-50); border-radius:8px; }
+.page-number.active { background: var(--blue-light); color: var(--blue); font-weight:700; border-color: var(--blue-border); }
+
+/* Header style tweak to match admin-validar */
+.page-header { padding-bottom:0.5rem; border-bottom:1px solid var(--gray-100); margin-bottom:1rem; }
+
+.icon-header { background: var(--blue-light); color: var(--blue); padding:0.5rem; border-radius:8px; }
 
 .form-grid {
   display: grid;

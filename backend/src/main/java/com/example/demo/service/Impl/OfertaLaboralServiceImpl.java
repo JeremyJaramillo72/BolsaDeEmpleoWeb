@@ -16,7 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -172,6 +173,14 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
     @Transactional
     public void cambiarEstadoOferta(Long idOferta, String nuevoEstado) {
 
+        // Validar que la oferta no esté vencida
+        OfertaLaboral oferta = ofertaRepository.findById(idOferta.intValue())
+                .orElseThrow(() -> new RuntimeException("Oferta no encontrada"));
+
+        if (oferta.getFechaCierre() != null && oferta.getFechaCierre().isBefore(LocalDate.now())) {
+            throw new RuntimeException("No se puede cambiar el estado de una oferta vencida (fecha de cierre: " + oferta.getFechaCierre() + ")");
+        }
+
         // 1. Se actualiza el estado (Esto ya no se va a deshacer si la notificación falla)
         ofertaRepository.actualizarEstadoDirecto(idOferta, nuevoEstado);
 
@@ -215,7 +224,7 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
                     String nombreCiudad = (String) loc[1];
                     Integer idCiudad = ((Number) loc[2]).intValue();
                     String nombreProvincia = (String) loc[3];
-                    Integer idProvincia = ((Number) loc[4]).intValue();
+                    Integer idProvincia = ((Number) loc[4]).intValue(); 
 
                     System.out.println(">>> ZONA: Oferta '" + tituloOfertaZona + "' en " + nombreCiudad + ", " + nombreProvincia + " (prov=" + idProvincia + ")");
 
@@ -265,6 +274,17 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
 
 
 
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Integer, Long> contarPostulantesPorOfertas(List<Integer> ids) {
+        List<Object[]> resultados = postulacionRepository.contarPorOfertas(ids);
+        Map<Integer, Long> mapa = new HashMap<>();
+        for (Object[] fila : resultados) {
+            mapa.put(((Number) fila[0]).intValue(), ((Number) fila[1]).longValue());
+        }
+        return mapa;
+    }
 
     @Override
     @Transactional(readOnly = true)

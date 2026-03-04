@@ -1,11 +1,11 @@
-<div class="admin-container">
+<div class="admin-container" [ngClass]="estadoActual">
 
   <!-- ENCABEZADO -->
   <div class="header-section">
     <div class="header-top">
       <div>
-        <h2>Gestión de Ofertas</h2>
-        <p class="subtitle">Estado actual: <strong>{{ estadoActual }}</strong></p>
+        <h2>Gesti&#243;n de Ofertas</h2>
+        <p class="subtitle">Estado actual: <strong [class.pendiente]="estadoActual==='pendiente'" [class.aprobado]="estadoActual==='aprobado'" [class.rechazada]="estadoActual==='rechazada'">{{ estadoActual }}</strong></p>
       </div>
 
       <div class="tabs-estados">
@@ -21,10 +21,23 @@
       </div>
     </div>
 
+    <!-- SUB-FILTRO para ofertas aprobadas: Todas / Activas / Cerradas -->
+    <div class="sub-tabs" *ngIf="estadoActual === 'aprobado'">
+      <button class="btn-sub-tab" [class.active]="subFiltroAprobado === 'todas'" (click)="cambiarSubFiltro('todas')">
+        Todas <span class="sub-tab-count">{{ offers.length }}</span>
+      </button>
+      <button class="btn-sub-tab activa" [class.active]="subFiltroAprobado === 'activas'" (click)="cambiarSubFiltro('activas')">
+        <span class="material-icons sub-icon">check_circle</span> Activas <span class="sub-tab-count">{{ conteoActivas }}</span>
+      </button>
+      <button class="btn-sub-tab cerrada" [class.active]="subFiltroAprobado === 'cerradas'" (click)="cambiarSubFiltro('cerradas')">
+        <span class="material-icons sub-icon">cancel</span> Cerradas <span class="sub-tab-count">{{ conteoCerradas }}</span>
+      </button>
+    </div>
+
     <div class="filters-bar">
       <div class="filter-group search">
         <span class="material-icons">search</span>
-        <input type="text" [(ngModel)]="filtroTexto" placeholder="Buscar por título o empresa...">
+        <input type="text" [(ngModel)]="filtroTexto" (ngModelChange)="onFilterChange()" placeholder="Buscar por t&#237;tulo o empresa...">
       </div>
       <button class="btn-filter-today" [class.active]="soloHoy" (click)="toggleHoy()">
         <span class="material-icons">today</span>
@@ -36,8 +49,8 @@
         <input
           type="date"
           [(ngModel)]="fechaFiltro"
-          (change)="soloHoy = false"
-          title="Filtrar por fecha específica">
+          (change)="onFilterChange(); soloHoy = false"
+          title="Filtrar por fecha espec&#237;fica">
         <button *ngIf="fechaFiltro" class="clear-date" (click)="fechaFiltro = ''" title="Limpiar fecha">
           <span class="material-icons">close</span>
         </button>
@@ -56,15 +69,30 @@
     <div class="table-header">
       <div class="col-info">Oferta</div>
       <div class="col-empresa">Empresa / RUC</div>
-      <div class="col-ubicacion">Ubicación</div>
-      <div class="col-fecha">Inicio</div>
+      <div class="col-ubicacion">Ubicaci&#243;n</div>
+      <div class="col-fecha">
+        <span class="sort-button" [class.asc]="sortAsc" [class.desc]="!sortAsc" (click)="toggleSortDate()" title="Ordenar por fecha">
+          Inicio
+          <span class="material-icons">{{ sortAsc ? 'arrow_upward' : 'arrow_downward' }}</span>
+        </span>
+      </div>
       <div class="col-acciones">Acciones</div>
     </div>
 
-    <div class="table-row" *ngFor="let item of ofertasFiltradas">
+    <div class="table-row" *ngFor="let item of ofertasPagina"
+         [class.row-vencida]="estaVencida(item)">
       <div class="col-info">
         <span class="offer-title">{{ item.titulo }}</span>
-        <span class="offer-id">ID: #{{ item.idOferta }}</span>
+        <div class="offer-meta">
+          <span class="offer-id">ID: #{{ item.idOferta }}</span>
+          <span class="badge-postulantes" *ngIf="estadoActual === 'aprobado'">
+            <span class="material-icons badge-icon">people</span>
+            {{ conteoPostulantes[item.idOferta] || 0 }} postulantes
+          </span>
+          <span class="badge-vencida" *ngIf="estaVencida(item)">
+            <span class="material-icons badge-icon">schedule</span> Vencida
+          </span>
+        </div>
       </div>
 
       <div class="col-empresa">
@@ -88,9 +116,9 @@
           <span class="btn-ver-label">Ver detalles</span>
         </button>
 
-        <!-- Pendiente: aprobar o rechazar -->
-        <div class="dropdown" *ngIf="estadoActual === 'pendiente'" [class.open]="menuAbiertoId === item.idOferta">
-          <button class="btn-menu" (click)="toggleMenu(item.idOferta, $event)" title="Más acciones">
+        <!-- Pendiente: aprobar o rechazar (solo si NO vencida) -->
+        <div class="dropdown" *ngIf="estadoActual === 'pendiente' && !estaVencida(item)" [class.open]="menuAbiertoId === item.idOferta">
+          <button class="btn-menu" (click)="toggleMenu(item.idOferta, $event)" title="M&#225;s acciones">
             <span class="material-icons">more_vert</span>
           </button>
           <div class="dropdown-menu">
@@ -103,8 +131,13 @@
           </div>
         </div>
 
-        <!-- Aprobada: solo opción de rechazar -->
-        <button *ngIf="estadoActual === 'aprobado'"
+        <!-- Pendiente vencida: sin acciones -->
+        <span *ngIf="estadoActual === 'pendiente' && estaVencida(item)" class="badge-no-action">
+          <span class="material-icons">block</span> Vencida
+        </span>
+
+        <!-- Aprobada: solo rechazar (si no vencida) -->
+        <button *ngIf="estadoActual === 'aprobado' && !estaVencida(item)"
                 class="btn-action-inline reject"
                 (click)="rechazar(item)"
                 title="Rechazar oferta">
@@ -112,19 +145,52 @@
           Rechazar
         </button>
 
-        <!-- Rechazada: solo opción de aprobar -->
-        <button *ngIf="estadoActual === 'rechazada'"
+        <!-- Aprobada vencida -->
+        <span *ngIf="estadoActual === 'aprobado' && estaVencida(item)" class="badge-no-action">
+          <span class="material-icons">block</span> Cerrada
+        </span>
+
+        <!-- Rechazada: solo aprobar (si no vencida) -->
+        <button *ngIf="estadoActual === 'rechazada' && !estaVencida(item)"
                 class="btn-action-inline approve"
                 (click)="aprobar(item)"
                 title="Aprobar oferta">
           <span class="material-icons">check_circle</span>
           Aprobar
         </button>
+
+        <!-- Rechazada vencida -->
+        <span *ngIf="estadoActual === 'rechazada' && estaVencida(item)" class="badge-no-action">
+          <span class="material-icons">block</span> Vencida
+        </span>
       </div>
+    </div>
 
     <div *ngIf="ofertasFiltradas.length === 0" class="empty-state">
       <span class="material-icons">inbox</span>
       <p>No hay ofertas en estado <strong>{{ estadoActual }}</strong></p>
+    </div>
+
+    <!-- PAGINACIÓN -->
+    <div *ngIf="ofertasFiltradas.length > 0" class="pagination-container">
+      <div class="pagination-info">Mostrando {{ displayStart }} - {{ displayEnd }} de {{ ofertasFiltradas.length }}</div>
+      <div class="pagination-controls">
+        <button class="page-btn" (click)="goToPage(1)" [disabled]="currentPage===1" title="Ir al inicio">
+          <span class="material-icons">first_page</span>
+        </button>
+        <button class="page-btn" (click)="prevPage()" [disabled]="currentPage===1" title="Anterior">
+          <span class="material-icons">chevron_left</span>
+        </button>
+        <button class="page-btn page-number" *ngFor="let p of pages" (click)="goToPage(p)" [class.active]="currentPage === p">
+          {{ p }}
+        </button>
+        <button class="page-btn" (click)="nextPage()" [disabled]="currentPage===totalPages" title="Siguiente">
+          <span class="material-icons">chevron_right</span>
+        </button>
+        <button class="page-btn" (click)="goToPage(totalPages)" [disabled]="currentPage===totalPages" title="Ir al final">
+          <span class="material-icons">last_page</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -141,6 +207,9 @@
       <span class="sidebar-label">Detalle de Oferta</span>
       <h3>{{ ofertaSeleccionada?.titulo }}</h3>
       <span class="sidebar-id">ID #{{ ofertaSeleccionada?.idOferta }}</span>
+      <span class="badge-vencida sidebar-badge" *ngIf="ofertaSeleccionada && estaVencida(ofertaSeleccionada)">
+        <span class="material-icons badge-icon">schedule</span> Oferta vencida
+      </span>
     </div>
     <button class="close-btn" (click)="cerrarModal()">
       <span class="material-icons">close</span>
@@ -149,16 +218,30 @@
 
   <div class="sidebar-body" *ngIf="ofertaSeleccionada">
 
+    <!-- BLOQUE: Postulantes (solo en aprobadas) -->
+    <div class="sidebar-block" *ngIf="estadoActual === 'aprobado'">
+      <div class="block-title">
+        <span class="material-icons">people</span>
+        Postulantes
+      </div>
+      <div class="info-section">
+        <div class="info-card full highlight-blue">
+          <label class="lbl-postulantes">Total de Postulantes</label>
+          <p class="postulantes-count">{{ conteoPostulantes[ofertaSeleccionada?.idOferta] || 0 }}</p>
+        </div>
+      </div>
+    </div>
+
     <!-- BLOQUE: Empresa -->
     <div class="sidebar-block">
       <div class="block-title">
         <span class="material-icons">business</span>
-        Información de la Empresa
+        Informaci&#243;n de la Empresa
       </div>
       <div class="info-section">
         <div class="info-card full">
           <label class="lbl-empresa">Empresa</label>
-          <p>{{ ofertaSeleccionada?.nombreEmpresa || ofertaSeleccionada?.nombre_empresa }} <span class="ruc-sep">—</span> {{ ofertaSeleccionada?.rucEmpresa || ofertaSeleccionada?.ruc_empresa }}</p>
+          <p>{{ ofertaSeleccionada?.nombreEmpresa || ofertaSeleccionada?.nombre_empresa }} <span class="ruc-sep">&mdash;</span> {{ ofertaSeleccionada?.rucEmpresa || ofertaSeleccionada?.ruc_empresa }}</p>
           <small>Correo: {{ ofertaSeleccionada?.correo }}</small>
         </div>
         <div class="info-card">
@@ -184,7 +267,7 @@
           <p>{{ ofertaSeleccionada?.nombreJornada }}</p>
         </div>
         <div class="info-card">
-          <label class="lbl-categoria">Categoría</label>
+          <label class="lbl-categoria">Categor&#237;a</label>
           <p>{{ ofertaSeleccionada?.nombreCategoria }}</p>
         </div>
         <div class="info-card">
@@ -202,11 +285,11 @@
       </div>
       <div class="info-section">
         <div class="info-card highlight-green">
-          <label class="lbl-salario">Salario Mínimo</label>
+          <label class="lbl-salario">Salario M&#237;nimo</label>
           <p>${{ ofertaSeleccionada?.salarioMin | number:'1.2-2' }}</p>
         </div>
         <div class="info-card highlight-green">
-          <label class="lbl-salario">Salario Máximo</label>
+          <label class="lbl-salario">Salario M&#225;ximo</label>
           <p>${{ ofertaSeleccionada?.salarioMax | number:'1.2-2' }}</p>
         </div>
         <div class="info-card">
@@ -220,16 +303,16 @@
       </div>
     </div>
 
-    <!-- BLOQUE: Descripción -->
+    <!-- BLOQUE: Descripci&#243;n -->
     <div class="sidebar-block">
       <div class="block-title">
         <span class="material-icons">description</span>
-        Descripción del Puesto
+        Descripci&#243;n del Puesto
       </div>
       <div class="desc-box">{{ ofertaSeleccionada?.descripcion }}</div>
     </div>
 
-    <div class="sidebar-actions">
+    <div class="sidebar-actions" *ngIf="!estaVencida(ofertaSeleccionada)">
       <!-- Pendiente -->
       <ng-container *ngIf="estadoActual === 'pendiente'">
         <button (click)="aprobar(ofertaSeleccionada)" class="btn-action approve">
@@ -255,6 +338,11 @@
       </ng-container>
     </div>
 
+    <!-- Mensaje si esta vencida -->
+    <div class="sidebar-vencida-msg" *ngIf="estaVencida(ofertaSeleccionada)">
+      <span class="material-icons">info</span>
+      Esta oferta ha vencido. No se puede aprobar ni rechazar.
+    </div>
+
   </div>
-</div>
 </div>

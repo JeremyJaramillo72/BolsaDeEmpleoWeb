@@ -18,6 +18,10 @@ export class AdminMiniAdmiComponent implements OnInit {
   vistaActual: 'LISTA' | 'CREAR' = 'LISTA';
   listaAdmins: any[] = [];
 
+  // Paginación
+  currentPage: number = 1;
+  pageSize: number = 7; // mostrar 7 filas por página
+
   nuevoAdmin = {
     usuario: '',
     contrasena: '',
@@ -65,6 +69,7 @@ export class AdminMiniAdmiComponent implements OnInit {
             permisosUI: usuario.permisosUi ? usuario.permisosUi.split(',') : [],
               estadoValidacion: usuario.estadoValidacion,
           }));
+          this.currentPage = 1;
           this.cdr.detectChanges();
         },
         error: (e) => console.error('Error cargando lista de admins:', e)
@@ -157,6 +162,10 @@ export class AdminMiniAdmiComponent implements OnInit {
           estadoValidacion: 'Activo'
         });
 
+        // Actualizar paginación y vista
+        this.currentPage = this.totalPages; // ir a la última página
+        this.cdr.detectChanges();
+
         this.cancelarCreacion(); // Vuelve a la lista y limpia
       },
       error: (error) => {
@@ -188,6 +197,56 @@ export class AdminMiniAdmiComponent implements OnInit {
         alert('Error al cambiar el estado. Revisa la consola.');
       }
     });
+  }
+
+  // Helpers para paginación
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.listaAdmins.length / this.pageSize));
+  }
+
+  get adminsPagina() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.listaAdmins.slice(start, start + this.pageSize);
+  }
+
+  get pages() {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.cdr.detectChanges();
+    }
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.cdr.detectChanges();
+    }
+  }
+
+  goToPage(n: number) {
+    if (n >= 1 && n <= this.totalPages) {
+      this.currentPage = n;
+      this.cdr.detectChanges();
+    }
+  }
+
+  get displayStart(): number {
+    if (this.listaAdmins.length === 0) return 0;
+    return (this.currentPage - 1) * this.pageSize + 1;
+  }
+
+  get displayEnd(): number {
+    return Math.min(this.currentPage * this.pageSize, this.listaAdmins.length);
+  }
+
+  formatEstado(admin: any): string {
+    const val = admin?.estadoValidacion;
+    if (!val) return 'Pendiente';
+    return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
   }
 
   private limpiarFormulario() {

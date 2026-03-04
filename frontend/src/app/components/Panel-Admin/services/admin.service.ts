@@ -309,4 +309,8 @@ export class AdminService {
     )
   }
 
+  contarPostulantesPorOfertas(ids: number[]): Observable<{[key: number]: number}> {
+    return this.http.post<{[key: number]: number}>(`${this.apiOfertasUrl}/conteo-postulantes`, ids);
+  }
+
 }

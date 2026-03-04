@@ -40,5 +40,7 @@ public interface PostulacionRepository extends JpaRepository<Postulacion, Intege
             "FROM OfertaLaboral o " +
             "WHERE o.idOferta = :idOferta")
     List<Object[]> obtenerDatosEmpresaPorOfertaId(@Param("idOferta") Integer idOferta);
-}
 
+    @Query(value = "SELECT p.id_oferta, COUNT(*) FROM postulaciones.postulacion p WHERE p.id_oferta IN :ids GROUP BY p.id_oferta", nativeQuery = true)
+    List<Object[]> contarPorOfertas(@Param("ids") List<Integer> ids);
+}

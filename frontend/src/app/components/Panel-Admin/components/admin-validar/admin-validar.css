@@ -7,6 +7,7 @@
   --green-light: #dcfce7;
   --red: #dc2626;
   --red-light: #fee2e2;
+  --location-color: #F43F5E; /* uso color proporcionado F43F5E */
   --gray-50: #f8fafc;
   --gray-100: #f1f5f9;
   --gray-200: #e2e8f0;
@@ -47,9 +48,9 @@
 }
 
 .header-section h2 {
-  color: var(--gray-900);
+  color: var(--gray-700);
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 600;
   margin: 0 0 0.25rem;
 }
 
@@ -231,10 +232,35 @@
   border-radius: 8px 8px 0 0;
   font-weight: 600;
   color: var(--gray-500);
-  text-transform: uppercase;
+  text-transform: none;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
 }
+
+/* Unificar estilo visual de cada columna en la cabecera */
+.table-header > div {
+  color: var(--gray-700);
+  font-weight: 700;
+  font-size: 0.875rem;
+  opacity: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.table-header > div .material-icons { color: var(--gray-700); font-size: 1rem; }
+
+/* Botón de orden para la columna Fecha */
+.sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  color: var(--gray-600);
+  font-weight: 600;
+}
+.sort-button .material-icons { font-size: 1rem; transition: transform 0.18s, color 0.18s; }
+.sort-button.asc .material-icons { transform: rotate(0deg); color: var(--blue); }
+.sort-button.desc .material-icons { transform: rotate(180deg); color: var(--blue); }
 
 .table-row {
   display: grid;
@@ -247,10 +273,10 @@
 }
 
 .table-row:last-child { border-bottom: none; }
-/* Hover más marcado */
+/* Hover — un poco mas oscuro, bonito y visual */
 .table-row:hover {
-  background: #eef4ff;              /* azul muy suave */
-  border-left-color: var(--blue);   /* línea azul a la izquierda */
+  background: #dde8f8;
+  border-left-color: var(--blue);
 }
 
 /* Columna Info */
@@ -309,8 +335,22 @@
 }
 .location-icon {
   font-size: 1rem !important;
-  color: var(--gray-400);
+  color: var(--location-color);
 }
+
+/* Color location icon and subtitle according to current estado (propagated on .admin-container) */
+.admin-container.pendiente .subtitle strong.pendiente {
+  color: #f59e0b; /* pendiente (amber) */
+}
+.admin-container.aprobado .subtitle strong.aprobado {
+  color: var(--green); /* aprobado */
+}
+.admin-container.rechazada .subtitle strong.rechazada {
+  color: var(--red); /* rechazada */
+}
+
+/* Slightly emphasize the subtitle value */
+.subtitle strong { font-weight: 600; }
 
 /* Columna Fecha */
 .col-fecha {
@@ -525,8 +565,8 @@
   display: block;
   font-size: 0.72rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  text-transform: none;
+  letter-spacing: 0.02em;
   color: var(--blue);
   margin-bottom: 0.35rem;
 }
@@ -584,8 +624,8 @@
   gap: 0.5rem;
   font-size: 0.72rem;
   font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  text-transform: none;
+  letter-spacing: 0.03em;
   color: var(--gray-900);
   padding-bottom: 0.6rem;
   border-bottom: 2px solid var(--gray-200);
@@ -645,8 +685,8 @@
   display: block;
   font-size: 0.68rem;
   font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.09em;
+  text-transform: none;
+  letter-spacing: 0.02em;
   margin-bottom: 0.35rem;
   color: #0891b2;   /* cyan — mismo color para todos */
 }
@@ -820,4 +860,226 @@
 /* Sidebar: botón full-width cuando es único */
 .btn-action.full-width {
   grid-column: 1 / -1;
+}
+
+/* PAGINACIÓN */
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.9rem 1rem;
+  border-top: 1px solid var(--gray-200);
+  background: #fff;
+}
+.pagination-info { color: var(--gray-400); font-size: 0.9rem; }
+.pagination-controls { display: flex; gap: 0.4rem; align-items: center; }
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--gray-200);
+  background: white;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.page-btn:hover { box-shadow: 0 6px 14px rgba(37,99,235,0.08); transform: translateY(-1px); }
+.page-btn[disabled] { opacity: 0.5; cursor: default; transform: none; box-shadow: none; }
+.page-btn .material-icons { color: var(--blue); }
+.page-number { min-width: 36px; padding: 0 8px; background: var(--gray-50); border-radius: 8px; }
+.page-number.active { background: var(--blue-light); color: var(--blue); font-weight: 700; border-color: var(--blue-border); }
+
+
+/* ============================
+   SUB-TABS (Activas / Cerradas)
+   ============================ */
+.sub-tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.btn-sub-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--gray-200);
+  border-radius: 20px;
+  background: white;
+  color: var(--gray-500);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.btn-sub-tab .sub-icon {
+  font-size: 0.9rem;
+}
+
+.btn-sub-tab:hover {
+  background: var(--gray-100);
+  color: var(--gray-700);
+}
+
+.btn-sub-tab.active {
+  background: var(--blue-light);
+  color: var(--blue);
+  border-color: var(--blue-border);
+  font-weight: 600;
+}
+
+.btn-sub-tab.activa.active {
+  background: var(--green-light);
+  color: var(--green);
+  border-color: #bbf7d0;
+}
+
+.btn-sub-tab.cerrada.active {
+  background: var(--red-light);
+  color: var(--red);
+  border-color: #fecaca;
+}
+
+.sub-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: var(--gray-200);
+  color: var(--gray-700);
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-left: 0.15rem;
+}
+
+.btn-sub-tab.active .sub-tab-count {
+  background: rgba(0,0,0,0.1);
+}
+
+/* ============================
+   BADGES — Postulantes y Vencida
+   ============================ */
+.offer-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.15rem;
+}
+
+.badge-postulantes {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1px solid #bfdbfe;
+}
+
+.badge-postulantes .badge-icon {
+  font-size: 0.85rem;
+}
+
+.badge-vencida {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1px solid #fde68a;
+}
+
+.badge-vencida .badge-icon {
+  font-size: 0.85rem;
+}
+
+.badge-vencida.sidebar-badge {
+  display: inline-flex;
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  padding: 3px 10px;
+}
+
+.badge-no-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0 0.7rem;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--gray-100);
+  color: var(--gray-400);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-no-action .material-icons {
+  font-size: 1rem;
+}
+
+/* Fila vencida — indicador visual sutil */
+.table-row.row-vencida {
+  opacity: 0.7;
+}
+
+.table-row.row-vencida:hover {
+  opacity: 1;
+  background: #fef9ee;
+  border-left-color: #f59e0b;
+}
+
+/* ============================
+   SIDEBAR — Info postulantes
+   ============================ */
+.info-card.highlight-blue {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.lbl-postulantes {
+  color: #2563eb;
+}
+
+.postulantes-count {
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  color: #2563eb !important;
+}
+
+/* Mensaje vencida en sidebar */
+.sidebar-vencida-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-top: auto;
+}
+
+.sidebar-vencida-msg .material-icons {
+  font-size: 1.15rem;
+  flex-shrink: 0;
 }

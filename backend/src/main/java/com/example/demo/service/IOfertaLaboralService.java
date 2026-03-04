@@ -9,6 +9,7 @@ import com.example.demo.repository.Views.IOfertaEmpresaDTO;
 import com.example.demo.repository.Views.IPostulanteOfertaDTO;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IOfertaLaboralService {
     OfertaLaboral guardarOferta(OfertaLaboralDTO dto);
@@ -20,4 +21,5 @@ public interface IOfertaLaboralService {
     List<IOfertaDetallada> listarOfertasCompleto(Long idUsuario);
     String toggleFavorita(Integer idOferta, Long idUsuario);
     OfertaExtraInfoDTO obtenerExtraInfo(Integer idOferta);
+    Map<Integer, Long> contarPostulantesPorOfertas(List<Integer> ids);
 }

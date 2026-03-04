@@ -32,7 +32,7 @@
         </thead>
 
         <tbody>
-        <tr *ngFor="let admin of listaAdmins">
+        <tr *ngFor="let admin of adminsPagina">
           <td class="font-bold">{{ admin.usuario }}</td>
 
           <td>
@@ -59,17 +59,14 @@
               (click)="toggleEstado(admin)"
               title="Clic para cambiar estado">
 
-              {{ admin.estadoValidacion ? admin.estadoValidacion.toUpperCase() : 'PENDIENTE' }}
+              {{ formatEstado(admin) }}
 
             </button>
           </td>
 
 
           <td class="text-center actions-cell">
-            <button class="icon-btn edit" title="Editar">
-              <span class="material-icons">edit</span>
-            </button>
-
+            <!-- Edit removed per request -->
             <button
               class="icon-btn delete"
               title="Desactivar"
@@ -86,6 +83,28 @@
         </tr>
         </tbody>
       </table>
+
+      <!-- PAGINACIÓN -->
+      <div *ngIf="listaAdmins.length > 0" class="pagination-container" style="padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+        <div class="pagination-info">Mostrando {{ displayStart }} - {{ displayEnd }} de {{ listaAdmins.length }}</div>
+        <div class="pagination-controls" style="display:flex; gap:8px; align-items:center;">
+          <button class="page-btn" (click)="goToPage(1)" [disabled]="currentPage===1" title="Ir al inicio">
+            <span class="material-icons">first_page</span>
+          </button>
+          <button class="page-btn" (click)="prevPage()" [disabled]="currentPage===1" title="Anterior">
+            <span class="material-icons">chevron_left</span>
+          </button>
+          <button class="page-btn page-number" *ngFor="let p of pages" (click)="goToPage(p)" [class.active]="currentPage === p">
+            {{ p }}
+          </button>
+          <button class="page-btn" (click)="nextPage()" [disabled]="currentPage===totalPages" title="Siguiente">
+            <span class="material-icons">chevron_right</span>
+          </button>
+          <button class="page-btn" (click)="goToPage(totalPages)" [disabled]="currentPage===totalPages" title="Ir al final">
+            <span class="material-icons">last_page</span>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 

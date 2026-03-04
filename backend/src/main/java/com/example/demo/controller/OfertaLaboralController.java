@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 @RestController
 @RequestMapping("/api/ofertas")
 @CrossOrigin(origins = "http://localhost:4200")
@@ -82,6 +83,13 @@ public class OfertaLaboralController {
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/conteo-postulantes")
+    public ResponseEntity<Map<Integer, Long>> contarPostulantes(@RequestBody List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) return ResponseEntity.ok(Map.of());
+        Map<Integer, Long> conteo = ofertaService.contarPostulantesPorOfertas(ids);
+        return ResponseEntity.ok(conteo);
     }
 
     @PostMapping("/{idOferta}/favorita/{idUsuario}")
