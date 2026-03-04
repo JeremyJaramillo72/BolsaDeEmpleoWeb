@@ -78,4 +78,11 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     List<Usuario> findByRol_IdRolNotIn(List<Integer> idsNoDeseados);
 
     List<Usuario> findByRol_NombreRol(String nombreRol);
+
+    @Query(value = "SELECT u.id_usuario, u.nombre, u.apellido " +
+            "FROM usuarios.usuario u " +
+            "JOIN catalogos.ciudad c ON u.id_ciudad = c.id_ciudad " +
+            "JOIN usuarios.roles r ON u.id_rol = r.id_rol " +
+            "WHERE c.id_provincia = :idProvincia AND UPPER(r.nombre_rol) = 'POSTULANTE'", nativeQuery = true)
+    List<Object[]> findPostulantesByProvinciaNativo(@Param("idProvincia") Integer idProvincia);
 }

@@ -35,7 +35,8 @@ public class NotificacionService {
             "nueva_oferta", "Nueva oferta publicada: '{titulo}' en {empresa}.",
             "nueva_postulacion", "¡Tienes un nuevo candidato! Alguien se ha postulado a tu oferta '{titulo}'.",
             "feedback_postulacion", "La empresa {empresa} ha dejado feedback en tu postulación a '{oferta}'.",
-            "oferta_pendiente", "La empresa {empresa} ha publicado una nueva oferta: '{titulo}'. Requiere revisión."
+            "oferta_pendiente", "La empresa {empresa} ha publicado una nueva oferta: '{titulo}'. Requiere revisión.",
+            "nueva_oferta_zona", "Hola {nombre}, hay una nueva oferta '{titulo}' disponible en tu zona ({provincia})."
     );
 
     @Transactional
@@ -95,6 +96,7 @@ public class NotificacionService {
             case "nueva_postulacion" -> "Nueva Postulacion Recibida";
             case "feedback_postulacion" -> "Feedback de Postulacion";
             case "oferta_pendiente" -> "Oferta Pendiente de Revision";
+            case "nueva_oferta_zona" -> "Nueva Oferta en tu Zona";
             default -> "Nueva Notificacion";
         };
     }

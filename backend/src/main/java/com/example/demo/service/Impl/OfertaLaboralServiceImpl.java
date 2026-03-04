@@ -26,6 +26,7 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
     private final OfertaLaboralRepository ofertaRepository;
     private final PostulacionRepository postulacionRepository;
     private final UsuarioEmpresaRepository usuarioEmpresaRepository;
+    private final UsuarioRepository usuarioRepository;
     private final ObjectMapper objectMapper;
     private final NotificacionService notificacionService;
 
@@ -200,6 +201,62 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
             } catch (Exception e) {
                 // El catch absorbe el error. La notificación no se enviará, pero la oferta SÍ quedará aprobada.
                 System.err.println(" Error al enviar notificación de oferta aprobada: " + e.getMessage());
+                e.printStackTrace();
+            }
+
+            // Notificar a postulantes de la misma zona (provincia) que la oferta
+            try {
+                List<Object[]> ubicacion = ofertaRepository.obtenerDatosUbicacionOferta(Math.toIntExact(idOferta));
+                System.out.println(">>> ZONA: Datos ubicacion oferta " + idOferta + ": " + (ubicacion.isEmpty() ? "VACIO" : "OK, filas=" + ubicacion.size()));
+
+                if (!ubicacion.isEmpty()) {
+                    Object[] loc = ubicacion.get(0);
+                    String tituloOfertaZona = (String) loc[0];
+                    String nombreCiudad = (String) loc[1];
+                    Integer idCiudad = ((Number) loc[2]).intValue();
+                    String nombreProvincia = (String) loc[3];
+                    Integer idProvincia = ((Number) loc[4]).intValue();
+
+                    System.out.println(">>> ZONA: Oferta '" + tituloOfertaZona + "' en " + nombreCiudad + ", " + nombreProvincia + " (prov=" + idProvincia + ")");
+
+                    List<Object[]> postulantes = usuarioRepository.findPostulantesByProvinciaNativo(idProvincia);
+                    System.out.println(">>> ZONA: Postulantes encontrados en provincia " + idProvincia + ": " + postulantes.size());
+
+                    for (Object[] post : postulantes) {
+                        try {
+                            Long idPostulante = ((Number) post[0]).longValue();
+                            String nombrePost = (String) post[1];
+                            String apellidoPost = (String) post[2];
+
+                            System.out.println(">>> ZONA: Notificando a " + nombrePost + " " + apellidoPost + " (id=" + idPostulante + ")");
+
+                            notificacionService.crearYEnviarNotificacion(
+                                    idPostulante,
+                                    "nueva_oferta_zona",
+                                    Map.of(
+                                            "nombre", nombrePost + " " + (apellidoPost != null ? apellidoPost : ""),
+                                            "titulo", tituloOfertaZona,
+                                            "provincia", nombreProvincia
+                                    ),
+                                    Map.of(
+                                            "idOferta", idOferta,
+                                            "ciudad", nombreCiudad,
+                                            "provincia", nombreProvincia,
+                                            "idCiudad", idCiudad,
+                                            "idProvincia", idProvincia
+                                    ),
+                                    "/menu-principal/Busqueda/empleo",
+                                    "location_on"
+                            );
+                            System.out.println(">>> ZONA: Notificacion guardada para id=" + idPostulante);
+                        } catch (Exception ex) {
+                            System.err.println(">>> ZONA ERROR postulante: " + ex.getMessage());
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println(">>> ZONA ERROR GENERAL: " + e.getMessage());
                 e.printStackTrace();
             }
         }
