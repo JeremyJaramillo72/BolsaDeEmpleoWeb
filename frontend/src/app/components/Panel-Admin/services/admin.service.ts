@@ -20,6 +20,8 @@ export class AdminService {
   private apiRolesAplicativo ='http://localhost:8080/api/academico/roles';
   private apiOfertasUrl = 'http://localhost:8080/api/ofertas';
 
+  private apiauditoriasUrl = 'http://localhost:8080/api/auditorias';
+
   constructor(private http: HttpClient) { }
 
   // ==========================================
@@ -231,35 +233,76 @@ export class AdminService {
   //Auditorias
   // ========== ADMINISTRACIÓN DE USUARIOS ==========
   obtenerTodosUsuarios(): Observable<any> {
-    return this.http.get(`${this.apiAcademicoUrl}/usuarios`);
+    return this.http.get(`${this.apiauditoriasUrl}/usuarios`);
   }
 
-  // http://localhost:8080/api/academico/usuarios
+//http://localhost:8080/api/auditorias/usuarios
   getEstadisticasUsuarios(): Observable<any> {
-    return this.http.get(`${this.apiAcademicoUrl}/usuarios/estadisticas`);
+    return this.http.get(`${this.apiauditoriasUrl}/estadisticas`);
   }
+
+  //http://localhost:8080/api/auditorias/estadisticas
+
 
   getAuditoriasUsuario(idUsuario: number): Observable<any> {
-    return this.http.get(`${this.apiAcademicoUrl}/admin/usuarios/${idUsuario}/auditorias`);
+    return this.http.get(`${this.apiauditoriasUrl}/usuario/${idUsuario}`);
   }
+ // http://localhost:8080/api/auditorias/usuario/9
+
 
   exportarUsuariosExcel(usuarios: any[]): Observable<Blob> {
-    return this.http.post(`${this.apiAcademicoUrl}/admin/usuarios/exportar`,
+    return this.http.post(`${this.apiauditoriasUrl}/exportar-usuarios`,
       { usuarios },
       { responseType: 'blob' }
     );
   }
 
+
   exportarAuditoriasExcel(idUsuario: number): Observable<Blob> {
-    return this.http.get(`${this.apiAcademicoUrl}/admin/usuarios/${idUsuario}/auditorias/exportar`,
+    return this.http.get(`${this.apiauditoriasUrl}/exportar-usuario/${idUsuario}`,
+      { responseType: 'blob' }
+    );
+  }
+
+  /*
+  Nuevos metodos de audotpr
+*/
+
+  exportarAuditoriasPdf(idUsuario: number, tipo: string): Observable<Blob> {
+    // Ajustamos la ruta para que coincida exactamente con el @GetMapping del backend
+    return this.http.get(
+      `${this.apiauditoriasUrl}/exportar-usuario/${idUsuario}/pdf/${tipo.toUpperCase()}`,
       { responseType: 'blob' }
     );
   }
 
 
+// Exportar auditorías en Excel filtradas por tipo (INSERT | DELETE | UPDATE)
+  exportarAuditoriasExcelPorTipo(idUsuario: number, tipo: string): Observable<Blob> {
+    // Ajustamos la URL para que coincida con: /api/auditorias/exportar-usuario/{id}/excel/{tipo}
+    return this.http.get(
+      `${this.apiauditoriasUrl}/exportar-usuario/${idUsuario}/excel/${tipo.toUpperCase()}`,
+      { responseType: 'blob' }
+    );
+  }
+
+  // auditorias para sessiones
+  // Obtener todas las sesiones
+  getSesiones(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiauditoriasUrl}/sesiones`);
+  }
+
+  //http://localhost:8080/api/auditorias/sesiones
+
+// Exportar sesiones Excel
+  exportarSesionesExcel(sesiones: any[]): Observable<Blob> {
+    return this.http.get(`${this.apiauditoriasUrl}/auditorias/sesiones/exportar`,
+      { responseType: 'blob' }
+    );
+  }
+
   // FUNCIONES PARA LOS ROLES DE BASE DE DATOS
   // ========== ROLES DE BASE DE DATOS ==========
-
 
   obtenerRolesBD(): Observable<any> {
     return this.http.get(`${this.apiRolesbd}/roles-bd`);

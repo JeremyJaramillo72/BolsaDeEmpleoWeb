@@ -23,6 +23,19 @@ interface Auditoria {
   ipAddress?: string;
   navegador?: string;
   detalles?: any;
+  tablaAfectada?: string;
+}
+
+// Interfaz opcional para tipar las sesiones (mejora la legibilidad)
+interface Sesion {
+  idSesion?: number;
+  loginName: string;
+  fechaInicio: string;
+  fechaCierre?: string;
+  ipAddress: string;
+  navegador: string;
+  accion: string;
+  dispositivo?: string;
 }
 
 @Component({
@@ -34,6 +47,7 @@ interface Auditoria {
 })
 export class AdminUsuariosComponent implements OnInit {
 
+  // ========== VARIABLES EXISTENTES ==========
   // Lista de usuarios
   usuarios: Usuario[] = [];
   usuariosFiltrados: Usuario[] = [];
@@ -79,11 +93,27 @@ export class AdminUsuariosComponent implements OnInit {
   columnaOrden: string = 'fechaRegistro';
   direccionOrden: 'asc' | 'desc' = 'desc';
 
+  // ========== VARIABLES PARA TABS DE AUDITORÍAS (MODAL) ==========
+  tabActivo: 'INSERT' | 'DELETE' | 'UPDATE' = 'INSERT';
+  auditoriasFiltradas: Auditoria[] = [];
+
+  // ========== NUEVAS VARIABLES PARA TABS PRINCIPALES (USUARIOS / SESIONES) ==========
+  tabPrincipal: 'usuarios' | 'sesiones' = 'usuarios';
+
+  sesiones: Sesion[] = [];
+  sesionesFiltradas: Sesion[] = [];
+  cargandoSesiones = false;
+  filtroBusquedaSesiones = '';
+  filtroAccionSesion = '';
+  paginaSesiones = 1;
+  itemsPorPaginaSesiones = 10;
+
   constructor(private adminService: AdminService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.cargarUsuarios();
     this.cargarEstadisticas();
+    this.cargarSesiones(); // <-- NUEVO: cargar sesiones al iniciar
   }
 
   // ========== CARGA DE DATOS ==========
@@ -159,7 +189,7 @@ export class AdminUsuariosComponent implements OnInit {
     ).length;
   }
 
-  // ========== FILTRADO Y BÚSQUEDA ==========
+  // ========== FILTRADO Y BÚSQUEDA (USUARIOS) ==========
   aplicarFiltros(): void {
     let resultado = [...this.usuarios];
 
@@ -281,6 +311,7 @@ export class AdminUsuariosComponent implements OnInit {
     this.usuarioSeleccionado = usuario;
     this.mostrarModalAuditorias = true;
     this.paginaAuditorias = 1;
+    this.tabActivo = 'INSERT';
     this.cargarAuditorias(usuario.id);
   }
 
@@ -293,7 +324,8 @@ export class AdminUsuariosComponent implements OnInit {
         this.auditorias = data.map((auditoria: any) => ({
           id: auditoria.idAuditoria,
           accion: auditoria.accion,
-          modulo: auditoria.modulo || 'Sistema',
+          modulo: auditoria.tablaAfectada || 'Sin tabla',
+          tablaAfectada: auditoria.tablaAfectada || 'Sin tabla',
           descripcion: auditoria.descripcion,
           fechaHora: auditoria.fechaHora,
           ipAddress: auditoria.ipAddress,
@@ -301,12 +333,14 @@ export class AdminUsuariosComponent implements OnInit {
           detalles: auditoria.detalles
         }));
 
+        this.filtrarAuditoriasPorTab();
         this.cargandoAuditorias = false;
       },
       error: (err) => {
         console.error('Error al cargar auditorías:', err);
         this.mensajeError = 'Error al cargar auditorías';
         this.auditorias = [];
+        this.auditoriasFiltradas = [];
         this.cargandoAuditorias = false;
       }
     });
@@ -318,15 +352,78 @@ export class AdminUsuariosComponent implements OnInit {
     this.auditorias = [];
   }
 
+  // ========== MÉTODOS PARA TABS DE AUDITORÍAS ==========
+  cambiarTab(tab: 'INSERT' | 'DELETE' | 'UPDATE'): void {
+    this.tabActivo = tab;
+    this.paginaAuditorias = 1;
+    this.filtrarAuditoriasPorTab();
+  }
+
+  filtrarAuditoriasPorTab(): void {
+    this.auditoriasFiltradas = this.auditorias.filter(a =>
+      a.accion.toUpperCase().includes(this.tabActivo)
+    );
+  }
+
+  contarPorTipo(tipo: string): number {
+    return this.auditorias.filter(a =>
+      a.accion.toUpperCase().includes(tipo)
+    ).length;
+  }
+
+  exportarTabPdf(): void {
+    if (!this.usuarioSeleccionado) return;
+
+    this.adminService.exportarAuditoriasPdf(
+      this.usuarioSeleccionado.id,
+      this.tabActivo
+    ).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `auditorias_${this.tabActivo}_${this.usuarioSeleccionado?.nombreCompleto}_${new Date().getTime()}.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        console.error('Error al exportar PDF:', err);
+        this.mensajeError = 'Error al exportar PDF';
+      }
+    });
+  }
+
+  exportarTabExcel(): void {
+    if (!this.usuarioSeleccionado) return;
+
+    this.adminService.exportarAuditoriasExcelPorTipo(
+      this.usuarioSeleccionado.id,
+      this.tabActivo
+    ).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `auditorias_${this.tabActivo}_${this.usuarioSeleccionado?.nombreCompleto}_${new Date().getTime()}.xlsx`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        console.error('Error al exportar Excel:', err);
+        this.mensajeError = 'Error al exportar Excel';
+      }
+    });
+  }
+
   // ========== PAGINACIÓN - AUDITORÍAS ==========
   get auditoriasPaginadas(): Auditoria[] {
     const inicio = (this.paginaAuditorias - 1) * this.itemsPorPaginaAuditorias;
     const fin = inicio + this.itemsPorPaginaAuditorias;
-    return this.auditorias.slice(inicio, fin);
+    return this.auditoriasFiltradas.slice(inicio, fin);
   }
 
   get totalPaginasAuditorias(): number {
-    return Math.ceil(this.auditorias.length / this.itemsPorPaginaAuditorias);
+    return Math.ceil(this.auditoriasFiltradas.length / this.itemsPorPaginaAuditorias);
   }
 
   cambiarPaginaAuditorias(pagina: number): void {
@@ -335,7 +432,7 @@ export class AdminUsuariosComponent implements OnInit {
     }
   }
 
-  // ========== EXPORTAR ==========
+  // ========== EXPORTAR USUARIOS ==========
   exportarUsuarios(): void {
     this.adminService.exportarUsuariosExcel(this.usuariosFiltrados).subscribe({
       next: (blob) => {
@@ -370,7 +467,7 @@ export class AdminUsuariosComponent implements OnInit {
     }
   }
 
-  // ========== UTILIDADES ==========
+  // ========== UTILIDADES GENERALES ==========
   getRolClass(rol: string): string {
     const rolLower = rol.toLowerCase();
     if (rolLower.includes('admin') || rolLower.includes('administrador')) {
@@ -408,7 +505,7 @@ export class AdminUsuariosComponent implements OnInit {
 
   formatearFechaHora(fecha: string | null | undefined): string {
     if (!fecha) {
-      return '—'; // o '' si prefieres vacío
+      return '—';
     }
 
     const date = new Date(fecha);
@@ -426,4 +523,121 @@ export class AdminUsuariosComponent implements OnInit {
     });
   }
 
+  // ========== NUEVOS MÉTODOS PARA EL TAB DE SESIONES ==========
+
+  /**
+   * Cambia entre los tabs principales (Usuarios / Sesiones)
+   */
+  cambiarTabPrincipal(tab: 'usuarios' | 'sesiones'): void {
+    this.tabPrincipal = tab;
+  }
+
+  /**
+   * Carga la lista de sesiones desde el servicio
+   */
+  cargarSesiones(): void {
+    this.cargandoSesiones = true;
+    this.adminService.getSesiones().subscribe({
+      next: (data: Sesion[]) => {
+        this.sesiones = data;
+        this.aplicarFiltrosSesiones();
+        this.cargandoSesiones = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar sesiones:', err);
+        this.cargandoSesiones = false;
+        this.mensajeError = 'Error al cargar sesiones';
+      }
+    });
+  }
+
+  /**
+   * Aplica los filtros de búsqueda y acción a las sesiones
+   */
+  aplicarFiltrosSesiones(): void {
+    let resultado = [...this.sesiones];
+
+    // Filtro por acción
+    if (this.filtroAccionSesion) {
+      resultado = resultado.filter(s => s.accion === this.filtroAccionSesion);
+    }
+
+    // Filtro por búsqueda de texto
+    if (this.filtroBusquedaSesiones.trim()) {
+      const busqueda = this.filtroBusquedaSesiones.toLowerCase();
+      resultado = resultado.filter(s =>
+        (s.loginName && s.loginName.toLowerCase().includes(busqueda)) ||
+        (s.ipAddress && s.ipAddress.toLowerCase().includes(busqueda)) ||
+        (s.accion && s.accion.toLowerCase().includes(busqueda))
+      );
+    }
+
+    this.sesionesFiltradas = resultado;
+    this.paginaSesiones = 1; // Reiniciar a la primera página
+  }
+
+  /**
+   * Limpia los filtros de sesiones
+   */
+  limpiarFiltrosSesiones(): void {
+    this.filtroBusquedaSesiones = '';
+    this.filtroAccionSesion = '';
+    this.aplicarFiltrosSesiones();
+  }
+
+  /**
+   * Getter para obtener las sesiones de la página actual
+   */
+  get sesionesPaginadas(): Sesion[] {
+    const inicio = (this.paginaSesiones - 1) * this.itemsPorPaginaSesiones;
+    const fin = inicio + this.itemsPorPaginaSesiones;
+    return this.sesionesFiltradas.slice(inicio, fin);
+  }
+
+  /**
+   * Getter para el total de páginas de sesiones
+   */
+  get totalPaginasSesiones(): number {
+    return Math.ceil(this.sesionesFiltradas.length / this.itemsPorPaginaSesiones);
+  }
+
+  /**
+   * Cambia la página actual en la tabla de sesiones
+   */
+  cambiarPaginaSesiones(pagina: number): void {
+    if (pagina >= 1 && pagina <= this.totalPaginasSesiones) {
+      this.paginaSesiones = pagina;
+    }
+  }
+
+  /**
+   * Devuelve la clase CSS correspondiente al estado de la sesión
+   */
+  getAccionSesionClass(accion: string): string {
+    switch(accion?.toUpperCase()) {
+      case 'ACTIVA':   return 'sesion-activa';
+      case 'CERRADA':  return 'sesion-cerrada';
+      default:         return 'sesion-inactiva';
+    }
+  }
+
+  /**
+   * Exporta las sesiones filtradas a Excel
+   */
+  exportarSesionesExcel(): void {
+    this.adminService.exportarSesionesExcel(this.sesionesFiltradas).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `sesiones_${new Date().getTime()}.xlsx`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        console.error('Error al exportar sesiones:', err);
+        this.mensajeError = 'Error al exportar sesiones';
+      }
+    });
+  }
 }

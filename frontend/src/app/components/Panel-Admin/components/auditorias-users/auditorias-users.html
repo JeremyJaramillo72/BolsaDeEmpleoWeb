@@ -2,242 +2,378 @@
   <div class="page-header">
     <h1>
       <span class="header-icon">👥</span>
-      Administración de Usuarios
+      Auditorías de Usuarios
     </h1>
-    <p class="page-description">Gestione los usuarios registrados en el sistema</p>
+    <p class="page-description">Gestione los usuarios y sesiones del sistema</p>
   </div>
 
-  <!-- Mensaje de Error -->
+  <!-- ALERT -->
   <div class="alert alert-error" *ngIf="mensajeError">
     <span class="material-icons">error</span>
     {{ mensajeError }}
   </div>
 
-  <!-- Estadísticas -->
-  <div class="stats-grid">
-    <div class="stat-card total">
-      <div class="stat-icon">
-        <span class="material-icons">people</span>
-      </div>
-      <div class="stat-content">
-        <h4>Total Usuarios</h4>
-        <p class="stat-number">{{ estadisticas.totalUsuarios }}</p>
-        <span class="stat-detail">{{ estadisticas.usuariosActivos }} activos</span>
-      </div>
-    </div>
-
-    <div class="stat-card admin">
-      <div class="stat-icon">
-        <span class="material-icons">admin_panel_settings</span>
-      </div>
-      <div class="stat-content">
-        <h4>Administradores</h4>
-        <p class="stat-number">{{ estadisticas.administradores }}</p>
-      </div>
-    </div>
-
-    <div class="stat-card empresa">
-      <div class="stat-icon">
-        <span class="material-icons">business</span>
-      </div>
-      <div class="stat-content">
-        <h4>Empresas</h4>
-        <p class="stat-number">{{ estadisticas.empresas }}</p>
-      </div>
-    </div>
-
-    <div class="stat-card usuarios">
-      <div class="stat-icon">
-        <span class="material-icons">person</span>
-      </div>
-      <div class="stat-content">
-        <h4>Usuarios</h4>
-        <p class="stat-number">{{ estadisticas.usuariosNormales }}</p>
-        <span class="stat-detail">{{ estadisticas.registrosHoy }} hoy</span>
-      </div>
-    </div>
+  <!-- ===== TABS PRINCIPALES ===== -->
+  <div class="main-tabs-container">
+    <button
+      class="main-tab-btn"
+      [class.active]="tabPrincipal === 'usuarios'"
+      (click)="cambiarTabPrincipal('usuarios')">
+      <span class="material-icons">people</span>
+      Usuarios
+    </button>
+    <button
+      class="main-tab-btn"
+      [class.active]="tabPrincipal === 'sesiones'"
+      (click)="cambiarTabPrincipal('sesiones')">
+      <span class="material-icons">login</span>
+      Sesiones
+    </button>
   </div>
 
-  <!-- Filtros -->
-  <div class="section-card">
-    <div class="filters-section">
-      <div class="search-box">
-        <span class="material-icons">search</span>
-        <input
-          type="text"
-          [(ngModel)]="filtroBusqueda"
-          (ngModelChange)="aplicarFiltros()"
-          placeholder="Buscar por nombre, email o rol..."
-          class="search-input">
+  <!-- ===== CONTENIDO TAB USUARIOS ===== -->
+  <div *ngIf="tabPrincipal === 'usuarios'">
+
+    <!-- Estadísticas
+    <div class="stats-grid">
+      <div class="stat-card total">
+        <div class="stat-icon">
+          <span class="material-icons">people</span>
+        </div>
+        <div class="stat-content">
+          <h4>Total Usuarios</h4>
+          <p class="stat-number">{{ estadisticas.totalUsuarios }}</p>
+          <span class="stat-detail">{{ estadisticas.usuariosActivos }} activos</span>
+        </div>
       </div>
 
-      <div class="filter-group">
-        <select [(ngModel)]="filtroRol" (ngModelChange)="aplicarFiltros()" class="filter-select">
-          <option value="">Todos los roles</option>
-          <option *ngFor="let rol of rolesDisponibles" [value]="rol">{{ rol }}</option>
-        </select>
+      <div class="stat-card admin">
+        <div class="stat-icon">
+          <span class="material-icons">admin_panel_settings</span>
+        </div>
+        <div class="stat-content">
+          <h4>Administradores</h4>
+          <p class="stat-number">{{ estadisticas.administradores }}</p>
+        </div>
+      </div>
 
-        <select [(ngModel)]="filtroEstado" (ngModelChange)="aplicarFiltros()" class="filter-select">
-          <option value="">Todos los estados</option>
-          <option *ngFor="let estado of estadosDisponibles" [value]="estado">{{ estado }}</option>
-        </select>
+      <div class="stat-card empresa">
+        <div class="stat-icon">
+          <span class="material-icons">business</span>
+        </div>
+        <div class="stat-content">
+          <h4>Empresas</h4>
+          <p class="stat-number">{{ estadisticas.empresas }}</p>
+        </div>
+      </div>
 
-        <button class="btn-clear" (click)="limpiarFiltros()">
-          <span class="material-icons">refresh</span>
-          Limpiar
-        </button>
+      <div class="stat-card usuarios">
+        <div class="stat-icon">
+          <span class="material-icons">person</span>
+        </div>
+        <div class="stat-content">
+          <h4>Usuarios</h4>
+          <p class="stat-number">{{ estadisticas.usuariosNormales }}</p>
+          <span class="stat-detail">{{ estadisticas.registrosHoy }} hoy</span>
+        </div>
+      </div>
+    </div> -->
 
-        <button class="btn-export" (click)="exportarUsuarios()">
-          <span class="material-icons">download</span>
-          Exportar Excel
-        </button>
+    <!-- Filtros -->
+    <div class="section-card">
+      <div class="filters-section">
+        <div class="search-box">
+          <span class="material-icons">search</span>
+          <input
+            type="text"
+            [(ngModel)]="filtroBusqueda"
+            (ngModelChange)="aplicarFiltros()"
+            placeholder="Buscar por nombre, email o rol..."
+            class="search-input">
+        </div>
+
+        <div class="filter-group">
+          <select [(ngModel)]="filtroRol" (ngModelChange)="aplicarFiltros()" class="filter-select">
+            <option value="">Todos los roles</option>
+            <option *ngFor="let rol of rolesDisponibles" [value]="rol">{{ rol }}</option>
+          </select>
+
+          <select [(ngModel)]="filtroEstado" (ngModelChange)="aplicarFiltros()" class="filter-select">
+            <option value="">Todos los estados</option>
+            <option *ngFor="let estado of estadosDisponibles" [value]="estado">{{ estado }}</option>
+          </select>
+
+          <button class="btn-clear" (click)="limpiarFiltros()">
+            <span class="material-icons">refresh</span>
+            Limpiar
+          </button>
+
+          <button class="btn-export" (click)="exportarUsuarios()">
+            <span class="material-icons">download</span>
+            Exportar Excel
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Tabla de Usuarios -->
-  <div class="table-section" *ngIf="!cargando">
-    <div class="table-header">
-      <h3>Lista de Usuarios</h3>
-      <span class="table-count">{{ rangoMostrado }}</span>
-    </div>
+    <!-- Tabla de Usuarios -->
+    <div class="table-section" *ngIf="!cargando">
+      <div class="table-header">
+        <h3>Lista de Usuarios</h3>
+        <span class="table-count">{{ rangoMostrado }}</span>
+      </div>
 
-    <div class="table-container">
-      <table class="data-table">
-        <thead>
-        <tr>
-          <th class="sortable" (click)="ordenarPor('nombre')">
-            <div class="th-content">
-              Nombre
-              <span class="material-icons sort-icon" *ngIf="columnaOrden === 'nombre'">
-                  {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
-                </span>
-            </div>
-          </th>
-          <th class="sortable" (click)="ordenarPor('email')">
-            <div class="th-content">
-              Email
-              <span class="material-icons sort-icon" *ngIf="columnaOrden === 'email'">
-                  {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
-                </span>
-            </div>
-          </th>
-          <th class="sortable" (click)="ordenarPor('rol')">
-            <div class="th-content">
-              Rol
-              <span class="material-icons sort-icon" *ngIf="columnaOrden === 'rol'">
-                  {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
-                </span>
-            </div>
-          </th>
-          <th class="sortable" (click)="ordenarPor('estado')">
-            <div class="th-content">
-              Estado
-              <span class="material-icons sort-icon" *ngIf="columnaOrden === 'estado'">
-                  {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
-                </span>
-            </div>
-          </th>
-          <th class="sortable" (click)="ordenarPor('fechaRegistro')">
-            <div class="th-content">
-              Fecha Registro
-              <span class="material-icons sort-icon" *ngIf="columnaOrden === 'fechaRegistro'">
-                  {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
-                </span>
-            </div>
-          </th>
-          <th class="sortable" (click)="ordenarPor('auditorias')">
-            <div class="th-content">
-              Auditorías
-              <span class="material-icons sort-icon" *ngIf="columnaOrden === 'auditorias'">
-                  {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
-                </span>
-            </div>
-          </th>
-          <th>Acciones</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr *ngFor="let usuario of usuariosPaginados">
-          <td>
-            <div class="user-cell">
-              <div class="user-avatar">
-                {{ usuario?.nombreCompleto?.charAt(0)?.toUpperCase() || '?' }}
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th class="sortable" (click)="ordenarPor('nombre')">
+              <div class="th-content">
+                Nombre
+                <span class="material-icons sort-icon" *ngIf="columnaOrden === 'nombre'">
+                    {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                  </span>
               </div>
-              <span class="user-name">{{ usuario.nombreCompleto }}</span>
-            </div>
-          </td>
-          <td>{{ usuario.email }}</td>
-          <td>
-              <span class="badge rol-badge" [ngClass]="getRolClass(usuario.rol)">
-                {{ usuario.rol }}
-              </span>
-          </td>
-          <td>
-              <span class="badge estado-badge" [ngClass]="getEstadoClass(usuario.estado)">
-                {{ usuario.estado }}
-              </span>
-          </td>
-          <td>{{ usuario.fechaRegistro | date:'dd/MM/yyyy' }}</td>
-          <td class="text-center">
-            <span class="audit-count">{{ usuario.totalAuditorias }}</span>
-          </td>
-          <td>
-            <button class="btn-action" (click)="verAuditorias(usuario)">
-              <span class="material-icons">history</span>
-              Ver Auditorías
-            </button>
-          </td>
-        </tr>
-        </tbody>
-      </table>
+            </th>
+            <th class="sortable" (click)="ordenarPor('email')">
+              <div class="th-content">
+                Email
+                <span class="material-icons sort-icon" *ngIf="columnaOrden === 'email'">
+                    {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                  </span>
+              </div>
+            </th>
+            <th class="sortable" (click)="ordenarPor('rol')">
+              <div class="th-content">
+                Rol
+                <span class="material-icons sort-icon" *ngIf="columnaOrden === 'rol'">
+                    {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                  </span>
+              </div>
+            </th>
+            <th class="sortable" (click)="ordenarPor('estado')">
+              <div class="th-content">
+                Estado
+                <span class="material-icons sort-icon" *ngIf="columnaOrden === 'estado'">
+                    {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                  </span>
+              </div>
+            </th>
+            <th class="sortable" (click)="ordenarPor('fechaRegistro')">
+              <div class="th-content">
+                Fecha Registro
+                <span class="material-icons sort-icon" *ngIf="columnaOrden === 'fechaRegistro'">
+                    {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                  </span>
+              </div>
+            </th>
+            <th class="sortable" (click)="ordenarPor('auditorias')">
+              <div class="th-content">
+                Auditorías
+                <span class="material-icons sort-icon" *ngIf="columnaOrden === 'auditorias'">
+                    {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+                  </span>
+              </div>
+            </th>
+            <th>Acciones</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let usuario of usuariosPaginados">
+            <td>
+              <div class="user-cell">
+                <div class="user-avatar">
+                  {{ usuario?.nombreCompleto?.charAt(0)?.toUpperCase() || '?' }}
+                </div>
+                <span class="user-name">{{ usuario.nombreCompleto }}</span>
+              </div>
+            </td>
+            <td>{{ usuario.email }}</td>
+            <td>
+                <span class="badge rol-badge" [ngClass]="getRolClass(usuario.rol)">
+                  {{ usuario.rol }}
+                </span>
+            </td>
+            <td>
+                <span class="badge estado-badge" [ngClass]="getEstadoClass(usuario.estado)">
+                  {{ usuario.estado }}
+                </span>
+            </td>
+            <td>{{ usuario.fechaRegistro | date:'dd/MM/yyyy' }}</td>
+            <td class="text-center">
+              <span class="audit-count">{{ usuario.totalAuditorias }}</span>
+            </td>
+            <td>
+              <button class="btn-action" (click)="verAuditorias(usuario)">
+                <span class="material-icons">history</span>
+                Ver Auditorías
+              </button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
 
-      <!-- Estado Vacío -->
-      <div class="empty-state" *ngIf="usuariosFiltrados.length === 0">
-        <span class="material-icons">person_search</span>
-        <p>No se encontraron usuarios con los filtros seleccionados</p>
+        <!-- Estado Vacío -->
+        <div class="empty-state" *ngIf="usuariosFiltrados.length === 0">
+          <span class="material-icons">person_search</span>
+          <p>No se encontraron usuarios con los filtros seleccionados</p>
+        </div>
       </div>
-    </div>
 
-    <!-- Paginación -->
-    <div class="pagination" *ngIf="totalPaginas > 1">
-      <button
-        class="page-btn"
-        (click)="cambiarPagina(paginaActual - 1)"
-        [disabled]="paginaActual === 1">
-        <span class="material-icons">chevron_left</span>
-      </button>
-
-      <div class="page-numbers">
+      <!-- Paginación Usuarios -->
+      <div class="pagination" *ngIf="totalPaginas > 1">
         <button
-          *ngFor="let p of [].constructor(totalPaginas); let i = index"
-          class="page-number"
-          [class.active]="paginaActual === i + 1"
-          (click)="cambiarPagina(i + 1)"
-          [hidden]="totalPaginas > 7 && (i + 1 < paginaActual - 2 || i + 1 > paginaActual + 2) && i + 1 !== 1 && i + 1 !== totalPaginas">
-          {{ i + 1 }}
+          class="page-btn"
+          (click)="cambiarPagina(paginaActual - 1)"
+          [disabled]="paginaActual === 1">
+          <span class="material-icons">chevron_left</span>
+        </button>
+
+        <div class="page-numbers">
+          <button
+            *ngFor="let p of [].constructor(totalPaginas); let i = index"
+            class="page-number"
+            [class.active]="paginaActual === i + 1"
+            (click)="cambiarPagina(i + 1)"
+            [hidden]="totalPaginas > 7 && (i + 1 < paginaActual - 2 || i + 1 > paginaActual + 2) && i + 1 !== 1 && i + 1 !== totalPaginas">
+            {{ i + 1 }}
+          </button>
+        </div>
+
+        <button
+          class="page-btn"
+          (click)="cambiarPagina(paginaActual + 1)"
+          [disabled]="paginaActual === totalPaginas">
+          <span class="material-icons">chevron_right</span>
         </button>
       </div>
-
-      <button
-        class="page-btn"
-        (click)="cambiarPagina(paginaActual + 1)"
-        [disabled]="paginaActual === totalPaginas">
-        <span class="material-icons">chevron_right</span>
-      </button>
     </div>
+
+    <!-- Indicador de Carga -->
+    <div class="loading-container" *ngIf="cargando">
+      <div class="spinner"></div>
+      <p>Cargando usuarios...</p>
+    </div>
+
   </div>
 
-  <!-- Indicador de Carga -->
-  <div class="loading-container" *ngIf="cargando">
-    <div class="spinner"></div>
-    <p>Cargando usuarios...</p>
+  <!-- ===== CONTENIDO TAB SESIONES ===== -->
+  <div *ngIf="tabPrincipal === 'sesiones'">
+
+    <!-- Filtro búsqueda sesiones -->
+    <div class="section-card">
+      <div class="filters-section">
+        <div class="search-box">
+          <span class="material-icons">search</span>
+          <input
+            type="text"
+            [(ngModel)]="filtroBusquedaSesiones"
+            (ngModelChange)="aplicarFiltrosSesiones()"
+            placeholder="Buscar por usuario, IP o acción..."
+            class="search-input">
+        </div>
+        <div class="filter-group">
+          <select [(ngModel)]="filtroAccionSesion" (ngModelChange)="aplicarFiltrosSesiones()" class="filter-select">
+            <option value="">Todas las acciones</option>
+            <option value="ACTIVA">ACTIVA</option>
+            <option value="CERRADA">CERRADA</option>
+            <option value="INACTIVA">INACTIVA</option>
+          </select>
+          <button class="btn-clear" (click)="limpiarFiltrosSesiones()">
+            <span class="material-icons">refresh</span>
+            Limpiar
+          </button>
+          <button class="btn-export" (click)="exportarSesionesExcel()">
+            <span class="material-icons">download</span>
+            Exportar Excel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla Sesiones -->
+    <div class="table-section" *ngIf="!cargandoSesiones">
+      <div class="table-header">
+        <h3>Registro de Sesiones</h3>
+        <span class="table-count">{{ sesionesFiltradas.length }} registros</span>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Fecha Inicio</th>
+            <th>Fecha Cierre</th>
+            <th>IP Address</th>
+            <th>Navegador</th>
+            <th>Acción</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let sesion of sesionesPaginadas">
+            <td>
+              <div class="user-cell">
+                <div class="user-avatar">{{ sesion.loginName?.charAt(0)?.toUpperCase() || '?' }}</div>
+                <span class="user-name">{{ sesion.loginName }}</span>
+              </div>
+            </td>
+            <td>{{ formatearFechaHora(sesion.fechaInicio) }}</td>
+            <td>{{ sesion.fechaCierre ? formatearFechaHora(sesion.fechaCierre) : '—' }}</td>
+            <td>
+                <span class="ip-badge">
+                  <span class="material-icons">location_on</span>
+                  {{ sesion.ipAddress || 'N/A' }}
+                </span>
+            </td>
+            <td class="navegador-cell">{{ sesion.navegador || 'N/A' }}</td>
+            <td>
+                <span class="badge sesion-badge" [ngClass]="getAccionSesionClass(sesion.accion)">
+                  {{ sesion.accion }}
+                </span>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+
+        <div class="empty-state" *ngIf="sesionesFiltradas.length === 0 && !cargandoSesiones">
+          <span class="material-icons">wifi_off</span>
+          <p>No hay sesiones registradas</p>
+        </div>
+      </div>
+
+      <!-- Paginación sesiones -->
+      <div class="pagination" *ngIf="totalPaginasSesiones > 1">
+        <button
+          class="page-btn"
+          (click)="cambiarPaginaSesiones(paginaSesiones - 1)"
+          [disabled]="paginaSesiones === 1">
+          <span class="material-icons">chevron_left</span>
+        </button>
+        <span class="page-info">Página {{ paginaSesiones }} de {{ totalPaginasSesiones }}</span>
+        <button
+          class="page-btn"
+          (click)="cambiarPaginaSesiones(paginaSesiones + 1)"
+          [disabled]="paginaSesiones === totalPaginasSesiones">
+          <span class="material-icons">chevron_right</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="loading-container" *ngIf="cargandoSesiones">
+      <div class="spinner"></div>
+      <p>Cargando sesiones...</p>
+    </div>
+
   </div>
 </div>
 
 <!-- ========== MODAL DE AUDITORÍAS ========== -->
+<!-- ========== MODAL DE AUDITORÍAS - REEMPLAZA EL MODAL ACTUAL ========== -->
 <div class="modal-overlay" *ngIf="mostrarModalAuditorias" (click)="cerrarModalAuditorias()">
   <div class="modal-container large" (click)="$event.stopPropagation()">
+
+    <!-- HEADER (sin cambios) -->
     <div class="modal-header">
       <div class="modal-title-section">
         <h2>Historial de Auditorías</h2>
@@ -246,6 +382,7 @@
         </p>
       </div>
       <div class="modal-actions-header">
+        <!-- ESTE BOTÓN EXPORTA TODAS LAS AUDITORÍAS (se mantiene igual) -->
         <button class="btn-export-modal" (click)="exportarAuditorias()">
           <span class="material-icons">download</span>
           Exportar
@@ -257,6 +394,8 @@
     </div>
 
     <div class="modal-body" *ngIf="!cargandoAuditorias">
+
+      <!-- RESUMEN (sin cambios) -->
       <div class="audit-summary">
         <div class="summary-item">
           <span class="material-icons">assignment</span>
@@ -274,7 +413,49 @@
         </div>
       </div>
 
-      <!-- Timeline de Auditorías -->
+      <!-- ===== TABS DE NAVEGACIÓN (NUEVO) ===== -->
+      <div class="tabs-container">
+        <div class="tabs-nav">
+          <button
+            class="tab-btn"
+            [class.active]="tabActivo === 'INSERT'"
+            (click)="cambiarTab('INSERT')">
+            <span class="material-icons">add_circle</span>
+            Insert
+            <span class="tab-badge">{{ contarPorTipo('INSERT') }}</span>
+          </button>
+          <button
+            class="tab-btn"
+            [class.active]="tabActivo === 'DELETE'"
+            (click)="cambiarTab('DELETE')">
+            <span class="material-icons">delete</span>
+            Delete
+            <span class="tab-badge">{{ contarPorTipo('DELETE') }}</span>
+          </button>
+          <button
+            class="tab-btn"
+            [class.active]="tabActivo === 'UPDATE'"
+            (click)="cambiarTab('UPDATE')">
+            <span class="material-icons">edit</span>
+            Update
+            <span class="tab-badge">{{ contarPorTipo('UPDATE') }}</span>
+          </button>
+        </div>
+
+        <!-- BOTONES DE EXPORTAR POR TAB (NUEVO) -->
+        <div class="tab-export-actions">
+          <button class="btn-tab-export pdf" (click)="exportarTabPdf()">
+            <span class="material-icons">picture_as_pdf</span>
+            PDF
+          </button>
+          <button class="btn-tab-export excel" (click)="exportarTabExcel()">
+            <span class="material-icons">table_chart</span>
+            Excel
+          </button>
+        </div>
+      </div>
+
+      <!-- TIMELINE DE AUDITORÍAS FILTRADAS POR TAB -->
       <div class="audit-timeline">
         <div class="audit-item" *ngFor="let auditoria of auditoriasPaginadas">
           <div class="audit-marker" [ngClass]="getAccionClass(auditoria.accion)">
@@ -292,8 +473,8 @@
             </div>
             <div class="audit-details">
               <div class="audit-module">
-                <span class="material-icons">folder</span>
-                {{ auditoria.modulo }}
+                <span class="material-icons">table_chart</span>
+                Tabla: {{ auditoria.tablaAfectada || auditoria.modulo }}
               </div>
               <p class="audit-description">{{ auditoria.descripcion }}</p>
               <div class="audit-meta" *ngIf="auditoria.ipAddress || auditoria.navegador">
@@ -311,9 +492,9 @@
         </div>
 
         <!-- Estado Vacío -->
-        <div class="empty-audit" *ngIf="auditorias.length === 0">
+        <div class="empty-audit" *ngIf="auditoriasFiltradas.length === 0">
           <span class="material-icons">history</span>
-          <p>No hay auditorías registradas para este usuario</p>
+          <p>No hay auditorías de tipo "{{ tabActivo }}" registradas</p>
         </div>
       </div>
 
@@ -325,11 +506,9 @@
           [disabled]="paginaAuditorias === 1">
           <span class="material-icons">chevron_left</span>
         </button>
-
         <span class="page-info">
           Página {{ paginaAuditorias }} de {{ totalPaginasAuditorias }}
         </span>
-
         <button
           class="page-btn"
           (click)="cambiarPaginaAuditorias(paginaAuditorias + 1)"

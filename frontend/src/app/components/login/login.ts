@@ -1,8 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router, RouterModule } from '@angular/router';
+
+// 1. Importamos tu servicio de autenticación
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -11,7 +14,8 @@ import { Router, RouterModule } from '@angular/router';
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
-export class LoginComponent {
+// 2. Implementamos OnInit para ejecutar código apenas cargue el componente
+export class LoginComponent implements OnInit {
   // variables vinculadas al formulario [(ngmodel)]
   correo: string = '';
   contrasena: string = '';
@@ -22,8 +26,30 @@ export class LoginComponent {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    // 3. Inyectamos el AuthService en el constructor
+    private authService: AuthService
   ) {}
+
+  // 4. Este método se dispara automáticamente al entrar a la vista del Login
+  ngOnInit(): void {
+    this.limpiarSesion();
+  }
+
+  /**
+   * Cierra cualquier sesión que haya quedado colgada en el backend
+   * y limpia el almacenamiento del navegador.
+   */
+  limpiarSesion(): void {
+    // Limpiamos el localStorage por seguridad en el frontend
+    localStorage.clear();
+
+    // Llamamos al método logout de tu AuthService
+    this.authService.logout().subscribe({
+      next: () => console.log("⏪ Conexión de BD reseteada al default y sesión cerrada"),
+      error: (err) => console.log('Nota: No había sesión activa en el backend o ya estaba cerrada.')
+    });
+  }
 
   togglePassword(): void {
     this.verPassword = !this.verPassword;
@@ -36,7 +62,7 @@ export class LoginComponent {
     this.errorMsg = '';
     const loginData = { correo: this.correo, contrasena: this.contrasena };
 
-    this.http.post('http://localhost:8080/api/auth/login', loginData)
+    this.http.post('http://localhost:8080/api/auth/login', loginData , { withCredentials: true })
       .subscribe({
         next: (res: any) => {
           console.log('respuesta completa del backend:', res);
@@ -87,6 +113,4 @@ export class LoginComponent {
         }
       });
   }
-
-
 }

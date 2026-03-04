@@ -13,26 +13,26 @@ public class RolesBdServiceImpl implements IRolesBdService {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+     // Funcional
+     @Override
+     public List<Map<String, Object>> listarRolesPersonalizados() {
+         String sql = "SELECT " +
+                 "r.rolname AS \"nombreRol\", " +
+                 "r.rolname AS \"idRol\", " +
+                 "CURRENT_DATE AS \"fechaCreacion\", " +
+                 "COUNT(DISTINCT am.member) AS \"usuariosAsignados\", " +
+                 "(SELECT COUNT(*) FROM information_schema.role_table_grants rtg " +
+                 " WHERE rtg.grantee = r.rolname) AS \"totalPermisos\" " +
+                 "FROM pg_catalog.pg_roles r " +
+                 "LEFT JOIN pg_catalog.pg_auth_members am ON am.roleid = r.oid " +
+                 "WHERE r.rolcanlogin = false " +
+                 "AND r.rolname NOT LIKE 'pg_%' " +
+                 "AND r.rolname <> 'postgres' " +
+                 "GROUP BY r.rolname " +
+                 "ORDER BY r.rolname";
 
-    @Override
-    public List<Map<String, Object>> listarRolesPersonalizados() {
-        String sql = "SELECT " +
-                "r.rolname AS \"nombreRol\", " +
-                "r.rolname AS \"idRol\", " +
-                "CURRENT_DATE AS \"fechaCreacion\", " +
-                "COUNT(DISTINCT am.member) AS \"usuariosAsignados\", " +
-                "(SELECT COUNT(*) FROM information_schema.role_table_grants rtg " +
-                " WHERE rtg.grantee = r.rolname) AS \"totalPermisos\" " +
-                "FROM pg_catalog.pg_roles r " +
-                "LEFT JOIN pg_catalog.pg_auth_members am ON am.roleid = r.oid " +
-                "WHERE r.rolcanlogin = false " +
-                "AND r.rolname NOT LIKE 'pg_%' " +
-                "AND r.rolname <> 'postgres' " +
-                "GROUP BY r.rolname " +
-                "ORDER BY r.rolname";
-
-        return jdbcTemplate.queryForList(sql);
-    }
+         return jdbcTemplate.queryForList(sql);
+     }
 
     @Override
     public List<Map<String, Object>> listarRolesBase() {

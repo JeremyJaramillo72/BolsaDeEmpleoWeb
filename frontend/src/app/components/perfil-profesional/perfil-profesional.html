@@ -290,6 +290,160 @@
 </div>
 
 <div class="modal-overlay" *ngIf="modalExperiencia">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Añadir Experiencia Laboral</h2>
+      <button class="btn-close" (click)="cerrarModales()"><span class="material-icons">close</span></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group full-width">
+        <label>Cargos Desempeñados *</label>
+        <div class="cargo-input-group">
+          <select [(ngModel)]="cargoActual">
+            <option [ngValue]="null" disabled>Seleccionar Cargo...</option>
+            <option *ngFor="let cargo of cargosDisponibles" [value]="cargo.idCargo">{{ cargo.nombreCargo }}</option>
+          </select>
+          <button type="button" class="btn-add-cargo" (click)="agregarCargoTemporal()"><span class="material-icons">add</span></button>
+        </div>
+        <div class="chips-container mt-2">
+          <span class="chip" *ngFor="let cargo of cargosTemporales; let i = index">
+            {{ cargo.nombre_cargo }} <span class="material-icons" (click)="eliminarCargoTemporal(i)">cancel</span>
+          </span>
+        </div>
+      </div>
+      <div class="form-grid mt-4">
+        <div class="form-group">
+          <label>Empresa *</label>
+          <select [(ngModel)]="nuevaExperiencia.id_empresa_catalogo">
+            <option [ngValue]="null" disabled>Seleccionar Empresa...</option>
+            <option *ngFor="let empresa of empresasDisponibles" [value]="empresa.idEmpresaCatalogo">{{ empresa.nombreEmpresa }}</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Ubicación Profesional</label><input type="text" [(ngModel)]="nuevaExperiencia.ubicacion" placeholder="Ej: Quito, Ecuador"></div>
+        <div class="form-group"><label>Fecha de Inicio *</label><input type="date" [(ngModel)]="nuevaExperiencia.fecha_inicio"></div>
+        <div class="form-group"><label>Fecha de Fin</label><input type="date" [(ngModel)]="nuevaExperiencia.fecha_fin"></div>
+        <div class="form-group full-width"><label>Descripción de Funciones *</label><textarea [(ngModel)]="nuevaExperiencia.descripcion" rows="4"></textarea></div>
+      </div>
+      <div class="actions-row mt-4">
+        <button type="button" class="btn-attach" (click)="fileInputExp.click()"><span class="material-icons">attach_file</span> {{ nuevaExperiencia.nombreArchivo || 'Adjuntar Comprobante (PDF)' }}</button>
+        <input #fileInputExp type="file" (change)="onFileSelected($event, 'experiencia')" hidden accept=".pdf">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cerrarModales()">Cancelar</button>
+      <button class="btn-save-item" (click)="agregarExperienciaBd()"><span class="material-icons">cloud_upload</span> Guardar Experiencia</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="modalCurso">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Añadir Curso o Certificación</h2>
+      <button class="btn-close" (click)="cerrarModales()"><span class="material-icons">close</span></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label>Nombre del Curso/Certificación *</label>
+          <input type="text" [(ngModel)]="nuevoCurso.nombre_curso" placeholder="Ej: AWS Certified Cloud Practitioner">
+        </div>
+        <div class="form-group">
+          <label>Institución *</label>
+          <input type="text" [(ngModel)]="nuevoCurso.institucion" placeholder="Ej: Udemy, Coursera">
+        </div>
+        <div class="form-group">
+          <label>Duración (Horas)</label>
+          <input type="number" [(ngModel)]="nuevoCurso.horas_duracion" placeholder="Ej: 40">
+        </div>
+      </div>
+      <div class="actions-row mt-4">
+        <button type="button" class="btn-attach" (click)="fileInputCurso.click()">
+          <span class="material-icons">attach_file</span> {{ nuevoCurso.nombreArchivo || 'Adjuntar Certificado (PDF)' }}
+        </button>
+        <input #fileInputCurso type="file" (change)="onFileSelected($event, 'curso')" hidden accept=".pdf">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cerrarModales()">Cancelar</button>
+      <button class="btn-save-item" (click)="agregarCursoBd()"><span class="material-icons">cloud_upload</span> Guardar Curso</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="modalAcademica">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Añadir Formación Académica</h2>
+      <button class="btn-close" (click)="cerrarModales()"><span class="material-icons">close</span></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Facultad</label>
+          <select [(ngModel)]="nuevoTitulo.id_facultad" (change)="onFacultadNuevaChange()">
+            <option [ngValue]="null" disabled>Seleccionar Facultad...</option>
+            <option *ngFor="let f of facultades" [value]="f.idFacultad">{{ f.nombreFacultad }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Carrera</label>
+          <select [(ngModel)]="nuevoTitulo.id_carrera" [disabled]="!nuevoTitulo.id_facultad">
+            <option [ngValue]="null" disabled>Seleccionar Carrera...</option>
+            <option *ngFor="let c of carrerasNuevoTitulo" [value]="c.idCarrera">{{ c.nombreCarrera }}</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Fecha de Graduación</label><input type="date" [(ngModel)]="nuevoTitulo.fechaGraduacion"></div>
+        <div class="form-group"><label>Registro SENESCYT</label><input type="text" [(ngModel)]="nuevoTitulo.registroSenescyt" placeholder="Ej: 1234-56-789012"></div>
+      </div>
+      <div class="actions-row mt-4">
+        <button type="button" class="btn-attach" (click)="fileInputAcad.click()"><span class="material-icons">attach_file</span> {{ nuevoTitulo.nombreArchivo || 'Adjuntar Título (PDF)' }}</button>
+        <input #fileInputAcad type="file" (change)="onFileSelected($event, 'academico')" hidden accept=".pdf">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cerrarModales()">Cancelar</button>
+      <button class="btn-save-item" (click)="agregarTituloBd()"><span class="material-icons">cloud_upload</span> Guardar Título</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="modalIdioma">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Añadir Idioma</h2>
+      <button class="btn-close" (click)="cerrarModales()"><span class="material-icons">close</span></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Seleccionar Idioma</label>
+          <select [(ngModel)]="nuevoIdioma.id_idioma">
+            <option [ngValue]="null" disabled>Seleccionar...</option>
+            <option *ngFor="let idm of idiomasDisponibles" [value]="idm.idIdioma">{{ idm.nombreIdioma }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Nivel de Dominio</label>
+          <select [(ngModel)]="nuevoIdioma.nivel">
+            <option [ngValue]="null" disabled>Seleccionar...</option>
+            <option *ngFor="let n of niveles" [value]="n">{{ n }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="actions-row mt-4">
+        <button type="button" class="btn-attach" (click)="fileInputIdm.click()"><span class="material-icons">attach_file</span> {{ nuevoIdioma.nombreArchivo || 'Adjuntar Certificado (PDF)' }}</button>
+        <input #fileInputIdm type="file" (change)="onFileSelected($event, 'idioma')" hidden accept=".pdf">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cerrarModales()">Cancelar</button>
+      <button class="btn-save-item" (click)="agregarIdiomaBd()"><span class="material-icons">cloud_upload</span> Guardar Idioma</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="modalExperiencia">
   <div class="modal-content" style="max-width: 700px; width: 90%;">
     <div class="modal-header">
       <h2>Añadir Experiencia Laboral</h2>

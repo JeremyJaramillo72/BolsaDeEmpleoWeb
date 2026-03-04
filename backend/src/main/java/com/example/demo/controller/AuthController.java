@@ -6,10 +6,7 @@ import com.example.demo.model.UsuarioEmpresa;
 import com.example.demo.repository.SeguridadRepository;
 import com.example.demo.repository.UsuarioEmpresaRepository;
 import com.example.demo.repository.UsuarioRepository;
-import com.example.demo.service.AuthService;
-import com.example.demo.service.DbSwitchService;
-import com.example.demo.service.EmailService;
-import com.example.demo.service.IUsuarioService;
+import com.example.demo.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -17,15 +14,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:4200")
-@SessionAttributes({"session_id_usuario", "session_rol"})
+@CrossOrigin(origins = "http://localhost:4200" , allowCredentials = "true")
 public class AuthController {
 
     @Autowired
@@ -48,6 +43,8 @@ public class AuthController {
 
     @Autowired
     private SeguridadRepository seguridadRepository;
+    @Autowired
+    private ISesionService sesionService;
 
     @PostMapping("/enviar-codigo")
     public ResponseEntity<?> solicitarCodigo(
@@ -71,13 +68,30 @@ public class AuthController {
         }
     }
 
+    private String obtenerIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        // Si hay múltiples IPs en X-Forwarded-For, tomar la primera
+        if (ip != null && ip.contains(",")) {
+            ip = ip.split(",")[0].trim();
+        }
+        return ip;
+    }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @RequestBody LoginRequest loginRequest,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse,
-            HttpSession session,
-            Model model
+            HttpSession session
     ) {
         return usuarioRepository.findByCorreo(loginRequest.getCorreo())
                 .map(usuario -> {
@@ -107,7 +121,7 @@ public class AuthController {
                         }
                         // 👆 FIN DE LA VALIDACIÓN 👆
 
-                        // 3. BUSCAR CREDENCIALES DE BASE DE DATOS EN ENTIDAD SEGURIDAD
+                        // 2. BUSCAR CREDENCIALES DE BASE DE DATOS EN ENTIDAD SEGURIDAD
                         Seguridad seguridad = seguridadRepository.findByUsuario(usuario);
                         if (seguridad != null) {
                             try {
@@ -119,13 +133,22 @@ public class AuthController {
                             }
                         }
 
-                        // 4. Guardar en sesión
+                        // 3. Guardar en sesión
                         session.setAttribute("nombre_usuario", usuario.getNombre());
                         session.setAttribute("idUsuario", usuario.getIdUsuario());
-                        model.addAttribute("session_id_usuario", usuario.getIdUsuario());
+                        if (seguridad != null) {
+                            session.setAttribute("idSeguridad", seguridad.getIdSeguridad());   // <-- NUEVO
+                        }
 
                         String nombreRol = usuario.getRol().getNombreRol();
-                        model.addAttribute("session_rol", nombreRol);
+
+                        // 4. Registrar inicio de sesión (auditoría)
+                        if (seguridad != null) {
+                            String ip = obtenerIp(httpRequest);
+                            String navegador = httpRequest.getHeader("User-Agent");
+                            String dispositivo = navegador != null && navegador.contains("Mobile") ? "Mobile" : "Desktop";
+                            sesionService.registrarLogin(seguridad.getIdSeguridad(), ip, navegador, dispositivo);
+                        }
 
                         httpResponse.addHeader("X-Auth-Token", UUID.randomUUID().toString());
                         httpResponse.addHeader("X-UTEQ-Session", "Active");
@@ -163,6 +186,14 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpSession session) {
+        // Registrar cierre de sesión antes de invalidar
+        Object idSeguridadObj = session.getAttribute("idSeguridad");
+        System.out.println("🔴 idSeguridad en logout: " + idSeguridadObj);
+        Integer idSeguridad = (Integer) idSeguridadObj;
+        if (idSeguridad != null) {
+            sesionService.registrarLogout(idSeguridad);
+        }
+
         // CUANDO CIERRA SESIÓN, REGRESAMOS AL USUARIO POR DEFECTO DEL BACKEND
         dbSwitchService.resetToDefault();
         session.invalidate();

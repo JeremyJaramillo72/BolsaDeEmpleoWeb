@@ -929,3 +929,202 @@
     display: none;
   }
 }
+
+/* ===== TABS DE AUDITORÍAS (AGREGAR AL CSS EXISTENTE) ===== */
+
+.tabs-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.tabs-nav {
+  display: flex;
+  gap: 10px;
+  background: #f1f5f9;
+  padding: 6px;
+  border-radius: 14px;
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  background: transparent;
+  color: #64748b;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.tab-btn:hover {
+  background: white;
+  color: #475569;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.tab-btn .material-icons {
+  font-size: 18px;
+}
+
+.tab-badge {
+  background: rgba(255,255,255,0.25);
+  color: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 20px;
+  min-width: 22px;
+  text-align: center;
+}
+
+.tab-btn:not(.active) .tab-badge {
+  background: #e2e8f0;
+  color: #64748b;
+}
+
+/* ===== BOTONES EXPORTAR POR TAB ===== */
+.tab-export-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-tab-export {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.btn-tab-export .material-icons {
+  font-size: 17px;
+}
+
+.btn-tab-export.pdf {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.btn-tab-export.pdf:hover {
+  background: #dc2626;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.btn-tab-export.excel {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.btn-tab-export.excel:hover {
+  background: #059669;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+/* Responsive tabs */
+@media (max-width: 768px) {
+  .tabs-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tabs-nav {
+    overflow-x: auto;
+  }
+
+  .tab-export-actions {
+    justify-content: flex-end;
+  }
+}
+/* ===== TABS PRINCIPALES ===== */
+.main-tabs-container {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 30px;
+  background: white;
+  padding: 8px;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+  width: fit-content;
+}
+
+.main-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  background: transparent;
+  color: #64748b;
+  transition: all 0.25s ease;
+}
+
+.main-tab-btn:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.main-tab-btn.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+}
+
+.main-tab-btn .material-icons {
+  font-size: 20px;
+}
+
+/* ===== TABLA SESIONES ===== */
+.ip-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.ip-badge .material-icons {
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.navegador-cell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.sesion-activa  { background: #d1fae5; color: #065f46; }
+.sesion-cerrada { background: #fee2e2; color: #991b1b; }
+.sesion-inactiva{ background: #f3f4f6; color: #374151; }
