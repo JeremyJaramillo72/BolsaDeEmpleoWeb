@@ -99,4 +99,7 @@ export class PerfilService {
     return this.http.get<any[]>('http://localhost:8080/api/academico/categorias');
 
   }
+  actualizarDatosPersonales(idUsuario: number, datos: any): Observable<any> {
+    return this.http.put(`http://localhost:8080/api/perfil/${idUsuario}/actualizar-personales`, datos);
+  }
 }
