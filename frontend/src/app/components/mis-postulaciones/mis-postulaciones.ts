@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { OfertaService, OfertaDetalladaDTO } from '../../services/oferta.service';
+import { UiNotificationService } from '../../services/ui-notification.service';
+import { ConfirmService } from '../../services/confirm.service';
 
 @Component({
   selector: 'app-mis-postulaciones',
@@ -28,7 +30,9 @@ export class MisPostulacionesComponent implements OnInit {
   constructor(
     private ofertaService: OfertaService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private ui: UiNotificationService,
+    private confirmService: ConfirmService
   ) {}
 
   ngOnInit(): void {
@@ -191,18 +195,20 @@ export class MisPostulacionesComponent implements OnInit {
   // ── Cancelar postulación ────────────────────────────────────────────────
 
   cancelarPostulacion(postulacion: OfertaDetalladaDTO): void {
-    if (!postulacion.idPostulacion) return;
-    if (!confirm(`¿Está seguro de cancelar la postulación para "${postulacion.titulo}"?`)) return;
-
-    this.ofertaService.cancelarPostulacion(postulacion.idPostulacion).subscribe({
-      next: () => {
-        alert('Postulación cancelada exitosamente');
-        this.cargarPostulaciones();
-      },
-      error: (error) => {
-        console.error('Error al cancelar postulación:', error);
-        alert('Error al cancelar la postulación');
-      }
+    const id = postulacion.idPostulacion;
+    if (!id) return;
+    this.confirmService.abrir(`¿Está seguro de cancelar la postulación para "${postulacion.titulo}"?`).then(acepto => {
+      if (!acepto) return;
+      this.ofertaService.cancelarPostulacion(id).subscribe({
+        next: () => {
+          this.ui.exito('Postulación cancelada exitosamente');
+          this.cargarPostulaciones();
+        },
+        error: (error) => {
+          console.error('Error al cancelar postulación:', error);
+          this.ui.error('Error al cancelar la postulación');
+        }
+      });
     });
   }
 }

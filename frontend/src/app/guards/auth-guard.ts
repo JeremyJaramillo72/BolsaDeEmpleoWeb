@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
+import { UiNotificationService } from '../services/ui-notification.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthGuard implements CanActivate {
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private ui: UiNotificationService) { }
 
   canActivate(
     route: ActivatedRouteSnapshot,
@@ -19,7 +20,7 @@ export class AuthGuard implements CanActivate {
 
     // Si no hay ID, significa que no ha iniciado sesión
     if (!idUsuario) {
-      alert('¡Acceso denegado! Por favor, inicia sesión primero.');
+      this.ui.advertencia('¡Acceso denegado! Por favor, inicia sesión primero.');
       this.router.navigate(['/login']);
       return false;
     }
@@ -29,7 +30,7 @@ export class AuthGuard implements CanActivate {
 
     // Si la ruta pide un rol y el usuario no lo tiene, lo bloqueamos
     if (requiredRole && rol !== requiredRole) {
-      alert(`No tienes permisos de ${requiredRole} para entrar aquí.`);
+      this.ui.advertencia(`No tienes permisos de ${requiredRole} para entrar aquí.`);
 
       // Lo mandamos al menú principal porque ya está logueado, pero no tiene permiso aquí
       this.router.navigate(['/menu-principal']);

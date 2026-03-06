@@ -1,0 +1,17 @@
+<div class="overlay" *ngIf="visible" (click)="responder(false)">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+
+    <div class="modal-icon">
+      <span>&#9888;</span>
+    </div>
+
+    <h3 class="modal-titulo">{{ titulo }}</h3>
+    <p class="modal-mensaje">{{ mensaje }}</p>
+
+    <div class="modal-botones">
+      <button class="btn-cancelar" (click)="responder(false)">Cancelar</button>
+      <button class="btn-confirmar" (click)="responder(true)">Confirmar</button>
+    </div>
+
+  </div>
+</div>

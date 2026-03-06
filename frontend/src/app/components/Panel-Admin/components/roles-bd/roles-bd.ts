@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
+import { ConfirmService } from '../../../../services/confirm.service';
 
 interface Permiso {
   select: boolean;
@@ -90,7 +91,7 @@ export class RolesBdComponent implements OnInit {
   // Rol en edición
   rolEnEdicion: RolCreado | null = null;
 
-  constructor(private adminService: AdminService, private cdr: ChangeDetectorRef) {}
+  constructor(private adminService: AdminService, private cdr: ChangeDetectorRef, private confirmService: ConfirmService) {}
 
   ngOnInit() {
     this.cargarRolesCreados();
@@ -496,20 +497,18 @@ export class RolesBdComponent implements OnInit {
 
   // ========== ✨ MODIFICADO: ELIMINAR ROL (ahora muestra usuarios afectados) ==========
   eliminarRol(rol: RolCreado): void {
-    // ✨ MODIFICADO: mensaje más informativo
-    if (!confirm(`¿Está seguro de eliminar el rol "${rol.nombre}"? Los ${rol.usuariosAsignados} usuario(s) asignado(s) perderán este rol. Esta acción no se puede deshacer.`)) {
-      return;
-    }
-
-    this.adminService.eliminarRolBD(rol.id).subscribe({
-      next: (response) => {
-        this.mostrarExito('Rol eliminado exitosamente');
-        this.cargarRolesCreados();
-      },
-      error: (err) => {
-        console.error('Error al eliminar rol:', err);
-        this.mostrarError('Error al eliminar rol');
-      }
+    this.confirmService.abrir(`¿Está seguro de eliminar el rol "${rol.nombre}"? Los ${rol.usuariosAsignados} usuario(s) asignado(s) perderán este rol. Esta acción no se puede deshacer.`).then(acepto => {
+      if (!acepto) return;
+      this.adminService.eliminarRolBD(rol.id).subscribe({
+        next: (response) => {
+          this.mostrarExito('Rol eliminado exitosamente');
+          this.cargarRolesCreados();
+        },
+        error: (err) => {
+          console.error('Error al eliminar rol:', err);
+          this.mostrarError('Error al eliminar rol');
+        }
+      });
     });
   }
 

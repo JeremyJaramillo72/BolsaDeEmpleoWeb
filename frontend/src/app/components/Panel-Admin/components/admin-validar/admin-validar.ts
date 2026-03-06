@@ -2,6 +2,8 @@ import { Component, OnInit, HostListener , ChangeDetectorRef} from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { AdminService } from '../../services/admin.service';
 import { FormsModule } from '@angular/forms';
+import { UiNotificationService } from '../../../../services/ui-notification.service';
+import { ConfirmService } from '../../../../services/confirm.service';
 
 @Component({
   selector: 'admin-validar',
@@ -42,7 +44,9 @@ export class AdminValidarComponent implements OnInit {
 
   constructor(
     private adminService: AdminService,
-    private crd: ChangeDetectorRef
+    private crd: ChangeDetectorRef,
+    private ui: UiNotificationService,
+    private confirmService: ConfirmService
   )
   { }
 
@@ -175,34 +179,38 @@ export class AdminValidarComponent implements OnInit {
 
   aprobar(oferta: any) {
     if (this.estaVencida(oferta)) {
-      alert('No se puede aprobar una oferta que ya vencio.');
+      this.ui.advertencia('No se puede aprobar una oferta que ya vencio.');
       return;
     }
-    if (!confirm(`Aprobar la oferta "${oferta.titulo}"?`)) return;
-    this.procesar(oferta, 'aprobado');
-    this.crd.detectChanges();
+    this.confirmService.abrir(`Aprobar la oferta "${oferta.titulo}"?`).then(acepto => {
+      if (!acepto) return;
+      this.procesar(oferta, 'aprobado');
+      this.crd.detectChanges();
+    });
   }
 
   rechazar(oferta: any) {
     if (this.estaVencida(oferta)) {
-      alert('No se puede rechazar una oferta que ya vencio.');
+      this.ui.advertencia('No se puede rechazar una oferta que ya vencio.');
       return;
     }
-    if (!confirm(`Rechazar la oferta "${oferta.titulo}"?`)) return;
-    this.procesar(oferta, 'rechazada');
-    this.crd.detectChanges();
+    this.confirmService.abrir(`Rechazar la oferta "${oferta.titulo}"?`).then(acepto => {
+      if (!acepto) return;
+      this.procesar(oferta, 'rechazada');
+      this.crd.detectChanges();
+    });
   }
 
   private procesar(oferta: any, estadoNuevo: string) {
     const id = oferta.idOferta;
     this.adminService.validarOfertas(id, estadoNuevo).subscribe({
       next: () => {
-        alert(`Oferta ${estadoNuevo} con exito`);
+        this.ui.exito(`Oferta ${estadoNuevo} con exito`);
         this.cerrarModal();
         this.cargarOfertas(this.estadoActual);
         this.crd.detectChanges();
       },
-      error: () => alert('Error al procesar la solicitud')
+      error: () => this.ui.error('Error al procesar la solicitud')
     });
   }
 

@@ -30,10 +30,7 @@ public interface PostulacionRepository extends JpaRepository<Postulacion, Intege
     @Query(value = "SELECT postulaciones.fn_obtener_url_cv(:idPostulacion)", nativeQuery = true)
     String obtenerUrlCvFn(@Param("idPostulacion") Integer idPostulacion);
 
-
-    @Query("SELECT p.usuario.idUsuario, o.titulo, CONCAT(e.usuario.nombre, ' ', e.usuario.apellido) " +
-            "FROM Postulacion p JOIN p.ofertaLaboral o JOIN o.empresa e " +
-            "WHERE p.idPostulacion = :idPostulacion")
+    @Query(value = "SELECT * FROM postulaciones.fn_datos_notificacion_postulacion(:idPostulacion)", nativeQuery = true)
     List<Object[]> obtenerDatosParaNotificacion(@Param("idPostulacion") Integer idPostulacion);
 
     @Query("SELECT o.empresa.usuario.idUsuario, o.titulo " +
@@ -41,6 +38,6 @@ public interface PostulacionRepository extends JpaRepository<Postulacion, Intege
             "WHERE o.idOferta = :idOferta")
     List<Object[]> obtenerDatosEmpresaPorOfertaId(@Param("idOferta") Integer idOferta);
 
-    @Query(value = "SELECT p.id_oferta, COUNT(*) FROM postulaciones.postulacion p WHERE p.id_oferta IN :ids GROUP BY p.id_oferta", nativeQuery = true)
-    List<Object[]> contarPorOfertas(@Param("ids") List<Integer> ids);
+    @Query(value = "SELECT * FROM postulaciones.fn_contar_postulantes_por_ofertas(:ids)", nativeQuery = true)
+    List<Object[]> contarPorOfertas(@Param("ids") Integer[] ids);
 }

@@ -278,7 +278,7 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
     @Override
     @Transactional(readOnly = true)
     public Map<Integer, Long> contarPostulantesPorOfertas(List<Integer> ids) {
-        List<Object[]> resultados = postulacionRepository.contarPorOfertas(ids);
+        List<Object[]> resultados = postulacionRepository.contarPorOfertas(ids.toArray(new Integer[0]));
         Map<Integer, Long> mapa = new HashMap<>();
         for (Object[] fila : resultados) {
             mapa.put(((Number) fila[0]).intValue(), ((Number) fila[1]).longValue());

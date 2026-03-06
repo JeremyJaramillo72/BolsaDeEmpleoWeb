@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router'; //
 import { UsuarioEmpresaService, UsuarioEmpresaDTO } from '../../services/usuario-empresa.service';
+import { UiNotificationService } from '../../services/ui-notification.service';
 
 @Component({
   selector: 'app-perfil-empresa',
@@ -27,7 +28,8 @@ export class PerfilEmpresaComponent implements OnInit {
   constructor(
     private empresaService: UsuarioEmpresaService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private ui: UiNotificationService
   ) {
   }
 
@@ -84,7 +86,7 @@ export class PerfilEmpresaComponent implements OnInit {
       });
 
     } else {
-      alert('No se encontró sesión activa.');
+      this.ui.advertencia('No se encontró sesión activa.');
       this.router.navigate(['/login']);
     }
   }
@@ -96,11 +98,11 @@ export class PerfilEmpresaComponent implements OnInit {
     }
     if (this.perfil.idEmpresa) {
       this.empresaService.actualizarPerfil(this.perfil.idEmpresa, this.perfil).subscribe({
-        next: () => alert('¡Perfil actualizado con éxito!'),
-        error: (e) => alert('Error al actualizar: ' + e.message)
+        next: () => this.ui.exito('¡Perfil actualizado con éxito!'),
+        error: (e) => this.ui.error('Error al actualizar: ' + e.message)
       });
     } else {
-      alert('No se puede actualizar: El perfil no tiene ID de empresa asignado.');
+      this.ui.advertencia('No se puede actualizar: El perfil no tiene ID de empresa asignado.');
     }
   }
 
@@ -139,16 +141,16 @@ export class PerfilEmpresaComponent implements OnInit {
   validarCampos(): boolean {
     const o = this.perfil;
     if (!o.nombre || o.nombre.trim().length < 5) {
-      alert('⚠️ El nombre de la empresa es obligatorio y debe tener al menos 5 caracteres.');
+      this.ui.advertencia('⚠️ El nombre de la empresa es obligatorio y debe tener al menos 5 caracteres.');
       return false;
     }
 
     if (!o.descripcion || o.descripcion.trim().length < 5) {
-      alert('⚠️ La descripción es obligatoria y debe ser clara (mínimo 5 caracteres).');
+      this.ui.advertencia('⚠️ La descripción es obligatoria y debe ser clara (mínimo 5 caracteres).');
       return false;
     }
     if (!o.sitioWeb || o.sitioWeb.trim().length === 0) {
-      alert('⚠️ El sitio web es obligatorio.');
+      this.ui.advertencia('⚠️ El sitio web es obligatorio.');
       return false;
     }
     return true;

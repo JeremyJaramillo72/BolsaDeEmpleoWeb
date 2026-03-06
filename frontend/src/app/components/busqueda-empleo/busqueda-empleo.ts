@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { OfertaService, OfertaDetalladaDTO } from '../../services/oferta.service';
+import { UiNotificationService } from '../../services/ui-notification.service';
 @Component({
   selector: 'app-busqueda-empleo',
   standalone: true,
@@ -38,7 +39,8 @@ export class BusquedaEmpleoComponent implements OnInit {
   constructor(
     private ofertaService: OfertaService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private ui: UiNotificationService
   ) {}
 
   ngOnInit(): void {
@@ -283,7 +285,7 @@ export class BusquedaEmpleoComponent implements OnInit {
 
     const idUsuario = localStorage.getItem('idUsuario');
     if (!idUsuario) {
-      alert('Debe iniciar sesión para postular');
+      this.ui.advertencia('Debe iniciar sesión para postular');
       return;
     }
 
@@ -293,14 +295,14 @@ export class BusquedaEmpleoComponent implements OnInit {
       this.archivoSeleccionado
     ).subscribe({
       next: (response) => {
-        alert('¡Postulación enviada exitosamente!');
+        this.ui.exito('¡Postulación enviada exitosamente!');
         this.cerrarModalPostulacion();
         // Recargar ofertas para actualizar el estado
         this.cargarOfertas();
       },
       error: (error) => {
         console.error('Error al postular:', error);
-        alert('Error al enviar la postulación. Por favor intente nuevamente.');
+        this.ui.error('Error al enviar la postulación. Por favor intente nuevamente.');
       }
     });
   }

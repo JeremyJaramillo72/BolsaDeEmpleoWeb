@@ -4,3 +4,98 @@
 @import "tailwindcss";
 @import 'ngx-toastr/toastr';
 @import "tailwindcss/preflight";
+
+/* ── Toastr – diseño personalizado ─────────────────────────────────────── */
+
+#toast-container > div {
+  min-width: 340px !important;
+  max-width: 440px !important;
+  padding: 14px 18px 16px 20px !important;
+  border-radius: 10px !important;
+  border-left: 7px solid #94a3b8 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.13) !important;
+  background-image: none !important;
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-size: 0.91rem !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+  opacity: 1 !important;
+  position: relative !important;
+}
+
+#toast-container > div .toast-message {
+  color: #475569 !important;
+  font-size: 0.91rem !important;
+  font-weight: 500 !important;
+}
+
+#toast-container > div .toast-title {
+  font-weight: 700 !important;
+  font-size: 0.94rem !important;
+  margin-bottom: 2px !important;
+  letter-spacing: 0.01em !important;
+}
+
+#toast-container > div .toast-close-button {
+  color: #94a3b8 !important;
+  font-size: 1.1rem !important;
+  top: 8px !important;
+  right: 10px !important;
+}
+
+#toast-container > div .toast-progress {
+  position: absolute !important;
+  bottom: 0 !important;
+  top: auto !important;
+  right: 0 !important;
+  left: auto !important;
+  height: 4px !important;
+  border-radius: 0 0 10px 10px !important;
+  opacity: 1 !important;
+}
+
+/* ── Éxito ────────────────────────────────────────────────────────────── */
+#toast-container > .toast-success {
+  border-left-color: #16a34a !important;
+}
+#toast-container > .toast-success .toast-title {
+  color: #15803d !important;
+}
+#toast-container > .toast-success .toast-progress {
+  background-color: #16a34a !important;
+}
+
+/* ── Error ────────────────────────────────────────────────────────────── */
+#toast-container > .toast-error {
+  border-left-color: #dc2626 !important;
+}
+#toast-container > .toast-error .toast-title {
+  color: #b91c1c !important;
+}
+#toast-container > .toast-error .toast-progress {
+  background-color: #dc2626 !important;
+}
+
+/* ── Advertencia ──────────────────────────────────────────────────────── */
+#toast-container > .toast-warning {
+  border-left-color: #d97706 !important;
+}
+#toast-container > .toast-warning .toast-title {
+  color: #b45309 !important;
+}
+#toast-container > .toast-warning .toast-progress {
+  background-color: #d97706 !important;
+}
+
+/* ── Info ─────────────────────────────────────────────────────────────── */
+#toast-container > .toast-info {
+  border-left-color: #2563eb !important;
+}
+#toast-container > .toast-info .toast-title {
+  color: #1d4ed8 !important;
+}
+#toast-container > .toast-info .toast-progress {
+  background-color: #2563eb !important;
+}

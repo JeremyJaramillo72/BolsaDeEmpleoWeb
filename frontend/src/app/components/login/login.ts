@@ -6,6 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 
 // 1. Importamos tu servicio de autenticación
 import { AuthService } from '../../services/auth.service';
+import { UiNotificationService } from '../../services/ui-notification.service';
 
 @Component({
   selector: 'app-login',
@@ -28,7 +29,8 @@ export class LoginComponent implements OnInit {
     private http: HttpClient,
     private router: Router,
     // 3. Inyectamos el AuthService en el constructor
-    private authService: AuthService
+    private authService: AuthService,
+    private ui: UiNotificationService
   ) {}
 
   // 4. Este método se dispara automáticamente al entrar a la vista del Login
@@ -103,11 +105,13 @@ export class LoginComponent implements OnInit {
           });
         },
         error: (err) => {
-          // asignamos el error a la variable por si lo usas en el html
-          this.errorMsg = err.error?.error || 'error de conexión con el servidor.';
+          const msg = err.error?.error || 'Error de conexión con el servidor.';
 
-          // 👇 forzamos una ventana emergente para que se muestre en pantalla sí o sí
-          alert(this.errorMsg);
+          // toast inmediato (ya está dentro de Zone.js, no causa NG0100)
+          this.ui.error(msg);
+
+          // diferimos la asignación al template al siguiente tick para evitar NG0100
+          setTimeout(() => { this.errorMsg = msg; }, 0);
 
           console.error('detalle del error:', err);
         }

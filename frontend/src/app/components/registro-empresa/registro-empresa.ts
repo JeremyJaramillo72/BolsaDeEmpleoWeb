@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { RouterModule, Router } from '@angular/router';
+import { UiNotificationService } from '../../services/ui-notification.service';
 
 
 @Component({
@@ -36,7 +37,7 @@ export class RegistroEmpresaComponent implements OnInit {
   idCiudad: any = ''; // Este nombre debe coincidir con tu backend
 
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router, private ui: UiNotificationService) {}
   ngOnInit() {
     this.cargarProvincias();
   }
@@ -79,11 +80,11 @@ export class RegistroEmpresaComponent implements OnInit {
     this.http.post('http://localhost:8080/api/registro-empresa/crear', payload)
       .subscribe({
         next: (res: any) => {
-          alert(res.mensaje || '¡Empresa registrada con éxito!');
+          this.ui.exito(res.mensaje || '¡Empresa registrada con éxito!');
           this.router.navigate(['/api/auth/login']);
         },
         error: (err) => {
-          alert('Error: ' + (err.error?.error || 'Error en el servidor'));
+          this.ui.error('Error: ' + (err.error?.error || 'Error en el servidor'));
         }
       });
   }

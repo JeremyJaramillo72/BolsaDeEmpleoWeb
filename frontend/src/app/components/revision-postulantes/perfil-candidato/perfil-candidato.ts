@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { PostulacionService } from '../../../services/postulacion.service';
+import { UiNotificationService } from '../../../services/ui-notification.service';
 
 @Component({
   selector: 'app-perfil-candidato',
@@ -32,7 +33,8 @@ export class PerfilCandidatoComponent implements OnInit {
     private router: Router,
     private postulacionService: PostulacionService,
     private sanitizer: DomSanitizer,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private ui: UiNotificationService
   ) {}
 
   ngOnInit(): void {
@@ -132,14 +134,14 @@ export class PerfilCandidatoComponent implements OnInit {
       },
       error: (err) => {
         console.error(`Error al evaluar ${this.itemActual!.tipo}`, err);
-        alert('Error al conectar con el servidor.');
+        this.ui.error('Error al conectar con el servidor.');
       }
     });
   }
 
   enviarEvaluacion(estado: string): void {
     if (!this.mensajeEvaluacion.trim()) {
-      alert('Por favor, ingresa un mensaje o retroalimentación final para el candidato.');
+      this.ui.advertencia('Por favor, ingresa un mensaje o retroalimentación final para el candidato.');
       return;
     }
 
@@ -153,12 +155,12 @@ export class PerfilCandidatoComponent implements OnInit {
 
     this.postulacionService.evaluarPostulacionGeneral(this.idPostulacion, payload).subscribe({
       next: () => {
-        alert(`La postulación ha sido marcada como ${estado} exitosamente.`);
+        this.ui.exito(`La postulación ha sido marcada como ${estado} exitosamente.`);
         this.volver();
       },
       error: (err) => {
         console.error('Error al enviar dictamen final', err);
-        alert('Error al guardar la evaluación final.');
+        this.ui.error('Error al guardar la evaluación final.');
         this.enviando = false;
       }
     });

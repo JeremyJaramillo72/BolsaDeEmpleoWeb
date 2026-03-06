@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
+import { ConfirmService } from '../../../../services/confirm.service';
 
 interface Catalogo {
   id?: number;
@@ -82,7 +83,7 @@ export class GestionCatalogosComponent implements OnInit {
   mensajeExito = '';
   mensajeError = '';
 
-  constructor(private adminService: AdminService, private cdr: ChangeDetectorRef) {}
+  constructor(private adminService: AdminService, private cdr: ChangeDetectorRef, private confirmService: ConfirmService) {}
 
   ngOnInit() {
     this.cargarTodosCatalogos();
@@ -362,7 +363,8 @@ export class GestionCatalogosComponent implements OnInit {
 
   // ========== MÉTODOS DE ELIMINAR ==========
   eliminarCategoria(id: number): void {
-    if (confirm('¿Está seguro de eliminar esta categoría?')) {
+    this.confirmService.abrir('¿Está seguro de eliminar esta categoría?').then(acepto => {
+      if (!acepto) return;
       this.adminService.eliminarCategoria(id).subscribe({
         next: () => {
           this.mostrarExito('Categoría eliminada exitosamente');
@@ -373,11 +375,12 @@ export class GestionCatalogosComponent implements OnInit {
         },
         error: (err) => this.mostrarError('Error al eliminar categoría')
       });
-    }
+    });
   }
 
   eliminarCarrera(id: number): void {
-    if (confirm('¿Está seguro de eliminar esta carrera?')) {
+    this.confirmService.abrir('¿Está seguro de eliminar esta carrera?').then(acepto => {
+      if (!acepto) return;
       this.adminService.eliminarCarrera(id).subscribe({
         next: () => {
           this.mostrarExito('Carrera eliminada exitosamente');
@@ -389,11 +392,12 @@ export class GestionCatalogosComponent implements OnInit {
         },
         error: (err) => this.mostrarError('Error al eliminar carrera')
       });
-    }
+    });
   }
 
   eliminarFacultad(id: number): void {
-    if (confirm('¿Está seguro de eliminar esta facultad?')) {
+    this.confirmService.abrir('¿Está seguro de eliminar esta facultad?').then(acepto => {
+      if (!acepto) return;
       this.adminService.eliminarFacultad(id).subscribe({
         next: () => {
           this.mostrarExito('Facultad eliminada exitosamente');
@@ -405,11 +409,12 @@ export class GestionCatalogosComponent implements OnInit {
         },
         error: (err) => this.mostrarError('Error al eliminar facultad')
       });
-    }
+    });
   }
 
   eliminarIdioma(id: number): void {
-    if (confirm('¿Está seguro de eliminar este idioma?')) {
+    this.confirmService.abrir('¿Está seguro de eliminar este idioma?').then(acepto => {
+      if (!acepto) return;
       this.adminService.eliminarIdioma(id).subscribe({
         next: () => {
           this.mostrarExito('Idioma eliminado exitosamente');
@@ -421,11 +426,12 @@ export class GestionCatalogosComponent implements OnInit {
         },
         error: (err) => this.mostrarError('Error al eliminar idioma')
       });
-    }
+    });
   }
 
   eliminarJornada(id: number): void {
-    if (confirm('¿Está seguro de eliminar esta jornada?')) {
+    this.confirmService.abrir('¿Está seguro de eliminar esta jornada?').then(acepto => {
+      if (!acepto) return;
       this.adminService.eliminarJornada(id).subscribe({
         next: () => {
           this.mostrarExito('Jornada eliminada exitosamente');
@@ -437,11 +443,12 @@ export class GestionCatalogosComponent implements OnInit {
         },
         error: (err) => this.mostrarError('Error al eliminar jornada')
       });
-    }
+    });
   }
 
   eliminarModalidad(id: number): void {
-    if (confirm('¿Está seguro de eliminar esta modalidad?')) {
+    this.confirmService.abrir('¿Está seguro de eliminar esta modalidad?').then(acepto => {
+      if (!acepto) return;
       this.adminService.eliminarModalidad(id).subscribe({
         next: () => {
           this.mostrarExito('Modalidad eliminada exitosamente');
@@ -453,11 +460,12 @@ export class GestionCatalogosComponent implements OnInit {
         },
         error: (err) => this.mostrarError('Error al eliminar modalidad')
       });
-    }
+    });
   }
 
   eliminarRol(id: number): void {
-    if (confirm('¿Está seguro de eliminar este rol?')) {
+    this.confirmService.abrir('¿Está seguro de eliminar este rol?').then(acepto => {
+      if (!acepto) return;
       this.adminService.eliminarRol(id).subscribe({
         next: () => {
           this.mostrarExito('Rol eliminado exitosamente');
@@ -465,7 +473,7 @@ export class GestionCatalogosComponent implements OnInit {
         },
         error: () => this.mostrarError('Error al eliminar rol')
       });
-    }
+    });
   }
 
   // ========== UTILIDADES ==========

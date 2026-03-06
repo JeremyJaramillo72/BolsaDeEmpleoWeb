@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OfertaService, OfertaLaboralDTO, OfertaHabilidadDTO } from '../../services/oferta.service';
 import { Router } from '@angular/router';
+import { UiNotificationService } from '../../services/ui-notification.service';
 
 @Component({
   selector: 'app-gestion-ofertas',
@@ -44,7 +45,8 @@ export class GestionOfertasComponent implements OnInit {
   constructor(
     private ofertaService: OfertaService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private ui: UiNotificationService
   ) {
     this.nuevaOferta = this.inicializarOferta();
   }
@@ -253,39 +255,39 @@ export class GestionOfertasComponent implements OnInit {
     const o = this.nuevaOferta;
 
     if (!o.titulo || o.titulo.trim().length < 5) {
-      alert('⚠️ El título del puesto es obligatorio y debe ser claro (mínimo 5 caracteres).');
+      this.ui.advertencia('⚠️ El título del puesto es obligatorio y debe ser claro (mínimo 5 caracteres).');
       return false;
     }
     if (!o.cantidadVacantes || o.cantidadVacantes < 1) {
-      alert('⚠️ Debe haber al menos 1 vacante disponible.');
+      this.ui.advertencia('⚠️ Debe haber al menos 1 vacante disponible.');
       return false;
     }
 
     if (o.salarioMin != null && o.salarioMax != null) {
       if (o.salarioMin > o.salarioMax) {
-        alert('⚠️ El salario mínimo no puede ser mayor al salario máximo.');
+        this.ui.advertencia('⚠️ El salario mínimo no puede ser mayor al salario máximo.');
         return false;
       }
     }
 
     if (!o.fechaCierre) {
-      alert('⚠️ La fecha de cierre de la oferta es obligatoria.');
+      this.ui.advertencia('⚠️ La fecha de cierre de la oferta es obligatoria.');
       return false;
     }
 
     const hoy = new Date().toISOString().split('T')[0];
     if (o.fechaCierre < hoy) {
-      alert('⚠️ La fecha de cierre no puede ser una fecha que ya pasó.');
+      this.ui.advertencia('⚠️ La fecha de cierre no puede ser una fecha que ya pasó.');
       return false;
     }
 
     if (!o.descripcion || o.descripcion.trim().length < 15) {
-      alert('⚠️ La descripción de la oferta es muy corta. Detalla mejor el rol (mínimo 15 caracteres).');
+      this.ui.advertencia('⚠️ La descripción de la oferta es muy corta. Detalla mejor el rol (mínimo 15 caracteres).');
       return false;
     }
 
     if (!o.habilidades || o.habilidades.length === 0) {
-      alert('⚠️ Te recomendamos agregar al menos 1 habilidad técnica requerida para el puesto.');
+      this.ui.advertencia('⚠️ Te recomendamos agregar al menos 1 habilidad técnica requerida para el puesto.');
       return false;
     }
 
@@ -309,19 +311,19 @@ export class GestionOfertasComponent implements OnInit {
     }
     this.ofertaService.crearOferta(this.nuevaOferta).subscribe({
       next: () => {
-        alert('¡Oferta guardada con éxito!');
+        this.ui.exito('¡Oferta guardada con éxito!');
         this.cerrarFormulario();
         this.cargarOfertas();
       },
       error: (err) => {
 
         if (err.status === 200 || err.status === 201) {
-          alert('¡Oferta guardada con éxito!');
+          this.ui.exito('¡Oferta guardada con éxito!');
           this.cerrarFormulario();
           this.cargarOfertas();
         } else {
           console.error("Detalle del error al guardar:", err);
-          alert('Error al guardar. Revisa la consola.');
+          this.ui.error('Error al guardar. Revisa la consola.');
         }
       }
     });

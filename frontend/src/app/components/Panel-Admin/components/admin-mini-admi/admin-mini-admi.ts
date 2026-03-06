@@ -2,6 +2,8 @@ import { Component, OnInit , ChangeDetectorRef} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
+import { UiNotificationService } from '../../../../services/ui-notification.service';
+import { ConfirmService } from '../../../../services/confirm.service';
 
 import {HttpErrorResponse} from '@angular/common/http';
 
@@ -43,8 +45,10 @@ export class AdminMiniAdmiComponent implements OnInit {
   // Eliminamos 'private http: any' porque usaremos solo el servicio
 
   constructor(
-    private adminService: AdminService
-    , private cdr: ChangeDetectorRef
+    private adminService: AdminService,
+    private cdr: ChangeDetectorRef,
+    private ui: UiNotificationService,
+    private confirmService: ConfirmService
   ) { }
 
   ngOnInit(): void {
@@ -106,12 +110,12 @@ export class AdminMiniAdmiComponent implements OnInit {
   guardarAdmin() {
     // 1. Validaciones
     if (!this.nuevoAdmin.usuario || !this.nuevoAdmin.contrasena || this.nuevoAdmin.rolId ==null) {
-      alert('Por favor completa: Correo, Contraseña y Rol.');
+      this.ui.advertencia('Por favor completa: Correo, Contraseña y Rol.');
       return;
     }
 
     if (!this.nuevoAdmin.nombre || !this.nuevoAdmin.apellido) {
-      alert('Por favor completa: Nombre y Apellido (Requeridos por BD).');
+      this.ui.advertencia('Por favor completa: Nombre y Apellido (Requeridos por BD).');
       return;
     }
 
@@ -147,7 +151,7 @@ export class AdminMiniAdmiComponent implements OnInit {
       next: (respuesta) => {
         // Como configuramos responseType: text, 'respuesta' será el string del backend
         console.log('Respuesta Backend:', respuesta);
-        alert(respuesta); // Muestra "Usuario creado con éxito..."
+        this.ui.exito(respuesta); // Muestra "Usuario creado con éxito..."
 
         // Actualizar lista local (visual)
         const nombresPermisos = this.seccionesDisponibles
@@ -172,7 +176,7 @@ export class AdminMiniAdmiComponent implements OnInit {
         console.error('Error HTTP:', error);
         // Si el backend devuelve texto error, a veces viene en error.error.text o error.error
         const mensaje = error.error?.text || error.error || error.message;
-        alert('Ocurrió un error: ' + mensaje);
+        this.ui.error('Ocurrió un error: ' + mensaje);
       }
     });
   }
@@ -182,7 +186,21 @@ export class AdminMiniAdmiComponent implements OnInit {
     const nuevoEstado = estadoActual === 'Activo' ? 'Inactivo' : 'Activo';
 
     if (nuevoEstado === 'Inactivo') {
-      if(!confirm(`¿Seguro que deseas Desactivar a ${admin.usuario}?`)) return;
+      this.confirmService.abrir(`¿Seguro que deseas Desactivar a ${admin.usuario}?`).then(acepto => {
+        if (!acepto) return;
+        this.adminService.cambiarEstadoAdmin(admin.id, nuevoEstado).subscribe({
+          next: (respuesta) => {
+            console.log(respuesta); // "Estado actualizado a Activo/Inactivo"
+            admin.estadoValidacion = nuevoEstado;
+            this.cdr.detectChanges();
+          },
+          error: (e) => {
+            console.error(e);
+            this.ui.error('Error al cambiar el estado. Revisa la consola.');
+          }
+        });
+      });
+      return;
     }
     this.adminService.cambiarEstadoAdmin(admin.id, nuevoEstado).subscribe({
       next: (respuesta) => {
@@ -194,7 +212,7 @@ export class AdminMiniAdmiComponent implements OnInit {
       },
       error: (e) => {
         console.error(e);
-        alert('Error al cambiar el estado. Revisa la consola.');
+        this.ui.error('Error al cambiar el estado. Revisa la consola.');
       }
     });
   }
@@ -255,18 +273,18 @@ export class AdminMiniAdmiComponent implements OnInit {
   }
 
   desactivarUsuario(admin: any) {
-    if (!confirm(`¿Estás seguro de desactivar al usuario ${admin.usuario}?`)) {
-      return;
-    }
-    this.adminService.cambiarEstadoAdmin(admin.id, 'Inactivo').subscribe({
-      next: (respuesta) => {
-        alert(respuesta);
-        admin.estadoValidacion = 'Inactivo';
-      },
-      error: (e) => {
-        console.error(e);
-        alert('Error al desactivar usuario');
-      }
+    this.confirmService.abrir(`¿Estás seguro de desactivar al usuario ${admin.usuario}?`).then(acepto => {
+      if (!acepto) return;
+      this.adminService.cambiarEstadoAdmin(admin.id, 'Inactivo').subscribe({
+        next: (respuesta) => {
+          this.ui.info(respuesta);
+          admin.estadoValidacion = 'Inactivo';
+        },
+        error: (e) => {
+          console.error(e);
+          this.ui.error('Error al desactivar usuario');
+        }
+      });
     });
   }
 }

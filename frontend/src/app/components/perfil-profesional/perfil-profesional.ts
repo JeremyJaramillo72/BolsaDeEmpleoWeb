@@ -3,6 +3,8 @@
   import { PerfilService } from './perfil.service';
   import { CommonModule } from '@angular/common';
   import { FormsModule } from '@angular/forms';
+  import { UiNotificationService } from '../../services/ui-notification.service';
+  import { ConfirmService } from '../../services/confirm.service';
 
   @Component({
     selector: 'app-perfil-profesional',
@@ -90,7 +92,9 @@
     constructor(
       private perfilService: PerfilService,
       private router: Router,
-      private cdr: ChangeDetectorRef
+      private cdr: ChangeDetectorRef,
+      private notif: UiNotificationService,
+      private confirmSvc: ConfirmService
     ) {}
 
     ngOnInit(): void {
@@ -166,7 +170,6 @@
           if (this.perfil.id_provincia) {
             this.perfilService.getCiudadesPorProvincia(this.perfil.id_provincia).subscribe(res => {
               this.ciudades = res;
-              this.cdr.detectChanges();
             });
           }
 
@@ -272,7 +275,7 @@
         },
         error: err => {
           console.error('Error detallado:', err);
-          alert(err.error?.error || 'Error al crear el cargo en el servidor');
+          this.notif.error(err.error?.error || 'Error al crear el cargo en el servidor');
         }
       });
     }
@@ -280,17 +283,15 @@
     guardarNuevaEmpresaCatalogo(): void {
 
       if (!this.nuevaEmpresaObj.nombre_empresa || this.nuevaEmpresaObj.nombre_empresa.trim() === '') {
-        alert('Por favor, escribe el nombre de la nueva empresa.');
+        this.notif.advertencia('Por favor, escribe el nombre de la nueva empresa.');
         return;
       }
-
 
       console.log("Enviando nueva empresa:", this.nuevaEmpresaObj);
 
       this.perfilService.crearNuevaEmpresa(this.nuevaEmpresaObj).subscribe({
         next: (res: any) => {
-          // 3. Notificamos al usuario que se guardó bien
-          alert('¡Empresa creada y seleccionada exitosamente!');
+          this.notif.exito('Empresa creada y seleccionada exitosamente.');
 
           this.empresasDisponibles.push(res);
           this.nuevaExperiencia.id_empresa_catalogo = res.idEmpresaCatalogo;
@@ -301,7 +302,7 @@
         },
         error: err => {
           console.error('Error detallado al crear empresa:', err);
-          alert(err.error?.error || 'Error al crear la empresa en el servidor');
+          this.notif.error(err.error?.error || 'Error al crear la empresa en el servidor');
         }
       });
     }
@@ -341,9 +342,9 @@
       if (urlArchivo && urlArchivo.startsWith('http')) {
         window.open(urlArchivo, '_blank');
       } else if (urlArchivo) {
-        alert(`El archivo no tiene un formato de URL válido: ${urlArchivo}`);
+        this.notif.advertencia('El archivo no tiene un formato de URL válido.');
       } else {
-        alert('No hay ningún documento adjunto para mostrar.');
+        this.notif.advertencia('No hay ningún documento adjunto para mostrar.');
       }
     }
 
@@ -370,7 +371,6 @@
     }
 
     subirImagen() {
-      // Usamos idUsuarioLogueado que ya tenemos validado en el ngOnInit
       if (this.archivoSeleccionado && this.idUsuarioLogueado) {
         this.perfilService.subirLogoProfesional(this.idUsuarioLogueado, this.archivoSeleccionado)
           .subscribe({
@@ -384,7 +384,7 @@
             },
             error: (err) => {
               console.error('error al subir la foto', err);
-              alert('No se pudo guardar la imagen en el servidor.');
+              this.notif.error('No se pudo guardar la imagen en el servidor.');
             }
           });
       }
@@ -399,6 +399,7 @@
       }
       this.actualizarProgreso();
     }
+
     onFileSelected(event: any, tipo: string): void {
       const file = event.target.files[0];
       if (!file) return;
@@ -412,11 +413,10 @@
       } else if (tipo === 'experiencia') {
         this.nuevaExperiencia.archivo_comprobante = file;
         this.nuevaExperiencia.nombreArchivo = file.name;
+      } else if (tipo === 'curso') {
+        this.nuevoCurso.archivo = file;
+        this.nuevoCurso.nombreArchivo = file.name;
       }
-      else if (tipo === 'curso') {
-           this.nuevoCurso.archivo = file;
-           this.nuevoCurso.nombreArchivo = file.name;
-        }
     }
 
 
@@ -442,54 +442,58 @@
       this.cargosTemporales.splice(index, 1);
     }
 
-    eliminarCurso(index: number, idItem: number): void {
-      if (confirm('¿Estás seguro de eliminar este curso?')) {
+    async eliminarCurso(index: number, idItem: number): Promise<void> {
+      const confirmado = await this.confirmSvc.abrir('¿Estás seguro de eliminar este curso?', 'Eliminar curso');
+      if (confirmado) {
         this.perfilService.eliminarItemPerfil(this.idUsuarioLogueado, 'curso', idItem).subscribe({
           next: () => {
             this.perfil.cursos.splice(index, 1);
             this.actualizarProgreso();
             this.cdr.detectChanges();
           },
-          error: (err) => { console.error(err); alert('Error al eliminar en la base de datos'); }
+          error: (err) => { console.error(err); this.notif.error('Error al eliminar en la base de datos'); }
         });
       }
     }
 
-    eliminarTitulo(index: number, idItem: number): void {
-      if (confirm('¿Estás seguro de eliminar esta formación académica?')) {
+    async eliminarTitulo(index: number, idItem: number): Promise<void> {
+      const confirmado = await this.confirmSvc.abrir('¿Estás seguro de eliminar esta formación académica?', 'Eliminar título');
+      if (confirmado) {
         this.perfilService.eliminarItemPerfil(this.idUsuarioLogueado, 'academico', idItem).subscribe({
           next: () => {
             this.perfil.titulos.splice(index, 1);
             this.actualizarProgreso();
             this.cdr.detectChanges();
           },
-          error: (err) => { console.error(err); alert('Error al eliminar en la base de datos'); }
+          error: (err) => { console.error(err); this.notif.error('Error al eliminar en la base de datos'); }
         });
       }
     }
 
-    eliminarExperiencia(index: number, idItem: number): void {
-      if (confirm('¿Estás seguro de eliminar este registro de experiencia laboral?')) {
+    async eliminarExperiencia(index: number, idItem: number): Promise<void> {
+      const confirmado = await this.confirmSvc.abrir('¿Estás seguro de eliminar este registro de experiencia laboral?', 'Eliminar experiencia');
+      if (confirmado) {
         this.perfilService.eliminarItemPerfil(this.idUsuarioLogueado, 'experiencia', idItem).subscribe({
           next: () => {
             this.perfil.experiencias.splice(index, 1);
             this.actualizarProgreso();
             this.cdr.detectChanges();
           },
-          error: (err) => { console.error(err); alert('Error al eliminar en la base de datos'); }
+          error: (err) => { console.error(err); this.notif.error('Error al eliminar en la base de datos'); }
         });
       }
     }
 
-    eliminarIdioma(index: number, idItem: number): void {
-      if (confirm('¿Estás seguro de eliminar este idioma?')) {
+    async eliminarIdioma(index: number, idItem: number): Promise<void> {
+      const confirmado = await this.confirmSvc.abrir('¿Estás seguro de eliminar este idioma?', 'Eliminar idioma');
+      if (confirmado) {
         this.perfilService.eliminarItemPerfil(this.idUsuarioLogueado, 'idioma', idItem).subscribe({
           next: () => {
             this.perfil.idiomas.splice(index, 1);
             this.actualizarProgreso();
             this.cdr.detectChanges();
           },
-          error: (err) => { console.error(err); alert('Error al eliminar en la base de datos'); }
+          error: (err) => { console.error(err); this.notif.error('Error al eliminar en la base de datos'); }
         });
       }
     }
@@ -520,11 +524,10 @@
     guardarInformacionPersonal(): void {
 
       if (!this.perfil.nombreCompleto || !this.perfil.correo) {
-        alert('El nombre completo y el correo son obligatorios.');
+        this.notif.advertencia('El nombre completo y el correo son obligatorios.');
         return;
       }
 
-      // Armamos el objeto con los datos limpios que enviaremos a Java
       const payload = {
         nombreCompleto: this.perfil.nombreCompleto,
         fechaNacimiento: this.perfil.fechaNacimiento,
@@ -534,22 +537,21 @@
         ubicacion: this.perfil.direccion
       };
 
-      // Llamamos al servicio (que crearemos en el paso 3)
       this.perfilService.actualizarDatosPersonales(this.idUsuarioLogueado, payload).subscribe({
         next: (res) => {
-          alert('¡Datos personales actualizados exitosamente!');
+          this.notif.exito('Datos personales actualizados exitosamente.');
           this.actualizarProgreso();
         },
         error: (err) => {
           console.error('Error al actualizar datos personales:', err);
-          alert('Hubo un error al guardar tu información.');
+          this.notif.error('Hubo un error al guardar tu información.');
         }
       });
     }
 
     agregarTituloBd(): void {
       if (!this.nuevoTitulo.id_carrera || !this.nuevoTitulo.fechaGraduacion) {
-        alert('⚠️ Llena la carrera y fecha de graduación para guardar este título.');
+        this.notif.advertencia('Llena la carrera y fecha de graduación para guardar este título.');
         return;
       }
 
@@ -561,18 +563,18 @@
 
       this.perfilService.registrarItemPerfil(this.idUsuarioLogueado, 'academico', formData).subscribe({
         next: () => {
-          alert('Título académico guardado exitosamente.');
+          this.notif.exito('Título académico guardado exitosamente.');
           this.cargarDatosDesdeBackend();
           this.cerrarModales();
           this.nuevoTitulo = { id_facultad: null, id_carrera: null, fechaGraduacion: '', registroSenescyt: '', archivoReferencia: null, nombreArchivo: '' };
         },
-        error: (err) => { console.error(err); alert(' Error al guardar el título.'); }
+        error: (err) => { console.error(err); this.notif.error('Error al guardar el título.'); }
       });
     }
 
     agregarIdiomaBd(): void {
       if (!this.nuevoIdioma.id_idioma || !this.nuevoIdioma.nivel) {
-        alert(' Selecciona un idioma y nivel primero.');
+        this.notif.advertencia('Selecciona un idioma y nivel primero.');
         return;
       }
 
@@ -583,18 +585,18 @@
 
       this.perfilService.registrarItemPerfil(this.idUsuarioLogueado, 'idioma', formData).subscribe({
         next: () => {
-          alert('Idioma guardado exitosamente.');
+          this.notif.exito('Idioma guardado exitosamente.');
           this.cargarDatosDesdeBackend();
           this.cerrarModales();
           this.nuevoIdioma = { id_idioma: null, nivel: null, archivo: null, nombreArchivo: '' };
         },
-        error: (err) => { console.error(err); alert('Error al guardar el idioma.'); }
+        error: (err) => { console.error(err); this.notif.error('Error al guardar el idioma.'); }
       });
     }
 
     agregarExperienciaBd(): void {
       if (this.cargosTemporales.length === 0 || !this.nuevaExperiencia.id_empresa_catalogo) {
-        alert(' Agrega un cargo y una empresa primero.');
+        this.notif.advertencia('Agrega un cargo y una empresa primero.');
         return;
       }
 
@@ -618,19 +620,19 @@
 
       this.perfilService.registrarItemPerfil(this.idUsuarioLogueado, 'experiencia', formData).subscribe({
         next: () => {
-          alert('Experiencia guardada exitosamente.');
+          this.notif.exito('Experiencia guardada exitosamente.');
           this.cargarDatosDesdeBackend();
           this.cerrarModales();
           this.cargosTemporales = [];
           this.nuevaExperiencia = { id_empresa_catalogo: null, id_provincia: null, id_ciudad: null, ubicacion: '', fecha_inicio: '', fecha_fin: '', descripcion: '', archivo_comprobante: null, nombreArchivo: '' };
         },
-        error: (err) => { console.error(err); alert('Error al guardar la experiencia.'); }
+        error: (err) => { console.error(err); this.notif.error('Error al guardar la experiencia.'); }
       });
     }
 
     agregarCursoBd(): void {
       if (!this.nuevoCurso.nombre_curso || !this.nuevoCurso.institucion) {
-        alert('⚠️ El nombre del curso y la institución son obligatorios.');
+        this.notif.advertencia('El nombre del curso y la institución son obligatorios.');
         return;
       }
 
@@ -642,14 +644,15 @@
 
       this.perfilService.registrarItemPerfil(this.idUsuarioLogueado, 'curso', formData).subscribe({
         next: () => {
-          alert('Curso guardado exitosamente.');
+          this.notif.exito('Curso guardado exitosamente.');
           this.cargarDatosDesdeBackend();
           this.cerrarModales();
           this.nuevoCurso = { nombre_curso: '', institucion: '', horas_duracion: null, archivo: null, nombreArchivo: '' };
         },
-        error: (err) => { console.error(err); alert(' Error al guardar el curso.'); }
+        error: (err) => { console.error(err); this.notif.error('Error al guardar el curso.'); }
       });
     }
+
     editarTitulo(titulo: any) {
       this.idEdicionAcademica = titulo.id_academico;
       this.nuevoTitulo = {

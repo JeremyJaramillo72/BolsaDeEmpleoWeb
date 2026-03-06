@@ -3,6 +3,7 @@ import {CommonModule} from '@angular/common';
 import {ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule} from '@angular/forms';
 import {HttpClient, HttpClientModule} from '@angular/common/http';
 import {RouterLink, Router} from '@angular/router';
+import {UiNotificationService} from '../../services/ui-notification.service';
 
 @Component({
   selector: 'app-registro-candidato',
@@ -36,7 +37,7 @@ export class RegistroCandidatoComponent implements OnInit {
   idProvinciaSeleccionada: number | null = null;
   idCiudadSeleccionada: number | null = null;
 
-  constructor(private http: HttpClient, private router: Router) {
+  constructor(private http: HttpClient, private router: Router, private ui: UiNotificationService) {
   }
 
   ngOnInit() {
@@ -66,7 +67,7 @@ export class RegistroCandidatoComponent implements OnInit {
 
   enviarCodigo() {
     if (!this.correo) {
-      alert('Por favor, ingresa un correo válido');
+      this.ui.advertencia('Por favor, ingresa un correo válido');
       return;
     }
     this.enviandoCodigo = true;
@@ -74,11 +75,11 @@ export class RegistroCandidatoComponent implements OnInit {
       .subscribe({
         next: () => {
           this.enviandoCodigo = false;
-          alert('Código enviado con éxito');
+          this.ui.info('Código enviado con éxito');
         },
         error: () => {
           this.enviandoCodigo = false;
-          alert('Error al enviar el código');
+          this.ui.error('Error al enviar el código');
         }
       });
   }
@@ -113,7 +114,7 @@ export class RegistroCandidatoComponent implements OnInit {
     this.http.post('http://localhost:8080/api/registro-postulante/crear', payload)
       .subscribe({
         next: (res) => {
-          alert('¡Postulante registrado con éxito!');
+          this.ui.exito('¡Postulante registrado con éxito!');
           this.router.navigate(['/api/auth/login']);
         },
         error: (err) => {
@@ -123,9 +124,9 @@ export class RegistroCandidatoComponent implements OnInit {
             this.codigoValido = false;
             // Mostramos el mensaje exacto que configuraste en Java:
             // "El código de verificación es incorrecto o ya expiró."
-            alert(err.error?.error || 'Código inválido');
+            this.ui.error(err.error?.error || 'Código inválido');
           } else {
-            alert('Error interno en el servidor');
+            this.ui.error('Error interno en el servidor');
           }
         }
       });
