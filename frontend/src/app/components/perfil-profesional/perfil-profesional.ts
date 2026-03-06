@@ -132,14 +132,24 @@
         error: err => console.warn('No se pudieron cargar las categorías')
       });
       this.perfilService.obtenerProvincias().subscribe({
-        next: res => this.provincias = res,
+        next: res => {
+          this.provincias = res;
+        },
         error: err => console.warn('No se pudieron cargar las provincias')
       });
     }
 
     cargarDatosDesdeBackend(): void {
+      console.log("Cargando perfil para el usuario ID:", this.idUsuarioLogueado);
+
       this.perfilService.obtenerDatosUsuario(this.idUsuarioLogueado).subscribe({
         next: (data: any) => {
+          if (!data) {
+            console.warn("El backend no devolvió datos para este usuario.");
+            return;
+          }
+
+          console.log("Datos recibidos del backend:", data);
 
 
           this.perfil.nombreCompleto = `${data.nombre || ''} ${data.apellido || ''}`.trim();
@@ -149,11 +159,34 @@
           this.perfil.fechaNacimiento = data.fechaNacimiento || '';
           this.perfil.direccion = data.ubicacion || '';
           this.fotoUrl = data.urlFotoPerfil || null;
+          this.perfil.id_provincia = data.idProvincia || null;
+          this.perfil.id_ciudad = data.idCiudad || null;
+
+
+          if (this.perfil.id_provincia) {
+            this.perfilService.getCiudadesPorProvincia(this.perfil.id_provincia).subscribe(res => {
+              this.ciudades = res;
+              this.cdr.detectChanges();
+            });
+          }
+
+
+          const parsearJsonSeguro = (campo: any) => {
+            if (!campo) return [];
+            if (typeof campo === 'string') {
+              try {
+                return JSON.parse(campo);
+              } catch (e) {
+                console.error("No se pudo parsear este JSON:", campo);
+                return [];
+              }
+            }
+            return campo;
+          };
 
 
           try {
-            const idiomasArray = data.idiomas ? JSON.parse(data.idiomas) : [];
-            console.log("Datos de idiomas desde la BD:", idiomasArray);
+            const idiomasArray = parsearJsonSeguro(data.idiomas);
             this.perfil.idiomas = idiomasArray.map((i: any) => ({
               id_usuario_idioma: i.id_usuario_idioma,
               id_idioma: i.id_idioma,
@@ -163,7 +196,7 @@
               nombreArchivo: i.archivo_certificado || ''
             }));
 
-            const expArray = data.experienciaLaboral ? JSON.parse(data.experienciaLaboral) : [];
+            const expArray = parsearJsonSeguro(data.experienciaLaboral);
             this.perfil.experiencias = expArray.map((e: any) => ({
               id_exp_laboral: e.id_exp_laboral,
               id_cargo: e.id_cargo,
@@ -177,7 +210,7 @@
               nombreArchivo: e.archivo_comprobante || ''
             }));
 
-            const titulosArray = data.formacionAcademica ? JSON.parse(data.formacionAcademica) : [];
+            const titulosArray = parsearJsonSeguro(data.formacionAcademica);
             this.perfil.titulos = titulosArray.map((t: any) => ({
               id_academico: t.id_academico,
               id_facultad: t.id_facultad,
@@ -190,8 +223,7 @@
               nombreArchivo: t.archivo_referencia || ''
             }));
 
-
-            const cursosArray = data.cursosRealizados ? JSON.parse(data.cursosRealizados) : [];
+            const cursosArray = parsearJsonSeguro(data.cursosRealizados);
             this.perfil.cursos = cursosArray.map((c: any) => ({
               id_curso: c.id_curso,
               nombre_curso: c.curso,
@@ -202,7 +234,7 @@
             }));
 
           } catch (error) {
-            console.error('Error al parsear el JSON del perfil:', error);
+            console.error('Error general al mapear las listas del perfil:', error);
           }
 
           this.actualizarProgreso();
@@ -221,6 +253,7 @@
       if (this.nuevaExperiencia.id_provincia > 0) {
         this.perfilService.getCiudadesPorProvincia(this.nuevaExperiencia.id_provincia).subscribe(res => {
           this.ciudadesExp = res;
+          this.cdr.detectChanges();
         });
       }
     }
@@ -485,7 +518,7 @@
     }
 
     guardarInformacionPersonal(): void {
-      // Validamos que al menos el nombre y el correo no estén vacíos
+
       if (!this.perfil.nombreCompleto || !this.perfil.correo) {
         alert('El nombre completo y el correo son obligatorios.');
         return;

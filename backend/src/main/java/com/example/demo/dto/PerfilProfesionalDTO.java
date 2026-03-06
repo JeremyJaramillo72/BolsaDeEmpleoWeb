@@ -1,6 +1,7 @@
 package com.example.demo.dto;
 
 import lombok.Data;
+import org.apache.commons.compress.harmony.pack200.NewAttributeBands;
 
 import java.time.LocalDate;
 
@@ -14,7 +15,8 @@ public class PerfilProfesionalDTO
     private String telefono;
     private String genero;
     private LocalDate fechaNacimiento;
-    private String ubicacion;
+    private  Integer idCiudad;
+    private Integer idProvincia;
     private String urlFotoPerfil;
 
     private String formacionAcademica;

@@ -55,10 +55,20 @@
           <div class="form-group"><label>Teléfono Móvil</label><input type="tel" [(ngModel)]="perfil.telefono" (ngModelChange)="onInputChange()"></div>
 
           <div class="form-group">
-            <label>Ubicación Profesional</label>
-            <input type="text" [(ngModel)]="perfil.direccion" (ngModelChange)="onInputChange()" placeholder="Ej: Manabí - Chone">
+            <label>Provincia</label>
+            <select [(ngModel)]="perfil.id_provincia" (change)="onProvinciaChange()">
+              <option [ngValue]="null" disabled>Seleccionar Provincia...</option>
+              <option *ngFor="let p of provincias" [value]="p.idProvincia">{{ p.nombreProvincia }}</option>
+            </select>
           </div>
-        </div>
+
+          <div class="form-group">
+            <label>Ciudad</label>
+            <select [(ngModel)]="perfil.id_ciudad" [disabled]="!perfil.id_provincia" (ngModelChange)="onInputChange()">
+              <option [ngValue]="null" disabled>Seleccionar Ciudad...</option>
+              <option *ngFor="let c of ciudades" [value]="c.idCiudad">{{ c.nombreCiudad }}</option>
+            </select>
+          </div>
 
         <div style="text-align: right; margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
           <button class="btn-save-item" (click)="guardarInformacionPersonal()">

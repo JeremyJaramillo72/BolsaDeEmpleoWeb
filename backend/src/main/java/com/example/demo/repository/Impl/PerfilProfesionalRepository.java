@@ -26,7 +26,8 @@ public class PerfilProfesionalRepository {
             if (rs.getDate("fecha_nacimiento") != null) {
                 dto.setFechaNacimiento(rs.getDate("fecha_nacimiento").toLocalDate());
             }
-            dto.setUbicacion(rs.getString("ubicacion"));
+            dto.setIdCiudad(rs.getInt("id_ciudad"));
+            dto.setIdProvincia(rs.getInt("id_provincia"));
             dto.setUrlFotoPerfil(rs.getString("url_foto_perfil"));
             dto.setFormacionAcademica(rs.getString("formacion_academica"));
             dto.setExperienciaLaboral(rs.getString("experiencia_laboral"));

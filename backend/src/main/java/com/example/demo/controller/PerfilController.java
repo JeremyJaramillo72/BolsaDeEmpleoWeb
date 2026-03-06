@@ -29,12 +29,14 @@ public class PerfilController {
 
 
     @GetMapping("/perfil/{idUsuario}")
-    public ResponseEntity<PerfilProfesionalDTO> obtenerPerfilCompleto(@PathVariable Long idUsuario) {
+    public ResponseEntity<?> obtenerPerfilCompleto(@PathVariable Long idUsuario) {
         try {
             PerfilProfesionalDTO perfil = iPerfilProfesionalService.obtenerPerfil(idUsuario);
             return ResponseEntity.ok(perfil);
         } catch (Exception e) {
-            return ResponseEntity.notFound().build();
+
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("Error interno: " + e.getMessage());
         }
     }
 
