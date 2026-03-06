@@ -18,7 +18,8 @@ export const appConfig: ApplicationConfig = {
       progressBar: true,
       newestOnTop: false,
       maxOpened: 6,
-      progressAnimation: 'decreasing'
+      progressAnimation: 'decreasing',
+      closeButton: true
     })
   ]
 };
