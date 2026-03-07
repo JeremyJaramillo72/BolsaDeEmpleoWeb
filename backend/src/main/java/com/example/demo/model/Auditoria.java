@@ -53,6 +53,9 @@ public class Auditoria {
     @Column(name = "datos_nuevos", columnDefinition = "jsonb")
     private String datosNuevos;
 
+    @Column(name = "campos_modificados", columnDefinition = "jsonb")
+    private String  camposModificados;  // o String, o JsonNode
+
     @PrePersist
     public void prePersist() {
         if (this.fechaHora == null) {

@@ -27,7 +27,7 @@ public class RolesBdServiceImpl implements IRolesBdService {
                  "LEFT JOIN pg_catalog.pg_auth_members am ON am.roleid = r.oid " +
                  "WHERE r.rolcanlogin = false " +
                  "AND r.rolname NOT LIKE 'pg_%' " +
-                 "AND r.rolname <> 'postgres' " +
+                 "AND r.rolname <> 'adminAzure' " +
                  "GROUP BY r.rolname " +
                  "ORDER BY r.rolname";
 

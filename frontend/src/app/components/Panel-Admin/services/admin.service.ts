@@ -320,20 +320,20 @@ export class AdminService {
     return this.http.post(`${this.apiRolesbd}/roles-bd`, datos);
   }
 
-  obtenerPermisosRol(idRol: number): Observable<any> {
+  obtenerPermisosRol(idRol: string): Observable<any> {
     return this.http.get(`${this.apiRolesbd}/roles-bd/${idRol}/permisos`);
   }
 
-  eliminarRolBD(idRol: number): Observable<any> {
+  eliminarRolBD(idRol: string): Observable<any> {
     return this.http.delete(`${this.apiRolesbd}/roles-bd/${idRol}`);
   }
 
   //Nuevos metodos para roles de base datos
-  actualizarRolBD(idRol: number, datos: any): Observable<any> {
+  actualizarRolBD(idRol: string, datos: any): Observable<any> {
     return this.http.put(`${this.apiRolesbd}/admin/roles-bd/${idRol}`, datos);
   }
 
-  obtenerUsuariosDelRol(idRol: number): Observable<any> {
+  obtenerUsuariosDelRol(idRol: string): Observable<any> {
     // Retorna lista de usuarios que tienen asignado este rol
     return this.http.get(`${this.apiRolesbd}/admin/roles-bd/${idRol}/usuarios`);
   }

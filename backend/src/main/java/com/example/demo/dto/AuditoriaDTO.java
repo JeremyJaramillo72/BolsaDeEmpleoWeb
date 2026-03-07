@@ -16,6 +16,7 @@ public class AuditoriaDTO {
     private String accion;
     private String tablaAfectada;
     private Integer idRegistroAfectado;
-    private Object datosAnteriores;
-    private Object datosNuevos;
+    private String datosAnteriores;   // ← REGRESA
+    private String datosNuevos;       // ← REGRESA
+    private String camposModificados;
 }

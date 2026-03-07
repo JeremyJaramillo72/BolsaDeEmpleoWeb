@@ -26,7 +26,7 @@ interface Esquema {
 }
 
 interface RolBase {
-  id: number;
+  id: string; // ✨ Asegurado como string
   nombre: string;
   descripcion: string;
 }
@@ -41,7 +41,7 @@ interface Usuario {
 }
 
 interface RolCreado {
-  id: number;
+  id: string; // ✨ Asegurado como string
   nombre: string;
   rolBase: string;
   fechaCreacion: string;
@@ -74,7 +74,7 @@ export class RolesBdComponent implements OnInit {
   // ================================================================
 
   // Formulario de nuevo rol - ✨ MODIFICADO: eliminado campo 'descripcion'
-  nuevoRol = {
+  nuevoRol: { nombre: string; rolBaseId: string | null } = {
     nombre: '',
     rolBaseId: null
   };
@@ -107,7 +107,7 @@ export class RolesBdComponent implements OnInit {
     this.adminService.obtenerRolesBD().subscribe({
       next: (data) => {
         this.rolesCreados = data.map((rol: any) => ({
-          id: rol.idRol,
+          id: String(rol.idRol), // ✨ Forzamos a string por seguridad
           nombre: rol.nombreRol,
           rolBase: rol.rolBase || 'Ninguno',
           fechaCreacion: rol.fechaCreacion,
@@ -129,18 +129,18 @@ export class RolesBdComponent implements OnInit {
     this.adminService.obtenerRolesBase().subscribe({
       next: (data) => {
         this.rolesBase = data.map((rol: any) => ({
-          id: rol.idRol,
+          id: String(rol.idRol), // ✨ Forzamos a string por seguridad
           nombre: rol.nombreRol,
           descripcion: rol.descripcion || 'Rol de grupo en PostgreSQL' // ✨ MODIFICADO: descripción más clara
         }));
       },
       error: (err) => {
         console.error('Error al cargar roles base:', err);
-        // ✨ NUEVO: roles base por defecto si falla
+        // ✨ NUEVO: roles base por defecto si falla (IDs corregidos a string)
         this.rolesBase = [
-          { id: 1, nombre: 'grupo_postulante', descripcion: 'Permisos base para postulantes' },
-          { id: 2, nombre: 'grupo_empresa', descripcion: 'Permisos base para empresas' },
-          { id: 3, nombre: 'grupo_admin', descripcion: 'Permisos base para administradores' }
+          { id: '1', nombre: 'grupo_postulante', descripcion: 'Permisos base para postulantes' },
+          { id: '2', nombre: 'grupo_empresa', descripcion: 'Permisos base para empresas' },
+          { id: '3', nombre: 'grupo_admin', descripcion: 'Permisos base para administradores' }
         ];
       }
     });
@@ -429,13 +429,13 @@ export class RolesBdComponent implements OnInit {
   }
 
   // ========== ✨ MODIFICADO: CARGAR PERMISOS PARA EDITAR ==========
-  cargarPermisosRol(idRol: number): void {
+  cargarPermisosRol(idRol: string): void { // ✨ Recibe string
     this.adminService.obtenerPermisosRol(idRol).subscribe({
       next: (data) => {
         this.aplicarPermisosAEsquemas(data);
         // ✨ NUEVO: cargar también el nombre y rol base
         this.nuevoRol.nombre = data.nombreRol || '';
-        this.nuevoRol.rolBaseId = data.rolBaseId || null;
+        this.nuevoRol.rolBaseId = data.rolBaseId ? String(data.rolBaseId) : null; // ✨ Aseguramos que sea string
       },
       error: (err) => {
         console.error('Error al cargar permisos:', err);
@@ -445,7 +445,7 @@ export class RolesBdComponent implements OnInit {
   }
 
   // ========== ✨ NUEVO: Cargar usuarios que tienen este rol ==========
-  cargarUsuariosDelRol(idRol: number): void {
+  cargarUsuariosDelRol(idRol: string): void { // ✨ Recibe string
     this.adminService.obtenerUsuariosDelRol(idRol).subscribe({
       next: (data) => {
         const idsUsuariosDelRol = data.map((u: any) => u.idUsuario);

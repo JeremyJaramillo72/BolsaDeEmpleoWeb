@@ -34,51 +34,6 @@
   <!-- ===== CONTENIDO TAB USUARIOS ===== -->
   <div *ngIf="tabPrincipal === 'usuarios'">
 
-    <!-- Estadísticas
-    <div class="stats-grid">
-      <div class="stat-card total">
-        <div class="stat-icon">
-          <span class="material-icons">people</span>
-        </div>
-        <div class="stat-content">
-          <h4>Total Usuarios</h4>
-          <p class="stat-number">{{ estadisticas.totalUsuarios }}</p>
-          <span class="stat-detail">{{ estadisticas.usuariosActivos }} activos</span>
-        </div>
-      </div>
-
-      <div class="stat-card admin">
-        <div class="stat-icon">
-          <span class="material-icons">admin_panel_settings</span>
-        </div>
-        <div class="stat-content">
-          <h4>Administradores</h4>
-          <p class="stat-number">{{ estadisticas.administradores }}</p>
-        </div>
-      </div>
-
-      <div class="stat-card empresa">
-        <div class="stat-icon">
-          <span class="material-icons">business</span>
-        </div>
-        <div class="stat-content">
-          <h4>Empresas</h4>
-          <p class="stat-number">{{ estadisticas.empresas }}</p>
-        </div>
-      </div>
-
-      <div class="stat-card usuarios">
-        <div class="stat-icon">
-          <span class="material-icons">person</span>
-        </div>
-        <div class="stat-content">
-          <h4>Usuarios</h4>
-          <p class="stat-number">{{ estadisticas.usuariosNormales }}</p>
-          <span class="stat-detail">{{ estadisticas.registrosHoy }} hoy</span>
-        </div>
-      </div>
-    </div> -->
-
     <!-- Filtros -->
     <div class="section-card">
       <div class="filters-section">
@@ -369,11 +324,10 @@
 </div>
 
 <!-- ========== MODAL DE AUDITORÍAS ========== -->
-<!-- ========== MODAL DE AUDITORÍAS - REEMPLAZA EL MODAL ACTUAL ========== -->
 <div class="modal-overlay" *ngIf="mostrarModalAuditorias" (click)="cerrarModalAuditorias()">
   <div class="modal-container large" (click)="$event.stopPropagation()">
 
-    <!-- HEADER (sin cambios) -->
+    <!-- HEADER -->
     <div class="modal-header">
       <div class="modal-title-section">
         <h2>Historial de Auditorías</h2>
@@ -382,7 +336,6 @@
         </p>
       </div>
       <div class="modal-actions-header">
-        <!-- ESTE BOTÓN EXPORTA TODAS LAS AUDITORÍAS (se mantiene igual) -->
         <button class="btn-export-modal" (click)="exportarAuditorias()">
           <span class="material-icons">download</span>
           Exportar
@@ -395,7 +348,7 @@
 
     <div class="modal-body" *ngIf="!cargandoAuditorias">
 
-      <!-- RESUMEN (sin cambios) -->
+      <!-- RESUMEN -->
       <div class="audit-summary">
         <div class="summary-item">
           <span class="material-icons">assignment</span>
@@ -413,7 +366,7 @@
         </div>
       </div>
 
-      <!-- ===== TABS DE NAVEGACIÓN (NUEVO) ===== -->
+      <!-- TABS DE NAVEGACIÓN -->
       <div class="tabs-container">
         <div class="tabs-nav">
           <button
@@ -442,7 +395,7 @@
           </button>
         </div>
 
-        <!-- BOTONES DE EXPORTAR POR TAB (NUEVO) -->
+        <!-- BOTONES DE EXPORTAR POR TAB -->
         <div class="tab-export-actions">
           <button class="btn-tab-export pdf" (click)="exportarTabPdf()">
             <span class="material-icons">picture_as_pdf</span>
@@ -477,6 +430,15 @@
                 Tabla: {{ auditoria.tablaAfectada || auditoria.modulo }}
               </div>
               <p class="audit-description">{{ auditoria.descripcion }}</p>
+
+              <!-- NUEVO BOTÓN DE DETALLES PARA UPDATE -->
+              <button
+                class="btn-detalles-update"
+                (click)="abrirModalDetalles(auditoria)">
+                <span class="material-icons">visibility</span>
+                Ver Detalles
+              </button>
+
               <div class="audit-meta" *ngIf="auditoria.ipAddress || auditoria.navegador">
                 <span class="meta-item" *ngIf="auditoria.ipAddress">
                   <span class="material-icons">location_on</span>
@@ -523,5 +485,45 @@
       <div class="spinner"></div>
       <p>Cargando auditorías...</p>
     </div>
+  </div>
+</div>
+
+<!-- ========== NUEVO MODAL DE DETALLES PARA UPDATE ========== -->
+<div class="modal-overlay" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
+  <div class="modal-container medium details-modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>Detalles de Modificación</h2>
+      <button class="btn-close" (click)="cerrarModalDetalles()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="details-info-bar">
+        <span><strong>Tabla:</strong> {{ auditoriaDetalleSeleccionada?.tablaAfectada }}</span>
+        <span><strong>Fecha:</strong> {{ formatearFechaHora(auditoriaDetalleSeleccionada?.fechaHora) }}</span>
+      </div>
+
+      <div class="diff-table-container">
+        <table class="diff-table">
+          <thead>
+          <tr>
+            <th>Campo Modificado</th>
+            <th>Valor Anterior <span class="material-icons icon-rojo">remove_circle_outline</span></th>
+            <th>Valor Nuevo <span class="material-icons icon-verde">add_circle_outline</span></th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let campo of getCamposModificadosList(auditoriaDetalleSeleccionada)">
+            <td class="campo-name">{{ campo.nombre }}</td>
+            <td class="valor-anterior">{{ campo.anterior !== null ? campo.anterior : 'N/A' }}</td>
+            <td class="valor-nuevo">{{ campo.nuevo !== null ? campo.nuevo : 'N/A' }}</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 </div>

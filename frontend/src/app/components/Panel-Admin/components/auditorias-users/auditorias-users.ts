@@ -24,6 +24,7 @@ interface Auditoria {
   navegador?: string;
   detalles?: any;
   tablaAfectada?: string;
+  camposModificados?: any; // Recibirá el JSON de Spring Boot
 }
 
 // Interfaz opcional para tipar las sesiones (mejora la legibilidad)
@@ -107,6 +108,9 @@ export class AdminUsuariosComponent implements OnInit {
   filtroAccionSesion = '';
   paginaSesiones = 1;
   itemsPorPaginaSesiones = 10;
+
+  mostrarModalDetalles: boolean = false;
+  auditoriaDetalleSeleccionada: any = null;
 
   constructor(private adminService: AdminService, private cdr: ChangeDetectorRef) {}
 
@@ -321,6 +325,7 @@ export class AdminUsuariosComponent implements OnInit {
     this.adminService.getAuditoriasUsuario(idUsuario).subscribe({
       next: (data) => {
         // Mapear las auditorías del backend
+        console.log('DATA CRUDA DEL BACKEND:', data);
         this.auditorias = data.map((auditoria: any) => ({
           id: auditoria.idAuditoria,
           accion: auditoria.accion,
@@ -330,8 +335,10 @@ export class AdminUsuariosComponent implements OnInit {
           fechaHora: auditoria.fechaHora,
           ipAddress: auditoria.ipAddress,
           navegador: auditoria.navegador,
-          detalles: auditoria.detalles
+          detalles: auditoria.detalles,
+          camposModificados: auditoria.camposModificados || auditoria.campos_modificados || null
         }));
+        console.log('AUDITORIAS MAPEADAS:', this.auditorias);
 
         this.filtrarAuditoriasPorTab();
         this.cargandoAuditorias = false;
@@ -640,4 +647,48 @@ export class AdminUsuariosComponent implements OnInit {
       }
     });
   }
+
+  // ✨ NUEVAS FUNCIONES PARA EL MODAL DE DETALLES
+  abrirModalDetalles(auditoria: any): void {
+    console.log('AUDITORIA SELECCIONADA:', auditoria);
+    console.log('camposModificados:', auditoria.camposModificados);
+    console.log('tipo:', typeof auditoria.camposModificados);
+    this.auditoriaDetalleSeleccionada = auditoria;
+    this.mostrarModalDetalles = true;
+  }
+
+  cerrarModalDetalles(): void {
+    this.mostrarModalDetalles = false;
+    this.auditoriaDetalleSeleccionada = null;
+  }
+
+  // ✨ FUNCIÓN MAGICA: Convierte el JSON del backend en una lista fácil de iterar en HTML
+  getCamposModificadosList(auditoria: any): Array<{nombre: string, anterior: any, nuevo: any}> {
+    if (!auditoria || !auditoria.camposModificados) return [];
+
+    // ✅ Si llega como string, parsearlo
+    let campos = auditoria.camposModificados;
+    if (typeof campos === 'string') {
+      try {
+        campos = JSON.parse(campos);
+      } catch (e) {
+        return [];
+      }
+    }
+
+    const lista = [];
+    for (const key in campos) {
+      if (Object.prototype.hasOwnProperty.call(campos, key)) {
+        lista.push({
+          nombre: key.replace(/_/g, ' ').toUpperCase(),
+          anterior: campos[key].anterior ?? 'N/A',
+          nuevo: campos[key].nuevo ?? 'N/A'
+        });
+      }
+    }
+    return lista;
+  }
+
+
+
 }
