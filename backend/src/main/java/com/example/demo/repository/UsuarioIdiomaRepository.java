@@ -4,6 +4,7 @@ import com.example.demo.model.UsuarioIdioma;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -18,10 +19,17 @@ public interface UsuarioIdiomaRepository extends JpaRepository<UsuarioIdioma, In
             @Param("idU") Long idUsuario,
             @Param("idI") Integer idIdioma,
             @Param("niv") String nivel,
-            @Param("url") String urlArchivo,  // URL de Cloudinary
+            @Param("url") String urlArchivo,
             @Param("cod") String codigo
     );
 
-    // Método para obtener todos los idiomas de un usuario
+
     List<UsuarioIdioma> findByUsuario_IdUsuario(Long idUsuario);
+    @Procedure(procedureName = "usuarios.sp_actualizar_idioma")
+    void actualizarIdioma(
+            @Param("p_id_usuario_idioma") Integer idUsuarioIdioma,
+            @Param("p_id_idioma") Integer idIdioma,
+            @Param("p_nivel") String nivel,
+            @Param("p_archivo") String archivo
+    );
 }

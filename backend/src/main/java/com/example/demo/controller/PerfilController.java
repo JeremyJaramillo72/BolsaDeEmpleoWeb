@@ -1,15 +1,10 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.ActualizarCursosDTO;
-import com.example.demo.dto.ActualizarExperienciaLaboralDTO;
-import com.example.demo.dto.ActualizarPerfilDTO;
-import com.example.demo.dto.PerfilProfesionalDTO;
+import com.example.demo.dto.*;
 import com.example.demo.repository.ExpLaboralRepository;
 import com.example.demo.repository.UsuarioIdiomaRepository;
 import com.example.demo.repository.UsuarioImagenRepository;
-import com.example.demo.service.ICursosServices;
-import com.example.demo.service.IExpLaboralService;
-import com.example.demo.service.IPerfilProfesionalService;
+import com.example.demo.service.*;
 import com.example.demo.service.Impl.CloudinaryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +27,9 @@ public class PerfilController {
     private final UsuarioImagenRepository usuarioImagenRepository;
     private final IExpLaboralService iExpLaboralService;
     private final ICursosServices iCursosServices;
+    private final IUsuarioIdiomaService iUsuarioIdiomaService;
+    private final IPerfilAcademicoService iPerfilAcademicoService;
+
 
 
 
@@ -264,4 +262,32 @@ public class PerfilController {
             return ResponseEntity.internalServerError().body(Map.of("error", "Error al actualizar el curso: " + e.getMessage()));
         }
      }
+
+    @PostMapping("/perfil/academico/actualizar")
+    public ResponseEntity<?> actualizarAcademico(@ModelAttribute ActualizarAcademicoDTO dto) {
+        try {
+            if (dto.getIdAcademico() == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "El ID del título es obligatorio"));
+            }
+            iPerfilAcademicoService.actualizarAcademico(dto);
+            return ResponseEntity.ok(Map.of("mensaje", "Título académico actualizado correctamente"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("error", "Error al actualizar título: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/perfil/idioma/actualizar")
+    public ResponseEntity<?> actualizarIdioma(@ModelAttribute ActualizarIdiomaDTO dto) {
+        try {
+            if (dto.getIdUsuarioIdioma() == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "El ID del idioma es obligatorio"));
+            }
+            iUsuarioIdiomaService.actualizarIdioma(dto);
+            return ResponseEntity.ok(Map.of("mensaje", "Idioma actualizado correctamente"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("error", "Error al actualizar idioma: " + e.getMessage()));
+        }
+    }
 }

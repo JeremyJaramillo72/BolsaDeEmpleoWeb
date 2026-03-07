@@ -1,14 +1,9 @@
 package com.example.demo.service;
 
-import org.springframework.web.multipart.MultipartFile;
+import com.example.demo.dto.ActualizarIdiomaDTO;
+import org.springframework.stereotype.Service;
+
 
 public interface IUsuarioIdiomaService {
-    // Definimos el contrato: qué debe hacer el servicio sin decir cómo
-    void registrarIdiomaConCertificado(
-            Long idUsuario,
-            Integer idIdioma,
-            String nivel,
-            MultipartFile archivo,
-            String codigo
-    );
+    void actualizarIdioma(ActualizarIdiomaDTO dto);
 }

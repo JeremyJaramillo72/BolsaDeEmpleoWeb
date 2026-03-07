@@ -38,7 +38,7 @@ public interface PerfilAcademicoRepository extends JpaRepository<PerfilAcademico
     void actualizarFormacionAcademica(
             @Param("p_id_academico") Integer idAcademico,
             @Param("p_id_carrera") Integer idCarrera,
-            @Param("p_fecha_graduacion") LocalDate fechaGraduacion,
+            @Param("p_fecha_graduacion") String fechaGraduacion,
             @Param("p_registro_senescyt") String registroSenescyt,
             @Param("p_archivo") String archivo
     );
