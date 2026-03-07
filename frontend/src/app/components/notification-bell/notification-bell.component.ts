@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ElementRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, HostListener, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { NotificationService } from '../../services/notification.service';
@@ -15,6 +15,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   notificaciones: any[] = [];
   dropdownOpen: boolean = false;
   activeTab: 'nuevas' | 'leidas' = 'nuevas';
+  isLoading: boolean = true;
   private sub?: Subscription;
   idUsuario: number = 0;
 
@@ -33,7 +34,8 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   constructor(
     public notificationService: NotificationService,
     private router: Router,
-    private eRef: ElementRef
+    private eRef: ElementRef,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -46,6 +48,8 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
 
     this.sub = this.notificationService.notificaciones$.subscribe(data => {
       this.notificaciones = data;
+      this.isLoading = false;
+      this.cdr.detectChanges();
     });
   }
 

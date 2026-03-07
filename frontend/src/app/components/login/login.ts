@@ -24,6 +24,7 @@ export class LoginComponent implements OnInit {
   // manejo de estados de la ui
   errorMsg: string = '';
   verPassword: boolean = false;
+  isLoading: boolean = false;
 
   constructor(
     private http: HttpClient,
@@ -62,6 +63,7 @@ export class LoginComponent implements OnInit {
    */
   onLogin() {
     this.errorMsg = '';
+    this.isLoading = true;
     const loginData = { correo: this.correo, contrasena: this.contrasena };
 
     this.http.post('http://localhost:8080/api/auth/login', loginData , { withCredentials: true })
@@ -96,11 +98,34 @@ export class LoginComponent implements OnInit {
           console.log('  idempresa:', localStorage.getItem('idEmpresa'));
           console.log('  rol:', localStorage.getItem('rol'));
 
-          this.router.navigate(['/menu-principal']).then((success) => {
+          /*this.router.navigate(['/menu-principal']).then((success) => {
             if (success) {
               console.log('¡navegación exitosa al menú!');
             } else {
               console.error('la navegación falló.');
+            }
+          });*/
+
+          // aqui se define a donde va de los 3 componetes , si algun día se pierden.
+          // 1. Obtenemos el rol limpio
+          const rolLimpio = rolNombre.trim().toUpperCase();
+
+          // 2. Determinamos la ruta del dashboard correspondiente
+          let rutaDashboard = '/menu-principal';
+          if (rolLimpio === 'ADMINISTRADOR' || rolLimpio === 'SUPERVISOR' || rolLimpio === 'GERENTE') {
+            rutaDashboard = '/menu-principal/dashboard-admin';
+          } else if (rolLimpio === 'EMPRESA') {
+            rutaDashboard = '/menu-principal/dashboard-empresa';
+          } else if (rolLimpio === 'POSTULANTE') {
+            rutaDashboard = '/menu-principal/dashboard-postulante';
+          }
+
+          // 3. Navegamos al dashboard específico
+          this.router.navigate([rutaDashboard]).then((success) => {
+            if (success) {
+              console.log(`¡Navegación exitosa al dashboard de ${rolLimpio}!`);
+            } else {
+              console.error('La navegación falló.');
             }
           });
         },
@@ -111,7 +136,10 @@ export class LoginComponent implements OnInit {
           this.ui.error(msg);
 
           // diferimos la asignación al template al siguiente tick para evitar NG0100
-          setTimeout(() => { this.errorMsg = msg; }, 0);
+          setTimeout(() => {
+            this.errorMsg = msg;
+            this.isLoading = false;
+          }, 0);
 
           console.error('detalle del error:', err);
         }

@@ -31,7 +31,7 @@ public interface OfertaLaboralRepository extends JpaRepository<OfertaLaboral, In
     @Query(value = "SELECT * FROM ofertas.listar_ofertas_por_estado(:estado)", nativeQuery = true)
     List<IOfertaResumen> listarPorEstadoSP(@Param("estado") String estado);
 
-    @Modifying //
+    @Modifying
     @Query(value = "UPDATE ofertas.oferta_laboral SET estado_oferta = :estado WHERE id_oferta = :id", nativeQuery = true)
     void actualizarEstadoDirecto(@Param("id") Long id, @Param("estado") String estado);
 
@@ -39,7 +39,6 @@ public interface OfertaLaboralRepository extends JpaRepository<OfertaLaboral, In
     @Transactional
     @Query(value = "call ofertas.sp_crearoferta(:p_idempresa, :p_idmodalidad, :p_idcategoria, :p_idjornada, :p_idciudad, :p_titulo, :p_descripcion, :p_salario_min, :p_salario_max, :p_cantidad_vacantes, :p_experiencia_minima, :p_fecha_inicio, :p_fecha_cierre, cast(:p_habilidades as jsonb), cast(:p_requisitos_manuales as jsonb))", nativeQuery = true)
     void registrarOferta(
-
             @Param("p_idempresa") Long idEmpresa,
             @Param("p_idmodalidad") Integer idModalidad,
             @Param("p_idcategoria") Integer idCategoria,
@@ -56,7 +55,6 @@ public interface OfertaLaboralRepository extends JpaRepository<OfertaLaboral, In
             @Param("p_habilidades") String habilidadesJson,
             @Param("p_requisitos_manuales") String requisitosJson
     );
-
 
     @Modifying
     @Transactional
@@ -79,7 +77,6 @@ public interface OfertaLaboralRepository extends JpaRepository<OfertaLaboral, In
             @Param("p_requisitos_manuales") String requisitosJson
     );
 
-
     @Query(value = "select * from ofertas.fn_mostrarofertasempresa(:idEmpresa)", nativeQuery = true)
     List<IOfertaEmpresaDTO> obtenerOfertasPorEmpresa(@Param("idEmpresa") Long idEmpresa);
 
@@ -97,4 +94,34 @@ public interface OfertaLaboralRepository extends JpaRepository<OfertaLaboral, In
 
     @Query(value = "SELECT * FROM ofertas.fn_datos_ubicacion_oferta(:idOferta)", nativeQuery = true)
     List<Object[]> obtenerDatosUbicacionOferta(@Param("idOferta") Integer idOferta);
+
+    // Métodos para Dashboard stats
+    @Query("SELECT COUNT(o) FROM OfertaLaboral o WHERE o.estadoOferta = :estado")
+    long countByEstadoOferta(@Param("estado") String estado);
+
+    @Query("SELECT COUNT(o) FROM OfertaLaboral o WHERE o.empresa.idEmpresa = :idEmpresa AND o.estadoOferta = :estado")
+    long countByEmpresaAndEstado(@Param("idEmpresa") Long idEmpresa, @Param("estado") String estado);
+
+    @Query("SELECT COUNT(o) FROM OfertaLaboral o WHERE o.empresa.idEmpresa = :idEmpresa")
+    long countByEmpresa(@Param("idEmpresa") Long idEmpresa);
+
+    @Query(value = "SELECT COUNT(*) FROM ofertas.oferta_laboral WHERE estado_oferta = :estado AND DATE(fecha_inicio) = CURRENT_DATE", nativeQuery = true)
+    long countByEstadoOfertaToday(@Param("estado") String estado);
+
+    @Query(value = "SELECT COUNT(*) FROM ofertas.oferta_laboral WHERE id_empresa = :idEmpresa AND estado_oferta = :estado AND DATE(fecha_inicio) = CURRENT_DATE", nativeQuery = true)
+    long countByEmpresaEstadoToday(@Param("idEmpresa") Long idEmpresa, @Param("estado") String estado);
+
+    // Métodos para datos de últimos 7 días
+    @Query(value = "SELECT CAST(fecha_inicio AS DATE) as fecha, COUNT(*) as count FROM ofertas.oferta_laboral WHERE estado_oferta = :estado AND fecha_inicio >= CURRENT_DATE - INTERVAL '7 days' GROUP BY CAST(fecha_inicio AS DATE) ORDER BY fecha ASC", nativeQuery = true)
+    List<Object[]> getLast7DaysByEstado(@Param("estado") String estado);
+
+    @Query(value = "SELECT CAST(fecha_inicio AS DATE) as fecha, COUNT(*) as count FROM ofertas.oferta_laboral WHERE id_empresa = :idEmpresa AND estado_oferta = :estado AND fecha_inicio >= CURRENT_DATE - INTERVAL '7 days' GROUP BY CAST(fecha_inicio AS DATE) ORDER BY fecha ASC", nativeQuery = true)
+    List<Object[]> getLast7DaysByEmpresaAndEstado(@Param("idEmpresa") Long idEmpresa, @Param("estado") String estado);
+
+    // Métodos para datos históricos (12 meses)
+    @Query(value = "SELECT TO_CHAR(fecha_inicio, 'YYYY-MM') AS yearMonth, COUNT(*) AS count FROM ofertas.oferta_laboral WHERE estado_oferta = :estado AND fecha_inicio >= CURRENT_DATE - INTERVAL '12 months' GROUP BY TO_CHAR(fecha_inicio, 'YYYY-MM') ORDER BY yearMonth ASC", nativeQuery = true)
+    List<Object[]> getHistoric12MonthsByEstado(@Param("estado") String estado);
+
+    @Query(value = "SELECT TO_CHAR(fecha_inicio, 'YYYY-MM') AS yearMonth, COUNT(*) AS count FROM ofertas.oferta_laboral WHERE id_empresa = :idEmpresa AND estado_oferta = :estado AND fecha_inicio >= CURRENT_DATE - INTERVAL '12 months' GROUP BY TO_CHAR(fecha_inicio, 'YYYY-MM') ORDER BY yearMonth ASC", nativeQuery = true)
+    List<Object[]> getHistoric12MonthsByEmpresaAndEstado(@Param("idEmpresa") Long idEmpresa, @Param("estado") String estado);
 }

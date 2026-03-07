@@ -22,6 +22,11 @@ import { MisPostulacionesComponent } from './components/mis-postulaciones/mis-po
 import {ListaPostulantesComponent} from './components/revision-postulantes/lista-postulantes/lista-postulantes';
 import {PerfilCandidatoComponent} from './components/revision-postulantes/perfil-candidato/perfil-candidato';
 
+// (Asegúrate de importar tus 3 nuevos componentes arriba)
+import { DashboardAdminComponent } from './components/menu-principal/dashboard-admin/dashboard-admin.component';
+import { DashboardEmpresaComponent } from './components/menu-principal/dashboard-empresa/dashboard-empresa.component';
+import { DashboardPostulanteComponent } from './components/menu-principal/dashboard-postulante/dashboard-postulante.component';
+
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'registro-candidato', component: RegistroCandidatoComponent },
@@ -31,6 +36,12 @@ export const routes: Routes = [
     component: MenuprincipalComponent,
     canActivate: [AuthGuard],
     children: [
+      // 1. LAS 3 RUTAS DE LOS DASHBOARDS:
+      { path: 'dashboard-admin', component: DashboardAdminComponent },
+      { path: 'dashboard-empresa', component: DashboardEmpresaComponent },
+      { path: 'dashboard-postulante', component: DashboardPostulanteComponent },
+
+
       { path: 'perfil-profesional', component: PerfilProfesionalComponent },
       { path: 'empresa/perfil', component: PerfilEmpresaComponent },
       { path: 'gestion-ofertas', component: GestionOfertasComponent },
@@ -58,8 +69,8 @@ export const routes: Routes = [
         path: 'PanelAdmi/ValidarEmpresa',
         component: ValidarEmpresaComponent
       },
-      {   path: 'busqueda-empleo', component: PerfilProfesionalComponent },
-      {   path: 'mis-postulaciones', component: PerfilProfesionalComponent },
+      {   path: 'busqueda-empleo', component: BusquedaEmpleoComponent },
+      {   path: 'mis-postulaciones', component: MisPostulacionesComponent },
       {   path: 'GestionRolesbd', component: RolesBdComponent },
       {   path: 'Busqueda/empleo', component: BusquedaEmpleoComponent },
       {   path: 'postulacion/empleo', component: MisPostulacionesComponent }

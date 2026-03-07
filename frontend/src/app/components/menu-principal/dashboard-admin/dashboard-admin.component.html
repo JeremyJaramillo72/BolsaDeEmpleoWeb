@@ -1,0 +1,82 @@
+<div class="dashboard-container">
+  <div *ngIf="isLoading" class="loading-container">
+    <span class="material-icons spinner">sync</span>
+    <p>Cargando estadísticas...</p>
+  </div>
+
+  <div *ngIf="!isLoading">
+    <div class="welcome-header">
+      <h1>Panel de Administración 👋</h1>
+      <p>Hola <span class="text-primary">{{ nombreUsuario }}</span>, este es el resumen global.</p>
+    </div>
+
+    <div *ngIf="datos" class="stats-grid">
+      <!-- Ofertas Pendientes -->
+      <div class="stat-card">
+        <h3>Ofertas Pendientes</h3>
+        <div class="stat-value">{{ datos.kpis.pendientes.total }}</div>
+        <div class="stat-chart">
+          <app-mini-chart
+            [data]="datos.kpis.pendientes.datosUltimos7Dias"
+            [labels]="datos.kpis.pendientes.labels7Dias">
+          </app-mini-chart>
+        </div>
+        <div class="stat-change stat-change-positive">
+          {{ formatCambio(datos.kpis.pendientes) }}
+        </div>
+      </div>
+
+      <!-- Nuevas Empresas -->
+      <div class="stat-card">
+        <h3>Nuevas Empresas</h3>
+        <div class="stat-value">{{ datos.kpis.empresasNuevas.total }}</div>
+        <div class="stat-chart">
+          <app-mini-chart
+            [data]="datos.kpis.empresasNuevas.datosUltimos7Dias"
+            [labels]="datos.kpis.empresasNuevas.labels7Dias">
+          </app-mini-chart>
+        </div>
+        <div class="stat-change stat-change-positive">
+          {{ formatCambio(datos.kpis.empresasNuevas) }}
+        </div>
+      </div>
+
+      <!-- Usuarios Totales -->
+      <div class="stat-card">
+        <h3>Usuarios Totales</h3>
+        <div class="stat-value">{{ datos.kpis.usuariosTotales.total }}</div>
+        <div class="stat-chart">
+          <app-mini-chart
+            [data]="datos.kpis.usuariosTotales.datosUltimos7Dias"
+            [labels]="datos.kpis.usuariosTotales.labels7Dias">
+          </app-mini-chart>
+        </div>
+        <div class="stat-change stat-change-positive">
+          {{ formatCambio(datos.kpis.usuariosTotales) }}
+        </div>
+      </div>
+
+      <!-- Reportes Hoy -->
+      <div class="stat-card">
+        <h3>Reportes Hoy</h3>
+        <div class="stat-value">{{ datos.kpis.reportesHoy.total }}</div>
+        <div class="stat-chart">
+          <app-mini-chart
+            [data]="datos.kpis.reportesHoy.datosUltimos7Dias"
+            [labels]="datos.kpis.reportesHoy.labels7Dias">
+          </app-mini-chart>
+        </div>
+        <div class="stat-change stat-change-positive">
+          {{ formatCambio(datos.kpis.reportesHoy) }}
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="datos" class="chart-section">
+      <h3>Tendencia Histórica de Ofertas</h3>
+      <div class="canvas-container">
+        <canvas baseChart [data]="lineChartData" [options]="lineChartOptions" [type]="lineChartType"></canvas>
+      </div>
+    </div>
+  </div>
+</div>

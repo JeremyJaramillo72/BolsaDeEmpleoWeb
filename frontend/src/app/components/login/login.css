@@ -86,3 +86,11 @@
 .subtitulo-opcion { display: block; color: #64748b; font-size: 0.65rem; }
 
 .pie-pagina { text-align: center; color: #94a3b8; font-size: 0.7rem; margin-top: 1.2rem; }
+
+/* Spinner Loading */
+.spinner-container { display: flex; align-items: center; gap: 8px; }
+.spinner { animation: spin 1s linear infinite; display: inline-block; }
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

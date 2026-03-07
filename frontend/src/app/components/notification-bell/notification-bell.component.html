@@ -22,23 +22,30 @@
     </div>
 
     <div class="dropdown-body">
-      <div *ngIf="listaActual.length === 0" class="empty-state">
+      <div *ngIf="isLoading" class="loading-notif">
+        <span class="material-icons spinner-small">sync</span>
+        <span>Cargando notificaciones...</span>
+      </div>
+
+      <div *ngIf="!isLoading && listaActual.length === 0" class="empty-state">
         {{ activeTab === 'nuevas' ? 'No tienes notificaciones nuevas' : 'No tienes notificaciones leídas' }}
       </div>
 
-      <div *ngFor="let item of listaActual"
-           class="notif-item"
-           [class.unread]="!item.leida"
-           (click)="clickNotificacion(item)">
-        <div class="notif-icon">
-          <span class="material-icons">{{ item.icono || 'notifications' }}</span>
+      <div *ngIf="!isLoading">
+        <div *ngFor="let item of listaActual"
+             class="notif-item"
+             [class.unread]="!item.leida"
+             (click)="clickNotificacion(item)">
+          <div class="notif-icon">
+            <span class="material-icons">{{ item.icono || 'notifications' }}</span>
+          </div>
+          <div class="notif-content">
+            <span class="notif-title">{{ item.titulo }}</span>
+            <p class="notif-message">{{ item.mensaje }}</p>
+          </div>
+          <span class="notif-time">{{ tiempoTranscurrido(item.fechaCreacion) }}</span>
+          <div class="unread-dot" *ngIf="!item.leida"></div>
         </div>
-        <div class="notif-content">
-          <span class="notif-title">{{ item.titulo }}</span>
-          <p class="notif-message">{{ item.mensaje }}</p>
-        </div>
-        <span class="notif-time">{{ tiempoTranscurrido(item.fechaCreacion) }}</span>
-        <div class="unread-dot" *ngIf="!item.leida"></div>
       </div>
     </div>
   </div>

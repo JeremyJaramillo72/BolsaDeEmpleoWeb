@@ -44,10 +44,10 @@ export class MenuprincipalComponent implements OnInit {
   rolUsuario: string = '';
   fotoMenu: string = '';
 
-  dashboardHomeVisible: boolean = true;
+ // dashboardHomeVisible: boolean = true;
 
   menuItems: MenuItem[] = [];
-  statsCards: StatCard[] = [];
+ // statsCards: StatCard[] = [];
 
   constructor(
     public router: Router,
@@ -81,28 +81,39 @@ export class MenuprincipalComponent implements OnInit {
 
     this.verificarRutaActual();
     this.inicializarMenuPorRol();
+
+    if (this.router.url === '/menu-principal' || this.router.url === '/menu-principal/') {
+      this.irAInicio();
+    }
     this.notificationService.notificaciones$.subscribe(() => {
       this.actualizarKPIsNotificaciones();
     });
   }
 
   private verificarRutaActual(): void {
-    const urlActual = this.router.url.split('?')[0];
+
+    /* const urlActual = this.router.url.split('?')[0];
     this.dashboardHomeVisible = (urlActual === '/menu-principal' || urlActual === '/menu-principal/');
     this.cdr.detectChanges();
+     */
+
   }
 
+/*
   isDashboardHome(): boolean {
     return this.dashboardHomeVisible;
   }
+ */
 
   private actualizarKPIsNotificaciones() {
-    // Actualiza la tarjetita de arriba con el número real de notificaciones
+    /* Actualiza la tarjetita de arriba con el número real de notificaciones
     const statNotif = this.statsCards.find(stat => stat.icon === 'notifications');
     if (statNotif) {
       statNotif.value = this.notificationService.cantidadSinLeer;
       this.cdr.detectChanges();
     }
+
+     */
   }
 
   inicializarMenuPorRol(): void {
@@ -264,9 +275,10 @@ export class MenuprincipalComponent implements OnInit {
         return this.authService.tienePermiso(item.permiso);
       }
       return rolCoincide;
-    });
 
-    // 3. ACTUALIZAMOS LOS KPIs SUPERIORES CON SUS ICONOS Y COLORES
+    });
+    this.cdr.detectChanges();
+    /*// 3. ACTUALIZAMOS LOS KPIs SUPERIORES CON SUS ICONOS Y COLORES
     if (this.rolUsuario === 'EMPRESA') {
       this.statsCards = [
         { label: 'Ofertas Activas', value: 12, color: '', colorHex: '#2563EB', icon: 'work' },
@@ -289,6 +301,12 @@ export class MenuprincipalComponent implements OnInit {
         { label: 'Reportes Hoy', value: 12, color: '', colorHex: '#0f172a', icon: 'trending_up' }
       ];
     }
+
+     */
+
+
+    this.cdr.detectChanges();
+
   }
 
   toggleSidebar(): void {
@@ -297,12 +315,7 @@ export class MenuprincipalComponent implements OnInit {
 
   onMenuItemClick(item: MenuItem): void {
     if (item.path) {
-      this.dashboardHomeVisible = false;
-      this.router.navigateByUrl('/menu-principal' + item.path).then(navegacionExitosa => {
-        if (!navegacionExitosa) {
-          this.verificarRutaActual();
-        }
-      });
+      this.router.navigateByUrl('/menu-principal' + item.path);
     }
   }
 
@@ -321,5 +334,20 @@ export class MenuprincipalComponent implements OnInit {
         this.router.navigate(['/login']);
       }
     });
+  }
+
+  irAInicio(): void {
+    const rol = this.rolUsuario.toUpperCase();
+
+    // Si tienes un rol dinámico con permisos de Admin, o eres Admin
+    if (this.authService.tienePermiso('REPORTES') || this.authService.tienePermiso('USERS') || ['ADMINISTRADOR', 'GERENTE', 'SUPERVISOR'].includes(rol)) {
+      this.router.navigate(['/menu-principal/dashboard-admin']);
+    }
+    else if (rol === 'EMPRESA') {
+      this.router.navigate(['/menu-principal/dashboard-empresa']);
+    }
+    else {
+      this.router.navigate(['/menu-principal/dashboard-postulante']);
+    }
   }
 }

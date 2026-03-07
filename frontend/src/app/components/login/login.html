@@ -84,8 +84,11 @@
           <a href="#" class="enlace-olvido">¿Olvidaste tu contraseña?</a>
         </div>
 
-        <button type="submit" class="btn-login" [disabled]="!loginForm.form.valid">
-          Iniciar Sesión <span class="material-icons">arrow_forward</span>
+        <button type="submit" class="btn-login" [disabled]="!loginForm.form.valid || isLoading">
+          <span *ngIf="!isLoading">Iniciar Sesión <span class="material-icons">arrow_forward</span></span>
+          <span *ngIf="isLoading" class="spinner-container">
+            <span class="material-icons spinner">sync</span> Cargando...
+          </span>
         </button>
       </form>
 

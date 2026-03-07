@@ -18,27 +18,25 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     Optional<Usuario> findByCorreo(String correo);
 
-    // Sincronizado con sp_registrar_postulante
     @Procedure(procedureName = "usuarios.sp_registrar_postulante")
     void registrarPostulantePro(
             @Param("p_nombre") String nombre,
             @Param("p_apellido") String apellido,
             @Param("p_contrasena") String contra,
             @Param("p_correo") String correo,
-            @Param("p_fecha_nacimiento") Date fecha, // Ajustado snake_case
+            @Param("p_fecha_nacimiento") Date fecha,
             @Param("p_genero") String genero,
             @Param("p_telefono") String telf,
-            @Param("p_id_ciudad") Integer idCiudad,   // Ajustado snake_case
-            @Param("p_id_rol") Integer idRol         // Ajustado snake_case
+            @Param("p_id_ciudad") Integer idCiudad,
+            @Param("p_id_rol") Integer idRol
     );
 
-    // Sincronizado con sp_registrar_empresa_completa (7 parámetros)
     @Procedure(procedureName = "empresas.sp_registrar_empresa_completa")
     void registrarEmpresaPro(
             @Param("p_correo") String correo,
             @Param("p_contrasena") String contra,
-            @Param("p_id_ciudad") Integer idCiudad,   // Ajustado snake_case
-            @Param("p_nombre") String nombreEmp, // Ajustado snake_case
+            @Param("p_id_ciudad") Integer idCiudad,
+            @Param("p_nombre") String nombreEmp,
             @Param("p_descripcion") String desc,
             @Param("p_ruc") String ruc,
             @Param("p_sitioweb") String web
@@ -55,8 +53,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
             @Param("p_telefono") String telf,
             @Param("p_id_ciudad") Integer idCiudad,
             @Param("p_id_rol") Integer idRol,
-            @Param("p_permisos_ui") String permisosUi // <--- ¡EL NUEVO PARAMETRO!
+            @Param("p_permisos_ui") String permisosUi
     );
+
     @Modifying
     @Transactional
     @Query(value = "CALL seguridad.registrousuariologin(:correo, :idUsuario, :idRol)", nativeQuery = true)
@@ -73,16 +72,40 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
             @Param("p_contrasena") String contra,
             @Param("p_correo") String correo,
             @Param("p_telefono") String telf,
-            @Param("p_id_ciudad") Integer idCiudad // Ponlo como Integer aquí
+            @Param("p_id_ciudad") Integer idCiudad
     );
+
     List<Usuario> findByRol_IdRolNotIn(List<Integer> idsNoDeseados);
 
     List<Usuario> findByRol_NombreRol(String nombreRol);
 
-    @Query(value = "SELECT u.id_usuario, u.nombre, u.apellido " +
-            "FROM usuarios.usuario u " +
-            "JOIN catalogos.ciudad c ON u.id_ciudad = c.id_ciudad " +
-            "JOIN usuarios.roles r ON u.id_rol = r.id_rol " +
-            "WHERE c.id_provincia = :idProvincia AND UPPER(r.nombre_rol) = 'POSTULANTE'", nativeQuery = true)
+    @Query(value = "SELECT u.id_usuario, u.nombre, u.apellido FROM usuarios.usuario u JOIN catalogos.ciudad c ON u.id_ciudad = c.id_ciudad JOIN usuarios.roles r ON u.id_rol = r.id_rol WHERE c.id_provincia = :idProvincia AND UPPER(r.nombre_rol) = 'POSTULANTE'", nativeQuery = true)
     List<Object[]> findPostulantesByProvinciaNativo(@Param("idProvincia") Integer idProvincia);
+
+    // Métodos para Dashboard stats
+    @Query("SELECT COUNT(u) FROM Usuario u WHERE u.rol.nombreRol = :rolName")
+    long countByRolName(@Param("rolName") String rolName);
+
+    @Query(value = "SELECT COUNT(*) FROM usuarios.usuario u JOIN usuarios.roles r ON u.id_rol = r.id_rol WHERE r.nombre_rol = :rolName AND DATE(u.fecha_registro) = CURRENT_DATE", nativeQuery = true)
+    long countByRolNameToday(@Param("rolName") String rolName);
+
+    @Query("SELECT COUNT(u) FROM Usuario u")
+    long countAllUsuarios();
+
+    @Query(value = "SELECT COUNT(*) FROM usuarios.usuario WHERE DATE(fecha_registro) = CURRENT_DATE", nativeQuery = true)
+    long countAllUsuariosToday();
+
+    // Métodos para datos de últimos 7 días
+    @Query(value = "SELECT CAST(u.fecha_registro AS DATE) as fecha, COUNT(*) as count FROM usuarios.usuario u JOIN usuarios.roles r ON u.id_rol = r.id_rol WHERE r.nombre_rol = :rolName AND u.fecha_registro >= CURRENT_DATE - INTERVAL '7 days' GROUP BY CAST(u.fecha_registro AS DATE) ORDER BY fecha ASC", nativeQuery = true)
+    List<Object[]> getLast7DaysByRol(@Param("rolName") String rolName);
+
+    @Query(value = "SELECT CAST(u.fecha_registro AS DATE) as fecha, COUNT(*) as count FROM usuarios.usuario u WHERE u.fecha_registro >= CURRENT_DATE - INTERVAL '7 days' GROUP BY CAST(u.fecha_registro AS DATE) ORDER BY fecha ASC", nativeQuery = true)
+    List<Object[]> getLast7DaysAllUsers();
+
+    // Métodos para datos históricos (12 meses)
+    @Query(value = "SELECT TO_CHAR(u.fecha_registro, 'YYYY-MM') AS yearMonth, COUNT(*) as count FROM usuarios.usuario u JOIN usuarios.roles r ON u.id_rol = r.id_rol WHERE r.nombre_rol = :rolName AND u.fecha_registro >= CURRENT_DATE - INTERVAL '12 months' GROUP BY TO_CHAR(u.fecha_registro, 'YYYY-MM') ORDER BY yearMonth ASC", nativeQuery = true)
+    List<Object[]> getHistoric12MonthsByRol(@Param("rolName") String rolName);
+
+    @Query(value = "SELECT TO_CHAR(u.fecha_registro, 'YYYY-MM') AS yearMonth, COUNT(*) as count FROM usuarios.usuario u WHERE u.fecha_registro >= CURRENT_DATE - INTERVAL '12 months' GROUP BY TO_CHAR(u.fecha_registro, 'YYYY-MM') ORDER BY yearMonth ASC", nativeQuery = true)
+    List<Object[]> getHistoric12MonthsAllUsers();
 }

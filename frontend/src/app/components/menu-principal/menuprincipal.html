@@ -28,7 +28,7 @@
 
       <div class="menu-label" *ngIf="isSidebarOpen">MENÚ PRINCIPAL</div>
 
-      <a routerLink="/menu-principal"
+    <!--  <a routerLink="/menu-principal"
          [routerLinkActiveOptions]="{exact: true}"
          routerLinkActive="active"
          class="nav-item"
@@ -36,9 +36,12 @@
         <span class="material-icons nav-icon">grid_view</span>
         <span class="nav-text" *ngIf="isSidebarOpen">Inicio</span>
       </a>
-
+      -->
+      <a (click)="irAInicio()" class="nav-item" style="cursor: pointer;">
+        <span class="material-icons nav-icon">grid_view</span>
+        <span class="nav-text" *ngIf="isSidebarOpen">Inicio</span>
+      </a>
       <a *ngFor="let item of menuItems"
-         (click)="onMenuItemClick(item)"
          [routerLink]="item.route"
          routerLinkActive="active"
          class="nav-item">
@@ -67,7 +70,42 @@
       </div>
 
       <div class="topbar-right">
-       <app-notification-bell></app-notification-bell>
+        <app-notification-bell></app-notification-bell>
+
+        <div class="user-profile">
+          <div class="avatar" *ngIf="!fotoMenu">
+            {{ nombreUsuario.charAt(0) | uppercase }}
+          </div>
+          <img *ngIf="fotoMenu" [src]="fotoMenu" class="avatar-img" alt="Logo">
+
+          <div class="user-info">
+            <span class="user-name">{{ nombreUsuario }}</span>
+            <span class="user-role">{{ rolUsuario | titlecase }}</span>
+          </div>
+          <span class="material-icons text-gray">expand_more</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="scroll-area">
+      <div class="router-wrapper">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+
+  </main>
+
+
+ <!-- <main class="main-content">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <h2>Panel de Control</h2>
+        <p>Bienvenido al sistema de administración UTEQ</p>
+      </div>
+
+      <div class="topbar-right">
+        <app-notification-bell></app-notification-bell>
 
         <div class="user-profile">
           <div class="avatar" *ngIf="!fotoMenu">
@@ -130,4 +168,6 @@
 
     </div>
   </main>
+  -->
 </div>
+
