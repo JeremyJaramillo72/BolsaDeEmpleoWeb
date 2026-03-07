@@ -7,18 +7,18 @@ export class UiNotificationService {
   constructor(private toastr: ToastrService) {}
 
   exito(mensaje: string): void {
-    this.toastr.success(mensaje);
+    setTimeout(() => this.toastr.success(mensaje));
   }
 
   error(mensaje: string): void {
-    this.toastr.error(mensaje);
+    setTimeout(() => this.toastr.error(mensaje));
   }
 
   advertencia(mensaje: string): void {
-    this.toastr.warning(mensaje);
+    setTimeout(() => this.toastr.warning(mensaje));
   }
 
   info(mensaje: string): void {
-    this.toastr.info(mensaje);
+    setTimeout(() => this.toastr.info(mensaje));
   }
 }

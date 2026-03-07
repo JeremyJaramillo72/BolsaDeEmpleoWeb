@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { ConfirmService, ConfirmPeticion } from '../../services/confirm.service';
@@ -19,15 +19,19 @@ export class ConfirmModalComponent implements OnInit, OnDestroy {
   private resolver: ((valor: boolean) => void) | null = null;
   private sub!: Subscription;
 
-  constructor(private confirmService: ConfirmService) {}
+  constructor(private confirmService: ConfirmService,
+  private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.sub = this.confirmService.peticion$.subscribe((peticion: ConfirmPeticion | null) => {
       if (peticion) {
-        this.titulo   = peticion.titulo;
-        this.mensaje  = peticion.mensaje;
-        this.resolver = peticion.resolver;
-        this.visible  = true;
+        Promise.resolve().then(() => {
+          this.titulo = peticion.titulo;
+          this.mensaje = peticion.mensaje;
+          this.resolver = peticion.resolver;
+          this.visible = true;
+          this.cdr.detectChanges();
+        });
       }
     });
   }
