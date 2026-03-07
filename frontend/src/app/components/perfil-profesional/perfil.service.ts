@@ -109,4 +109,11 @@ export class PerfilService {
   actualizarCurso (formData: FormData){
     return this.http.post(`${this.apiUrl}/modificar-cursos/actualizar`,formData)
   }
+
+  actualizarIdioma  (formData: FormData){
+    return this.http.post(`${this.apiUrl}/modificar-cursos/actualizar`,formData)
+  }
+  actualizarAcademico (formData: FormData){
+    return this.http.post(`${this.apiUrl}/modificar-cursos/actualizar`,formData)
+  }
 }
