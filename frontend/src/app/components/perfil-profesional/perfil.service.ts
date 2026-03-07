@@ -42,14 +42,13 @@ export class PerfilService {
   }
 
 
-
   getCiudadesPorProvincia(idProvincia: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiCatalogos}/ciudades/${idProvincia}`);
   }
-  obtenerProvincias(){
+
+  obtenerProvincias() {
     return this.http.get<any[]>('http://localhost:8080/api/academico/provincias')
   }
-
 
 
   registrarItemPerfil(idUsuario: number, tipoItem: string, formData: FormData): Observable<any> {
@@ -99,7 +98,15 @@ export class PerfilService {
     return this.http.get<any[]>('http://localhost:8080/api/academico/categorias');
 
   }
+
   actualizarDatosPersonales(idUsuario: number, datos: any): Observable<any> {
     return this.http.put(`http://localhost:8080/api/perfil/${idUsuario}/actualizar-personales`, datos);
+  }
+
+  actualizarExperiencia(formData: FormData) {
+    return this.http.post(`${this.apiUrl}/exp-laboral/actualizar`, formData);
+  }
+  actualizarCurso (formData: FormData){
+    return this.http.post(`${this.apiUrl}/modificar-cursos/actualizar`,formData)
   }
 }

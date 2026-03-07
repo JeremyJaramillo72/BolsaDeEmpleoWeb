@@ -1,9 +1,14 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ActualizarCursosDTO;
+import com.example.demo.dto.ActualizarExperienciaLaboralDTO;
+import com.example.demo.dto.ActualizarPerfilDTO;
 import com.example.demo.dto.PerfilProfesionalDTO;
 import com.example.demo.repository.ExpLaboralRepository;
 import com.example.demo.repository.UsuarioIdiomaRepository;
 import com.example.demo.repository.UsuarioImagenRepository;
+import com.example.demo.service.ICursosServices;
+import com.example.demo.service.IExpLaboralService;
 import com.example.demo.service.IPerfilProfesionalService;
 import com.example.demo.service.Impl.CloudinaryService;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.example.demo.repository.UsuarioRepository;
@@ -24,7 +30,8 @@ public class PerfilController {
     private final IPerfilProfesionalService iPerfilProfesionalService;
     private final CloudinaryService cloudinaryService;
     private final UsuarioImagenRepository usuarioImagenRepository;
-
+    private final IExpLaboralService iExpLaboralService;
+    private final ICursosServices iCursosServices;
 
 
 
@@ -86,21 +93,21 @@ public class PerfilController {
     @PostMapping("/exp-laboral/registrar")
     public ResponseEntity<?> registrarExperiencia(
             @RequestParam("idUsuario") Long idUsuario,
-            @RequestParam("idCargo") Integer idCargo,
+            @RequestParam("cargosIds") List<Integer> cargosIds,
             @RequestParam("idEmpresaCatalogo") Integer idEmpresaCatalogo,
             @RequestParam("fechaInicio") String fechaInicio,
             @RequestParam(value = "fechaFin", required = false) String fechaFin,
             @RequestParam("descripcion") String descripcion,
-            @RequestParam(value = "ubicacion", required = false) String ubicacion,
+            @RequestParam("idCiudad") Integer idCiudad,
             @RequestParam(value = "archivo", required = false) MultipartFile archivo) {
 
         Map<String, Object> datos = new HashMap<>();
-        datos.put("id_cargo", idCargo);
+        datos.put("cargos_ids", cargosIds);
         datos.put("id_empresa_catalogo", idEmpresaCatalogo);
         datos.put("fecha_inicio", fechaInicio);
         datos.put("fecha_fin", fechaFin);
         datos.put("descripcion", descripcion);
-        datos.put("ubicacion", ubicacion);
+        datos.put("id_ciudad", idCiudad);
 
         iPerfilProfesionalService.procesarYRegistrar(idUsuario, "experiencia", datos, archivo);
         return ResponseEntity.ok(Map.of("mensaje", "Experiencia laboral guardada"));
@@ -197,5 +204,64 @@ public class PerfilController {
             return ResponseEntity.internalServerError().body("error al procesar la empresa");
         }
     }
+    @PutMapping("/perfil/{idUsuario}/actualizar-personales")
+    public ResponseEntity<?> actualizarDatosPersonales(
+            @PathVariable Long idUsuario,
+            @RequestBody ActualizarPerfilDTO dto) {
+        try {
+            String nombre = "";
+            String apellido = "";
+            if (dto.getNombreCompleto() != null && !dto.getNombreCompleto().trim().isEmpty()) {
+                String[] partes = dto.getNombreCompleto().trim().split(" ", 2);
+                nombre = partes[0];
+                apellido = partes.length > 1 ? partes[1] : "";
+            }
 
+            iPerfilProfesionalService.actualizarDatosPersonales(
+                    idUsuario,
+                    nombre,
+                    apellido,
+                    dto.getFechaNacimiento(),
+                    dto.getGenero(),
+                    dto.getTelefono(),
+                    dto.getIdCiudad()
+            );
+
+            return ResponseEntity.ok(Map.of("mensaje", "datos personales actualizados exitosamente"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("error", "error al actualizar los datos personales"));
+        }
+    }
+
+    @PostMapping("/perfil/exp-laboral/actualizar")
+    public ResponseEntity<?> actualizarExperiencia(@ModelAttribute ActualizarExperienciaLaboralDTO dto) {
+        try {
+            if (dto.getIdExpLaboral() == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "El ID de la experiencia es obligatorio para actualizar."));
+            }
+            iExpLaboralService.actualizarExpLaboral(dto);
+            return ResponseEntity.ok(Map.of("mensaje", "Experiencia laboral actualizada con éxito"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("error", "Error al actualizar la experiencia: " + e.getMessage()));
+        }
+    }
+@PostMapping("/perfil/modificar-cursos/actualizar")
+     public  ResponseEntity <?> actualizarCursos(@ModelAttribute ActualizarCursosDTO dto){
+        try{
+            if (dto.getIdCurso()==null)
+            {
+                return   ResponseEntity.badRequest().body(Map.of("error","No se pudo encontrar el ID del Curso"));
+            }
+            iCursosServices.modificarCursos(dto);
+            return  ResponseEntity.ok(Map.of("mensaje","Curso Registrado correctamente"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("error", "Error al actualizar el curso: " + e.getMessage()));
+        }
+     }
 }

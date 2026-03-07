@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "exp_laboral", schema = "usuarios")
@@ -20,17 +21,15 @@ public class exp_laboral {
 
 
     @NotNull(message = "El usuario es obligatorio")
-    @ManyToOne(fetch = FetchType.LAZY) // Lazy es mejor para rendimiento
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    @NotNull(message = "El cargo es obligatorio")
-    @ManyToOne(fetch = FetchType.EAGER) // Eager para mostrar el nombre del cargo en el frontend
-    @JoinColumn(name = "id_cargo", nullable = false)
-    private Cargo cargo;
+    @OneToMany(mappedBy = "expLaboral", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<exp_laboral_cargo> cargosAsignados;
 
     @NotNull(message = "La empresa es obligatoria")
-    @ManyToOne(fetch = FetchType.EAGER) // Eager para mostrar el nombre de la empresa
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_empresa_catalogo", nullable = false)
     private CatalogoEmpresa catalogoEmpresa;
 
@@ -42,14 +41,16 @@ public class exp_laboral {
     @Column(name = "fecha_fin")
     private LocalDate fechaFin;
 
+    @NotNull(message = "La ciudad es obligatoria")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_ciudad")
+    private Ciudad ciudad;
+
     @NotBlank(message = "La descripción es obligatoria")
     @Column(name = "descripcion", columnDefinition = "TEXT")
     private String descripcion;
 
-    @NotBlank(message = "La ubicación es obligatoria")
-    @Size(max = 100, message = "La ubicación no puede exceder los 100 caracteres")
-    @Column(name = "ubicacion", length = 100)
-    private String ubicacion;
+
 
     @Column(name = "archivo_comprobante", columnDefinition = "TEXT")
     private String archivoComprobante;

@@ -170,6 +170,7 @@
           if (this.perfil.id_provincia) {
             this.perfilService.getCiudadesPorProvincia(this.perfil.id_provincia).subscribe(res => {
               this.ciudades = res;
+              this.cdr.detectChanges();
             });
           }
 
@@ -209,8 +210,13 @@
               descripcion: e.descripcion,
               fecha_inicio: e.fecha_inicio,
               fecha_fin: e.fecha_fin,
-              ubicacion: e.ubicacion,
-              nombreArchivo: e.archivo_comprobante || ''
+
+              id_ciudad: e.id_ciudad,
+              nombre_ciudad: e.nombre_ciudad,
+              id_provincia: e.id_provincia,
+              nombre_provincia: e.nombre_provincia,
+              nombreArchivo: e.archivo_comprobante || '',
+              cargos: e.cargos || []
             }));
 
             const titulosArray = parsearJsonSeguro(data.formacionAcademica);
@@ -287,6 +293,7 @@
         return;
       }
 
+
       console.log("Enviando nueva empresa:", this.nuevaEmpresaObj);
 
       this.perfilService.crearNuevaEmpresa(this.nuevaEmpresaObj).subscribe({
@@ -327,7 +334,7 @@
 
       this.nuevoTitulo = { id_facultad: null, id_carrera: null, fechaGraduacion: '', registroSenescyt: '', archivoReferencia: null, nombreArchivo: '' };
       this.nuevoIdioma = { id_idioma: null, nivel: null, archivo: null, nombreArchivo: '' };
-      this.nuevaExperiencia = { id_empresa_catalogo: null, id_provincia: null, id_ciudad: null, ubicacion: '', fecha_inicio: '', fecha_fin: '', descripcion: '', archivo_comprobante: null, nombreArchivo: '' };
+      this.nuevaExperiencia = { id_empresa_catalogo: null, id_provincia: null, id_ciudad: null, fecha_inicio: '', fecha_fin: '', descripcion: '', archivo_comprobante: null, nombreArchivo: '' };
       this.nuevoCurso = { nombre_curso: '', institucion: '', horas_duracion: null, archivo: null, nombreArchivo: '' };
       this.cargosTemporales = [];
     }
@@ -371,6 +378,7 @@
     }
 
     subirImagen() {
+      // Usamos idUsuarioLogueado que ya tenemos validado en el ngOnInit
       if (this.archivoSeleccionado && this.idUsuarioLogueado) {
         this.perfilService.subirLogoProfesional(this.idUsuarioLogueado, this.archivoSeleccionado)
           .subscribe({
@@ -399,7 +407,6 @@
       }
       this.actualizarProgreso();
     }
-
     onFileSelected(event: any, tipo: string): void {
       const file = event.target.files[0];
       if (!file) return;
@@ -528,19 +535,21 @@
         return;
       }
 
+      // Armamos el objeto con los datos limpios que enviaremos a Java
       const payload = {
         nombreCompleto: this.perfil.nombreCompleto,
         fechaNacimiento: this.perfil.fechaNacimiento,
         genero: this.perfil.genero,
-        correo: this.perfil.correo,
         telefono: this.perfil.telefono,
-        ubicacion: this.perfil.direccion
+        idCiudad: this.perfil.id_ciudad
       };
 
+      // Llamamos al servicio (que crearemos en el paso 3)
       this.perfilService.actualizarDatosPersonales(this.idUsuarioLogueado, payload).subscribe({
         next: (res) => {
           this.notif.exito('Datos personales actualizados exitosamente.');
           this.actualizarProgreso();
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error al actualizar datos personales:', err);
@@ -595,39 +604,53 @@
     }
 
     agregarExperienciaBd(): void {
+      if (this.cargosTemporales.length === 0 || !this.nuevaExperiencia.id_empresa_catalogo || !this.nuevaExperiencia.id_ciudad) {
+        alert('⚠️ Agrega al menos un cargo, una empresa y una ciudad primero.');
       if (this.cargosTemporales.length === 0 || !this.nuevaExperiencia.id_empresa_catalogo) {
         this.notif.advertencia('Agrega un cargo y una empresa primero.');
         return;
       }
 
-      let ubicacionFinal = '';
-      if (this.nuevaExperiencia.id_provincia && this.nuevaExperiencia.id_ciudad) {
-        const prov = this.provincias.find(p => p.idProvincia == this.nuevaExperiencia.id_provincia)?.nombreProvincia || '';
-        const ciud = this.ciudadesExp.find(c => c.idCiudad == this.nuevaExperiencia.id_ciudad)?.nombreCiudad || '';
-        ubicacionFinal = `${prov} - ${ciud}`;
-      } else {
-        ubicacionFinal = this.nuevaExperiencia.ubicacion;
-      }
-
       const formData = new FormData();
-      formData.append('idCargo', this.cargosTemporales[0].id_cargo.toString());
+
+      const idsUnidos = this.cargosTemporales.map(cargo => cargo.id_cargo).join(',');
+      formData.append('cargosIds', idsUnidos);
+
       formData.append('idEmpresaCatalogo', this.nuevaExperiencia.id_empresa_catalogo.toString());
       formData.append('fechaInicio', this.nuevaExperiencia.fecha_inicio);
       if (this.nuevaExperiencia.fecha_fin) formData.append('fechaFin', this.nuevaExperiencia.fecha_fin);
       formData.append('descripcion', this.nuevaExperiencia.descripcion);
-      formData.append('ubicacion', ubicacionFinal);
+      formData.append('idCiudad', this.nuevaExperiencia.id_ciudad.toString());
       if (this.nuevaExperiencia.archivo_comprobante) formData.append('archivo', this.nuevaExperiencia.archivo_comprobante);
 
-      this.perfilService.registrarItemPerfil(this.idUsuarioLogueado, 'experiencia', formData).subscribe({
-        next: () => {
-          this.notif.exito('Experiencia guardada exitosamente.');
-          this.cargarDatosDesdeBackend();
-          this.cerrarModales();
-          this.cargosTemporales = [];
-          this.nuevaExperiencia = { id_empresa_catalogo: null, id_provincia: null, id_ciudad: null, ubicacion: '', fecha_inicio: '', fecha_fin: '', descripcion: '', archivo_comprobante: null, nombreArchivo: '' };
-        },
-        error: (err) => { console.error(err); this.notif.error('Error al guardar la experiencia.'); }
-      });
+      if (this.idEdicionExperiencia) {
+
+        formData.append('idExpLaboral', this.idEdicionExperiencia.toString());
+
+        this.perfilService.actualizarExperiencia(formData).subscribe({
+          next: () => {
+            alert('Experiencia actualizada exitosamente.');
+            this.cargarDatosDesdeBackend();
+            this.cerrarModales();
+            this.cargosTemporales = [];
+            this.nuevaExperiencia = { id_empresa_catalogo: null, id_provincia: null, id_ciudad: null, ubicacion: '', fecha_inicio: '', fecha_fin: '', descripcion: '', archivo_comprobante: null, nombreArchivo: '' };
+          },
+          error: (err) => { console.error(err); alert('Error al actualizar la experiencia.'); }
+        });
+
+      } else {
+
+        this.perfilService.registrarItemPerfil(this.idUsuarioLogueado, 'experiencia', formData).subscribe({
+          next: () => {
+            alert('Experiencia guardada exitosamente.');
+            this.cargarDatosDesdeBackend();
+            this.cerrarModales();
+            this.cargosTemporales = [];
+            this.nuevaExperiencia = { id_empresa_catalogo: null, id_provincia: null, id_ciudad: null, ubicacion: '', fecha_inicio: '', fecha_fin: '', descripcion: '', archivo_comprobante: null, nombreArchivo: '' };
+          },
+          error: (err) => { console.error(err); alert('Error al guardar la experiencia.'); }
+        });
+      }
     }
 
     agregarCursoBd(): void {
@@ -642,17 +665,39 @@
       if (this.nuevoCurso.horas_duracion) formData.append('horasDuracion', this.nuevoCurso.horas_duracion.toString());
       if (this.nuevoCurso.archivo) formData.append('archivo', this.nuevoCurso.archivo);
 
-      this.perfilService.registrarItemPerfil(this.idUsuarioLogueado, 'curso', formData).subscribe({
-        next: () => {
-          this.notif.exito('Curso guardado exitosamente.');
-          this.cargarDatosDesdeBackend();
-          this.cerrarModales();
-          this.nuevoCurso = { nombre_curso: '', institucion: '', horas_duracion: null, archivo: null, nombreArchivo: '' };
-        },
-        error: (err) => { console.error(err); this.notif.error('Error al guardar el curso.'); }
-      });
-    }
+      if (this.idEdicionCurso) {
 
+        formData.append('idCurso', this.idEdicionCurso.toString());
+
+        this.perfilService.actualizarCurso(formData).subscribe({
+          next: () => {
+            alert('Curso actualizado exitosamente.');
+            this.cargarDatosDesdeBackend();
+            this.cerrarModales();
+            this.nuevoCurso = { nombre_curso: '', institucion: '', horas_duracion: null, archivo: null, nombreArchivo: '' };
+          },
+          error: (err) => {
+            console.error(err);
+            alert('Error al actualizar el curso.');
+          }
+        });
+
+      } else {
+
+        this.perfilService.registrarItemPerfil(this.idUsuarioLogueado, 'curso', formData).subscribe({
+          next: () => {
+            alert('Curso guardado exitosamente.');
+            this.cargarDatosDesdeBackend();
+            this.cerrarModales();
+            this.nuevoCurso = { nombre_curso: '', institucion: '', horas_duracion: null, archivo: null, nombreArchivo: '' };
+          },
+          error: (err) => {
+            console.error(err);
+            alert('Error al guardar el curso.');
+          }
+        });
+      }
+    }
     editarTitulo(titulo: any) {
       this.idEdicionAcademica = titulo.id_academico;
       this.nuevoTitulo = {
@@ -663,8 +708,15 @@
         archivoReferencia: null,
         nombreArchivo: titulo.nombreArchivo
       };
-      this.onFacultadNuevaChange();
+      if (titulo.id_facultad) {
+        this.perfilService.getCarrerasPorFacultad(titulo.id_facultad).subscribe(res => {
+          this.carrerasNuevoTitulo = res;
+          this.nuevoTitulo.id_carrera = titulo.id_carrera;
+          this.cdr.detectChanges();
+        });
+      }
       this.abrirModalAcademica();
+
     }
 
     editarIdioma(idioma: any) {
@@ -682,18 +734,22 @@
       this.idEdicionExperiencia = exp.id_exp_laboral;
       this.nuevaExperiencia = {
         id_empresa_catalogo: exp.id_empresa_catalogo,
-        id_provincia: null,
-        id_ciudad: null,
-        ubicacion: exp.ubicacion,
+        id_provincia: exp.id_provincia,
+        id_ciudad: exp.id_ciudad,
         fecha_inicio: exp.fecha_inicio,
         fecha_fin: exp.fecha_fin,
         descripcion: exp.descripcion,
         archivo_comprobante: null,
         nombreArchivo: exp.nombreArchivo
       };
-
-
-      this.cargosTemporales = [{ id_cargo: exp.id_cargo, nombre_cargo: exp.nombre_cargo }];
+      if (exp.id_provincia) {
+        this.perfilService.getCiudadesPorProvincia(exp.id_provincia).subscribe(res => {
+          this.ciudadesExp = res;
+          this.nuevaExperiencia.id_ciudad = exp.id_ciudad;
+          this.cdr.detectChanges();
+        });
+      }
+      this.cargosTemporales = exp.cargos ? [...exp.cargos] : [];
       this.abrirModalExperiencia();
     }
 

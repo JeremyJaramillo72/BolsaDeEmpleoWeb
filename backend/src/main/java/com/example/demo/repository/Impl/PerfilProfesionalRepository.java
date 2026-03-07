@@ -37,6 +37,8 @@ public class PerfilProfesionalRepository {
             return dto;
         }, idUsuario);
     }
+
+
     public void registrarItemPerfil(Long idUsuario, String tipoItem, String jsonDatos, String urlArchivo) {
 
         String sql = "select usuarios.fn_registrar_item_perfil(?, ?, ?::jsonb, ?)";

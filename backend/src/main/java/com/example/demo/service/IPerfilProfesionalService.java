@@ -12,4 +12,6 @@ public interface IPerfilProfesionalService {
     void eliminarItem(Long idUsuario, String tipoItem, Integer idItem);
     Integer RegistrarCatalogoEmpresa(String nombreEmpresa,String ruc,Integer idcategoria);
     Integer RegistrarCargo(String cargo);
+     void actualizarDatosPersonales(Long idUsuario, String nombre, String apellido, String fechaNacimientoStr, String genero,  String telefono, Integer idCiudad);
+
 }
