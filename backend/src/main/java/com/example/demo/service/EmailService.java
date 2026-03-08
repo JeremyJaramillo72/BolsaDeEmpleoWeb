@@ -88,6 +88,20 @@ public class EmailService {
         }
     }
 
+    public void notificarAprobacionEmpresa(String correoEmpresa, String nombreEmpresa) {
+        try {
+            MimeMessage mensaje = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
+            helper.setFrom("kespanav@uteq.edu.ec");
+            helper.setTo(correoEmpresa);
+            helper.setSubject("✅ Tu Empresa ha sido Aprobada - Bolsa de Empleos");
+            helper.setText(generarTemplateAprobacionEmpresa(nombreEmpresa), true);
+            mailSender.send(mensaje);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
+
     // ==================== TEMPLATES HTML ====================
 
     private String generarTemplateCodigoVerificacion(String codigo) {
@@ -256,6 +270,46 @@ public class EmailService {
             "</div>" +
             "<div class=\"accion\"><strong>⚠️ Acciones Recomendadas</strong><br>Si no fuiste quien inició sesión, cambia tu contraseña inmediatamente y contacta a soporte.</div>" +
             "<p class=\"descripcion\">Para tu seguridad, no compartimos contraseñas por correo. Si sospechas de una actividad fraudulenta, accede a tu cuenta directamente desde la plataforma web y cambia tu contraseña.</p>" +
+            "</div>" +
+            "<div class=\"footer\"><p><strong>Bolsa de Empleos UTEQ</strong></p>" +
+            "<p>© 2026 Universidad Técnica Estatal de Quevedo</p>" +
+            "<p>Todos los derechos reservados</p></div></div></body></html>";
+    }
+
+    private String generarTemplateAprobacionEmpresa(String nombreEmpresa) {
+        return "<html lang=\"es\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><style>" +
+            "body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f7fa; margin: 0; padding: 0; }" +
+            ".container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.12); }" +
+            ".header { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); padding: 50px 30px; text-align: center; color: white; }" +
+            ".header .icono { font-size: 56px; margin-bottom: 15px; }" +
+            ".header h1 { margin: 0; font-size: 26px; font-weight: 700; }" +
+            ".content { padding: 40px 30px; }" +
+            ".greeting { color: #1e293b; font-size: 16px; margin-bottom: 20px; }" +
+            ".success-box { background-color: #f0fdf4; border-left: 4px solid #16a34a; padding: 20px; border-radius: 8px; margin: 25px 0; }" +
+            ".success-label { color: #64748b; font-size: 12px; font-weight: 600; text-transform: uppercase; margin-bottom: 5px; }" +
+            ".success-mensaje { color: #15803d; font-size: 16px; font-weight: 700; line-height: 1.6; }" +
+            ".descripcion { color: #64748b; font-size: 14px; line-height: 1.6; margin: 15px 0; }" +
+            ".boton { display: inline-block; background-color: #16a34a; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: 600; margin: 20px 0; text-align: center; }" +
+            ".footer { background-color: #f8fafc; padding: 25px 30px; text-align: center; border-top: 1px solid #e2e8f0; }" +
+            ".footer p { color: #94a3b8; font-size: 12px; margin: 5px 0; }" +
+            "</style></head><body>" +
+            "<div class=\"container\">" +
+            "<div class=\"header\"><div class=\"icono\">✅</div>" +
+            "<h1>¡Empresa Aprobada!</h1></div>" +
+            "<div class=\"content\">" +
+            "<p class=\"greeting\">Estimado <strong>" + nombreEmpresa + "</strong>,</p>" +
+            "<p class=\"descripcion\">Nos complace informarte que tu empresa ha sido <strong>aprobada oficialmente</strong> en la Bolsa de Empleos UTEQ.</p>" +
+            "<div class=\"success-box\">" +
+            "<div class=\"success-label\">Estado</div>" +
+            "<div class=\"success-mensaje\">✓ Aprobado - Acceso Activo</div></div>" +
+            "<p class=\"descripcion\"><strong>¿Qué puedes hacer ahora?</strong></p>" +
+            "<ul style=\"color: #64748b; font-size: 14px; line-height: 1.8;\">" +
+            "<li>✓ Iniciar sesión en tu cuenta empresarial</li>" +
+            "<li>✓ Publicar ofertas de empleo</li>" +
+            "<li>✓ Revisar postulaciones de candidatos</li>" +
+            "<li>✓ Contactar con candidatos interesados</li>" +
+            "</ul>" +
+            "<p class=\"descripcion\">Si tienes alguna duda o necesitas ayuda, no dudes en contactar a nuestro equipo de soporte.</p>" +
             "</div>" +
             "<div class=\"footer\"><p><strong>Bolsa de Empleos UTEQ</strong></p>" +
             "<p>© 2026 Universidad Técnica Estatal de Quevedo</p>" +

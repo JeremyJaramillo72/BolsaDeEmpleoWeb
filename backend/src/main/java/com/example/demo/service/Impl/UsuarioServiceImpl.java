@@ -4,6 +4,8 @@ import com.example.demo.model.Usuario;
 import com.example.demo.repository.SeguridadDbRepository;
 import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.service.IUsuarioService;
+import com.example.demo.service.NotificacionService;
+import com.example.demo.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class UsuarioServiceImpl implements IUsuarioService {
@@ -27,6 +31,13 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private NotificacionService notificacionService;
+
+    @Autowired
+    private EmailService emailService;
+
     // Clave única acordada con el ingeniero
     private static final String CLAVE_UNICA_BD = "Uteq_2026_Secure";
 
@@ -159,14 +170,59 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 usuarioGuardado.getIdUsuario().intValue(),
                 2 // ID del rol Empresa
         );
+
+        // Notificar a admins sobre nueva empresa registrada
+        try {
+            Map<String, String> variables = new java.util.HashMap<>();
+            variables.put("nombreEmpresa", nombreEmp);
+
+            Map<String, Object> datos = new java.util.HashMap<>();
+            datos.put("idUsuarioEmpresa", usuarioGuardado.getIdUsuario());
+            datos.put("nombreEmpresa", nombreEmp);
+
+            notificacionService.notificarAdminsDirecto(
+                    "empresa_pendiente_aprobacion",
+                    variables,
+                    datos,
+                    "/menu-principal/PanelAdmi/AprobacionEmpresas",
+                    "domain"
+            );
+        } catch (Exception e) {
+            System.err.println("⚠️ Warning - Notificación empresa no guardada: " + e.getMessage());
+        }
     }
     @Override
+    @Transactional
     public void cambiarEstadoUsuario(Long idUsuario, String nuevoEstado) {
         Usuario usuario = usuarioRepository.findById(idUsuario)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         usuario.setEstadoValidacion(nuevoEstado);
-        usuarioRepository.save(usuario);
-    }
+        Usuario usuarioActualizado = usuarioRepository.save(usuario);
 
+        // Si la empresa fue aprobada, crear notificación
+        if ("activo".equalsIgnoreCase(nuevoEstado) || "aprobado".equalsIgnoreCase(nuevoEstado)) {
+            try {
+                Map<String, String> variables = new java.util.HashMap<>();
+
+                Map<String, Object> datos = new java.util.HashMap<>();
+                datos.put("idEmpresa", usuarioActualizado.getIdUsuario());
+
+                String enlace = "/menu-principal/gestion-ofertas";
+
+                System.out.println("✅ Creando notificación de empresa aprobada para usuario: " + idUsuario);
+                notificacionService.crearYEnviarNotificacion(
+                        idUsuario,
+                        "empresa_aprobada",
+                        variables,
+                        datos,
+                        enlace,
+                        "check_circle"
+                );
+            } catch (Exception e) {
+                System.err.println("❌ Error al crear notificación de empresa aprobada: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
 }

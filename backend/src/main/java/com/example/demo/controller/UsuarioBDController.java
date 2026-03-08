@@ -3,30 +3,34 @@ package com.example.demo.controller;
 import com.example.demo.model.Usuario;
 import com.example.demo.repository.RolesRepository;
 import com.example.demo.model.Roles;
+import com.example.demo.service.EmailService;
 import java.util.List;
 import com.example.demo.repository.UsuarioImagenRepository;
 import com.example.demo.repository.UsuarioRepository;
 import java.util.Arrays;
 import java.util.Map;
 import com.example.demo.service.IUsuarioService;
+import com.example.demo.service.Impl.UsuarioServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/usuarios-bd")
+@RequestMapping("/api/usuarios-bd") // Ruta actualizada para mayor claridad
 @CrossOrigin(origins = "*")
 public class UsuarioBDController {
 
     @Autowired
     private IUsuarioService usuarioService;
-
     @Autowired
     private RolesRepository rolesRepository;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     @Autowired
     private UsuarioImagenRepository usuarioImagenRepository;
@@ -46,6 +50,11 @@ public class UsuarioBDController {
     @GetMapping("/roles")
     public ResponseEntity<List<Roles>> listarRoles() {
         List<Roles> roles = rolesRepository.findAll();
+        System.out.println("\n=== DEBUG: ROLES EN LA BD ===");
+        for (Roles rol : roles) {
+            System.out.println("ID: " + rol.getIdRol() + " | Nombre: '" + rol.getNombreRol() + "'");
+        }
+        System.out.println("=== FIN DEBUG ===\n");
         return ResponseEntity.ok(roles);
     }
 
@@ -55,10 +64,50 @@ public class UsuarioBDController {
         return ResponseEntity.ok(admins);
     }
 
-    @PutMapping("/cambiar-estado/{id}")
+    @GetMapping("/debug-usuarios-por-rol")
+    public ResponseEntity<?> debugUsuariosPorRol() {
+        try {
+            StringBuilder sb = new StringBuilder();
+            sb.append("\n=== DEBUG: USUARIOS POR ROL ===\n");
+
+            List<Roles> roles = rolesRepository.findAll();
+            for (Roles rol : roles) {
+                List<Usuario> usuarios = usuarioRepository.findByRol_NombreRol(rol.getNombreRol());
+                sb.append("ROL: '").append(rol.getNombreRol()).append("' (ID: ").append(rol.getIdRol()).append(")\n");
+                sb.append("  Usuarios encontrados: ").append(usuarios.size()).append("\n");
+                for (Usuario u : usuarios) {
+                    sb.append("    - ID: ").append(u.getIdUsuario()).append(" | Nombre: ").append(u.getNombre()).append("\n");
+                }
+            }
+            sb.append("=== FIN DEBUG ===\n");
+
+            String resultado = sb.toString();
+            System.out.println(resultado);
+            return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+        }
+    }
     public ResponseEntity<?> cambiarEstado(@PathVariable Long id, @RequestParam String estado) {
         try {
+            // 1. Cambiar estado en BD (dentro de transacción + guardar notificación)
             usuarioService.cambiarEstadoUsuario(id, estado);
+
+            // 2. Enviar email FUERA de la transacción (si falla, el estado ya está guardado)
+            if ("activo".equalsIgnoreCase(estado) || "aprobado".equalsIgnoreCase(estado)) {
+                try {
+                    Usuario usuario = usuarioRepository.findById(id)
+                            .orElse(null);
+                    if (usuario != null) {
+                        emailService.notificarAprobacionEmpresa(usuario.getCorreo(), usuario.getNombre());
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error enviando email de aprobación: " + e.getMessage());
+                    // No lanzar excepción, el estado ya está guardado en BD
+                }
+            }
+
             return ResponseEntity.ok("Estado actualizado a: " + estado);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

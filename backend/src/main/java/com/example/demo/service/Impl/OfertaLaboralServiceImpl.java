@@ -1,7 +1,9 @@
 package com.example.demo.service.Impl;
 
-import aj.org.objectweb.asm.TypeReference;
-import com.example.demo.dto.*;
+import com.example.demo.dto.IOfertaResumen;
+import com.example.demo.dto.NuevaEmpresaAdminDTO;
+import com.example.demo.dto.OfertaExtraInfoDTO;
+import com.example.demo.dto.OfertaLaboralDTO;
 import com.example.demo.model.*;
 import com.example.demo.repository.*;
 import com.example.demo.repository.Views.IOfertaDetallada;
@@ -14,6 +16,7 @@ import com.example.demo.service.NotificacionService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +36,7 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
     private final UsuarioRepository usuarioRepository;
     private final ObjectMapper objectMapper;
     private final NotificacionService notificacionService;
+    private final JdbcTemplate jdbcTemplate;
     private final AzureStorageConfig azureStorageConfig;
     private final   PasswordEncoder passwordEncoder;
 
@@ -106,28 +110,27 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
             );
 
 
+            // Notificar a admins sobre nueva oferta pendiente
             try {
-                String nombreEmpresa = "Empresa";
-                UsuarioEmpresa empresa = usuarioEmpresaRepository.findById(dto.getIdEmpresa()).orElse(null);
-                if (empresa != null && empresa.getUsuario() != null) {
-                    nombreEmpresa = empresa.getUsuario().getNombre();
-                }
+                Map<String, String> variables = new java.util.HashMap<>();
+                variables.put("empresa", dto.getIdEmpresa().toString()); // o el nombre si lo tienes
+                variables.put("titulo", dto.getTitulo());
 
-                Map<String, String> variables = Map.of(
-                        "empresa", nombreEmpresa,
-                        "titulo", dto.getTitulo()
+                Map<String, Object> datos = new java.util.HashMap<>();
+                datos.put("idEmpresa", dto.getIdEmpresa());
+                datos.put("titulo", dto.getTitulo());
+
+                notificacionService.notificarAdminsDirecto(
+                        "oferta_pendiente",
+                        variables,
+                        datos,
+                        "/menu-principal/PanelAdmi/ValidarOfertas",
+                        "assignment_late"
                 );
-                Map<String, Object> datos = Map.of("idEmpresa", dto.getIdEmpresa());
-                String enlace = "/menu-principal/PanelAdmi/ValidarOfertas";
-
-                for (String rol : List.of("ADMINISTRADOR", "SUPERVISOR", "GERENTE")) {
-                    notificacionService.notificarUsuariosPorRol(
-                            rol, "oferta_pendiente", variables, datos, enlace, "assignment_late"
-                    );
-                }
             } catch (Exception e) {
-                System.err.println("Error al notificar admins sobre oferta pendiente: " + e.getMessage());
+                System.err.println("⚠️ Warning - Notificación oferta pendiente no guardada: " + e.getMessage());
             }
+
         } else {
             ofertaRepository.actualizarOferta(
                     dto.getIdOferta(),
@@ -200,14 +203,18 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
                     Long idUsuarioEmpresa = ((Number) fila[0]).longValue();
                     String tituloOferta = (String) fila[1];
 
+                    Map<String, String> variablesOferta = new java.util.HashMap<>();
+                    variablesOferta.put("titulo", tituloOferta);
+                    variablesOferta.put("estado", nuevoEstado);
+
+                    Map<String, Object> datosOferta = new java.util.HashMap<>();
+                    datosOferta.put("idOferta", idOferta);
+
                     notificacionService.crearYEnviarNotificacion(
                             idUsuarioEmpresa,
                             "oferta_aprobada",
-                            Map.of(
-                                    "titulo", tituloOferta,
-                                    "estado", nuevoEstado
-                            ),
-                            Map.of("idOferta", idOferta),
+                            variablesOferta,
+                            datosOferta,
                             "/menu-principal/gestion-ofertas",
                             "campaign"
                     );
@@ -244,21 +251,23 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
 
                             System.out.println(">>> ZONA: Notificando a " + nombrePost + " " + apellidoPost + " (id=" + idPostulante + ")");
 
+                            Map<String, String> variablesZona = new java.util.HashMap<>();
+                            variablesZona.put("nombre", nombrePost + " " + (apellidoPost != null ? apellidoPost : ""));
+                            variablesZona.put("titulo", tituloOfertaZona);
+                            variablesZona.put("provincia", nombreProvincia);
+
+                            Map<String, Object> datosZona = new java.util.HashMap<>();
+                            datosZona.put("idOferta", idOferta);
+                            datosZona.put("ciudad", nombreCiudad);
+                            datosZona.put("provincia", nombreProvincia);
+                            datosZona.put("idCiudad", idCiudad);
+                            datosZona.put("idProvincia", idProvincia);
+
                             notificacionService.crearYEnviarNotificacion(
                                     idPostulante,
                                     "nueva_oferta_zona",
-                                    Map.of(
-                                            "nombre", nombrePost + " " + (apellidoPost != null ? apellidoPost : ""),
-                                            "titulo", tituloOfertaZona,
-                                            "provincia", nombreProvincia
-                                    ),
-                                    Map.of(
-                                            "idOferta", idOferta,
-                                            "ciudad", nombreCiudad,
-                                            "provincia", nombreProvincia,
-                                            "idCiudad", idCiudad,
-                                            "idProvincia", idProvincia
-                                    ),
+                                    variablesZona,
+                                    datosZona,
                                     "/menu-principal/Busqueda/empleo",
                                     "location_on"
                             );

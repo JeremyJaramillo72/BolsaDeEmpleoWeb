@@ -108,4 +108,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     @Query(value = "select * from usuarios.fn_obtener_usuarios_historico()", nativeQuery = true)
     List<Object[]> getHistoric12MonthsAllUsers();
+
+    @Query("SELECT COUNT(u) FROM Usuario u WHERE u.estadoValidacion = :estado")
+    long countByEstadoValidacion(@Param("estado") String estado);
 }
