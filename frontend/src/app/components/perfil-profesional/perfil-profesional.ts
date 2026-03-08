@@ -405,7 +405,7 @@
     }
 
     subirImagen() {
-      // Usamos idUsuarioLogueado que ya tenemos validado en el ngOnInit
+
       if (this.archivoSeleccionado && this.idUsuarioLogueado) {
         this.perfilService.subirLogoProfesional(this.idUsuarioLogueado, this.archivoSeleccionado)
           .subscribe({
@@ -862,6 +862,9 @@
       }
       this.cargosTemporales = exp.cargos ? [...exp.cargos] : [];
       this.abrirModalExperiencia();
+
+
+      this.busquedaEmpresaTexto = exp.nombre_empresa;
     }
 
     editarCurso(curso: any) {
