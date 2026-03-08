@@ -134,8 +134,22 @@ export class OfertaService {
     return this.http.get<any>(`${this.apiUrl}/${idOferta}/extra`);
   }
 
-  obtenerPerfilPostulante(idPostulacion: number): Observable<any> {
-    return this.http.get<any>(`http://localhost:8080/api/revision-postulante/postulaciones/${idPostulacion}/resumen`);
+
+  // ── Métodos por sección ──────────────────────────────────────────────
+  obtenerPerfilBase(idPostulacion: number): Observable<any> {
+    return this.http.get<any>(`http://localhost:8080/api/revision-postulante/postulaciones/${idPostulacion}/perfil-base`);
+  }
+  obtenerFormacion(idPostulacion: number): Observable<any[]> {
+    return this.http.get<any[]>(`http://localhost:8080/api/revision-postulante/postulaciones/${idPostulacion}/formacion`);
+  }
+  obtenerExperiencia(idPostulacion: number): Observable<any[]> {
+    return this.http.get<any[]>(`http://localhost:8080/api/revision-postulante/postulaciones/${idPostulacion}/experiencia`);
+  }
+  obtenerCursos(idPostulacion: number): Observable<any[]> {
+    return this.http.get<any[]>(`http://localhost:8080/api/revision-postulante/postulaciones/${idPostulacion}/cursos`);
+  }
+  obtenerIdiomas(idPostulacion: number): Observable<any[]> {
+    return this.http.get<any[]>(`http://localhost:8080/api/revision-postulante/postulaciones/${idPostulacion}/idiomas`);
   }
 
   toggleFavorita(idOferta: number, idUsuario: number): Observable<any> {

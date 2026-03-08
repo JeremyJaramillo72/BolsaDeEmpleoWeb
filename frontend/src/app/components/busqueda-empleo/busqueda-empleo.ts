@@ -264,10 +264,30 @@ export class BusquedaEmpleoComponent implements OnInit {
     this.isDragOver = false;
   }
 
+  private readonly MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
+  private validarArchivo(file: File): boolean {
+    if (file.type !== 'application/pdf') {
+      this.ui.error('Solo se permiten archivos PDF.');
+      return false;
+    }
+    if (file.size > this.MAX_FILE_SIZE) {
+      this.ui.error(`El archivo excede el límite de 10 MB (tamaño: ${(file.size / 1024 / 1024).toFixed(1)} MB).`);
+      return false;
+    }
+    return true;
+  }
+
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files?.length) {
-      this.archivoSeleccionado = input.files[0];
+      const file = input.files[0];
+      if (this.validarArchivo(file)) {
+        this.archivoSeleccionado = file;
+      } else {
+        input.value = '';
+        this.archivoSeleccionado = null;
+      }
     }
   }
 
@@ -285,8 +305,11 @@ export class BusquedaEmpleoComponent implements OnInit {
     event.preventDefault();
     this.isDragOver = false;
     const files = event.dataTransfer?.files;
-    if (files?.length && files[0].type === 'application/pdf') {
-      this.archivoSeleccionado = files[0];
+    if (files?.length) {
+      const file = files[0];
+      if (this.validarArchivo(file)) {
+        this.archivoSeleccionado = file;
+      }
     }
   }
 

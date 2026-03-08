@@ -199,10 +199,13 @@
               <span class="material-icons">calendar_today</span>
               Postulado el {{ perfilModal.fechaPostulacion | date:'dd/MM/yyyy' }}
             </p>
+            <p *ngIf="perfilModal.nombreEmpresa">
+              <span class="material-icons">business</span> {{ perfilModal.nombreEmpresa }}
+            </p>
           </div>
           <div class="cv-wrap" *ngIf="perfilModal.archivoCv">
             <button class="btn-ver-cv" (click)="abrirDocumento(perfilModal.archivoCv)">
-              <span class="material-icons">picture_as_pdf</span> Ver documento
+              <span class="material-icons">picture_as_pdf</span> Ver CV
             </button>
           </div>
         </div>
@@ -223,23 +226,23 @@
           </h4>
           <div class="item-validacion" *ngFor="let f of perfilModal.formacionAcademica">
             <div class="item-val-header">
-              <span class="item-val-icon material-icons" [ngClass]="getEstadoItemClass(f.estado_v)">
-                {{ getEstadoItemIcon(f.estado_v) }}
+              <span class="item-val-icon material-icons" [ngClass]="getEstadoItemClass(f.estadoV)">
+                {{ getEstadoItemIcon(f.estadoV) }}
               </span>
               <div class="item-val-info">
                 <strong>{{ f.nombre }}</strong>
               </div>
               <div class="item-val-actions">
                 <button class="btn-doc-mini" *ngIf="f.archivo" (click)="abrirDocumento(f.archivo)" title="Ver título">
-                  <span class="material-icons">attach_file</span>
+                  <span class="material-icons">picture_as_pdf</span>
                 </button>
-                <span class="estado-chip" [ngClass]="getEstadoItemClass(f.estado_v)">
-                  {{ f.estado_v ?? 'Pendiente' | titlecase }}
+                <span class="estado-chip" [ngClass]="getEstadoItemClass(f.estadoV)">
+                  {{ (f.estadoV ?? 'Pendiente') | titlecase }}
                 </span>
               </div>
             </div>
-            <p class="item-val-observacion" *ngIf="f.observacion_v">
-              <span class="material-icons">subdirectory_arrow_right</span>{{ f.observacion_v }}
+            <p class="item-val-observacion" *ngIf="f.observacionV">
+              <span class="material-icons">subdirectory_arrow_right</span>{{ f.observacionV }}
             </p>
           </div>
         </div>
@@ -251,23 +254,23 @@
           </h4>
           <div class="item-validacion" *ngFor="let e of perfilModal.experienciaLaboral">
             <div class="item-val-header">
-              <span class="item-val-icon material-icons" [ngClass]="getEstadoItemClass(e.estado_v)">
-                {{ getEstadoItemIcon(e.estado_v) }}
+              <span class="item-val-icon material-icons" [ngClass]="getEstadoItemClass(e.estadoV)">
+                {{ getEstadoItemIcon(e.estadoV) }}
               </span>
               <div class="item-val-info">
                 <strong>{{ e.nombre }}</strong>
               </div>
               <div class="item-val-actions">
                 <button class="btn-doc-mini" *ngIf="e.archivo" (click)="abrirDocumento(e.archivo)" title="Ver comprobante">
-                  <span class="material-icons">attach_file</span>
+                  <span class="material-icons">picture_as_pdf</span>
                 </button>
-                <span class="estado-chip" [ngClass]="getEstadoItemClass(e.estado_v)">
-                  {{ e.estado_v ?? 'Pendiente' | titlecase }}
+                <span class="estado-chip" [ngClass]="getEstadoItemClass(e.estadoV)">
+                  {{ (e.estadoV ?? 'Pendiente') | titlecase }}
                 </span>
               </div>
             </div>
-            <p class="item-val-observacion" *ngIf="e.observacion_v">
-              <span class="material-icons">subdirectory_arrow_right</span>{{ e.observacion_v }}
+            <p class="item-val-observacion" *ngIf="e.observacionV">
+              <span class="material-icons">subdirectory_arrow_right</span>{{ e.observacionV }}
             </p>
           </div>
         </div>
@@ -279,23 +282,23 @@
           </h4>
           <div class="item-validacion" *ngFor="let c of perfilModal.cursosRealizados">
             <div class="item-val-header">
-              <span class="item-val-icon material-icons" [ngClass]="getEstadoItemClass(c.estado_v)">
-                {{ getEstadoItemIcon(c.estado_v) }}
+              <span class="item-val-icon material-icons" [ngClass]="getEstadoItemClass(c.estadoV)">
+                {{ getEstadoItemIcon(c.estadoV) }}
               </span>
               <div class="item-val-info">
                 <strong>{{ c.nombre }}</strong>
               </div>
               <div class="item-val-actions">
                 <button class="btn-doc-mini" *ngIf="c.archivo" (click)="abrirDocumento(c.archivo)" title="Ver certificado">
-                  <span class="material-icons">attach_file</span>
+                  <span class="material-icons">picture_as_pdf</span>
                 </button>
-                <span class="estado-chip" [ngClass]="getEstadoItemClass(c.estado_v)">
-                  {{ c.estado_v ?? 'Pendiente' | titlecase }}
+                <span class="estado-chip" [ngClass]="getEstadoItemClass(c.estadoV)">
+                  {{ (c.estadoV ?? 'Pendiente') | titlecase }}
                 </span>
               </div>
             </div>
-            <p class="item-val-observacion" *ngIf="c.observacion_v">
-              <span class="material-icons">subdirectory_arrow_right</span>{{ c.observacion_v }}
+            <p class="item-val-observacion" *ngIf="c.observacionV">
+              <span class="material-icons">subdirectory_arrow_right</span>{{ c.observacionV }}
             </p>
           </div>
         </div>
@@ -307,28 +310,28 @@
           </h4>
           <div class="item-validacion" *ngFor="let i of perfilModal.idiomas">
             <div class="item-val-header">
-              <span class="item-val-icon material-icons" [ngClass]="getEstadoItemClass(i.estado_v)">
-                {{ getEstadoItemIcon(i.estado_v) }}
+              <span class="item-val-icon material-icons" [ngClass]="getEstadoItemClass(i.estadoV)">
+                {{ getEstadoItemIcon(i.estadoV) }}
               </span>
               <div class="item-val-info">
                 <strong>{{ i.nombre }}</strong>
               </div>
               <div class="item-val-actions">
                 <button class="btn-doc-mini" *ngIf="i.archivo" (click)="abrirDocumento(i.archivo)" title="Ver certificado">
-                  <span class="material-icons">attach_file</span>
+                  <span class="material-icons">picture_as_pdf</span>
                 </button>
-                <span class="estado-chip" [ngClass]="getEstadoItemClass(i.estado_v)">
-                  {{ i.estado_v ?? 'Pendiente' | titlecase }}
+                <span class="estado-chip" [ngClass]="getEstadoItemClass(i.estadoV)">
+                  {{ (i.estadoV ?? 'Pendiente') | titlecase }}
                 </span>
               </div>
             </div>
-            <p class="item-val-observacion" *ngIf="i.observacion_v">
-              <span class="material-icons">subdirectory_arrow_right</span>{{ i.observacion_v }}
+            <p class="item-val-observacion" *ngIf="i.observacionV">
+              <span class="material-icons">subdirectory_arrow_right</span>{{ i.observacionV }}
             </p>
           </div>
         </div>
 
-        <!-- Sin ítems -->
+        <!-- Sin ítems validados aún -->
         <p class="modal-empty"
            *ngIf="!perfilModal.formacionAcademica?.length && !perfilModal.experienciaLaboral?.length
                   && !perfilModal.cursosRealizados?.length && !perfilModal.idiomas?.length">

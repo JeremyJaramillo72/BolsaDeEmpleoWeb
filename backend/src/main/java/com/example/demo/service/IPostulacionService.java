@@ -3,7 +3,8 @@ package com.example.demo.service;
 import com.example.demo.dto.ItemEvaluacionDTO;
 import com.example.demo.dto.PerfilPostulanteDTO;
 import com.example.demo.dto.PostulanteResumenDTO;
-import com.example.demo.dto.ResumenPostulacionDTO;
+import com.example.demo.dto.ResumenPerfilBaseDTO;
+import com.example.demo.dto.ResumenSeccionDTO;
 import com.example.demo.repository.Views.IMisPostulaciones;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,6 +18,10 @@ public interface IPostulacionService {
     List<PostulanteResumenDTO> listarCandidatosPorOferta(Long idOferta);
     void evaluarItemIndividual(Long idPostulacion, ItemEvaluacionDTO dto);
     void evaluarPostulacionGeneral(Long idPostulacion, String estado, String mensaje);
-    ResumenPostulacionDTO obtenerResumenPostulacion(Long idPostulacion);
     List<IMisPostulaciones> listarMisPostulaciones(Long idUsuario);
+    ResumenPerfilBaseDTO obtenerPerfilBase(Long idPostulacion);
+    List<ResumenSeccionDTO> obtenerFormacion(Long idPostulacion);
+    List<ResumenSeccionDTO> obtenerExperiencia(Long idPostulacion);
+    List<ResumenSeccionDTO> obtenerCursos(Long idPostulacion);
+    List<ResumenSeccionDTO> obtenerIdiomas(Long idPostulacion);
 }

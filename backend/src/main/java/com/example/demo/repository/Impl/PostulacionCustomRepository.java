@@ -2,7 +2,8 @@ package com.example.demo.repository.Impl;
 
 import com.example.demo.dto.PerfilPostulanteDTO;
 import com.example.demo.dto.PostulanteResumenDTO;
-import com.example.demo.dto.ResumenPostulacionDTO;
+import com.example.demo.dto.ResumenPerfilBaseDTO;
+import com.example.demo.dto.ResumenSeccionDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -36,7 +37,7 @@ public class PostulacionCustomRepository {
             dto.setIdiomas(rs.getString("idiomas"));
             dto.setEstadoPostulacion(rs.getString("estado_postulacion"));
             dto.setMensajeEvaluacion(rs.getString("mensaje_evaluacion"));
-
+            try { dto.setNombreEmpresa(rs.getString("nombre_empresa")); } catch (Exception ignored) {}
             return dto;
         }, idPostulacion);
 
@@ -69,25 +70,56 @@ public class PostulacionCustomRepository {
         jdbcTemplate.queryForList(sql, idPostulacion, estado, mensaje);
     }
 
-    public ResumenPostulacionDTO obtenerResumenPostulacion(Long idPostulacion) {
-        String sql = "select * from postulaciones.fn_resumen_postulacion(?)";
-        List<ResumenPostulacionDTO> resultados = jdbcTemplate.query(sql, (rs, rowNum) -> {
-            ResumenPostulacionDTO dto = new ResumenPostulacionDTO();
-            dto.setNombre(rs.getString("nombre"));
-            dto.setApellido(rs.getString("apellido"));
-            dto.setCorreo(rs.getString("correo"));
-            dto.setUrlFotoPerfil(rs.getString("url_foto_perfil"));
-            dto.setArchivoCv(rs.getString("archivo_cv"));
-            dto.setFechaPostulacion(rs.getTimestamp("fecha_postulacion"));
-            dto.setEstadoPostulacion(rs.getString("estado_postulacion"));
-            dto.setMensajeEvaluacion(rs.getString("mensaje_evaluacion"));
-            dto.setFormacionAcademica(rs.getString("formacion_academica"));
-            dto.setExperienciaLaboral(rs.getString("experiencia_laboral"));
-            dto.setCursosRealizados(rs.getString("cursos_realizados"));
-            dto.setIdiomas(rs.getString("idiomas"));
-            dto.setNombreEmpresa(rs.getString("nombre_empresa"));
+    // ── Métodos por sección ──────────────────────────────────────────────
+
+    public ResumenPerfilBaseDTO obtenerPerfilBase(Long idPostulacion) {
+        String sql = "select * from postulaciones.fn_resumen_perfil_base(?)";
+        List<ResumenPerfilBaseDTO> res = jdbcTemplate.query(sql, (rs, rowNum) -> {
+            ResumenPerfilBaseDTO dto = new ResumenPerfilBaseDTO();
+            dto.setNombre(rs.getString("p_nombre"));
+            dto.setApellido(rs.getString("p_apellido"));
+            dto.setCorreo(rs.getString("p_correo"));
+            dto.setUrlFotoPerfil(rs.getString("p_url_foto_perfil"));
+            dto.setArchivoCv(rs.getString("p_archivo_cv"));
+            dto.setFechaPostulacion(rs.getTimestamp("p_fecha_postulacion"));
+            dto.setEstadoPostulacion(rs.getString("p_estado_postulacion"));
+            dto.setMensajeEvaluacion(rs.getString("p_mensaje_evaluacion"));
+            dto.setNombreEmpresa(rs.getString("p_nombre_empresa"));
             return dto;
         }, idPostulacion);
-        return resultados.isEmpty() ? null : resultados.get(0);
+        return res.isEmpty() ? null : res.get(0);
+    }
+
+    public List<ResumenSeccionDTO> obtenerFormacion(Long idPostulacion) {
+        return jdbcTemplate.query(
+            "select * from postulaciones.fn_resumen_formacion(?)",
+            (rs, rowNum) -> mapSeccion(rs), idPostulacion);
+    }
+
+    public List<ResumenSeccionDTO> obtenerExperiencia(Long idPostulacion) {
+        return jdbcTemplate.query(
+            "select * from postulaciones.fn_resumen_experiencia(?)",
+            (rs, rowNum) -> mapSeccion(rs), idPostulacion);
+    }
+
+    public List<ResumenSeccionDTO> obtenerCursos(Long idPostulacion) {
+        return jdbcTemplate.query(
+            "select * from postulaciones.fn_resumen_cursos(?)",
+            (rs, rowNum) -> mapSeccion(rs), idPostulacion);
+    }
+
+    public List<ResumenSeccionDTO> obtenerIdiomas(Long idPostulacion) {
+        return jdbcTemplate.query(
+            "select * from postulaciones.fn_resumen_idiomas(?)",
+            (rs, rowNum) -> mapSeccion(rs), idPostulacion);
+    }
+
+    private ResumenSeccionDTO mapSeccion(java.sql.ResultSet rs) throws java.sql.SQLException {
+        ResumenSeccionDTO dto = new ResumenSeccionDTO();
+        dto.setNombre(rs.getString("p_nombre"));
+        dto.setArchivo(rs.getString("p_archivo"));
+        dto.setEstadoV(rs.getString("p_estado_v"));
+        dto.setObservacionV(rs.getString("p_observacion_v"));
+        return dto;
     }
 }

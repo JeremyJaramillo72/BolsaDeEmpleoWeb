@@ -3,7 +3,8 @@ package com.example.demo.controller;
 import com.example.demo.dto.ItemEvaluacionDTO;
 import com.example.demo.dto.PerfilPostulanteDTO;
 import com.example.demo.dto.PostulanteResumenDTO;
-import com.example.demo.dto.ResumenPostulacionDTO;
+import com.example.demo.dto.ResumenPerfilBaseDTO;
+import com.example.demo.dto.ResumenSeccionDTO;
 import com.example.demo.repository.Views.IMisPostulaciones;
 import com.example.demo.service.IPostulacionService;
 import lombok.RequiredArgsConstructor;
@@ -19,16 +20,6 @@ import java.util.List;
 public class RevisionPostulantesController {
     private final IPostulacionService iPostulacionService;
 
-    @GetMapping("/postulaciones/{idPostulacion}/resumen")
-    public ResponseEntity<?> verResumenPostulacion(@PathVariable Long idPostulacion) {
-        try {
-            ResumenPostulacionDTO resumen = iPostulacionService.obtenerResumenPostulacion(idPostulacion);
-            if (resumen == null) return ResponseEntity.notFound().build();
-            return ResponseEntity.ok(resumen);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error: " + e.getMessage());
-        }
-    }
 
     @GetMapping("/mis-postulaciones/{idUsuario}")
     public ResponseEntity<?> listarMisPostulaciones(@PathVariable Long idUsuario) {
@@ -82,6 +73,59 @@ public class RevisionPostulantesController {
         } catch (Exception e) {
             System.err.println("Error al evaluar la postulación general: " + e.getMessage());
             return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // ── Endpoints por sección ────────────────────────────────────────────
+
+    @GetMapping("/postulaciones/{idPostulacion}/perfil-base")
+    public ResponseEntity<?> verPerfilBase(@PathVariable Long idPostulacion) {
+        try {
+            ResumenPerfilBaseDTO dto = iPostulacionService.obtenerPerfilBase(idPostulacion);
+            return dto == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
+        } catch (Exception e) {
+            System.err.println("Error perfil-base: " + e.getMessage());
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/postulaciones/{idPostulacion}/formacion")
+    public ResponseEntity<List<ResumenSeccionDTO>> verFormacion(@PathVariable Long idPostulacion) {
+        try {
+            return ResponseEntity.ok(iPostulacionService.obtenerFormacion(idPostulacion));
+        } catch (Exception e) {
+            System.err.println("Error formacion: " + e.getMessage());
+            return ResponseEntity.ok(List.of());
+        }
+    }
+
+    @GetMapping("/postulaciones/{idPostulacion}/experiencia")
+    public ResponseEntity<List<ResumenSeccionDTO>> verExperiencia(@PathVariable Long idPostulacion) {
+        try {
+            return ResponseEntity.ok(iPostulacionService.obtenerExperiencia(idPostulacion));
+        } catch (Exception e) {
+            System.err.println("Error experiencia: " + e.getMessage());
+            return ResponseEntity.ok(List.of());
+        }
+    }
+
+    @GetMapping("/postulaciones/{idPostulacion}/cursos")
+    public ResponseEntity<List<ResumenSeccionDTO>> verCursos(@PathVariable Long idPostulacion) {
+        try {
+            return ResponseEntity.ok(iPostulacionService.obtenerCursos(idPostulacion));
+        } catch (Exception e) {
+            System.err.println("Error cursos: " + e.getMessage());
+            return ResponseEntity.ok(List.of());
+        }
+    }
+
+    @GetMapping("/postulaciones/{idPostulacion}/idiomas")
+    public ResponseEntity<List<ResumenSeccionDTO>> verIdiomas(@PathVariable Long idPostulacion) {
+        try {
+            return ResponseEntity.ok(iPostulacionService.obtenerIdiomas(idPostulacion));
+        } catch (Exception e) {
+            System.err.println("Error idiomas: " + e.getMessage());
+            return ResponseEntity.ok(List.of());
         }
     }
 }

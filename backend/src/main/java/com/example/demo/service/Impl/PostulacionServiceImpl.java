@@ -3,7 +3,8 @@ package com.example.demo.service.Impl;
 import com.example.demo.dto.ItemEvaluacionDTO;
 import com.example.demo.dto.PerfilPostulanteDTO;
 import com.example.demo.dto.PostulanteResumenDTO;
-import com.example.demo.dto.ResumenPostulacionDTO;
+import com.example.demo.dto.ResumenPerfilBaseDTO;
+import com.example.demo.dto.ResumenSeccionDTO;
 import com.example.demo.repository.Impl.PostulacionCustomRepository;
 import com.example.demo.repository.PostulacionRepository;
 import com.example.demo.repository.Views.IMisPostulaciones;
@@ -125,13 +126,34 @@ public class PostulacionServiceImpl implements IPostulacionService {
         }
     }
 
-    @Override
-    public ResumenPostulacionDTO obtenerResumenPostulacion(Long idPostulacion) {
-        return postulacionCustomRepository.obtenerResumenPostulacion(idPostulacion);
-    }
 
     @Override
     public List<IMisPostulaciones> listarMisPostulaciones(Long idUsuario) {
         return postulacionRepository.listarMisPostulaciones(idUsuario);
+    }
+
+    @Override
+    public ResumenPerfilBaseDTO obtenerPerfilBase(Long idPostulacion) {
+        return postulacionCustomRepository.obtenerPerfilBase(idPostulacion);
+    }
+
+    @Override
+    public List<ResumenSeccionDTO> obtenerFormacion(Long idPostulacion) {
+        return postulacionCustomRepository.obtenerFormacion(idPostulacion);
+    }
+
+    @Override
+    public List<ResumenSeccionDTO> obtenerExperiencia(Long idPostulacion) {
+        return postulacionCustomRepository.obtenerExperiencia(idPostulacion);
+    }
+
+    @Override
+    public List<ResumenSeccionDTO> obtenerCursos(Long idPostulacion) {
+        return postulacionCustomRepository.obtenerCursos(idPostulacion);
+    }
+
+    @Override
+    public List<ResumenSeccionDTO> obtenerIdiomas(Long idPostulacion) {
+        return postulacionCustomRepository.obtenerIdiomas(idPostulacion);
     }
 }

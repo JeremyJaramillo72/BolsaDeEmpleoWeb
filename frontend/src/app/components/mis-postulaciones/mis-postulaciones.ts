@@ -133,7 +133,8 @@ export class MisPostulacionesComponent implements OnInit {
 
   getEstadoItemIcon(estado: string | null | undefined): string {
     switch (estado?.toLowerCase()) {
-      case 'aceptado':  return 'check_circle';
+      case 'aceptado':
+      case 'aprobado':  return 'check_circle';
       case 'rechazado': return 'cancel';
       default:          return 'hourglass_empty';
     }
@@ -152,35 +153,29 @@ export class MisPostulacionesComponent implements OnInit {
     this.mostrarModal = true;
     this.cargandoModal = true;
 
-    console.log('▶ Llamando resumen con idPostulacion:', postulacion.idPostulacion);
+    const id = postulacion.idPostulacion;
 
-    this.ofertaService.obtenerPerfilPostulante(postulacion.idPostulacion).subscribe({
-      next: (data: any) => {
-        console.log('✅ Respuesta resumen raw:', data);
-        console.log('   formacionAcademica raw:', data.formacionAcademica);
-        console.log('   experienciaLaboral raw:', data.experienciaLaboral);
-        console.log('   cursosRealizados raw:',   data.cursosRealizados);
-        console.log('   idiomas raw:',             data.idiomas);
-
-        const parsear = (v: any) => {
-          if (!v) return [];
-          if (typeof v === 'string') { try { return JSON.parse(v); } catch (err) { console.error('parse error:', err, v); return []; } }
-          return Array.isArray(v) ? v : [];
-        };
+    forkJoin({
+      base:        this.ofertaService.obtenerPerfilBase(id),
+      formacion:   this.ofertaService.obtenerFormacion(id),
+      experiencia: this.ofertaService.obtenerExperiencia(id),
+      cursos:      this.ofertaService.obtenerCursos(id),
+      idiomas:     this.ofertaService.obtenerIdiomas(id)
+    }).subscribe({
+      next: ({ base, formacion, experiencia, cursos, idiomas }) => {
         this.perfilModal = {
-          ...data,
-          formacionAcademica: parsear(data.formacionAcademica),
-          experienciaLaboral: parsear(data.experienciaLaboral),
-          cursosRealizados:   parsear(data.cursosRealizados),
-          idiomas:            parsear(data.idiomas)
+          ...base,
+          formacionAcademica: formacion   ?? [],
+          experienciaLaboral: experiencia ?? [],
+          cursosRealizados:   cursos      ?? [],
+          idiomas:            idiomas     ?? []
         };
-        console.log('   formacionAcademica parsed:', this.perfilModal.formacionAcademica);
         this.cargandoModal = false;
         this.cdr.detectChanges();
       },
       error: (e: any) => {
         this.cargandoModal = false;
-        console.error('❌ Error al obtener resumen:', e.status, e.message, e.error);
+        console.error('❌ Error al obtener secciones:', e.status, e.message);
       }
     });
   }
