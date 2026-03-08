@@ -64,6 +64,10 @@
         </div>
 
         <div class="meta-row">
+          <p class="meta-info" *ngIf="p.nombreEmpresa">
+            <span class="material-icons">business</span>
+            {{ p.nombreEmpresa }}
+          </p>
           <p class="meta-info" *ngIf="p.nombreCiudad">
             <span class="material-icons">location_on</span>
             {{ p.nombreCiudad }}
@@ -103,7 +107,8 @@
             <span class="material-icons">{{ p.mostrarDetalles ? 'expand_less' : 'expand_more' }}</span>
             {{ p.mostrarDetalles ? 'Ver menos' : 'Ver más' }}
           </button>
-          <button class="btn-cancelar-post" (click)="cancelarPostulacion(p)">
+          <button class="btn-cancelar-post" (click)="cancelarPostulacion(p)"
+                  *ngIf="(p.estadoValidacion ?? 'pendiente').toLowerCase() === 'pendiente'">
             <span class="material-icons">cancel</span> Cancelar
           </button>
         </div>

@@ -139,6 +139,10 @@
 
           <!-- META INFO -->
           <div class="meta-row">
+            <p class="meta-info" *ngIf="oferta.nombreEmpresa">
+              <span class="material-icons">business</span>
+              {{ oferta.nombreEmpresa }}
+            </p>
             <p class="meta-info" *ngIf="oferta.nombreCiudad">
               <span class="material-icons">location_on</span>
               {{ oferta.nombreCiudad }}

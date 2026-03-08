@@ -96,7 +96,8 @@ export class BusquedaEmpleoComponent implements OnInit {
           mostrarDetalles:  false,
           habilidades:      [],
           requisitos_manuales: [],
-          nombreCiudad:     ''
+          nombreCiudad:     '',
+          nombreEmpresa:    o.nombreEmpresa     ?? o.nombre_empresa ?? ''
         }));
 
         this.modalidades = [...new Set(this.ofertas.map(o => o.nombreModalidad).filter(Boolean))] as string[];
@@ -117,17 +118,26 @@ export class BusquedaEmpleoComponent implements OnInit {
   cargarInfoExtra(): void {
     if (this.ofertas.length === 0) return;
 
+    console.log('🔍 Cargando info extra para', this.ofertas.length, 'ofertas');
+
     const peticiones = this.ofertas.map(o =>
       this.ofertaService.obtenerExtraInfo(o.idOferta)
     );
 
     forkJoin(peticiones).subscribe({
       next: (resultados: any[]) => {
+        console.log('✅ Info extra recibida:', resultados);
         resultados.forEach((extra, i) => {
           if (extra) {
-            this.ofertas[i].nombreCiudad     = extra.nombreCiudad  ?? '';
-            this.ofertas[i].habilidades      = extra.habilidades   ?? [];
-            this.ofertas[i].requisitos_manuales = extra.requisitos ?? [];
+            console.log(`📦 Oferta ${i} (ID: ${this.ofertas[i].idOferta}):`, {
+              ciudad: extra.nombreCiudad,
+              habilidades: extra.habilidades?.length ?? 0,
+              requisitos: extra.requisitos?.length ?? 0
+            });
+            this.ofertas[i].nombreCiudad        = extra.nombreCiudad  ?? '';
+            this.ofertas[i].nombreEmpresa       = extra.nombreEmpresa ?? '';
+            this.ofertas[i].habilidades         = extra.habilidades   ?? [];
+            this.ofertas[i].requisitos_manuales = extra.requisitos    ?? [];
           }
         });
         this.cdr.detectChanges();
@@ -281,13 +291,23 @@ export class BusquedaEmpleoComponent implements OnInit {
   }
 
   enviarPostulacion(): void {
-    if (!this.ofertaSeleccionada) return;
+    if (!this.ofertaSeleccionada) {
+      console.warn('⚠️ No hay oferta seleccionada');
+      return;
+    }
 
     const idUsuario = localStorage.getItem('idUsuario');
     if (!idUsuario) {
       this.ui.advertencia('Debe iniciar sesión para postular');
       return;
     }
+
+    console.log('📤 Enviando postulación:', {
+      idUsuario: Number(idUsuario),
+      idOferta: this.ofertaSeleccionada.idOferta,
+      tieneArchivo: !!this.archivoSeleccionado,
+      nombreArchivo: this.archivoSeleccionado?.name
+    });
 
     this.ofertaService.postular(
       Number(idUsuario),
@@ -296,6 +316,7 @@ export class BusquedaEmpleoComponent implements OnInit {
     ).subscribe({
       next: (response) => {
         this.ui.exito('¡Postulación enviada exitosamente!');
+        console.log('✅ Postulación exitosa:', response);
         this.cerrarModalPostulacion();
         // Recargar ofertas para actualizar el estado
         this.cargarOfertas();
@@ -303,6 +324,8 @@ export class BusquedaEmpleoComponent implements OnInit {
       error: (error) => {
         console.error('Error al postular:', error);
         this.ui.error('Error al enviar la postulación. Por favor intente nuevamente.');
+        console.error('❌ Error al postular:', error);
+        alert('Error al enviar la postulación. Por favor intente nuevamente.');
       }
     });
   }

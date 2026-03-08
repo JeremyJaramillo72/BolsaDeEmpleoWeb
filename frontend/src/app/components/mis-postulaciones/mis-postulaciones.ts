@@ -49,40 +49,39 @@ export class MisPostulacionesComponent implements OnInit {
     this.cargando = true;
     this.errorConexion = false;
 
-    this.ofertaService.listarOfertasCompleto(this.idUsuario).subscribe({
+    this.ofertaService.listarMisPostulaciones(this.idUsuario).subscribe({
       next: (data: any[]) => {
         this.cargando = false;
-        this.postulaciones = data
-          .filter((o: any) => {
-            const tienePostulacion = (o.idPostulacion ?? o.id_postulacion) != null;
-            const estado = (o.estadoValidacion ?? o.estado_validacion)?.toLowerCase();
-            return tienePostulacion && estado !== 'cancelada';
-          })
-          .map((o: any) => ({
-            idOferta:            o.idOferta          ?? o.id_oferta,
-            titulo:              o.titulo,
-            descripcion:         o.descripcion,
-            cantidadVacantes:    o.cantidadVacantes  ?? o.cantidad_vacantes,
-            experienciaMinima:   o.experienciaMinima ?? o.experiencia_minima,
-            fechaInicio:         o.fechaInicio       ?? o.fecha_inicio,
-            fechaCierre:         o.fechaCierre       ?? o.fecha_cierre,
-            nombreModalidad:     o.nombreModalidad   ?? o.nombre_modalidad,
-            nombreJornada:       o.nombreJornada     ?? o.nombre_jornada,
-            nombreCategoria:     o.nombreCategoria   ?? o.nombre_categoria,
-            salarioMin:          o.salarioMin        ?? o.salario_min,
-            salarioMax:          o.salarioMax        ?? o.salario_max,
-            estadoOferta:        o.estadoOferta      ?? o.estado_oferta,
-            idFavoritas:         o.idFavoritas       ?? o.id_favoritas,
-            estadoFav:           o.estadoFav         ?? o.estado_fav,
-            idPostulacion:       o.idPostulacion     ?? o.id_postulacion,
-            estadoValidacion:    o.estadoValidacion  ?? o.estado_validacion,
-            observaciones:       o.observaciones     ?? null,
-            esFavorito:         (o.idFavoritas ?? o.id_favoritas) != null,
-            mostrarDetalles:     false,
-            habilidades:         [],
-            requisitos_manuales: [],
-            nombreCiudad:        ''
-          }));
+        if (!data || data.length === 0) {
+          this.postulaciones = [];
+          return;
+        }
+        this.postulaciones = data.map((o: any) => ({
+          idOferta:            o.idOferta          ?? o.id_oferta,
+          titulo:              o.titulo,
+          descripcion:         o.descripcion,
+          cantidadVacantes:    o.cantidadVacantes  ?? o.cantidad_vacantes,
+          experienciaMinima:   o.experienciaMinima ?? o.experiencia_minima,
+          fechaInicio:         o.fechaInicio       ?? o.fecha_inicio,
+          fechaCierre:         o.fechaCierre       ?? o.fecha_cierre,
+          nombreModalidad:     o.nombreModalidad   ?? o.nombre_modalidad,
+          nombreJornada:       o.nombreJornada     ?? o.nombre_jornada,
+          nombreCategoria:     o.nombreCategoria   ?? o.nombre_categoria,
+          salarioMin:          o.salarioMin        ?? o.salario_min,
+          salarioMax:          o.salarioMax        ?? o.salario_max,
+          estadoOferta:        'aprobado',
+          idFavoritas:         null,
+          estadoFav:           null,
+          idPostulacion:       o.idPostulacion     ?? o.id_postulacion,
+          estadoValidacion:    o.estadoValidacion  ?? o.estado_validacion,
+          observaciones:       o.observaciones     ?? null,
+          esFavorito:          false,
+          mostrarDetalles:     false,
+          habilidades:         [],
+          requisitos_manuales: [],
+          nombreCiudad:        '',
+          nombreEmpresa:       o.nombreEmpresa     ?? o.nombre_empresa ?? ''
+        }));
         this.cdr.detectChanges();
         this.cargarInfoExtra();
       },
@@ -101,9 +100,10 @@ export class MisPostulacionesComponent implements OnInit {
       next: (resultados: any[]) => {
         resultados.forEach((extra, i) => {
           if (extra) {
-            this.postulaciones[i].nombreCiudad        = extra.nombreCiudad ?? '';
-            this.postulaciones[i].habilidades         = extra.habilidades  ?? [];
-            this.postulaciones[i].requisitos_manuales = extra.requisitos   ?? [];
+            this.postulaciones[i].nombreCiudad        = extra.nombreCiudad  ?? '';
+            this.postulaciones[i].nombreEmpresa       = extra.nombreEmpresa ?? '';
+            this.postulaciones[i].habilidades         = extra.habilidades   ?? [];
+            this.postulaciones[i].requisitos_manuales = extra.requisitos    ?? [];
           }
         });
         this.cdr.detectChanges();
@@ -114,7 +114,8 @@ export class MisPostulacionesComponent implements OnInit {
 
   getEstadoBadgeClass(estado: string | null | undefined): string {
     switch (estado?.toLowerCase()) {
-      case 'aceptado':   return 'badge-aprobado';
+      case 'aceptado':
+      case 'aprobado':   return 'badge-aprobado';
       case 'rechazado':  return 'badge-rechazado';
       case 'pendiente':  return 'badge-pendiente';
       default:           return 'badge-pendiente';
@@ -123,7 +124,8 @@ export class MisPostulacionesComponent implements OnInit {
 
   getEstadoItemClass(estado: string | null | undefined): string {
     switch (estado?.toLowerCase()) {
-      case 'aceptado':  return 'item-aprobado';
+      case 'aceptado':
+      case 'aprobado':  return 'item-aprobado';
       case 'rechazado': return 'item-rechazado';
       default:          return 'item-pendiente';
     }

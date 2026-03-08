@@ -69,6 +69,7 @@ export interface OfertaDetalladaDTO {
   esFavorito?: boolean;
   mostrarDetalles?: boolean;
   nombreCiudad?: string;
+  nombreEmpresa?: string;
 }
 
 @Injectable({
@@ -123,6 +124,10 @@ export class OfertaService {
   }
   listarOfertasCompleto(idUsuario: number): Observable<OfertaDetalladaDTO[]> {
     return this.http.get<OfertaDetalladaDTO[]>(`${this.apiUrl}/completo/${idUsuario}`);
+  }
+
+  listarMisPostulaciones(idUsuario: number): Observable<any[]> {
+    return this.http.get<any[]>(`http://localhost:8080/api/revision-postulante/mis-postulaciones/${idUsuario}`);
   }
 
   obtenerExtraInfo(idOferta: number): Observable<any> {

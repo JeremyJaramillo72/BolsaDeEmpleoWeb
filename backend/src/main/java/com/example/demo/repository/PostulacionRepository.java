@@ -1,6 +1,7 @@
 package com.example.demo.repository;
 
 import com.example.demo.model.Postulacion;
+import com.example.demo.repository.Views.IMisPostulaciones;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -75,4 +76,7 @@ public interface PostulacionRepository extends JpaRepository<Postulacion, Intege
     // Métodos para obtener categorías de ofertas distintas de una empresa
     @Query(value = "select * from postulaciones.fn_obtener_categorias_empresa(:idEmpresa)", nativeQuery = true)
     List<String> getCategoriasByEmpresa(@Param("idEmpresa") Long idEmpresa);
+
+    @Query(value = "SELECT * FROM postulaciones.fn_listar_mis_postulaciones(:idUsuario)", nativeQuery = true)
+    List<IMisPostulaciones> listarMisPostulaciones(@Param("idUsuario") Long idUsuario);
 }

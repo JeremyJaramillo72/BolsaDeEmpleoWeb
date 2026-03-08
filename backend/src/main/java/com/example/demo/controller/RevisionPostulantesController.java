@@ -3,7 +3,8 @@ package com.example.demo.controller;
 import com.example.demo.dto.ItemEvaluacionDTO;
 import com.example.demo.dto.PerfilPostulanteDTO;
 import com.example.demo.dto.PostulanteResumenDTO;
-import com.example.demo.repository.Impl.PostulacionCustomRepository;
+import com.example.demo.dto.ResumenPostulacionDTO;
+import com.example.demo.repository.Views.IMisPostulaciones;
 import com.example.demo.service.IPostulacionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +22,19 @@ public class RevisionPostulantesController {
     @GetMapping("/postulaciones/{idPostulacion}/resumen")
     public ResponseEntity<?> verResumenPostulacion(@PathVariable Long idPostulacion) {
         try {
-            PostulacionCustomRepository.ResumenPostulacion resumen = iPostulacionService.obtenerResumenPostulacion(idPostulacion);
+            ResumenPostulacionDTO resumen = iPostulacionService.obtenerResumenPostulacion(idPostulacion);
             if (resumen == null) return ResponseEntity.notFound().build();
             return ResponseEntity.ok(resumen);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/mis-postulaciones/{idUsuario}")
+    public ResponseEntity<?> listarMisPostulaciones(@PathVariable Long idUsuario) {
+        try {
+            List<IMisPostulaciones> lista = iPostulacionService.listarMisPostulaciones(idUsuario);
+            return ResponseEntity.ok(lista);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error: " + e.getMessage());
         }

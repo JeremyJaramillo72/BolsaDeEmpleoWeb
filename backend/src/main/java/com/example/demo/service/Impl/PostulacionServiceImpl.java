@@ -3,9 +3,10 @@ package com.example.demo.service.Impl;
 import com.example.demo.dto.ItemEvaluacionDTO;
 import com.example.demo.dto.PerfilPostulanteDTO;
 import com.example.demo.dto.PostulanteResumenDTO;
-import com.example.demo.model.Postulacion;
+import com.example.demo.dto.ResumenPostulacionDTO;
 import com.example.demo.repository.Impl.PostulacionCustomRepository;
 import com.example.demo.repository.PostulacionRepository;
+import com.example.demo.repository.Views.IMisPostulaciones;
 import com.example.demo.service.AzureStorageConfig;
 import com.example.demo.service.IPostulacionService;
 import lombok.RequiredArgsConstructor;
@@ -125,7 +126,12 @@ public class PostulacionServiceImpl implements IPostulacionService {
     }
 
     @Override
-    public PostulacionCustomRepository.ResumenPostulacion obtenerResumenPostulacion(Long idPostulacion) {
+    public ResumenPostulacionDTO obtenerResumenPostulacion(Long idPostulacion) {
         return postulacionCustomRepository.obtenerResumenPostulacion(idPostulacion);
+    }
+
+    @Override
+    public List<IMisPostulaciones> listarMisPostulaciones(Long idUsuario) {
+        return postulacionRepository.listarMisPostulaciones(idUsuario);
     }
 }
