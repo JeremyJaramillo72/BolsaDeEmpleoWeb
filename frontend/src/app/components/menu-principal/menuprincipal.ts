@@ -45,6 +45,7 @@ export class MenuprincipalComponent implements OnInit {
   fotoMenu: string = '';
 
  // dashboardHomeVisible: boolean = true;
+  isDarkMode: boolean = false;
 
   menuItems: MenuItem[] = [];
  // statsCards: StatCard[] = [];
@@ -88,6 +89,12 @@ export class MenuprincipalComponent implements OnInit {
     this.notificationService.notificaciones$.subscribe(() => {
       this.actualizarKPIsNotificaciones();
     });
+
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      this.isDarkMode = true;
+      document.body.classList.add('dark-mode');
+    }
   }
 
   private verificarRutaActual(): void {
@@ -307,6 +314,17 @@ export class MenuprincipalComponent implements OnInit {
 
     this.cdr.detectChanges();
 
+  }
+
+  toggleDarkMode(): void {
+    this.isDarkMode = !this.isDarkMode;
+    if (this.isDarkMode) {
+      document.body.classList.add('dark-mode');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.body.classList.remove('dark-mode');
+      localStorage.setItem('theme', 'light');
+    }
   }
 
   toggleSidebar(): void {

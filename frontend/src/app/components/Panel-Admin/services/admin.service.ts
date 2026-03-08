@@ -302,6 +302,17 @@ export class AdminService {
     );
   }
 
+// ==============================================================
+  // 🔥 NUEVO: BLOQUEAR/REACTIVAR CUENTA Y SESIÓN AL MISMO TIEMPO
+  // ==============================================================
+  cambiarEstadoCuentaYSesion(idSesion: number, estadoCuenta: string) {
+    // Le mandamos el estado deseado ('Inactivo' o 'Activo')
+    // Le quitamos el /auditorias repetido de la ruta
+    return this.http.put(`${this.apiauditoriasUrl}/sesiones/${idSesion}/estado-cuenta`, {
+      estado: estadoCuenta
+    });
+  }
+
   // FUNCIONES PARA LOS ROLES DE BASE DE DATOS
   // ========== ROLES DE BASE DE DATOS ==========
 
@@ -363,5 +374,8 @@ export class AdminService {
   notificarCambio(): void {
     this.adminsActualizados$.next(true);
   }
+
+  // En tu admin.service.ts
+
 
 }

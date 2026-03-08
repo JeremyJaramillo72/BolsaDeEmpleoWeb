@@ -61,6 +61,13 @@
             <version>7.2.5</version>
         </dependency>
 
+        <!-- iText Font para íconos SVG/símbolos -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>font-asian</artifactId>
+            <version>8.0.3</version>
+        </dependency>
+
 
 		<dependency>
 			<groupId>com.github.librepdf</groupId>

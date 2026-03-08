@@ -246,7 +246,7 @@
       </div>
     </div>
 
-    <!-- Tabla Sesiones -->
+    <!-- Tabla Sesiones ACTUALIZADA -->
     <div class="table-section" *ngIf="!cargandoSesiones">
       <div class="table-header">
         <h3>Registro de Sesiones</h3>
@@ -262,7 +262,9 @@
             <th>Fecha Cierre</th>
             <th>IP Address</th>
             <th>Navegador</th>
-            <th>Acción</th>
+            <th>Sesión</th>
+            <th>Estado Cuenta</th>
+            <th>Acciones</th>
           </tr>
           </thead>
           <tbody>
@@ -282,11 +284,41 @@
                 </span>
             </td>
             <td class="navegador-cell">{{ sesion.navegador || 'N/A' }}</td>
+
             <td>
                 <span class="badge sesion-badge" [ngClass]="getAccionSesionClass(sesion.accion)">
                   {{ sesion.accion }}
                 </span>
             </td>
+
+            <td>
+                <span class="badge estado-badge" [ngClass]="getEstadoClass(sesion.estadoValidacion || 'Activo')">
+                  {{ sesion.estadoValidacion || 'Activo' }}
+                </span>
+            </td>
+
+            <td>
+              <div class="action-buttons">
+                <button
+                  class="btn-action btn-bloquear"
+                  *ngIf="(sesion.estadoValidacion | lowercase) !== 'inactivo'"
+                  (click)="bloquearUsuario(sesion)"
+                  title="Bloquear y cerrar sesión">
+                  <span class="material-icons">block</span>
+                  Dar de Baja
+                </button>
+
+                <button
+                  class="btn-action btn-reactivar"
+                  *ngIf="(sesion.estadoValidacion | lowercase) === 'inactivo'"
+                  (click)="reactivarUsuario(sesion)"
+                  title="Reactivar acceso">
+                  <span class="material-icons">check_circle</span>
+                  Reactivar
+                </button>
+              </div>
+            </td>
+
           </tr>
           </tbody>
         </table>

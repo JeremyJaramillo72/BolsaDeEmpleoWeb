@@ -37,6 +37,7 @@ interface Sesion {
   navegador: string;
   accion: string;
   dispositivo?: string;
+  estadoValidacion?: string; // 🔥 NUEVO CAMPO AGREGADO
 }
 
 @Component({
@@ -688,6 +689,60 @@ export class AdminUsuariosComponent implements OnInit {
     }
     return lista;
   }
+
+
+  // ==============================================================
+  // 🔥 NUEVOS MÉTODOS PARA BLOQUEAR / REACTIVAR USUARIOS DESDE SESIÓN
+  // ==============================================================
+
+  bloquearUsuario(sesion: any): void {
+    const idReal = sesion.idSesion || sesion.id_sesion || sesion.id;
+
+    if (!idReal) {
+      this.mensajeError = 'Error: ID de sesión no encontrado.';
+      return;
+    }
+
+    if (window.confirm(`⚠️ ¿Está seguro de DAR DE BAJA al usuario ${sesion.loginName} y cerrarle la sesión?`)) {
+      this.adminService.cambiarEstadoCuentaYSesion(idReal, 'Inactivo').subscribe({
+        next: () => {
+          // Actualizamos la UI al instante
+          sesion.estadoValidacion = 'Inactivo';
+          sesion.accion = 'CERRADA';
+          sesion.fechaCierre = new Date().toISOString();
+        },
+        error: (err) => {
+          console.error('Error al dar de baja:', err);
+          this.mensajeError = 'Error al comunicar con el servidor para bloquear la cuenta.';
+        }
+      });
+    }
+  }
+
+  reactivarUsuario(sesion: any): void {
+    const idReal = sesion.idSesion || sesion.id_sesion || sesion.id;
+
+    if (!idReal) {
+      this.mensajeError = 'Error: ID de sesión no encontrado.';
+      return;
+    }
+
+    if (window.confirm(`✅ ¿Desea REACTIVAR el acceso para el usuario ${sesion.loginName}?`)) {
+      this.adminService.cambiarEstadoCuentaYSesion(idReal, 'Activo').subscribe({
+        next: () => {
+          // Actualizamos la UI al instante (la sesión sigue cerrada, solo le abrimos la cuenta)
+          sesion.estadoValidacion = 'Activo';
+        },
+        error: (err) => {
+          console.error('Error al reactivar:', err);
+          this.mensajeError = 'Error al comunicar con el servidor para reactivar la cuenta.';
+        }
+      });
+    }
+  }
+
+
+
 
 
 

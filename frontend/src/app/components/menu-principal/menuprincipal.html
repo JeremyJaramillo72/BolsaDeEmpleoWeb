@@ -70,6 +70,9 @@
       </div>
 
       <div class="topbar-right">
+        <button class="theme-toggle-btn" (click)="toggleDarkMode()" [title]="isDarkMode ? 'Modo claro' : 'Modo oscuro'">
+          <span class="material-icons">{{ isDarkMode ? 'wb_sunny' : 'nightlight_round' }}</span>
+        </button>
         <app-notification-bell></app-notification-bell>
 
         <div class="user-profile">

@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.AuditoriaDTO;
 import com.example.demo.dto.ResumenAuditoriaDTO;
 import com.example.demo.service.IAuditoriaService;
+import com.example.demo.service.ISesionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -19,6 +20,11 @@ public class AuditoriasController {
 
     @Autowired
     private IAuditoriaService auditoriaService;
+
+
+    // 👇 AGREGA ESTO
+    @Autowired
+    private ISesionService sesionService;
 
     // ✅ GET /api/auditorias/usuarios
     @GetMapping("/usuarios")
@@ -115,4 +121,28 @@ public class AuditoriasController {
         return ResponseEntity.ok(auditoriaService.getSesiones());
     }
 
+
+    // ✅ PUT /api/auditorias/sesiones/{idSesion}/estado-cuenta
+    @PutMapping("/sesiones/{idSesion}/estado-cuenta")
+    public ResponseEntity<?> cambiarEstadoCuentaYSesion(
+            @PathVariable Long idSesion,
+            @RequestBody Map<String, String> request) {
+
+        try {
+            String nuevoEstado = request.get("estado"); // Recibe "Activo" o "Inactivo"
+
+            if (nuevoEstado == null || nuevoEstado.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "El estado de la cuenta es requerido"));
+            }
+
+            // Llamamos a nuestro nuevo método 2x1
+            sesionService.actualizarEstadoCuentaYSesion(idSesion, nuevoEstado);
+
+            return ResponseEntity.ok(Map.of("mensaje", "La cuenta ha sido cambiada a " + nuevoEstado));
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "Error al cambiar estado de cuenta: " + e.getMessage()));
+        }
+    }
 }
