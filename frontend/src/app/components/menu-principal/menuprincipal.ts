@@ -160,8 +160,8 @@ export class MenuprincipalComponent implements OnInit {
         description: 'Métricas y análisis del sistema',
         colorHex: '#059669', bgHex: '#ecfdf5',
         roles: ['EMPRESA'],
-        path: '/Empresa/ReportesEmpresa',
-        route: '/components/Reportes-Empresa/Reporte-Empresa'
+        path: 'Reportes-Empresa',
+        route: '/menu-principal/Reporte-Empresa'
       },
 
 

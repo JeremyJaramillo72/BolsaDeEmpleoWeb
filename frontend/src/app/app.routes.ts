@@ -62,7 +62,7 @@ export const routes: Routes = [
       },
 
       {
-        path: 'Empresa/ReportesEmpresa',
+        path: 'Reporte-Empresa',
         component: ReporteEmpresaComponent
       },
       {
