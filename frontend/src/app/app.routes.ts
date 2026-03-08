@@ -21,6 +21,7 @@ import { BusquedaEmpleoComponent } from './components/busqueda-empleo/busqueda-e
 import { MisPostulacionesComponent } from './components/mis-postulaciones/mis-postulaciones';
 import {ListaPostulantesComponent} from './components/revision-postulantes/lista-postulantes/lista-postulantes';
 import {PerfilCandidatoComponent} from './components/revision-postulantes/perfil-candidato/perfil-candidato';
+import {RegistroOfertasAdministradorComponent} from './components/Panel-Admin/components/gestion-ofertas-administrador/gestion-ofertas-administrador';
 
 // (Asegúrate de importar tus 3 nuevos componentes arriba)
 import { DashboardAdminComponent } from './components/menu-principal/dashboard-admin/dashboard-admin.component';
@@ -63,6 +64,10 @@ export const routes: Routes = [
       {
         path: 'Empresa/ReportesEmpresa',
         component: ReporteEmpresaComponent
+      },
+      {
+        path:  'PanelAdmi/RegistroOfertas',
+        component: RegistroOfertasAdministradorComponent
       },
 
       {

@@ -227,6 +227,16 @@ export class MenuprincipalComponent implements OnInit {
         permiso: 'CATALOGOS'
       },
       {
+        icon: 'note_add',
+        title: 'Registro de Ofertas',
+        description: 'Registrar ofertas físicas enviadas por empresas',
+        colorHex: '#ea580c', bgHex: '#fff7ed',
+        roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
+        path: '/PanelAdmi/RegistroOfertas',
+        route: '/menu-principal/PanelAdmi/RegistroOfertas',
+        permiso: 'VALIDACION_O'
+      },
+      {
         icon: 'fact_check',
         title: 'Validación de Ofertas',
         description: 'Aprueba o rechaza nuevas vacantes',

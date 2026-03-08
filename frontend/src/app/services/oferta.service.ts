@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface OfertaHabilidadDTO {
@@ -159,5 +159,19 @@ export class OfertaService {
 
   obtenerArchivoCV(idPostulacion: number): Observable<any> {
     return this.http.get(`http://localhost:8080/api/postulaciones/archivo/${idPostulacion}`);
+  }
+  buscarEmpresasRegistradas(termino: string): Observable<any[]> {
+    const params = new HttpParams().set('termino', termino);
+    return this.http.get<any[]>(`${this.apiUrl}/admin/empresas/buscar`, { params });
+
+  }
+  registrarOfertaFisica(formData: FormData): Observable<any> {
+    return this.http.post(`${this.apiUrl}/registrar-fisica`, formData);
+  }
+  obtenerOfertasFisicasAdmin(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/fisicas`);
+  }
+  crearCuentaEmpresaAdmin(datosEmpresa: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/admin/empresas/crear`, datosEmpresa);
   }
 }

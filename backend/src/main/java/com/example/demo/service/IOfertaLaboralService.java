@@ -1,12 +1,12 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.IOfertaResumen;
-import com.example.demo.dto.OfertaExtraInfoDTO;
-import com.example.demo.dto.OfertaLaboralDTO;
+import com.example.demo.dto.*;
 import com.example.demo.model.OfertaLaboral;
 import com.example.demo.repository.Views.IOfertaDetallada;
 import com.example.demo.repository.Views.IOfertaEmpresaDTO;
+import com.example.demo.repository.Views.IOfertaFisicaAdminDTO;
 import com.example.demo.repository.Views.IPostulanteOfertaDTO;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -22,4 +22,7 @@ public interface IOfertaLaboralService {
     String toggleFavorita(Integer idOferta, Long idUsuario);
     OfertaExtraInfoDTO obtenerExtraInfo(Integer idOferta);
     Map<Integer, Long> contarPostulantesPorOfertas(List<Integer> ids);
+    OfertaLaboral guardarOfertaFisica(OfertaLaboralDTO dto, MultipartFile archivoOficio, Long idUsuarioAdmin);
+    List<IOfertaFisicaAdminDTO> listarOfertasFisicasAdmin();
+    Long crearEmpresaPorAdmin(NuevaEmpresaAdminDTO dto);
 }

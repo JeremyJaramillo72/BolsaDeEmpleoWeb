@@ -89,6 +89,12 @@ public class OfertaLaboral {
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion;
 
+    @Column(name="es_fisica")
+    private Boolean esFisica;
+
+    @Column(name="url_documento_fisico")
+    private String urlDocumentFisico;
+
     @PrePersist
     public void prePersist() {
         if (this.fechaCreacion == null) {

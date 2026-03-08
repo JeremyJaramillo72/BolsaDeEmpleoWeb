@@ -7,6 +7,7 @@ import com.example.demo.dto.OfertaDetalleDTO;
 import com.example.demo.model.Usuario;
 import com.example.demo.model.UsuarioEmpresa;
 import com.example.demo.repository.Views.IOfertaEmpresaDTO;
+import com.example.demo.repository.Views.IOfertaFisicaAdminDTO;
 import com.example.demo.repository.Views.IPostulanteOfertaDTO;
 import com.example.demo.repository.Views.IOfertaDetallada;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -77,6 +78,54 @@ public interface OfertaLaboralRepository extends JpaRepository<OfertaLaboral, In
             @Param("p_requisitos_manuales") String requisitosJson
     );
 
+    @Modifying
+    @Transactional
+    @Query(value = "call ofertas.sp_crear_oferta_fisica(:p_idempresa, :p_idadmin, :p_idmodalidad, :p_idcategoria, :p_idjornada, :p_idciudad, :p_titulo, :p_descripcion, :p_salario_min, :p_salario_max, :p_cantidad_vacantes, :p_experiencia_minima, :p_fecha_inicio, :p_fecha_cierre, cast(:p_habilidades as jsonb), cast(:p_requisitos_manuales as jsonb), :p_url_documento)", nativeQuery = true)
+    void registrarOfertaFisica(
+            @Param("p_idempresa") Long idEmpresa,
+            @Param("p_idadmin") Long idAdmin,
+            @Param("p_idmodalidad") Integer idModalidad,
+            @Param("p_idcategoria") Integer idCategoria,
+            @Param("p_idjornada") Integer idJornada,
+            @Param("p_idciudad") Integer idCiudad,
+            @Param("p_titulo") String titulo,
+            @Param("p_descripcion") String descripcion,
+            @Param("p_salario_min") BigDecimal salarioMin,
+            @Param("p_salario_max") BigDecimal salarioMax,
+            @Param("p_cantidad_vacantes") Integer cantidadVacantes,
+            @Param("p_experiencia_minima") Integer experienciaMinima,
+            @Param("p_fecha_inicio") LocalDate fechaInicio,
+            @Param("p_fecha_cierre") LocalDate fechaCierre,
+            @Param("p_habilidades") String habilidadesJson,
+            @Param("p_requisitos_manuales") String requisitosJson,
+            @Param("p_url_documento") String urlDocumento
+    );
+
+
+    @Modifying
+    @Transactional
+    @Query(value = "call ofertas.sp_actualizar_oferta_fisica(:p_idoferta, :p_idmodalidad, :p_idcategoria, :p_idjornada, :p_idciudad, :p_titulo, :p_descripcion, :p_salario_min, :p_salario_max, :p_cantidad_vacantes, :p_experiencia_minima, :p_estado_oferta, :p_fecha_cierre, cast(:p_habilidades as jsonb), cast(:p_requisitos_manuales as jsonb), :p_url_documento)", nativeQuery = true)
+    void actualizarOfertaFisica(
+            @Param("p_idoferta") Long idOferta,
+            @Param("p_idmodalidad") Integer idModalidad,
+            @Param("p_idcategoria") Integer idCategoria,
+            @Param("p_idjornada") Integer idJornada,
+            @Param("p_idciudad") Integer idCiudad,
+            @Param("p_titulo") String titulo,
+            @Param("p_descripcion") String descripcion,
+            @Param("p_salario_min") BigDecimal salarioMin,
+            @Param("p_salario_max") BigDecimal salarioMax,
+            @Param("p_cantidad_vacantes") Integer cantidadVacantes,
+            @Param("p_experiencia_minima") Integer experienciaMinima,
+            @Param("p_estado_oferta") String estadoOferta,
+            @Param("p_fecha_cierre") LocalDate fechaCierre,
+            @Param("p_habilidades") String habilidadesJson,
+            @Param("p_requisitos_manuales") String requisitosJson,
+            @Param("p_url_documento") String urlDocumento
+    );
+
+    @Query(value = "select * from ofertas.fn_listar_ofertas_fisicas()", nativeQuery = true)
+    List<IOfertaFisicaAdminDTO> listarOfertasFisicasAdmin();
     @Query(value = "select * from ofertas.fn_mostrarofertasempresa(:idEmpresa)", nativeQuery = true)
     List<IOfertaEmpresaDTO> obtenerOfertasPorEmpresa(@Param("idEmpresa") Long idEmpresa);
 

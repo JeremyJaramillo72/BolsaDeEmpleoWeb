@@ -367,6 +367,19 @@ export class AdminService {
   contarPostulantesPorOfertas(ids: number[]): Observable<{[key: number]: number}> {
     return this.http.post<{[key: number]: number}>(`${this.apiOfertasUrl}/conteo-postulantes`, ids);
   }
+  registrarOfertaFisica(idUsuarioAdmin: number, oferta: any, archivo: File): Observable<any> {
+    const formData = new FormData();
+
+    formData.append('idUsuarioAdmin', idUsuarioAdmin.toString());
+    formData.append('idEmpresa', oferta.idEmpresa.toString());
+    formData.append('titulo', oferta.titulo);
+    formData.append('descripcion', oferta.descripcion);
+    formData.append('fechaCierre', oferta.fechaCierre);
+
+    formData.append('archivoOficio', archivo);
+
+    return this.http.post(`${this.apiOfertasUrl}/registrar-fisica`, formData);
+  }
 
   // ==========================================
   // 🔄 NOTIFICAR CAMBIOS EN LA LISTA
