@@ -37,25 +37,33 @@ public class ReporteOfertaEmpresaController {
      *   fechaFin     — Opcional: yyyy-MM-dd
      *   salarioMin   — Opcional
      *   salarioMax   — Opcional
-     *   estadoOferta — Opcional: Activa | Inactiva | Cerrada
+     *   estadoOferta — Opcional: aprobado | pendiente | rechazada | cancelada
      */
     @GetMapping("/ofertas")
     public ResponseEntity<?> obtenerReporteOfertas(
-            @RequestParam                                              Integer    idEmpresa,
+            // ✅ Fix: era Integer — debe ser Long (BIGINT en BD)
+            @RequestParam                                              Long       idEmpresa,
             @RequestParam(required = false)                            Integer    top,
             @RequestParam(required = false)                            Integer    idCiudad,
             @RequestParam(required = false)                            Integer    idCategoria,
             @RequestParam(required = false)                            Integer    idModalidad,
             @RequestParam(required = false)                            Integer    idJornada,
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)         LocalDate  fechaInicio,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)             LocalDate  fechaInicio,
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)         LocalDate  fechaFin,
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)             LocalDate  fechaFin,
             @RequestParam(required = false)                            BigDecimal salarioMin,
             @RequestParam(required = false)                            BigDecimal salarioMax,
             @RequestParam(required = false)                            String     estadoOferta
     ) {
         try {
+            // ✅ Fix: normalizar estadoOferta vacío a null ANTES del builder
+            // Si el frontend envía "" el Service lo rechazaría contra ESTADOS_VALIDOS
+            final String estadoNormalizado =
+                    (estadoOferta != null && !estadoOferta.trim().isEmpty())
+                            ? estadoOferta.trim()
+                            : null;
+
             FiltroReporteOfertaEmpresaDTO filtro =
                     FiltroReporteOfertaEmpresaDTO.builder()
                             .idEmpresa(idEmpresa)
@@ -68,7 +76,7 @@ public class ReporteOfertaEmpresaController {
                             .fechaFin(fechaFin)
                             .salarioMin(salarioMin)
                             .salarioMax(salarioMax)
-                            .estadoOferta(estadoOferta)
+                            .estadoOferta(estadoNormalizado)  // ✅ null si vacío
                             .build();
 
             List<ReporteOfertaEmpresaDTO> resultado =

@@ -14,10 +14,9 @@ import java.time.LocalDate;
 @Builder
 public class FiltroReporteOfertaEmpresaDTO {
 
-    // Obligatorio — viene del usuario autenticado, no del request
-    private Integer    idEmpresa;
+    // ✅ Fix: era Integer — el SP declara p_id_empresa BIGINT
+    private Long       idEmpresa;
 
-    // Opcionales — mismo conjunto que reporte admin + top exclusivo empresa
     private Integer    top;
     private Integer    idCiudad;
     private Integer    idCategoria;

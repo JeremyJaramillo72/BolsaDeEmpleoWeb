@@ -29,7 +29,7 @@ public class ReporteOfertaEmpresaRepository {
         // p_salario_max, p_estado_oferta
         String sql = """
             SELECT * FROM empresas.fn_reporte_ofertas_empresa(
-                ?::integer,
+                ?::bigint,
                 ?::integer,
                 ?::integer,
                 ?::integer,
@@ -42,6 +42,8 @@ public class ReporteOfertaEmpresaRepository {
                 ?::varchar
             )
         """;
+        // ✅ Fix: era ?::integer para el primer parámetro — el SP declara BIGINT.
+        //    PostgreSQL rechaza el cast integer→bigint en versiones recientes.
 
         return jdbcTemplate.query(
                 sql,
@@ -86,12 +88,20 @@ public class ReporteOfertaEmpresaRepository {
                     .fechaCierre(fechaCierreSql != null
                             ? fechaCierreSql.toLocalDate() : null)
                     .estadoOferta(rs.getString("estado_oferta"))
-                    .cantidadVacantes(rs.getInt("cantidad_vacantes"))
-                    .experienciaMinima(rs.getInt("experiencia_minima"))
+                    // ✅ Fix: null check en Integer columns
+                    // rs.getInt() devuelve 0 cuando el valor en BD es NULL,
+                    // lo que produce datos incorrectos. rs.getObject() != null
+                    // detecta el NULL real antes de leer el valor.
+                    .cantidadVacantes(rs.getObject("cantidad_vacantes") != null
+                            ? rs.getInt("cantidad_vacantes") : null)
+                    .experienciaMinima(rs.getObject("experiencia_minima") != null
+                            ? rs.getInt("experiencia_minima") : null)
                     .totalPostulaciones(rs.getLong("total_postulaciones"))
                     .postulacionesPendientes(rs.getLong("postulaciones_pendientes"))
                     .postulacionesAceptadas(rs.getLong("postulaciones_aceptadas"))
                     .postulacionesRechazadas(rs.getLong("postulaciones_rechazadas"))
+                    // ✅ Fix: campo nuevo — faltaba en el RowMapper original
+                    .postulacionesCanceladas(rs.getLong("postulaciones_canceladas"))
                     .build();
         }
     }

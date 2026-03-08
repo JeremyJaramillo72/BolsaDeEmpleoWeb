@@ -31,4 +31,5 @@ public class ReporteOfertaEmpresaDTO {
     private Long       postulacionesPendientes;
     private Long       postulacionesAceptadas;
     private Long       postulacionesRechazadas;
+    private Long       postulacionesCanceladas;  // ✅ Fix: campo nuevo del SP
 }

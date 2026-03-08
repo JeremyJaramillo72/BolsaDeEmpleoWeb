@@ -725,3 +725,175 @@ tr:hover td { background: #eef2ff; }
 
   .chart-label { width: 90px; font-size: 11px; }
 }
+
+/* Ícono de check dentro de cada opción del dropdown —
+   oculto por defecto, visible solo en la opción seleccionada */
+.dropdown-item .item-check {
+  font-size: 16px;
+  margin-right: 6px;
+  color: #667eea;
+  opacity: 0;           /* invisible por defecto */
+  flex-shrink: 0;
+}
+
+/* Cuando el item está seleccionado: fondo azul claro + check visible */
+.dropdown-item.item-selected {
+  background-color: #eef2ff;
+  font-weight: 600;
+}
+
+.dropdown-item.item-selected .item-check {
+  opacity: 1;           /* check visible solo en el seleccionado */
+}
+
+/* Al hacer hover en cualquier item, el check aparece con baja opacidad */
+.dropdown-item:hover .item-check {
+  opacity: 0.35;
+}
+
+/* El item seleccionado en hover mantiene el check al 100% */
+.dropdown-item.item-selected:hover .item-check {
+  opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AGREGAR AL FINAL de gestion-reportes.css
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Combobox: ítem seleccionado con check ───────────────────── */
+.dropdown-item .item-check {
+  font-size: 16px;
+  margin-right: 6px;
+  color: #6366f1;
+  opacity: 0;
+  flex-shrink: 0;
+}
+.dropdown-item.item-selected {
+  background-color: #eef2ff;
+  font-weight: 600;
+}
+.dropdown-item.item-selected .item-check {
+  opacity: 1;
+}
+.dropdown-item:hover .item-check {
+  opacity: 0.3;
+}
+.dropdown-item.item-selected:hover .item-check {
+  opacity: 1;
+}
+
+/* ── Tarjetas de resumen (sobre los gráficos) ────────────────── */
+.stats-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+@media (max-width: 900px) {
+  .stats-summary-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 500px) {
+  .stats-summary-grid { grid-template-columns: 1fr; }
+}
+
+.summary-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-radius: 14px;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+}
+.summary-primary { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
+.summary-purple  { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+.summary-pink    { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); }
+.summary-teal    { background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); }
+
+.summary-icon {
+  font-size: 32px;
+  opacity: 0.85;
+}
+.summary-info {
+  display: flex;
+  flex-direction: column;
+}
+.summary-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.summary-label {
+  font-size: 12px;
+  opacity: 0.88;
+  font-weight: 500;
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Grid de tarjetas de gráfico ─────────────────────────────── */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 860px) {
+  .charts-grid { grid-template-columns: 1fr; }
+}
+
+/* El chart de ciudad ocupa toda la fila */
+.chart-card--hbar {
+  grid-column: 1 / -1;
+}
+
+/* ── Tarjeta de gráfico ──────────────────────────────────────── */
+.chart-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e8eaf0;
+  padding: 20px 22px 24px;
+  box-shadow: 0 2px 12px rgba(99,102,241,0.07);
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.chart-card-icon {
+  font-size: 22px;
+  color: #6366f1;
+  background: #eef2ff;
+  border-radius: 8px;
+  padding: 6px;
+  flex-shrink: 0;
+}
+
+.chart-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+/* ── Canvas wrappers con altura fija (OBLIGATORIO para Chart.js) */
+.chart-canvas-wrapper {
+  position: relative;
+  width: 100%;
+}
+.chart-canvas-wrapper--doughnut {
+  height: 300px;
+}
+.chart-canvas-wrapper--vbar {
+  height: 300px;
+}
+.chart-canvas-wrapper--hbar {
+  /* Alto dinámico según cantidad de ítems: mínimo 220px */
+  height: 320px;
+}

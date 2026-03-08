@@ -16,8 +16,12 @@ public class ReporteOfertaEmpresaService {
     private static final List<Integer> TOPS_VALIDOS =
             List.of(5, 10, 15, 20);
 
+    // ✅ Fix: los valores reales de la columna estado_oferta en la BD
+    // (en minúscula — el SP aplica LOWER() en ambos lados para la comparación,
+    //  así que el frontend puede enviar cualquier capitalización y el SP lo acepta;
+    //  pero validamos aquí en minúscula para consistencia interna)
     private static final List<String> ESTADOS_VALIDOS =
-            List.of("Activa", "Inactiva", "Cerrada");
+            List.of("aprobado", "pendiente", "rechazada", "cancelada");
 
     private final ReporteOfertaEmpresaRepository repository;
 
@@ -44,12 +48,19 @@ public class ReporteOfertaEmpresaService {
         }
 
         // ── Validación 3: estado válido ──────────────────────────────────
-        if (filtro.getEstadoOferta() != null
-                && !filtro.getEstadoOferta().isBlank()
-                && !ESTADOS_VALIDOS.contains(filtro.getEstadoOferta())) {
-            throw new IllegalArgumentException(
-                    "El estado debe ser: Activa, Inactiva o Cerrada"
-            );
+        // ✅ Fix: el controller ya normaliza '' a null, así que aquí
+        // estadoOferta es null (sin filtro) o un valor no vacío.
+        // Comparamos en minúscula para no depender de la capitalización
+        // que envíe el frontend.
+        if (filtro.getEstadoOferta() != null) {
+            String estadoLower = filtro.getEstadoOferta().toLowerCase();
+            if (!ESTADOS_VALIDOS.contains(estadoLower)) {
+                throw new IllegalArgumentException(
+                        "El estado debe ser: aprobado, pendiente, rechazada o cancelada"
+                );
+            }
+            // Normalizar a minúscula para que el SP lo reciba consistente
+            filtro.setEstadoOferta(estadoLower);
         }
 
         // ── Validación 4: rango de fechas coherente ──────────────────────

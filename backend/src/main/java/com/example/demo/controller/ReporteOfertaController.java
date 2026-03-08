@@ -22,17 +22,18 @@ public class ReporteOfertaController {
 
     @GetMapping("/ofertas")
     public ResponseEntity<List<ReporteOfertaDTO>> obtenerReporte(
-            @RequestParam(required = false) Integer idCiudad,
-            @RequestParam(required = false) Integer idCategoria,
-            @RequestParam(required = false) Integer idModalidad,
-            @RequestParam(required = false) Integer idJornada,
+            @RequestParam(required = false) Integer    idCiudad,
+            @RequestParam(required = false) Integer    idCategoria,
+            @RequestParam(required = false) Integer    idModalidad,
+            @RequestParam(required = false) Integer    idJornada,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
             @RequestParam(required = false) BigDecimal salarioMin,
             @RequestParam(required = false) BigDecimal salarioMax,
-            @RequestParam(required = false, defaultValue = "Activa") String estadoOferta
+            // ✅ CORREGIDO: sin defaultValue — llega null cuando no se filtra
+            @RequestParam(required = false) String     estadoOferta
     ) {
         FiltroReporteOfertaDTO filtro = new FiltroReporteOfertaDTO();
         filtro.setIdCiudad(idCiudad);
@@ -43,7 +44,10 @@ public class ReporteOfertaController {
         filtro.setFechaFin(fechaFin);
         filtro.setSalarioMin(salarioMin);
         filtro.setSalarioMax(salarioMax);
-        filtro.setEstadoOferta(estadoOferta);
+        // ✅ Convierte cadena vacía a null por si el frontend envía ""
+        filtro.setEstadoOferta(
+                (estadoOferta != null && !estadoOferta.trim().isEmpty()) ? estadoOferta : null
+        );
 
         List<ReporteOfertaDTO> resultado = reporteOfertaService.obtenerReporte(filtro);
         return ResponseEntity.ok(resultado);
