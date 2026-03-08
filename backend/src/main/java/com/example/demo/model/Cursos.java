@@ -1,6 +1,7 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import java.time.LocalDate;
 
@@ -24,15 +25,19 @@ public class Cursos {
     @Column(name = "institucion", columnDefinition = "VARCHAR(100)")
     private String institucion;
 
-    @Column(name = "hora_duracion", columnDefinition = "VARCHAR(5)") // por si dejan la h , 40h, 3.5h,
+    @Column(name = "hora_duracion", columnDefinition = "VARCHAR(5)")
     private String horaDuracion;
 
     @Column(name = "fecha_finalizacion", columnDefinition = "DATE")
     private LocalDate fechaFinalizacion;
 
     @Column(name = "archivo_certificado", columnDefinition = "TEXT")
-    private String archivoCertificado; // URL de Drive/Cloudinary del PDF o imagen
+    private String archivoCertificado;
 
     @Column(name = "fecha_registro", nullable = false, columnDefinition = "DATE DEFAULT CURRENT_DATE")
     private LocalDate fechaRegistro ;
+
+    @NotNull(message = "El estado es obligatorio")
+    @Column(name = "estado_registro")
+    private String estadoRegistro;
 }

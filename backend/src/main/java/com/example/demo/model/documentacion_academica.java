@@ -25,7 +25,11 @@ public class documentacion_academica {
     private LocalDate fechaRegistro;
 
     @Column(name = "archivo_titulo", length = 500)
-    private String archivoTitulo; // URL de Cloudinary
+    private String archivoTitulo;
+
+    @NotNull(message = "El estado es obligatorio")
+    @Column(name = "estado_registro")
+    private String estadoRegistro;
 
     @PrePersist
     public void prePersist() {

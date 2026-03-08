@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +23,8 @@ public class llenarCmbs {
     private final CiudadRepository ciudadRepository;
     private final TipoHabilidadRepository tipoHabilidadRepository;
     private  final CatalogoHabilidadRepository catalogoHabilidadRepository;
+    private final CargoRepository cargoRepository;
+    private final  CatalogoEmpresaRepository catalogoEmpresaRepository;
     @Autowired
     private FacultadRepository facultadRepository;
     @Autowired
@@ -44,11 +47,6 @@ public class llenarCmbs {
     @Autowired
     private RolesRepository rolesRepository;
 
-    @Autowired
-    private CargoRepository cargoRepository;
-
-    @Autowired
-    private CatalogoEmpresaRepository catalogoEmpresaRepository;
 
 
     @GetMapping("/provincias")
@@ -73,7 +71,21 @@ public class llenarCmbs {
     }
 
 
-
+    @GetMapping("/buscar")
+    public List<CatalogoEmpresa> buscarEmpresas(@RequestParam("termino") String termino) {
+        if (termino == null || termino.trim().length() < 3) {
+            return new ArrayList<>();
+        }
+        return catalogoEmpresaRepository.buscarEmpresasPredictivo(termino);
+    }
+    @GetMapping("/cargos/buscar")
+    public List<Cargo> buscarCargos (@RequestParam("termino") String termino)
+    {
+        if (termino==null || termino.trim().length()<2){
+            return new ArrayList<>();
+        }
+        return cargoRepository.buscarCargosPredictivo(termino);
+    }
 
     @GetMapping("/carreras/{idFacultad}")
     public List<Carrera> listarCarrerasPorFacultad(@PathVariable Integer idFacultad) {
@@ -115,22 +127,18 @@ public class llenarCmbs {
     @GetMapping("/usuarios/estadisticas")
     public ResponseEntity<?> getEstadisticasUsuarios() {
         long total = usuarioRepository.count();
-        // Aquí puedes añadir más lógica, por ahora devolvemos el total
         return ResponseEntity.ok(Map.of(
                 "totalUsuarios", total,
                 "fechaActualizacion", new java.util.Date()
         ));
     }
 
-    // 2. Obtener auditorías de un usuario específico
     @GetMapping("/usuarios/{idUsuario}/auditorias")
     public List<Auditoria> getAuditoriasUsuario(@PathVariable Integer idUsuario) {
-        // Nota: Necesitarás tener un AuditoriaRepository y la entidad Auditoria
-        // return auditoriaRepository.findByUsuarioId(idUsuario);
-        return List.of(); // Placeholder hasta que tengas tu entidad de auditoría
+        return List.of();
     }
 
-    // 4. Exportar Auditorías de un usuario a Excel
+
     @GetMapping("/usuarios/{idUsuario}/auditorias/exportar")
     public ResponseEntity<byte[]> exportarAuditoriasExcel(@PathVariable Integer idUsuario) {
         // Lógica similar a la anterior filtrando por ID

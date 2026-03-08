@@ -1,6 +1,7 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Entity
@@ -22,11 +23,15 @@ public class UsuarioIdioma {
     private Usuario usuario;
 
     @Column(name = "nivel", nullable = false, columnDefinition = "VARCHAR(30)")
-    private String nivel; // Ej: "A2 - Básico", "B2 - Intermedio", "C1 - Avanzado"
+    private String nivel;
 
     @Column(name = "archivo_certificado", length = 500)
-    private String archivoCertificado; // URL de Cloudinary
+    private String archivoCertificado;
 
     @Column(name = "codigo_certificado", columnDefinition = "VARCHAR(50)")
-    private String codigoCertificado; // Código de verificación del examen (ej. TOEFL ID)
+    private String codigoCertificado;
+
+    @NotNull(message = "El estado es obligatorio")
+    @Column(name = "estado_registro")
+    private String estadoRegistro;
 }

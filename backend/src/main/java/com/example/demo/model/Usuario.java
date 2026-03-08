@@ -14,8 +14,6 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_usuario")
     private Long idUsuario;
-
-    // Sincronizado con id_rol de la BD
     @ManyToOne
     @JoinColumn(name = "id_rol")
     private Roles rol;

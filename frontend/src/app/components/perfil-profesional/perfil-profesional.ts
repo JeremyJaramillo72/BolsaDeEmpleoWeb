@@ -39,6 +39,8 @@
     idUsuarioLogueado: number = 0;
     mostrarNuevoCargo: boolean = false;
     nuevoNombreCargo: string = '';
+    busquedaCargoTexto: string = '';
+    busquedaEmpresaTexto: string = '';
 
     mostrarNuevaEmpresa: boolean = false;
 
@@ -129,15 +131,7 @@
         error: err => console.error('Error crítico al cargar idiomas', err)
       });
 
-      this.perfilService.getCargosCatalogo().subscribe({
-        next: res => this.cargosDisponibles = res,
-        error: err => console.warn('No se pudieron cargar los cargos')
-      });
 
-      this.perfilService.getEmpresasCatalogo().subscribe({
-        next: res => this.empresasDisponibles = res,
-        error: err => console.warn('No se pudieron cargar las empresas')
-      });
       this.perfilService.obtenerCategorias().subscribe({
         next: res => this.categorias = res,
         error: err => console.warn('No se pudieron cargar las categorías')
@@ -477,7 +471,52 @@
         this.cargoActual = null;
       }
     }
+    buscarCargoDinamico(event: any): void {
 
+      const termino = event.target?.value || '';
+
+      if (termino.trim().length >= 2) {
+        this.perfilService.buscarCargosPredictivo(termino.trim()).subscribe({
+          next: (res) => {
+            this.cargosDisponibles = res;
+            this.cdr.detectChanges();
+          },
+          error: (err) => console.warn('Error al buscar cargos predictivos', err)
+        });
+      } else {
+        this.cargosDisponibles = [];
+        this.cdr.detectChanges();
+      }
+    }
+
+    buscarEmpresaDinamica(event: any): void {
+      const termino = event.target?.value || '';
+
+      if (termino.trim().length >= 3) {
+        this.perfilService.buscarEmpresasPredictivo(termino.trim()).subscribe({
+          next: (res) => {
+            this.empresasDisponibles = res;
+            this.cdr.detectChanges();
+          },
+          error: (err) => console.warn('Error al buscar empresas predictivas', err)
+        });
+      } else {
+        this.empresasDisponibles = [];
+        this.cdr.detectChanges();
+      }
+    }
+
+    seleccionarCargoPred(cargo: any): void {
+      this.cargoActual = cargo.idCargo;
+      this.busquedaCargoTexto = cargo.nombreCargo;
+      this.cargosDisponibles = [];
+    }
+
+    seleccionarEmpresaPred(empresa: any): void {
+      this.nuevaExperiencia.id_empresa_catalogo = empresa.idEmpresaCatalogo;
+      this.busquedaEmpresaTexto = empresa.nombreEmpresa;
+      this.empresasDisponibles = [];
+    }
     eliminarCargoTemporal(index: number): void {
       this.cargosTemporales.splice(index, 1);
     }
@@ -713,7 +752,7 @@
           error: (err) => {
             console.error(err);
             this.notif.error('Error al actualizar la experiencia.');
-          } // cambiado a notif
+          }
         });
       } else {
         this.perfilService.registrarItemPerfil(this.idUsuarioLogueado, 'experiencia', formData).subscribe({

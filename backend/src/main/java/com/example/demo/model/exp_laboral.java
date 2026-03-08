@@ -58,6 +58,11 @@ public class exp_laboral {
     @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro;
 
+
+    @NotNull(message = "El estado es obligatorio")
+    @Column(name = "estado_registro")
+    private String estadoRegistro;
+
     @PrePersist
     public void prePersist() {
         if (this.fechaRegistro == null) {
