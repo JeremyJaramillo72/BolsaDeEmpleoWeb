@@ -21,6 +21,7 @@ public class DashboardDTO {
     public static class AdminStats {
         private Map<String, KpiItem> kpis; // pendientes, empresasNuevas, usuariosTotales, reportesHoy
         private GraficoDTO grafico;        // Mantener para compatibilidad si se necesita
+        private GraficoMultiDatasetDTO graficoMultiDataset; // Para gráficos multi-línea
     }
 
     @Data
@@ -39,5 +40,20 @@ public class DashboardDTO {
     public static class GraficoDTO {
         private List<String> labels;
         private List<Integer> data;
+    }
+
+    @Data
+    public static class GraficoDataset {
+        private String label;           // e.g., user name
+        private List<Integer> data;     // values for each label
+        private String borderColor;     // line color
+        private String backgroundColor; // fill color (optional)
+        private Boolean fill;           // whether to fill under line
+    }
+
+    @Data
+    public static class GraficoMultiDatasetDTO {
+        private List<String> labels;                    // months/dates
+        private List<GraficoDataset> datasets;          // one per user
     }
 }

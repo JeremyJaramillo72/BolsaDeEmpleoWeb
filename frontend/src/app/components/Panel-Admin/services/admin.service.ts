@@ -1,7 +1,7 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs'; // Agregamos 'of' para el mock de estadísticas
+import { Observable, of, BehaviorSubject } from 'rxjs'; // Agregamos BehaviorSubject
 import { EmpresaResumen } from '../components/validar-empresa/validar-empresa';
 
 @Injectable({
@@ -9,9 +9,10 @@ import { EmpresaResumen } from '../components/validar-empresa/validar-empresa';
 })
 export class AdminService {
 
-  // ==========================================
-  // 🌐 URLs BASE (Organizadas para no fallar)
-  // ==========================================
+  // Subject para notificar cambios en la lista de admins
+  private adminsActualizados$ = new BehaviorSubject<boolean>(false);
+  public adminsActualizados = this.adminsActualizados$.asObservable();
+
   private apiUsuariosUrl = 'http://localhost:8080/api/usuarios-bd';
   private apiAcademicoUrl = 'http://localhost:8080/api/academico';
   private apiAdminUrl = 'http://localhost:8080/api/admin';
@@ -354,6 +355,13 @@ export class AdminService {
 
   contarPostulantesPorOfertas(ids: number[]): Observable<{[key: number]: number}> {
     return this.http.post<{[key: number]: number}>(`${this.apiOfertasUrl}/conteo-postulantes`, ids);
+  }
+
+  // ==========================================
+  // 🔄 NOTIFICAR CAMBIOS EN LA LISTA
+  // ==========================================
+  notificarCambio(): void {
+    this.adminsActualizados$.next(true);
   }
 
 }

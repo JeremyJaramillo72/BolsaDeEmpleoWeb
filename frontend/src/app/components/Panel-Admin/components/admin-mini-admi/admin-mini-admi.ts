@@ -1,9 +1,11 @@
-import { Component, OnInit , ChangeDetectorRef} from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
 import { UiNotificationService } from '../../../../services/ui-notification.service';
 import { ConfirmService } from '../../../../services/confirm.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 import {HttpErrorResponse} from '@angular/common/http';
 
@@ -15,10 +17,11 @@ import {HttpErrorResponse} from '@angular/common/http';
   styleUrls: ['./admin-mini-admi.css'],
   // providers: [AdminService] <--- NO es necesario si el servicio tiene providedIn: 'root'
 })
-export class AdminMiniAdmiComponent implements OnInit {
+export class AdminMiniAdmiComponent implements OnInit, OnDestroy {
 
   vistaActual: 'LISTA' | 'CREAR' = 'LISTA';
   listaAdmins: any[] = [];
+  isLoading: boolean = true; // Bandera para mostrar loading
 
   // Paginación
   currentPage: number = 1;
@@ -42,7 +45,7 @@ export class AdminMiniAdmiComponent implements OnInit {
     { key: 'VALIDACION_E', nombre: 'Validacion Empresas', seleccionada: false }
   ];
 
-  // Eliminamos 'private http: any' porque usaremos solo el servicio
+  private destroy$ = new Subject<void>();
 
   constructor(
     private adminService: AdminService,
@@ -55,10 +58,22 @@ export class AdminMiniAdmiComponent implements OnInit {
     this.cargarListaAdminsRegistrados();
     this.cargarRolesInternos();
 
-
+    // Subscribirse a cambios de la lista
+    this.adminService.adminsActualizados
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.cargarListaAdminsRegistrados();
+      });
   }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   cargarListaAdminsRegistrados()
   {
+    this.isLoading = true;
     this.adminService.obtenerAdminsRegistrados().subscribe(
       {
         next : (data) =>
@@ -74,9 +89,13 @@ export class AdminMiniAdmiComponent implements OnInit {
               estadoValidacion: usuario.estadoValidacion,
           }));
           this.currentPage = 1;
+          this.isLoading = false;
           this.cdr.detectChanges();
         },
-        error: (e) => console.error('Error cargando lista de admins:', e)
+        error: (e) => {
+          console.error('Error cargando lista de admins:', e);
+          this.isLoading = false;
+        }
       });
   }
 
@@ -146,37 +165,31 @@ export class AdminMiniAdmiComponent implements OnInit {
 
     console.log('Enviando admin:', usuarioParaBackend);
 
+    // Mostrar loading
+    this.isLoading = true;
+
     // 3. Enviar al Backend usando SOLO el servicio
     this.adminService.crearAdministrador(usuarioParaBackend).subscribe({
       next: (respuesta) => {
         // Como configuramos responseType: text, 'respuesta' será el string del backend
         console.log('Respuesta Backend:', respuesta);
-        this.ui.exito(respuesta); // Muestra "Usuario creado con éxito..."
 
-        // Actualizar lista local (visual)
-        const nombresPermisos = this.seccionesDisponibles
-          .filter(s => s.seleccionada)
-          .map(s => s.nombre);
+        // Mostrar notificación
+        this.ui.exito(respuesta);
 
-        this.listaAdmins.push({
-          usuario: this.nuevoAdmin.usuario,
-          rolBD: this.rolesDisponibles.find(r => r.id == this.nuevoAdmin.rolId)?.etiqueta,
-          fechaCreacion: new Date(),
-          permisosUI: nombresPermisos.length > 0 ? nombresPermisos : ['Sin Permisos UI'],
-          estadoValidacion: 'Activo'
-        });
-
-        // Actualizar paginación y vista
-        this.currentPage = this.totalPages; // ir a la última página
-        this.cdr.detectChanges();
-
-        this.cancelarCreacion(); // Vuelve a la lista y limpia
+        // Esperar a que la notificación sea visible, luego cambiar vista y recargar tabla
+        setTimeout(() => {
+          this.cancelarCreacion(); // Vuelve a la lista y limpia
+          this.isLoading = true; // Mostrar loading mientras recarga tabla
+          this.adminService.notificarCambio(); // Recarga la tabla desde BD
+        }, 500);
       },
       error: (error) => {
         console.error('Error HTTP:', error);
         // Si el backend devuelve texto error, a veces viene en error.error.text o error.error
         const mensaje = error.error?.text || error.error || error.message;
         this.ui.error('Ocurrió un error: ' + mensaje);
+        this.isLoading = false;
       }
     });
   }
@@ -188,31 +201,43 @@ export class AdminMiniAdmiComponent implements OnInit {
     if (nuevoEstado === 'Inactivo') {
       this.confirmService.abrir(`¿Seguro que deseas Desactivar a ${admin.usuario}?`).then(acepto => {
         if (!acepto) return;
+
+        this.isLoading = true;
         this.adminService.cambiarEstadoAdmin(admin.id, nuevoEstado).subscribe({
           next: (respuesta) => {
-            console.log(respuesta); // "Estado actualizado a Activo/Inactivo"
-            admin.estadoValidacion = nuevoEstado;
-            this.cdr.detectChanges();
+            console.log(respuesta);
+            this.ui.exito('Estado actualizado exitosamente');
+
+            // Actualizar instantáneamente y recargar tabla desde BD
+            setTimeout(() => {
+              this.adminService.notificarCambio();
+            }, 300);
           },
           error: (e) => {
             console.error(e);
             this.ui.error('Error al cambiar el estado. Revisa la consola.');
+            this.isLoading = false;
           }
         });
       });
       return;
     }
+
+    this.isLoading = true;
     this.adminService.cambiarEstadoAdmin(admin.id, nuevoEstado).subscribe({
       next: (respuesta) => {
-        console.log(respuesta); // "Estado actualizado a Activo/Inactivo"
+        console.log(respuesta);
+        this.ui.exito('Estado actualizado exitosamente');
 
-        admin.estadoValidacion = nuevoEstado;
-
-        this.cdr.detectChanges();
+        // Actualizar instantáneamente y recargar tabla desde BD
+        setTimeout(() => {
+          this.adminService.notificarCambio();
+        }, 300);
       },
       error: (e) => {
         console.error(e);
         this.ui.error('Error al cambiar el estado. Revisa la consola.');
+        this.isLoading = false;
       }
     });
   }
@@ -275,14 +300,21 @@ export class AdminMiniAdmiComponent implements OnInit {
   desactivarUsuario(admin: any) {
     this.confirmService.abrir(`¿Estás seguro de desactivar al usuario ${admin.usuario}?`).then(acepto => {
       if (!acepto) return;
+
+      this.isLoading = true;
       this.adminService.cambiarEstadoAdmin(admin.id, 'Inactivo').subscribe({
         next: (respuesta) => {
           this.ui.info(respuesta);
-          admin.estadoValidacion = 'Inactivo';
+
+          // Recargar tabla desde BD
+          setTimeout(() => {
+            this.adminService.notificarCambio();
+          }, 300);
         },
         error: (e) => {
           console.error(e);
           this.ui.error('Error al desactivar usuario');
+          this.isLoading = false;
         }
       });
     });

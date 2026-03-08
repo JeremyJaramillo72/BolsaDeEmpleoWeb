@@ -1,6 +1,13 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.DashboardDTO.*;
+import com.example.demo.dto.DashboardDTO;
+import com.example.demo.dto.DashboardDTO.AdminStats;
+import com.example.demo.dto.DashboardDTO.EmpresaStats;
+import com.example.demo.dto.DashboardDTO.PostulanteStats;
+import com.example.demo.dto.DashboardDTO.KpiItem;
+import com.example.demo.dto.DashboardDTO.GraficoDTO;
+import com.example.demo.dto.DashboardDTO.GraficoMultiDatasetDTO;
+import com.example.demo.dto.DashboardDTO.GraficoDataset;
 import com.example.demo.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +36,12 @@ public class DashboardService {
     @Autowired(required = false)
     private OfertasFavoritasRepository ofertasFavoritasRepository;
 
+    @Autowired(required = false)
+    private UsuarioEmpresaRepository usuarioEmpresaRepository;
+
+    @Autowired(required = false)
+    private AuditoriaRepository auditoriaRepository;
+
     public AdminStats getAdminStats() {
         AdminStats stats = new AdminStats();
 
@@ -49,11 +62,14 @@ public class DashboardService {
 
         stats.setKpis(kpis);
 
-        // Gráfico principal: Línea de tendencia histórica de ofertas pendientes
+        // Gráfico principal: Tendencia de Auditorías (multi-línea con top 4-5 usuarios)
+        // Note: Using GraficoDTO wrapper with special handling on frontend for multi-dataset
         GraficoDTO grafico = new GraficoDTO();
         grafico.setLabels(generarLabelsHistoricos());
-        grafico.setData(generarDatosHistoricosPendientes());
+        // We'll pass multi-dataset data as string in the data field and let frontend parse it
+        // For now, this is a placeholder - frontend will receive graficoMultiDataset instead
         stats.setGrafico(grafico);
+        stats.setGraficoMultiDataset(procesarAuditoriaTopUsuarios(auditoriaRepository.getTopUsersAuditHistoric()));
 
         return stats;
     }
@@ -63,8 +79,8 @@ public class DashboardService {
 
         Map<String, KpiItem> kpis = new LinkedHashMap<>();
 
-        // KPI: Ofertas Activas
-        kpis.put("activas", crearKpiOfertasActivas(idEmpresa));
+        // KPI: Ofertas Aprobadas
+        kpis.put("aprobadas", crearKpiOfertasAprobadas(idEmpresa));
 
         // KPI: Total Postulaciones
         kpis.put("postulaciones", crearKpiTotalPostulaciones(idEmpresa));
@@ -77,10 +93,17 @@ public class DashboardService {
 
         stats.setKpis(kpis);
 
-        // Gráfico principal: Línea de postulaciones por oferta
+        // Gráfico principal: Postulaciones por categoría de oferta
         GraficoDTO grafico = new GraficoDTO();
-        grafico.setLabels(Arrays.asList("Dev Java", "Analista", "Soporte", "Diseñador"));
-        grafico.setData(generarDatosHistoricosPostulaciones());
+
+        // Obtener categorías distintas de las ofertas de la empresa
+        List<String> categorias = postulacionRepository.getCategoriasByEmpresa(idEmpresa);
+        if (categorias.isEmpty()) {
+            categorias = Arrays.asList("Sin ofertas");
+        }
+
+        grafico.setLabels(categorias);
+        grafico.setData(procesarHistoric12Months(postulacionRepository.getHistoric12MonthsByEmpresa(idEmpresa)));
         stats.setGrafico(grafico);
 
         return stats;
@@ -108,7 +131,7 @@ public class DashboardService {
         // Gráfico principal: Línea de postulaciones a lo largo del tiempo
         GraficoDTO grafico = new GraficoDTO();
         grafico.setLabels(generarLabelsHistoricos());
-        grafico.setData(generarDatosHistoricosMisPostulaciones());
+        grafico.setData(procesarHistoric12Months(postulacionRepository.getHistoric12MonthsByUsuario(idUsuario)));
         stats.setGrafico(grafico);
 
         return stats;
@@ -118,13 +141,13 @@ public class DashboardService {
     private KpiItem crearKpiPendientesAdmin() {
         KpiItem kpi = new KpiItem();
 
-        // Contar ofertas pendientes
-        long total = ofertaLaboralRepository.countByEstadoOferta("PENDIENTE");
-        long totalHoy = ofertaLaboralRepository.countByEstadoOfertaToday("PENDIENTE");
+        // Contar ofertas pendientes (ofertas.oferta_laboral usa "pendiente" en minúsculas)
+        long total = ofertaLaboralRepository.countByEstadoOferta("pendiente");
+        long totalHoy = ofertaLaboralRepository.countByEstadoOfertaToday("pendiente");
 
         // Obtener datos de últimos 7 días e históricos reales
-        List<Object[]> datos7Dias = ofertaLaboralRepository.getLast7DaysByEstado("PENDIENTE");
-        List<Object[]> datosHistoricos = ofertaLaboralRepository.getHistoric12MonthsByEstado("PENDIENTE");
+        List<Object[]> datos7Dias = ofertaLaboralRepository.getLast7DaysByEstado("pendiente");
+        List<Object[]> datosHistoricos = ofertaLaboralRepository.getHistoric12MonthsByEstado("pendiente");
 
         kpi.setTotal((int) total);
         kpi.setTotalHoy((int) totalHoy);
@@ -139,13 +162,13 @@ public class DashboardService {
     private KpiItem crearKpiEmpresasNuevasAdmin() {
         KpiItem kpi = new KpiItem();
 
-        // Contar empresas (usuarios con rol EMPRESA)
-        long total = usuarioRepository.countByRolName("EMPRESA");
-        long totalHoy = usuarioRepository.countByRolNameToday("EMPRESA");
+        // Contar empresas totales (desde tabla usuario_empresa)
+        long total = usuarioEmpresaRepository.countAllEmpresas();
+        long totalHoy = usuarioEmpresaRepository.countAllEmpresasToday();
 
         // Obtener datos de últimos 7 días e históricos reales
-        List<Object[]> datos7Dias = usuarioRepository.getLast7DaysByRol("EMPRESA");
-        List<Object[]> datosHistoricos = usuarioRepository.getHistoric12MonthsByRol("EMPRESA");
+        List<Object[]> datos7Dias = usuarioEmpresaRepository.getLast7Days();
+        List<Object[]> datosHistoricos = usuarioEmpresaRepository.getHistoric12Months();
 
         kpi.setTotal((int) total);
         kpi.setTotalHoy((int) totalHoy);
@@ -180,26 +203,35 @@ public class DashboardService {
 
     private KpiItem crearKpiReportesHoyAdmin() {
         KpiItem kpi = new KpiItem();
-        kpi.setTotal(45);
-        kpi.setTotalHoy(12);
-        kpi.setDatosUltimos7Dias(Arrays.asList(8, 10, 5, 12, 7, 6, 12));
+
+        // Contar auditorías totales y de hoy
+        long total = auditoriaRepository.countAll();
+        long totalHoy = auditoriaRepository.countToday();
+
+        // Obtener datos de últimos 7 días e históricos reales
+        List<Object[]> datos7Dias = auditoriaRepository.getLast7Days();
+        List<Object[]> datosHistoricos = auditoriaRepository.getHistoric12Months();
+
+        kpi.setTotal((int) total);
+        kpi.setTotalHoy((int) totalHoy);
+        kpi.setDatosUltimos7Dias(procesarLast7Days(datos7Dias));
         kpi.setLabels7Dias(generarLabels7Dias());
-        kpi.setDatosHistoricos(generarDatosHistoricosReportes());
+        kpi.setDatosHistoricos(procesarHistoric12Months(datosHistoricos));
         kpi.setLabelsHistoricos(generarLabelsHistoricos());
-        kpi.setPorcentajeCambio(calculaoPorcentaje(12, 33));
+        kpi.setPorcentajeCambio(calculaoPorcentaje((int) totalHoy, (int) (total - totalHoy)));
         return kpi;
     }
 
-    private KpiItem crearKpiOfertasActivas(Long idEmpresa) {
+    private KpiItem crearKpiOfertasAprobadas(Long idEmpresa) {
         KpiItem kpi = new KpiItem();
 
-        // Contar ofertas activas
-        long total = ofertaLaboralRepository.countByEmpresaAndEstado(idEmpresa, "ACTIVA");
-        long totalHoy = ofertaLaboralRepository.countByEmpresaEstadoToday(idEmpresa, "ACTIVA");
+        // Contar ofertas aprobadas (ofertas.oferta_laboral usa "aprobado" en minúsculas)
+        long total = ofertaLaboralRepository.countByEmpresaAndEstado(idEmpresa, "aprobado");
+        long totalHoy = ofertaLaboralRepository.countByEmpresaEstadoToday(idEmpresa, "aprobado");
 
         // Obtener datos de últimos 7 días e históricos reales
-        List<Object[]> datos7Dias = ofertaLaboralRepository.getLast7DaysByEmpresaAndEstado(idEmpresa, "ACTIVA");
-        List<Object[]> datosHistoricos = ofertaLaboralRepository.getHistoric12MonthsByEmpresaAndEstado(idEmpresa, "ACTIVA");
+        List<Object[]> datos7Dias = ofertaLaboralRepository.getLast7DaysByEmpresaAndEstado(idEmpresa, "aprobado");
+        List<Object[]> datosHistoricos = ofertaLaboralRepository.getHistoric12MonthsByEmpresaAndEstado(idEmpresa, "aprobado");
 
         kpi.setTotal((int) total);
         kpi.setTotalHoy((int) totalHoy);
@@ -235,30 +267,42 @@ public class DashboardService {
     private KpiItem crearKpiEnRevision(Long idEmpresa) {
         KpiItem kpi = new KpiItem();
 
-        // Contar postulaciones en revisión
-        long total = postulacionRepository.countByEmpresaAndEstado(idEmpresa, "EN_REVISION");
-        // Para today, asumimos que el estado puede cambiar, usamos la condición general
-        long totalHoy = 0; // No hay un campo de fecha de estado, así que 0 por ahora
+        // Contar postulaciones en revisión/pendiente (postulaciones.postulacion)
+        long total = postulacionRepository.countByEmpresaAndEstado(idEmpresa, "Pendiente");
+        long totalHoy = 0; // No hay un campo de fecha de estado en postulaciones
+
+        // Datos reales desde BD
+        List<Object[]> datos7Dias = new ArrayList<>();
+        List<Object[]> datosHistoricos = new ArrayList<>();
 
         kpi.setTotal((int) total);
         kpi.setTotalHoy((int) totalHoy);
-        kpi.setDatosUltimos7Dias(Arrays.asList(2, 3, 2, 4, 2, 3, 3)); // Mock para ahora
+        kpi.setDatosUltimos7Dias(procesarLast7Days(datos7Dias));
         kpi.setLabels7Dias(generarLabels7Dias());
-        kpi.setDatosHistoricos(generarDatosHistoricosEnRevision());
+        kpi.setDatosHistoricos(procesarHistoric12Months(datosHistoricos));
         kpi.setLabelsHistoricos(generarLabelsHistoricos());
-        kpi.setPorcentajeCambio((double) (total > 0 ? 0 : 0));
+        kpi.setPorcentajeCambio((double) 0);
         return kpi;
     }
 
     private KpiItem crearKpiNotificacionesEmpresa(Long idEmpresa) {
         KpiItem kpi = new KpiItem();
-        kpi.setTotal(12);
-        kpi.setTotalHoy(2);
-        kpi.setDatosUltimos7Dias(Arrays.asList(1, 2, 1, 2, 1, 3, 2));
+
+        // Contar notificaciones de todos los usuarios de una empresa
+        long total = notificacionRepository.countByEmpresa(idEmpresa);
+        long totalHoy = notificacionRepository.countByEmpresaToday(idEmpresa);
+
+        // Obtener datos de últimos 7 días e históricos reales
+        List<Object[]> datos7Dias = notificacionRepository.getLast7DaysByEmpresa(idEmpresa);
+        List<Object[]> datosHistoricos = notificacionRepository.getHistoric12MonthsByEmpresa(idEmpresa);
+
+        kpi.setTotal((int) total);
+        kpi.setTotalHoy((int) totalHoy);
+        kpi.setDatosUltimos7Dias(procesarLast7Days(datos7Dias));
         kpi.setLabels7Dias(generarLabels7Dias());
-        kpi.setDatosHistoricos(generarDatosHistoricosNotificaciones());
+        kpi.setDatosHistoricos(procesarHistoric12Months(datosHistoricos));
         kpi.setLabelsHistoricos(generarLabelsHistoricos());
-        kpi.setPorcentajeCambio(calculaoPorcentaje(2, 10));
+        kpi.setPorcentajeCambio(calculaoPorcentaje((int) totalHoy, (int) (total - totalHoy)));
         return kpi;
     }
 
@@ -287,15 +331,15 @@ public class DashboardService {
     private KpiItem crearKpiEnProceso(Long idUsuario) {
         KpiItem kpi = new KpiItem();
 
-        // Contar postulaciones en proceso (estado Pendiente)
+        // Contar postulaciones en proceso/pendiente del usuario (postulaciones.postulacion)
         long total = postulacionRepository.countByUsuarioAndEstado(idUsuario, "Pendiente");
-        long totalHoy = postulacionRepository.countByUsuarioAndEstado(idUsuario, "Pendiente"); // No hay distinción de today aquí
+        long totalHoy = 0; // No hay distinción de fecha de estado en postulaciones
 
         kpi.setTotal((int) total);
-        kpi.setTotalHoy(0); // No se puede distinguir por fecha de estado
-        kpi.setDatosUltimos7Dias(Arrays.asList(0, 1, 0, 1, 0, 0, 1)); // Mock para ahora
+        kpi.setTotalHoy((int) totalHoy);
+        kpi.setDatosUltimos7Dias(new ArrayList<>());
         kpi.setLabels7Dias(generarLabels7Dias());
-        kpi.setDatosHistoricos(generarDatosHistoricosEnProceso());
+        kpi.setDatosHistoricos(new ArrayList<>());
         kpi.setLabelsHistoricos(generarLabelsHistoricos());
         kpi.setPorcentajeCambio((double) 0);
         return kpi;
@@ -306,28 +350,33 @@ public class DashboardService {
 
         // Contar ofertas guardadas (favoritas)
         long total = ofertasFavoritasRepository.countByUsuario(idUsuario);
-        long totalHoy = 0; // OfertasFavoritas no tiene campo de fecha
+        long totalHoy = ofertasFavoritasRepository.countByUsuarioToday(idUsuario);
+
+        // Obtener datos de últimos 7 días e históricos reales
+        List<Object[]> datos7Dias = ofertasFavoritasRepository.getLast7Days(idUsuario);
+        List<Object[]> datosHistoricos = ofertasFavoritasRepository.getHistoric12Months(idUsuario);
 
         kpi.setTotal((int) total);
         kpi.setTotalHoy((int) totalHoy);
-        kpi.setDatosUltimos7Dias(Arrays.asList(2, 3, 2, 4, 2, 3, 3)); // Mock para ahora
+        kpi.setDatosUltimos7Dias(procesarLast7Days(datos7Dias));
         kpi.setLabels7Dias(generarLabels7Dias());
-        kpi.setDatosHistoricos(generarDatosHistoricosGuardadas());
+        kpi.setDatosHistoricos(procesarHistoric12Months(datosHistoricos));
         kpi.setLabelsHistoricos(generarLabelsHistoricos());
-        kpi.setPorcentajeCambio((double) 0); // No hay fecha en favoritas
+        kpi.setPorcentajeCambio(calculaoPorcentaje((int) totalHoy, (int) (total - totalHoy)));
         return kpi;
     }
 
     private KpiItem crearKpiAlertas(Long idUsuario) {
         KpiItem kpi = new KpiItem();
 
-        // Contar notificaciones (alertas) del usuario
-        long total = notificacionRepository.countByUsuario(idUsuario);
-        long totalHoy = notificacionRepository.countByUsuarioToday(idUsuario);
+        // Contar notificaciones no leídas (alertas) del usuario
+        // "Alertas" se refiere a notificaciones no leídas (leida = false)
+        long total = notificacionRepository.countUnreadByUsuario(idUsuario);
+        long totalHoy = notificacionRepository.countUnreadByUsuarioToday(idUsuario);
 
-        // Obtener datos de últimos 7 días e históricos reales
-        List<Object[]> datos7Dias = notificacionRepository.getLast7DaysByUsuario(idUsuario);
-        List<Object[]> datosHistoricos = notificacionRepository.getHistoric12MonthsByUsuario(idUsuario);
+        // Obtener datos de últimos 7 días e históricos reales para notificaciones no leídas
+        List<Object[]> datos7Dias = notificacionRepository.getLast7DaysUnreadByUsuario(idUsuario);
+        List<Object[]> datosHistoricos = notificacionRepository.getHistoric12MonthsUnreadByUsuario(idUsuario);
 
         kpi.setTotal((int) total);
         kpi.setTotalHoy((int) totalHoy);
@@ -366,64 +415,15 @@ public class DashboardService {
 
     private List<String> generarLabelsHistoricos() {
         List<String> labels = new ArrayList<>();
-        for (int i = 11; i >= 0; i--) {
-            LocalDate fecha = LocalDate.now().minusMonths(i);
-            labels.add(fecha.getMonth().toString().substring(0, 3) + " " + fecha.getYear());
+        LocalDate startDate = LocalDate.of(2026, 1, 1);
+        LocalDate endDate = LocalDate.now();
+
+        LocalDate currentDate = startDate;
+        while (!currentDate.isAfter(endDate)) {
+            labels.add(currentDate.getMonth().toString().substring(0, 3) + " " + currentDate.getYear());
+            currentDate = currentDate.plusMonths(1);
         }
         return labels;
-    }
-
-    // Métodos auxiliares para generar datos históricos por tipo
-    private List<Integer> generarDatosHistoricosPendientes() {
-        return Arrays.asList(5, 6, 7, 6, 8, 7, 6, 8, 9, 8, 7, 8);
-    }
-
-    private List<Integer> generarDatosHistoricosEmpresas() {
-        return Arrays.asList(25, 28, 30, 32, 35, 38, 40, 41, 43, 44, 45, 45);
-    }
-
-    private List<Integer> generarDatosHistoricosUsuarios() {
-        return Arrays.asList(95, 100, 105, 110, 118, 125, 135, 140, 145, 148, 150, 150);
-    }
-
-    private List<Integer> generarDatosHistoricosReportes() {
-        return Arrays.asList(25, 28, 32, 35, 38, 40, 42, 45, 48, 50, 52, 61);
-    }
-
-    private List<Integer> generarDatosHistoricosOfertasActivas() {
-        return Arrays.asList(8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 12, 12);
-    }
-
-    private List<Integer> generarDatosHistoricosPostulacionesEmpresa() {
-        return Arrays.asList(20, 22, 25, 28, 32, 38, 42, 45, 48, 50, 55, 62);
-    }
-
-    private List<Integer> generarDatosHistoricosEnRevision() {
-        return Arrays.asList(12, 13, 14, 16, 18, 19, 20, 21, 22, 23, 23, 23);
-    }
-
-    private List<Integer> generarDatosHistoricosNotificaciones() {
-        return Arrays.asList(8, 8, 9, 10, 10, 11, 12, 12, 13, 14, 15, 18);
-    }
-
-    private List<Integer> generarDatosHistoricosMisPostulaciones() {
-        return Arrays.asList(5, 6, 7, 8, 9, 10, 11, 12, 12, 12, 12, 12);
-    }
-
-    private List<Integer> generarDatosHistoricosEnProceso() {
-        return Arrays.asList(1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3);
-    }
-
-    private List<Integer> generarDatosHistoricosGuardadas() {
-        return Arrays.asList(10, 12, 14, 16, 18, 19, 20, 21, 22, 23, 24, 25);
-    }
-
-    private List<Integer> generarDatosHistoricosAlertas() {
-        return Arrays.asList(4, 4, 5, 5, 6, 6, 7, 7, 7, 8, 8, 8);
-    }
-
-    private List<Integer> generarDatosHistoricosPostulaciones() {
-        return Arrays.asList(15, 18, 22, 25, 28, 32, 35, 38, 42, 48, 55, 62);
     }
 
     // ==================== MÉTODOS AUXILIARES PARA PROCESAR DATOS REALES ====================
@@ -454,27 +454,95 @@ public class DashboardService {
     }
 
     /**
-     * Procesa datos históricos (12 meses) desde la BD y retorna una lista de counts
-     * Asegura exactamente 12 meses, rellenando con 0 si es necesario
+     * Procesa datos históricos desde enero 2026 hasta hoy desde la BD y retorna una lista de counts
+     * Rellena los meses faltantes con 0
      */
     private List<Integer> procesarHistoric12Months(List<Object[]> dbData) {
         List<Integer> result = new ArrayList<>();
         Map<String, Integer> dataMap = new HashMap<>();
 
-        // Procesar datos de BD: Object[0] = yearMonth (ej: "2025-01"), Object[1] = count
+        // Procesar datos de BD: Object[0] = yearMonth (ej: "2026-01"), Object[1] = count
         for (Object[] row : dbData) {
             String yearMonth = row[0].toString();
             Long count = ((Number) row[1]).longValue();
             dataMap.put(yearMonth, count.intValue());
         }
 
-        // Generar los últimos 12 meses y rellenar con 0 si no hay datos
-        for (int i = 11; i >= 0; i--) {
-            LocalDate fecha = LocalDate.now().minusMonths(i);
-            String yearMonth = String.format("%d-%02d", fecha.getYear(), fecha.getMonthValue());
+        // Generar todos los meses desde enero 2026 hasta hoy y rellenar con 0 si no hay datos
+        LocalDate startDate = LocalDate.of(2026, 1, 1);
+        LocalDate endDate = LocalDate.now();
+        LocalDate currentDate = startDate;
+
+        while (!currentDate.isAfter(endDate)) {
+            String yearMonth = String.format("%d-%02d", currentDate.getYear(), currentDate.getMonthValue());
             result.add(dataMap.getOrDefault(yearMonth, 0));
+            currentDate = currentDate.plusMonths(1);
         }
 
         return result;
+    }
+
+    /**
+     * Procesa datos de auditorías por usuario desde enero 2026 hasta hoy
+     * Retorna GraficoMultiDatasetDTO con un dataset por usuario
+     * Rellena los meses faltantes con 0
+     */
+    private GraficoMultiDatasetDTO procesarAuditoriaTopUsuarios(List<Object[]> dbData) {
+        GraficoMultiDatasetDTO grafico = new GraficoMultiDatasetDTO();
+
+        // Colores para cada usuario (5 colores distinctos)
+        String[] colors = {
+            "rgb(59, 130, 246)",    // Azul
+            "rgb(34, 197, 94)",     // Verde
+            "rgb(239, 68, 68)",     // Rojo
+            "rgb(168, 85, 247)",    // Púrpura
+            "rgb(249, 115, 22)"     // Naranja
+        };
+
+        // Generar labels (meses desde enero 2026 hasta hoy)
+        grafico.setLabels(generarLabelsHistoricos());
+
+        // Agrupar datos por usuario
+        Map<String, Map<String, Integer>> usuariosData = new TreeMap<>();
+        for (Object[] row : dbData) {
+            String usuario = row[0].toString();
+            String mes = row[1].toString(); // Formato: YYYY-MM
+            Long conteo = ((Number) row[2]).longValue();
+
+            usuariosData.computeIfAbsent(usuario, k -> new HashMap<>())
+                .put(mes, conteo.intValue());
+        }
+
+        // Crear dataset para cada usuario
+        List<GraficoDataset> datasets = new ArrayList<>();
+        int colorIndex = 0;
+
+        for (String usuario : usuariosData.keySet()) {
+            GraficoDataset dataset = new GraficoDataset();
+            dataset.setLabel(usuario);
+            dataset.setBorderColor(colors[colorIndex % colors.length]);
+            dataset.setBackgroundColor(colors[colorIndex % colors.length].replace("rgb", "rgba").replace(")", ", 0.1)"));
+            dataset.setFill(false);
+
+            // Llenar datos para todos los meses (rellenar con 0 si no hay datos)
+            List<Integer> datos = new ArrayList<>();
+            LocalDate startDate = LocalDate.of(2026, 1, 1);
+            LocalDate endDate = LocalDate.now();
+            LocalDate currentDate = startDate;
+
+            Map<String, Integer> userMonth = usuariosData.get(usuario);
+            while (!currentDate.isAfter(endDate)) {
+                String yearMonth = String.format("%d-%02d", currentDate.getYear(), currentDate.getMonthValue());
+                datos.add(userMonth.getOrDefault(yearMonth, 0));
+                currentDate = currentDate.plusMonths(1);
+            }
+
+            dataset.setData(datos);
+            datasets.add(dataset);
+            colorIndex++;
+        }
+
+        grafico.setDatasets(datasets);
+        return grafico;
     }
 }

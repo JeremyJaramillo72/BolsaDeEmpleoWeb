@@ -58,20 +58,60 @@ export class DashboardAdminComponent implements OnInit {
       next: (res) => {
         this.datos = res;
 
-        // Actualizar gráfico principal con tendencia histórica
-        this.lineChartData = {
-          labels: res.grafico.labels,
-          datasets: [{
-            data: res.grafico.data,
-            borderColor: '#2563EB',
-            backgroundColor: 'rgba(37, 99, 235, 0.1)',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 4,
-            pointBackgroundColor: '#2563EB'
-          }]
-        };
+        // Verificar si tenemos grafico multi-dataset (auditorías por usuario)
+        if (res.graficoMultiDataset && res.graficoMultiDataset.datasets) {
+          // Usar gráfico multi-dataset (múltiples líneas por usuario)
+          this.lineChartData = {
+            labels: res.graficoMultiDataset.labels,
+            datasets: res.graficoMultiDataset.datasets.map((dataset: any) => ({
+              label: dataset.label,
+              data: dataset.data,
+              borderColor: dataset.borderColor,
+              backgroundColor: dataset.backgroundColor,
+              borderWidth: 2,
+              fill: dataset.fill !== undefined ? dataset.fill : false,
+              tension: 0.4,
+              pointRadius: 3,
+              pointBackgroundColor: dataset.borderColor
+            }))
+          };
+
+          // Habilitar leyenda para identificar usuarios
+          this.lineChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                  usePointStyle: true,
+                  padding: 15,
+                  font: { size: 11 }
+                }
+              }
+            },
+            scales: {
+              x: { type: 'category', grid: { display: false } },
+              y: { type: 'linear', beginAtZero: true }
+            }
+          };
+        } else {
+          // Fallback a gráfico simple (tendencia histórica de ofertas)
+          this.lineChartData = {
+            labels: res.grafico.labels,
+            datasets: [{
+              data: res.grafico.data,
+              borderColor: '#2563EB',
+              backgroundColor: 'rgba(37, 99, 235, 0.1)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 4,
+              pointBackgroundColor: '#2563EB'
+            }]
+          };
+        }
 
         this.isLoading = false;
         this.cdr.detectChanges();

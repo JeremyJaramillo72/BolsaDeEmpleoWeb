@@ -66,9 +66,13 @@ public interface PostulacionRepository extends JpaRepository<Postulacion, Intege
     List<Object[]> getLast7DaysByEmpresa(@Param("idEmpresa") Long idEmpresa);
 
     // Métodos para datos históricos (12 meses)
-    @Query(value = "SELECT TO_CHAR(p.fecha_postulacion, 'YYYY-MM') AS yearMonth, COUNT(*) as count FROM postulaciones.postulacion p WHERE p.id_usuario = :idUsuario AND p.fecha_postulacion >= CURRENT_DATE - INTERVAL '12 months' GROUP BY TO_CHAR(p.fecha_postulacion, 'YYYY-MM') ORDER BY yearMonth ASC", nativeQuery = true)
+    @Query(value = "SELECT TO_CHAR(p.fecha_postulacion, 'YYYY-MM') AS yearMonth, COUNT(*) as count FROM postulaciones.postulacion p WHERE p.id_usuario = :idUsuario AND p.fecha_postulacion >= '2026-01-01'::date GROUP BY TO_CHAR(p.fecha_postulacion, 'YYYY-MM') ORDER BY yearMonth ASC", nativeQuery = true)
     List<Object[]> getHistoric12MonthsByUsuario(@Param("idUsuario") Long idUsuario);
 
-    @Query(value = "SELECT TO_CHAR(p.fecha_postulacion, 'YYYY-MM') AS yearMonth, COUNT(*) as count FROM postulaciones.postulacion p JOIN ofertas.oferta_laboral o ON p.id_oferta = o.id_oferta WHERE o.id_empresa = :idEmpresa AND p.fecha_postulacion >= CURRENT_DATE - INTERVAL '12 months' GROUP BY TO_CHAR(p.fecha_postulacion, 'YYYY-MM') ORDER BY yearMonth ASC", nativeQuery = true)
+    @Query(value = "SELECT TO_CHAR(p.fecha_postulacion, 'YYYY-MM') AS yearMonth, COUNT(*) as count FROM postulaciones.postulacion p JOIN ofertas.oferta_laboral o ON p.id_oferta = o.id_oferta WHERE o.id_empresa = :idEmpresa AND p.fecha_postulacion >= '2026-01-01'::date GROUP BY TO_CHAR(p.fecha_postulacion, 'YYYY-MM') ORDER BY yearMonth ASC", nativeQuery = true)
     List<Object[]> getHistoric12MonthsByEmpresa(@Param("idEmpresa") Long idEmpresa);
+
+    // Métodos para obtener categorías de ofertas distintas de una empresa
+    @Query(value = "select * from postulaciones.fn_obtener_categorias_empresa(:idEmpresa)", nativeQuery = true)
+    List<String> getCategoriasByEmpresa(@Param("idEmpresa") Long idEmpresa);
 }

@@ -92,20 +92,20 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     @Query("SELECT COUNT(u) FROM Usuario u")
     long countAllUsuarios();
 
-    @Query(value = "SELECT COUNT(*) FROM usuarios.usuario WHERE DATE(fecha_registro) = CURRENT_DATE", nativeQuery = true)
+    @Query(value = "select usuarios.fn_contar_usuarios_hoy()", nativeQuery = true)
     long countAllUsuariosToday();
 
     // Métodos para datos de últimos 7 días
     @Query(value = "SELECT CAST(u.fecha_registro AS DATE) as fecha, COUNT(*) as count FROM usuarios.usuario u JOIN usuarios.roles r ON u.id_rol = r.id_rol WHERE r.nombre_rol = :rolName AND u.fecha_registro >= CURRENT_DATE - INTERVAL '7 days' GROUP BY CAST(u.fecha_registro AS DATE) ORDER BY fecha ASC", nativeQuery = true)
     List<Object[]> getLast7DaysByRol(@Param("rolName") String rolName);
 
-    @Query(value = "SELECT CAST(u.fecha_registro AS DATE) as fecha, COUNT(*) as count FROM usuarios.usuario u WHERE u.fecha_registro >= CURRENT_DATE - INTERVAL '7 days' GROUP BY CAST(u.fecha_registro AS DATE) ORDER BY fecha ASC", nativeQuery = true)
+    @Query(value = "select * from usuarios.fn_obtener_usuarios_ultimos_7_dias()", nativeQuery = true)
     List<Object[]> getLast7DaysAllUsers();
 
     // Métodos para datos históricos (12 meses)
-    @Query(value = "SELECT TO_CHAR(u.fecha_registro, 'YYYY-MM') AS yearMonth, COUNT(*) as count FROM usuarios.usuario u JOIN usuarios.roles r ON u.id_rol = r.id_rol WHERE r.nombre_rol = :rolName AND u.fecha_registro >= CURRENT_DATE - INTERVAL '12 months' GROUP BY TO_CHAR(u.fecha_registro, 'YYYY-MM') ORDER BY yearMonth ASC", nativeQuery = true)
+    @Query(value = "SELECT TO_CHAR(u.fecha_registro, 'YYYY-MM') AS yearMonth, COUNT(*) as count FROM usuarios.usuario u JOIN usuarios.roles r ON u.id_rol = r.id_rol WHERE r.nombre_rol = :rolName AND u.fecha_registro >= '2026-01-01'::date GROUP BY TO_CHAR(u.fecha_registro, 'YYYY-MM') ORDER BY yearMonth ASC", nativeQuery = true)
     List<Object[]> getHistoric12MonthsByRol(@Param("rolName") String rolName);
 
-    @Query(value = "SELECT TO_CHAR(u.fecha_registro, 'YYYY-MM') AS yearMonth, COUNT(*) as count FROM usuarios.usuario u WHERE u.fecha_registro >= CURRENT_DATE - INTERVAL '12 months' GROUP BY TO_CHAR(u.fecha_registro, 'YYYY-MM') ORDER BY yearMonth ASC", nativeQuery = true)
+    @Query(value = "select * from usuarios.fn_obtener_usuarios_historico()", nativeQuery = true)
     List<Object[]> getHistoric12MonthsAllUsers();
 }

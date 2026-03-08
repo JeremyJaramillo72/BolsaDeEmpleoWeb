@@ -73,7 +73,10 @@
     </div>
 
     <div *ngIf="datos" class="chart-section">
-      <h3>Tendencia en Mi Búsqueda</h3>
+      <div class="chart-header">
+        <h3>Tendencia en Mi Búsqueda</h3>
+        <span class="tooltip-icon" title="Muestra tu evolución mensual de postulaciones desde enero de 2026 hasta hoy, para que veas tu progreso en la búsqueda de empleo">?</span>
+      </div>
       <div class="canvas-container">
         <canvas baseChart [data]="lineChartData" [options]="lineChartOptions" [type]="lineChartType"></canvas>
       </div>

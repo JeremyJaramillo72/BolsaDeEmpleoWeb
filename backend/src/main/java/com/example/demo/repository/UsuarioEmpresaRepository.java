@@ -38,4 +38,19 @@ public interface UsuarioEmpresaRepository extends JpaRepository<UsuarioEmpresa, 
 
     @Query(value = "SELECT * FROM empresas.v_empresas_admin WHERE estado = :estado", nativeQuery = true)
     List<IEmpresaResumenProjection> listarDesdeVistaPorEstado(@Param("estado") String estado);
+
+    // Métodos para Dashboard stats - Contar empresas (total)
+    @Query(value = "select empresas.fn_contar_empresas_total()", nativeQuery = true)
+    long countAllEmpresas();
+
+    @Query(value = "select empresas.fn_contar_empresas_hoy()", nativeQuery = true)
+    long countAllEmpresasToday();
+
+    // Métodos para últimos 7 días
+    @Query(value = "select * from empresas.fn_obtener_empresas_ultimos_7_dias()", nativeQuery = true)
+    List<Object[]> getLast7Days();
+
+    // Métodos para datos históricos (12 meses)
+    @Query(value = "select * from empresas.fn_obtener_empresas_historico()", nativeQuery = true)
+    List<Object[]> getHistoric12Months();
 }
