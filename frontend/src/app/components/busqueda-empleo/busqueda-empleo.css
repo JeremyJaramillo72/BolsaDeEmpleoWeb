@@ -500,3 +500,107 @@
 
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 .spin { animation: spin 1s linear infinite; display: inline-block !important; }
+/* =======================================
+   ESTILOS PARA LA PANTALLA DE CARGA IA
+======================================== */
+.ai-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  text-align: center;
+  gap: 1rem;
+  animation: fadeInDown 0.3s ease;
+}
+
+.ai-icon {
+  font-size: 4.5rem !important;
+  color: #6366f1;
+
+}
+
+.ai-loading-state h4 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.ai-loading-state p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  max-width: 80%;
+}
+/* =======================================
+   ESTILOS PARA LA PANTALLA DE ERROR IA
+======================================== */
+.ai-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  gap: 1rem;
+  animation: fadeInDown 0.3s ease;
+}
+
+.icon-circle {
+  background-color: #fee2e2; /* Fondo rojo clarito */
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.error-icon {
+  font-size: 2.5rem !important;
+  color: #ef4444; /* Rojo error */
+}
+
+.ai-error-state h4 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.error-message {
+  margin: 0;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  max-width: 90%;
+  font-style: italic;
+}
+
+.btn-reintentar {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 0.7rem 1.4rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-reintentar:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+  border-color: #94a3b8;
+}

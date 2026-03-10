@@ -2,6 +2,8 @@ package com.example.demo.repository;
 
 import com.example.demo.model.Postulacion;
 import com.example.demo.repository.Views.IMisPostulaciones;
+import com.example.demo.repository.Views.IOfertaDatosIaDTO;
+import org.springframework.boot.jackson.autoconfigure.JacksonProperties;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -16,11 +18,13 @@ public interface PostulacionRepository extends JpaRepository<Postulacion, Intege
 
     @Transactional
     @Modifying
-    @Query(value = "CALL postulaciones.sp_registrar_postulacion(:idUsuario, :idOferta, :urlCv)", nativeQuery = true)
+    @Query(value = "CALL postulaciones.sp_registrar_postulacion(:idUsuario, :idOferta, :urlCv,:p_porcentaje_match,:p_analisis_ia)", nativeQuery = true)
     void registrarPostulacionPro(
             @Param("idUsuario") Long idUsuario,
             @Param("idOferta") Integer idOferta,
-            @Param("urlCv") String urlCv
+            @Param("urlCv") String urlCv,
+            @Param("p_porcentaje_match") Integer p_porcentaje_match,
+            @Param("p_analisis_ia") String p_analisis_ia
     );
 
     @Transactional
@@ -79,4 +83,8 @@ public interface PostulacionRepository extends JpaRepository<Postulacion, Intege
 
     @Query(value = "SELECT * FROM postulaciones.fn_listar_mis_postulaciones(:idUsuario)", nativeQuery = true)
     List<IMisPostulaciones> listarMisPostulaciones(@Param("idUsuario") Long idUsuario);
+
+    @Query(value = "select * from ofertas.fn_obtener_datos_oferta_ia(:idOferta)", nativeQuery = true)
+    IOfertaDatosIaDTO obtenerDatosOfertaParaIa(@Param("idOferta") Integer idOferta);
 }
+

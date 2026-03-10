@@ -8,13 +8,14 @@ import com.example.demo.dto.ResumenSeccionDTO;
 import com.example.demo.repository.Impl.PostulacionCustomRepository;
 import com.example.demo.repository.PostulacionRepository;
 import com.example.demo.repository.Views.IMisPostulaciones;
-import com.example.demo.service.AzureStorageConfig;
-import com.example.demo.service.IPostulacionService;
+import com.example.demo.repository.Views.IOfertaDatosIaDTO;
+import com.example.demo.service.*;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import com.example.demo.service.NotificacionService;
+
 import java.util.List;
 import java.util.Map;
 
@@ -26,16 +27,68 @@ public class PostulacionServiceImpl implements IPostulacionService {
     private final AzureStorageConfig azureStorageConfig;
     private final PostulacionCustomRepository postulacionCustomRepository;
     private final NotificacionService notificacionService;
+    private final IPdfService iPdfService;
+    private final GeminiAiService geminiAiService;
+
 
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class) // VITAL: Si el CV es inválido o Gemini falla, se cancela todo
     public void registrarPostulacion(Long idUsuario, Integer idOferta, MultipartFile archivo) throws Exception {
+
         String urlCv = null;
+        int porcentajeMatch = 0;
+        String jsonAnalisis = null;
+
         if (archivo != null && !archivo.isEmpty()) {
+
+            // 1. Extraemos el texto del PDF
+            String textoCv = iPdfService.extraerTextoDePdf(archivo);
+            if (textoCv == null || textoCv.isBlank() || textoCv.length() < 50) {
+                throw new IllegalArgumentException("El documento no contiene texto legible o está vacío. Asegúrate de subir un PDF válido.");
+            }
+
+            // 2. Traemos los datos de la oferta usando tu majestuosa Interfaz
+            IOfertaDatosIaDTO datosOferta = postulacionRepository.obtenerDatosOfertaParaIa(idOferta);
+            if (datosOferta == null) {
+                throw new IllegalArgumentException("No se encontró la oferta laboral especificada.");
+            }
+
+            // 3. Armamos los requisitos para Gemini
+            String requisitosOferta = String.format(
+                    "Experiencia mínima requerida: %d años. Habilidades técnicas: %s. Otros requisitos: %s",
+                    datosOferta.getExperienciaMinima() != null ? datosOferta.getExperienciaMinima() : 0,
+                    datosOferta.getHabilidades(),
+                    datosOferta.getRequisitos()
+            );
+
+            // 4. Mandamos a la IA a trabajar
+            JsonNode analisisIa = geminiAiService.analizarCvConOferta(
+                    textoCv,
+                    datosOferta.getTitulo(),
+                    datosOferta.getDescripcion(),
+                    requisitosOferta
+            );
+
+            // 5. Validamos si la IA aprobó el documento como un "CV real"
+            boolean cvValido = analisisIa.path("cv_valido").asBoolean(true);
+            if (!cvValido) {
+                String motivo = analisisIa.path("motivo_invalidez").asText("El documento no cumple con los estándares mínimos de un CV.");
+                throw new IllegalArgumentException("Tu postulación fue rechazada automáticamente: " + motivo);
+            }
+
+            // 6. Extraemos los resultados
+            porcentajeMatch = analisisIa.path("match_oferta").path("porcentaje").asInt(0);
+            jsonAnalisis = analisisIa.toString();
+
+            // 7. AHORA SÍ, como todo es válido, subimos el PDF a Azure
             urlCv = azureStorageConfig.subirDocumento(archivo);
         }
-        postulacionRepository.registrarPostulacionPro(idUsuario, idOferta, urlCv);
+
+        // 8. Guardamos en la Base de Datos llamando a tu procedure (con los nuevos campos)
+        postulacionRepository.registrarPostulacionPro(idUsuario, idOferta, urlCv, porcentajeMatch, jsonAnalisis);
+
+        // 9. Notificación a la empresa (Se mantiene intacto)
         try {
             List<Object[]> datosOferta = postulacionRepository.obtenerDatosEmpresaPorOfertaId(idOferta);
 
@@ -45,20 +98,17 @@ public class PostulacionServiceImpl implements IPostulacionService {
                 String tituloOferta = (String) fila[1];
 
                 notificacionService.crearYEnviarNotificacion(
-                        idUsuarioEmpresa,                    // Para la empresa
-                        "nueva_postulacion",                 // El tipo de plantilla
-                        Map.of("titulo", tituloOferta),      // Variables para el texto
-                        Map.of("idOferta", idOferta, "idCandidato", idUsuario), // Datos extra
-                        "/menu-principal/gestion-ofertas",    // Ruta donde la empresa ve sus ofertas/postulantes
-                        "person_add"                         // Icono
+                        idUsuarioEmpresa,
+                        "nueva_postulacion",
+                        Map.of("titulo", tituloOferta),
+                        Map.of("idOferta", idOferta, "idCandidato", idUsuario),
+                        "/menu-principal/gestion-ofertas",
+                        "person_add"
                 );
             }
         } catch (Exception e) {
-            // Si la notificación falla, no bloqueamos la postulación del candidato
             System.err.println("Error enviando notificación a la empresa: " + e.getMessage());
         }
-
-
     }
 
     @Override
@@ -156,4 +206,5 @@ public class PostulacionServiceImpl implements IPostulacionService {
     public List<ResumenSeccionDTO> obtenerIdiomas(Long idPostulacion) {
         return postulacionCustomRepository.obtenerIdiomas(idPostulacion);
     }
+
 }

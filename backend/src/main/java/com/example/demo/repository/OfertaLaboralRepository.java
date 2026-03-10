@@ -6,10 +6,7 @@ import com.example.demo.model.OfertaLaboral;
 import com.example.demo.dto.OfertaDetalleDTO;
 import com.example.demo.model.Usuario;
 import com.example.demo.model.UsuarioEmpresa;
-import com.example.demo.repository.Views.IOfertaEmpresaDTO;
-import com.example.demo.repository.Views.IOfertaFisicaAdminDTO;
-import com.example.demo.repository.Views.IPostulanteOfertaDTO;
-import com.example.demo.repository.Views.IOfertaDetallada;
+import com.example.demo.repository.Views.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -126,6 +123,7 @@ public interface OfertaLaboralRepository extends JpaRepository<OfertaLaboral, In
 
     @Query(value = "select * from ofertas.fn_listar_ofertas_fisicas()", nativeQuery = true)
     List<IOfertaFisicaAdminDTO> listarOfertasFisicasAdmin();
+
     @Query(value = "select * from ofertas.fn_mostrarofertasempresa(:idEmpresa)", nativeQuery = true)
     List<IOfertaEmpresaDTO> obtenerOfertasPorEmpresa(@Param("idEmpresa") Long idEmpresa);
 
@@ -173,4 +171,7 @@ public interface OfertaLaboralRepository extends JpaRepository<OfertaLaboral, In
 
     @Query(value = "select * from ofertas.fn_obtener_ofertas_empresa_estado_historico(:idEmpresa, :estado)", nativeQuery = true)
     List<Object[]> getHistoric12MonthsByEmpresaAndEstado(@Param("idEmpresa") Long idEmpresa, @Param("estado") String estado);
+
+
 }
+

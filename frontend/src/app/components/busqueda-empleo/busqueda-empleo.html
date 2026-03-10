@@ -233,7 +233,6 @@
     </section>
   </div>
 
-  <!-- MODAL DE POSTULACIÓN -->
   <div class="modal-overlay" *ngIf="mostrarModalPostulacion" (click)="cerrarModalPostulacion()">
     <div class="modal-container" (click)="$event.stopPropagation()">
 
@@ -245,40 +244,52 @@
       </div>
 
       <div class="modal-body">
-        <div
-          class="drop-zone"
-          [class.drag-over]="isDragOver"
-          (dragover)="onDragOver($event)"
-          (dragleave)="onDragLeave($event)"
-          (drop)="onDrop($event)">
 
-          <span class="material-icons drop-icon">upload_file</span>
-          <p class="drop-text">Arrastra el archivo aquí</p>
-          <p class="drop-subtext">Solo archivos PDF · Máx. 10 MB</p>
+        <ng-container *ngIf="!subiendoPostulacion && !errorPostulacion">
+          <div class="drop-zone" [class.drag-over]="isDragOver" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
+            <span class="material-icons drop-icon">upload_file</span>
+            <p class="drop-text">Arrastra el archivo aquí</p>
+            <p class="drop-subtext">Solo archivos PDF · Máx. 10 MB</p>
 
-          <div *ngIf="archivoSeleccionado" class="file-selected">
-            <span class="material-icons">picture_as_pdf</span>
-            {{ archivoSeleccionado.name }}
+            <div *ngIf="archivoSeleccionado" class="file-selected">
+              <span class="material-icons">picture_as_pdf</span>
+              {{ archivoSeleccionado.name }}
+            </div>
           </div>
+
+          <div class="upload-btn-wrapper">
+            <label for="file-input" class="btn-upload">
+              <span class="material-icons">folder_open</span> Buscar documento PDF
+            </label>
+            <input id="file-input" type="file" accept=".pdf" (change)="onFileSelected($event)" hidden>
+          </div>
+        </ng-container>
+
+        <div *ngIf="subiendoPostulacion" class="ai-loading-state">
+          <span class="material-icons spin ai-icon">auto_awesome</span>
+          <h4>La Inteligencia Artificial está analizando tu perfil</h4>
+          <p>Comparando tu currículum con los requisitos de la oferta. Esto tomará unos segundos...</p>
         </div>
 
-        <div class="upload-btn-wrapper">
-          <label for="file-input" class="btn-upload">
-            <span class="material-icons">folder_open</span>
-            Buscar documento PDF
-          </label>
-          <input id="file-input" type="file" accept=".pdf" (change)="onFileSelected($event)" hidden>
+        <div *ngIf="errorPostulacion" class="ai-error-state">
+          <div class="icon-circle">
+            <span class="material-icons error-icon">block</span>
+          </div>
+          <h4>Postulación Rechazada</h4>
+          <p class="error-message">{{ errorPostulacion }}</p>
+          <button class="btn-reintentar" (click)="reintentarPostulacion()">
+            <span class="material-icons">refresh</span> Intentar con otro CV
+          </button>
         </div>
-      </div>
 
-      <div class="modal-footer">
-        <button class="btn-cancelar" (click)="cerrarModalPostulacion()">
-          <span class="material-icons">cancel</span> Cancelar
-        </button>
-        <button class="btn-enviar" (click)="enviarPostulacion()" [disabled]="!archivoSeleccionado">
-          <span class="material-icons">send</span> Enviar Postulación
-        </button>
-      </div>
+      </div> <div class="modal-footer" *ngIf="!subiendoPostulacion && !errorPostulacion">
+      <button class="btn-cancelar" (click)="cerrarModalPostulacion()">
+        <span class="material-icons">cancel</span> Cancelar
+      </button>
+      <button class="btn-enviar" (click)="enviarPostulacion()" [disabled]="!archivoSeleccionado">
+        <span class="material-icons">send</span> Enviar Postulación
+      </button>
+    </div>
 
     </div>
   </div>

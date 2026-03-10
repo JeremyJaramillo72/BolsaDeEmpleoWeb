@@ -55,6 +55,14 @@
             <version>7.2.5</version>
         </dependency>
 
+		<!-- Source: https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox -->
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox</artifactId>
+			<version>3.0.5</version>
+			<scope>compile</scope>
+		</dependency>
+
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>layout</artifactId>

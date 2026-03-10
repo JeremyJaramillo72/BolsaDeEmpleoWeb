@@ -72,12 +72,12 @@ public class llenarCmbs {
 
 
     @GetMapping("/buscar")
-    public List<CatalogoEmpresa> buscarEmpresas(@RequestParam("termino") String termino) {
-        if (termino == null || termino.trim().length() < 3) {
-            return new ArrayList<>();
-        }
-        return catalogoEmpresaRepository.buscarEmpresasPredictivo(termino);
+    public ResponseEntity<List<CatalogoEmpresa>> buscarEmpresas(@RequestParam("termino") String termino) {
+        List<CatalogoEmpresa> empresas = catalogoEmpresaRepository.buscarEmpresasPredictivo(termino);
+        return ResponseEntity.ok(empresas);
     }
+
+
     @GetMapping("/cargos/buscar")
     public List<Cargo> buscarCargos (@RequestParam("termino") String termino)
     {

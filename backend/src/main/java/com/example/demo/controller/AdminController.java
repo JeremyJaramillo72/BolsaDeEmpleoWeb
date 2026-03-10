@@ -85,7 +85,7 @@ public class AdminController {
                 usuario.setEstadoValidacion(nuevoEstado);
                 usuarioRepository.save(usuario);
 
-                // 2. enviamos el correo electrónico
+
                 try {
                     emailService.enviarCorreoValidacion(usuario.getCorreo(), usuario.getNombre(), nuevoEstado);
                 } catch (Exception e) {

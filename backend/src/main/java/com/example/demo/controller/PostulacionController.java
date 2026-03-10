@@ -30,7 +30,13 @@ public class PostulacionController {
             postulacionService.registrarPostulacion(idUsuario, idOferta, archivo);
             response.put("mensaje", "Postulación enviada exitosamente");
             return new ResponseEntity<>(response, HttpStatus.CREATED);
-        } catch (Exception e) {
+        }catch (IllegalArgumentException e) {
+            // ESTO ES CLAVE PARA QUE ANGULAR MUESTRE EL MENSAJE BONITO Y NO UN ERROR FATAL
+            response.put("error", e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        catch (Exception e) {
             response.put("error", "Error al procesar la postulación: " + e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -51,11 +57,12 @@ public class PostulacionController {
 
     @GetMapping("/archivo/{idPostulacion}")
     public ResponseEntity<?> obtenerArchivo(@PathVariable Integer idPostulacion) {
+        Map<String, String> response = null;
         try {
             String urlArchivo = postulacionService.obtenerUrlCV(idPostulacion);
 
             if (urlArchivo != null && !urlArchivo.isEmpty()) {
-                Map<String, String> response = new HashMap<>();
+                response = new HashMap<>();
                 response.put("url", urlArchivo);
                 return ResponseEntity.ok(response);
             } else {
@@ -63,8 +70,9 @@ public class PostulacionController {
                         .body(Map.of("error", "No se encontró archivo para esta postulación"));
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al obtener el archivo: " + e.getMessage()));
+            e.printStackTrace();
+            response.put("error", "Error al procesar la postulación: " + e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

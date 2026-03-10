@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Map;
 
@@ -31,15 +32,19 @@ private final PerfilProfesionalRepository perfilProfesionalRepository;
         return perfilProfesionalRepository.obtenerPerfilCompleto(idUsuario);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void procesarYRegistrar(Long idUsuario, String tipoItem, Map<String, Object> datos, MultipartFile archivo) {
 
         try {
             String jsonDatos = objectMapper.writeValueAsString(datos);
             String urlArchivo = null;
+            try{
             if (archivo != null && !archivo.isEmpty()) {
                 urlArchivo = azureStorageConfig.subirDocumento(archivo);
+            }
+            } catch (Exception e) {
+                throw new RuntimeException("Error grave de comunicación con Azure. No se guardarán los datos.", e);
             }
 
             perfilProfesionalRepository.registrarItemPerfil(idUsuario, tipoItem, jsonDatos, urlArchivo);

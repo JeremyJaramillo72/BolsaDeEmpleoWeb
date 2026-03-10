@@ -29,11 +29,11 @@ export class BusquedaEmpleoComponent implements OnInit {
   ofertaSeleccionada: OfertaDetalladaDTO | null = null;
   archivoSeleccionado: File | null = null;
   isDragOver: boolean = false;
+  subiendoPostulacion: boolean = false;
   errorConexion: boolean = false;
   cargando: boolean = false;
   soloFavoritas: boolean = false;
-
-  // TODO: obtener idUsuario desde el servicio de autenticación
+  errorPostulacion: string | null = null;
   private idUsuario: number = 0;
 
   constructor(
@@ -44,7 +44,6 @@ export class BusquedaEmpleoComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Verificar TODAS las keys del localStorage
     console.log('=== localStorage completo ===');
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -255,16 +254,25 @@ export class BusquedaEmpleoComponent implements OnInit {
     this.ofertaSeleccionada = oferta;
     this.archivoSeleccionado = null;
     this.mostrarModalPostulacion = true;
+
+    this.errorPostulacion = null;
+    this.subiendoPostulacion = false;
   }
 
   cerrarModalPostulacion(): void {
+    if (this.subiendoPostulacion) return;
+
     this.mostrarModalPostulacion = false;
     this.ofertaSeleccionada = null;
     this.archivoSeleccionado = null;
     this.isDragOver = false;
+    this.errorPostulacion = null;
   }
-
-  private readonly MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+  private readonly MAX_FILE_SIZE = 10 * 1024 * 1024;
+  reintentarPostulacion(): void {
+    this.errorPostulacion = null;
+    this.archivoSeleccionado = null;
+  }
 
   private validarArchivo(file: File): boolean {
     if (file.type !== 'application/pdf') {
@@ -314,10 +322,7 @@ export class BusquedaEmpleoComponent implements OnInit {
   }
 
   enviarPostulacion(): void {
-    if (!this.ofertaSeleccionada) {
-      console.warn('⚠️ No hay oferta seleccionada');
-      return;
-    }
+    if (!this.ofertaSeleccionada) return;
 
     const idUsuario = localStorage.getItem('idUsuario');
     if (!idUsuario) {
@@ -325,32 +330,32 @@ export class BusquedaEmpleoComponent implements OnInit {
       return;
     }
 
-    console.log('📤 Enviando postulación:', {
-      idUsuario: Number(idUsuario),
-      idOferta: this.ofertaSeleccionada.idOferta,
-      tieneArchivo: !!this.archivoSeleccionado,
-      nombreArchivo: this.archivoSeleccionado?.name
-    });
+    this.errorPostulacion = null;
+    this.subiendoPostulacion = true;
+    this.cdr.detectChanges();
 
-    this.ofertaService.postular(
-      Number(idUsuario),
-      this.ofertaSeleccionada.idOferta,
-      this.archivoSeleccionado
-    ).subscribe({
-      next: (response) => {
-        this.ui.exito('¡Postulación enviada exitosamente!');
-        console.log('✅ Postulación exitosa:', response);
-        this.cerrarModalPostulacion();
-        // Recargar ofertas para actualizar el estado
-        this.cargarOfertas();
-      },
-      error: (error) => {
-        console.error('Error al postular:', error);
-        this.ui.error('Error al enviar la postulación. Por favor intente nuevamente.');
-        console.error('❌ Error al postular:', error);
-        alert('Error al enviar la postulación. Por favor intente nuevamente.');
-      }
-    });
+    this.ofertaService.postular(Number(idUsuario), this.ofertaSeleccionada.idOferta, this.archivoSeleccionado)
+      .subscribe({
+        next: (response) => {
+          this.subiendoPostulacion = false;
+          this.cdr.detectChanges();
+
+          this.ui.exito('¡Postulación enviada exitosamente!');
+          this.cerrarModalPostulacion();
+          this.cargarOfertas();
+        },
+        error: (error) => {
+          this.subiendoPostulacion = false;
+
+          let mensajeRechazo = 'Error al enviar la postulación. Por favor intente nuevamente.';
+          if (error.error && error.error.error) {
+            mensajeRechazo = error.error.error;
+          }
+
+          this.errorPostulacion = mensajeRechazo;
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   tieneExcluyentes(habilidades: any[]): boolean {
