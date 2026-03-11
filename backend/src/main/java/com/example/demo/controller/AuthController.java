@@ -186,17 +186,27 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpSession session) {
-        // Registrar cierre de sesión antes de invalidar
-        Object idSeguridadObj = session.getAttribute("idSeguridad");
-        System.out.println("🔴 idSeguridad en logout: " + idSeguridadObj);
-        Integer idSeguridad = (Integer) idSeguridadObj;
-        if (idSeguridad != null) {
-            sesionService.registrarLogout(idSeguridad);
-        }
+        try {
+            // Registrar cierre de sesión antes de invalidar
+            Object idSeguridadObj = session.getAttribute("idSeguridad");
+            System.out.println("🔴 idSeguridad en logout: " + idSeguridadObj);
+            Integer idSeguridad = (Integer) idSeguridadObj;
+            if (idSeguridad != null) {
+                sesionService.registrarLogout(idSeguridad);
+            }
 
-        // CUANDO CIERRA SESIÓN, REGRESAMOS AL USUARIO POR DEFECTO DEL BACKEND
-        dbSwitchService.resetToDefault();
-        session.invalidate();
+            // CUANDO CIERRA SESIÓN, REGRESAMOS AL USUARIO POR DEFECTO DEL BACKEND
+            dbSwitchService.resetToDefault();
+        } catch (Exception e) {
+            System.out.println("⚠️ Advertencia al registrar logout: " + e.getMessage());
+        } finally {
+            // Invalidar sesión al final para evitar conflictos
+            try {
+                session.invalidate();
+            } catch (IllegalStateException e) {
+                System.out.println("⚠️ Sesión ya fue invalidada: " + e.getMessage());
+            }
+        }
         return ResponseEntity.ok(Map.of("mensaje", "Conexión de BD cerrada y sesión finalizada"));
     }
 

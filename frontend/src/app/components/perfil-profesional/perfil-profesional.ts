@@ -430,6 +430,7 @@
       if (this.perfil.id_provincia) {
         this.perfilService.getCiudadesPorProvincia(this.perfil.id_provincia).subscribe(res => {
           this.ciudades = res;
+          this.cdr.detectChanges();
         });
       }
       this.actualizarProgreso();
@@ -460,6 +461,7 @@
       if (this.nuevoTitulo.id_facultad) {
         this.perfilService.getCarrerasPorFacultad(this.nuevoTitulo.id_facultad).subscribe(res => {
           this.carrerasNuevoTitulo = res;
+          this.cdr.detectChanges();
         });
       }
     }

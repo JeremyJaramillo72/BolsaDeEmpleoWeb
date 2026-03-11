@@ -17,9 +17,10 @@ export class AuthGuard implements CanActivate {
     // 1. Verificamos si existe el ID del usuario (esto confirma que se logueó)
     const idUsuario = localStorage.getItem('idUsuario');
     const rol = localStorage.getItem('rol');
+    const token = localStorage.getItem('token'); // También validamos token para usuarios Google
 
-    // Si no hay ID, significa que no ha iniciado sesión
-    if (!idUsuario) {
+    // Si no hay ID pero sí hay token (usuario registrado con Google), permitimos acceso
+    if (!idUsuario && !token) {
       this.ui.advertencia('¡Acceso denegado! Por favor, inicia sesión primero.');
       this.router.navigate(['/login']);
       return false;
@@ -29,7 +30,7 @@ export class AuthGuard implements CanActivate {
     const requiredRole = route.data['role'];
 
     // Si la ruta pide un rol y el usuario no lo tiene, lo bloqueamos
-    if (requiredRole && rol !== requiredRole) {
+    if (requiredRole && rol && rol !== requiredRole) {
       this.ui.advertencia(`No tienes permisos de ${requiredRole} para entrar aquí.`);
 
       // Lo mandamos al menú principal porque ya está logueado, pero no tiene permiso aquí

@@ -40,11 +40,11 @@
           </div>
         </div>
         <div class="form-grid">
-          <div class="form-group"><label>Nombre Completo</label><input type="text" [(ngModel)]="perfil.nombreCompleto" (ngModelChange)="onInputChange()"></div>
-          <div class="form-group"><label>Fecha de Nacimiento</label><input type="date" [(ngModel)]="perfil.fechaNacimiento" (ngModelChange)="onInputChange()"></div>
+          <div class="form-group"><label>Nombre Completo</label><input type="text" [(ngModel)]="perfil.nombreCompleto" name="nombreCompleto" (ngModelChange)="onInputChange()"></div>
+          <div class="form-group"><label>Fecha de Nacimiento</label><input type="date" [(ngModel)]="perfil.fechaNacimiento" name="fechaNacimiento" (ngModelChange)="onInputChange()"></div>
           <div class="form-group">
             <label>Género</label>
-            <select [(ngModel)]="perfil.genero" (ngModelChange)="onInputChange()">
+            <select [(ngModel)]="perfil.genero" name="genero" (ngModelChange)="onInputChange()">
               <option value="">Seleccionar...</option>
               <option value="Masculino">Masculino</option>
               <option value="Femenino">Femenino</option>
@@ -55,14 +55,15 @@
             <label>Email Corporativo</label>
             <input type="email"
                    [(ngModel)]="perfil.correo"
+                   name="correo"
                    readonly
                    style="background-color: #f1f5f9; cursor: not-allowed; color: #64748b;">
           </div>
-          <div class="form-group"><label>Teléfono Móvil</label><input type="tel" [(ngModel)]="perfil.telefono" (ngModelChange)="onInputChange()"></div>
+          <div class="form-group"><label>Teléfono Móvil</label><input type="tel" [(ngModel)]="perfil.telefono" name="telefono" (ngModelChange)="onInputChange()"></div>
 
           <div class="form-group">
             <label>Provincia</label>
-            <select [(ngModel)]="perfil.id_provincia" (change)="onProvinciaChange()">
+            <select [(ngModel)]="perfil.id_provincia" name="id_provincia" (change)="onProvinciaChange()">
               <option [ngValue]="null" disabled>Seleccionar Provincia...</option>
               <option *ngFor="let p of provincias" [value]="p.idProvincia">{{ p.nombreProvincia }}</option>
             </select>
@@ -70,7 +71,7 @@
 
           <div class="form-group">
             <label>Ciudad</label>
-            <select [(ngModel)]="perfil.id_ciudad" [disabled]="!perfil.id_provincia" (ngModelChange)="onInputChange()">
+            <select [(ngModel)]="perfil.id_ciudad" name="id_ciudad" [disabled]="!perfil.id_provincia" (ngModelChange)="onInputChange()">
               <option [ngValue]="null" disabled>Seleccionar Ciudad...</option>
               <option *ngFor="let c of ciudades" [value]="c.idCiudad">{{ c.nombreCiudad }}</option>
             </select>
@@ -269,20 +270,20 @@
         <div class="form-grid">
           <div class="form-group">
             <label>Facultad</label>
-            <select [(ngModel)]="nuevoTitulo.id_facultad" (change)="onFacultadNuevaChange()">
+            <select [(ngModel)]="nuevoTitulo.id_facultad" name="id_facultad" (change)="onFacultadNuevaChange()">
               <option [ngValue]="null" disabled>Seleccionar Facultad...</option>
               <option *ngFor="let f of facultades" [value]="f.idFacultad">{{ f.nombreFacultad }}</option>
             </select>
           </div>
           <div class="form-group">
             <label>Carrera</label>
-            <select [(ngModel)]="nuevoTitulo.id_carrera" [disabled]="!nuevoTitulo.id_facultad">
+            <select [(ngModel)]="nuevoTitulo.id_carrera" name="id_carrera" [disabled]="!nuevoTitulo.id_facultad">
               <option [ngValue]="null" disabled>Seleccionar Carrera...</option>
               <option *ngFor="let c of carrerasNuevoTitulo" [value]="c.idCarrera">{{ c.nombreCarrera }}</option>
             </select>
           </div>
-          <div class="form-group"><label>Fecha de Graduación</label><input type="date" [(ngModel)]="nuevoTitulo.fechaGraduacion"></div>
-          <div class="form-group"><label>Registro SENESCYT</label><input type="text" [(ngModel)]="nuevoTitulo.registroSenescyt" placeholder="Ej: 1234-56-789012"></div>
+          <div class="form-group"><label>Fecha de Graduación</label><input type="date" [(ngModel)]="nuevoTitulo.fechaGraduacion" name="fechaGraduacion"></div>
+          <div class="form-group"><label>Registro SENESCYT</label><input type="text" [(ngModel)]="nuevoTitulo.registroSenescyt" name="registroSenescyt" placeholder="Ej: 1234-56-789012"></div>
         </div>
         <div class="actions-row mt-4">
           <button type="button" class="btn-attach" (click)="fileInputAcad.click()"><span class="material-icons">attach_file</span> {{ nuevoTitulo.nombreArchivo || 'Adjuntar Título (PDF)' }}</button>
@@ -306,14 +307,14 @@
         <div class="form-grid">
           <div class="form-group">
             <label>Seleccionar Idioma</label>
-            <select [(ngModel)]="nuevoIdioma.id_idioma">
+            <select [(ngModel)]="nuevoIdioma.id_idioma" name="id_idioma">
               <option [ngValue]="null" disabled>Seleccionar...</option>
               <option *ngFor="let idm of idiomasDisponibles" [value]="idm.idIdioma">{{ idm.nombreIdioma }}</option>
             </select>
           </div>
           <div class="form-group">
             <label>Nivel de Dominio</label>
-            <select [(ngModel)]="nuevoIdioma.nivel">
+            <select [(ngModel)]="nuevoIdioma.nivel" name="nivel">
               <option [ngValue]="null" disabled>Seleccionar...</option>
               <option *ngFor="let n of niveles" [value]="n">{{ n }}</option>
             </select>
@@ -419,14 +420,14 @@
           </div>
 
           <div class="form-grid" *ngIf="mostrarNuevaEmpresa">
-            <div class="form-group full-width">
-              <input type="text" [(ngModel)]="nuevaEmpresaObj.nombre_empresa" placeholder="Nombre de la empresa *">
+          <div class="form-group full-width">
+              <input type="text" [(ngModel)]="nuevaEmpresaObj.nombre_empresa" name="nombre_empresa" placeholder="Nombre de la empresa *">
             </div>
             <div class="form-group">
-              <input type="text" [(ngModel)]="nuevaEmpresaObj.ruc" placeholder="RUC">
+              <input type="text" [(ngModel)]="nuevaEmpresaObj.ruc" name="ruc" placeholder="RUC">
             </div>
             <div class="form-group">
-              <select [(ngModel)]="nuevaEmpresaObj.id_categoria">
+              <select [(ngModel)]="nuevaEmpresaObj.id_categoria" name="id_categoria">
                 <option [ngValue]="null" disabled>Seleccionar Sector/Categoría...</option>
                 <option *ngFor="let cat of categorias" [value]="cat.idCategoria">{{ cat.nombreCategoria }}</option>
               </select>
@@ -441,22 +442,22 @@
         <div class="form-grid mt-4">
           <div class="form-group">
             <label>Provincia</label>
-            <select [(ngModel)]="nuevaExperiencia.id_provincia" (change)="onProvinciaExpChange()">
+            <select [(ngModel)]="nuevaExperiencia.id_provincia" name="id_provincia_exp" (change)="onProvinciaExpChange()">
               <option [ngValue]="null" disabled>Seleccionar Provincia...</option>
               <option *ngFor="let p of provincias" [value]="p.idProvincia">{{ p.nombreProvincia }}</option>
             </select>
           </div>
           <div class="form-group">
             <label>Ciudad</label>
-            <select [(ngModel)]="nuevaExperiencia.id_ciudad" [disabled]="!nuevaExperiencia.id_provincia">
+            <select [(ngModel)]="nuevaExperiencia.id_ciudad" name="id_ciudad_exp" [disabled]="!nuevaExperiencia.id_provincia">
               <option [ngValue]="null" disabled>Seleccionar Ciudad...</option>
               <option *ngFor="let c of ciudadesExp" [value]="c.idCiudad">{{ c.nombreCiudad }}</option>
             </select>
           </div>
 
-          <div class="form-group"><label>Fecha de Inicio *</label><input type="date" [(ngModel)]="nuevaExperiencia.fecha_inicio"></div>
-          <div class="form-group"><label>Fecha de Fin </label><input type="date" [(ngModel)]="nuevaExperiencia.fecha_fin"></div>
-          <div class="form-group full-width"><label>Descripción de Funciones *</label><textarea [(ngModel)]="nuevaExperiencia.descripcion" rows="3"></textarea></div>
+          <div class="form-group"><label>Fecha de Inicio *</label><input type="date" [(ngModel)]="nuevaExperiencia.fecha_inicio" name="fecha_inicio"></div>
+          <div class="form-group"><label>Fecha de Fin </label><input type="date" [(ngModel)]="nuevaExperiencia.fecha_fin" name="fecha_fin"></div>
+          <div class="form-group full-width"><label>Descripción de Funciones *</label><textarea [(ngModel)]="nuevaExperiencia.descripcion" name="descripcion" rows="3"></textarea></div>
         </div>
 
         <div class="actions-row mt-4">
@@ -481,15 +482,15 @@
         <div class="form-grid">
           <div class="form-group full-width">
             <label>Nombre del Curso/Certificación *</label>
-            <input type="text" [(ngModel)]="nuevoCurso.nombre_curso" placeholder="Ej: AWS Certified Cloud Practitioner">
+            <input type="text" [(ngModel)]="nuevoCurso.nombre_curso" name="nombre_curso" placeholder="Ej: AWS Certified Cloud Practitioner">
           </div>
           <div class="form-group">
             <label>Institución *</label>
-            <input type="text" [(ngModel)]="nuevoCurso.institucion" placeholder="Ej: Udemy, Coursera">
+            <input type="text" [(ngModel)]="nuevoCurso.institucion" name="institucion" placeholder="Ej: Udemy, Coursera">
           </div>
           <div class="form-group">
             <label>Duración (Horas)</label>
-            <input type="number" [(ngModel)]="nuevoCurso.horas_duracion" placeholder="Ej: 40">
+            <input type="number" [(ngModel)]="nuevoCurso.horas_duracion" name="horas_duracion" placeholder="Ej: 40">
           </div>
         </div>
         <div class="actions-row mt-4">
