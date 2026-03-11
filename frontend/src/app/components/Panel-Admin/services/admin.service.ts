@@ -23,6 +23,7 @@ export class AdminService {
 
   private apiauditoriasUrl = 'http://localhost:8080/api/auditorias';
 
+  private apiHistorialOferta = 'http://localhost:8080/api/auditoria/ofertas';
   constructor(private http: HttpClient) { }
 
   // ==========================================
@@ -388,7 +389,15 @@ export class AdminService {
     this.adminsActualizados$.next(true);
   }
 
-  // En tu admin.service.ts
+  getOfertasParaAuditoria(): Observable<any[]> {
+    // Como la variable ya tiene toda la ruta, solo la llamamos directo
+    return this.http.get<any[]>(`${this.apiHistorialOferta}`);
+  }
+
+  getHistorialByOferta(idOferta: number): Observable<any[]> {
+    // Aquí solo le concatenamos el ID y la palabra historial
+    return this.http.get<any[]>(`${this.apiHistorialOferta}/${idOferta}/historial`);
+  }
 
 
 }
