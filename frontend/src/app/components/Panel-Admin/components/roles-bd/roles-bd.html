@@ -7,7 +7,6 @@
     <p class="page-description">Administre roles SQL y asigne permisos granulares a nivel de esquema y tabla</p>
   </div>
 
-  <!-- Alertas -->
   <div class="alert alert-success" *ngIf="mensajeExito">
     <span class="material-icons">check_circle</span>
     {{ mensajeExito }}
@@ -18,7 +17,6 @@
     {{ mensajeError }}
   </div>
 
-  <!-- ========== VISTA LISTA ========== -->
   <div *ngIf="vistaActual === 'LISTA'" class="fade-in">
     <div class="action-bar">
       <button class="btn-primary" (click)="irACrear()">
@@ -32,16 +30,7 @@
         <div class="rol-header">
           <div class="rol-title-section">
             <h3>{{ rol.nombre }}</h3>
-            <!--<span class="rol-badge">{{ rol.rolBase }}</span>-->
           </div>
-          <!--<div class="rol-actions">
-            <button class="icon-btn edit" (click)="irAEditar(rol)" title="Editar">
-              <span class="material-icons">edit</span>
-            </button>
-            <button class="icon-btn delete" (click)="eliminarRol(rol)" title="Eliminar">
-              <span class="material-icons">delete</span>
-            </button>
-          </div>-->
         </div>
         <div class="rol-body">
           <div class="rol-info">
@@ -73,243 +62,13 @@
     </div>
   </div>
 
-  <!-- ========== VISTA CREAR/EDITAR ========== -->
-  <div *ngIf="vistaActual === 'CREAR' || vistaActual === 'EDITAR'" class="fade-in">
-    <div class="section-card">
-      <div class="section-header">
-        <h3>
-          <span class="section-icon">
-            {{ vistaActual === 'CREAR' ? '➕' : '✏️' }}
-          </span>
-          {{ vistaActual === 'CREAR' ? 'Crear Nuevo Rol' : 'Editar Rol' }}
-        </h3>
-      </div>
+  <app-roles-bd-form
+    *ngIf="vistaActual === 'CREAR' || vistaActual === 'EDITAR'"
+    [vistaActual]="vistaActual"
+    [rolEnEdicion]="rolEnEdicion"
+    (cancelado)="irALista()"
+    (guardado)="onRolGuardado($event)"
+    (error)="mostrarError($event)">
+  </app-roles-bd-form>
 
-      <!-- ========== FORMULARIO BÁSICO ========== -->
-      <div class="form-section">
-        <h4 class="subsection-title">Información del Rol</h4>
-
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Nombre del Rol SQL *</label>
-            <input
-              type="text"
-              [(ngModel)]="nuevoRol.nombre"
-              class="form-control"
-              placeholder="Ej: rol_soporte_tecnico">
-            <small class="form-hint">Use solo minúsculas, números y guiones bajos</small>
-          </div>
-          <!--
-          <div class="form-group">
-            <label>Heredar Permisos de Rol Base</label>
-            <select [(ngModel)]="nuevoRol.rolBaseId" class="form-control">
-              <option [ngValue]="null">Sin herencia</option>
-              <option *ngFor="let rolBase of rolesBase" [value]="rolBase.id">
-                {{ rolBase.nombre }}
-              </option>
-            </select>
-            <small class="form-hint">El rol heredará los permisos del rol base seleccionado</small>
-          </div>
-          -->
-        </div>
-      </div>
-
-      <hr class="section-divider">
-
-      <!-- ========== SECCIÓN DE USUARIOS ========== -->
-      <div class="form-section">
-        <h4 class="subsection-title">
-          <span class="material-icons">people</span>
-          Asignar Usuarios a este Rol
-          <span class="users-count" *ngIf="totalUsuariosSeleccionados > 0">
-            ({{ totalUsuariosSeleccionados }} seleccionado{{ totalUsuariosSeleccionados > 1 ? 's' : '' }})
-          </span>
-        </h4>
-
-        <!-- Búsqueda y acciones -->
-        <div class="usuarios-header">
-          <div class="search-box-usuarios">
-            <span class="material-icons">search</span>
-            <input
-              type="text"
-              [(ngModel)]="busquedaUsuario"
-              (ngModelChange)="filtrarUsuarios()"
-              placeholder="Buscar usuario por nombre o email..."
-              class="search-input">
-          </div>
-
-          <div class="usuarios-actions">
-            <button class="btn-select-all" (click)="toggleTodosUsuarios(true)">
-              <span class="material-icons">done_all</span>
-              Seleccionar Todos
-            </button>
-            <button class="btn-deselect-all" (click)="toggleTodosUsuarios(false)">
-              <span class="material-icons">clear</span>
-              Deseleccionar Todos
-            </button>
-          </div>
-        </div>
-
-        <!-- Lista de usuarios con checkboxes -->
-        <div class="usuarios-container">
-          <div class="usuario-item" *ngFor="let usuario of usuariosFiltrados">
-            <label class="usuario-checkbox">
-              <input
-                type="checkbox"
-                [(ngModel)]="usuario.seleccionado">
-              <div class="usuario-info">
-                <div class="usuario-avatar">
-                  {{ usuario.nombreCompleto.charAt(0).toUpperCase() }}
-                </div>
-                <div class="usuario-details">
-                  <span class="usuario-nombre">{{ usuario.nombreCompleto }}</span>
-                  <span class="usuario-email">{{ usuario.email }}</span>
-                </div>
-                <span class="usuario-rol-actual">{{ usuario.rolActual }}</span>
-              </div>
-            </label>
-          </div>
-
-          <div class="empty-usuarios" *ngIf="usuariosFiltrados.length === 0">
-            <span class="material-icons">person_search</span>
-            <p>No se encontraron usuarios con ese criterio de búsqueda</p>
-          </div>
-        </div>
-      </div>
-
-      <hr class="section-divider">
-
-      <!-- ========== PERMISOS DE ESQUEMAS ========== -->
-      <div class="form-section">
-        <h4 class="subsection-title">
-          <span class="material-icons">database</span>
-          Permisos de Esquemas y Tablas
-        </h4>
-
-        <div class="esquemas-container">
-          <div class="esquema-card" *ngFor="let esquema of esquemas">
-            <!-- Header del Esquema -->
-            <div class="esquema-header">
-              <div class="esquema-title-section">
-                <div class="checkbox-group">
-                  <input
-                    type="checkbox"
-                    [id]="'usage-' + esquema.nombre"
-                    [(ngModel)]="esquema.usage"
-                    (change)="cambiarUsageEsquema(esquema)">
-                  <label [for]="'usage-' + esquema.nombre">
-                    <span class="material-icons">folder</span>
-                    <strong>{{ esquema.nombre }}</strong>
-                  </label>
-                </div>
-
-                <span class="esquema-badge" [ngClass]="getEstadoEsquema(esquema)">
-                  {{ getEstadoEsquema(esquema) === 'global' ? 'Permisos Globales' :
-                  getEstadoEsquema(esquema) === 'parcial' ? contarPermisosActivos(esquema) + ' permisos' : 'Sin permisos' }}
-                </span>
-              </div>
-
-              <div class="esquema-controls">
-                <div class="switch-container" *ngIf="esquema.usage">
-                  <label class="switch">
-                    <input
-                      type="checkbox"
-                      [(ngModel)]="esquema.permisoGlobal"
-                      (change)="cambiarPermisoGlobal(esquema)">
-                    <span class="slider"></span>
-                  </label>
-                  <span class="switch-label">Todos los permisos</span>
-                </div>
-
-                <button
-                  class="btn-expand"
-                  (click)="toggleMostrarTablas(esquema)"
-                  [disabled]="!esquema.usage">
-                  <span class="material-icons">
-                    {{ esquema.mostrarTablas ? 'expand_less' : 'expand_more' }}
-                  </span>
-                  {{ esquema.mostrarTablas ? 'Ocultar' : 'Ver' }} Tablas
-                </button>
-              </div>
-            </div>
-
-            <!-- Lista de Tablas -->
-            <div class="tablas-container" *ngIf="esquema.mostrarTablas && esquema.usage">
-              <div class="tabla-item" *ngFor="let tabla of esquema.tablas">
-                <div class="tabla-header" (click)="tabla.mostrarPermisos = !tabla.mostrarPermisos">
-                  <div class="tabla-title">
-                    <span class="material-icons">table_chart</span>
-                    {{ tabla.nombre }}
-                  </div>
-
-                  <div class="tabla-status">
-                    <span class="permiso-count" *ngIf="tabla.permisos.select || tabla.permisos.insert || tabla.permisos.update || tabla.permisos.delete">
-                      {{ (tabla.permisos.select ? 1 : 0) + (tabla.permisos.insert ? 1 : 0) +
-                    (tabla.permisos.update ? 1 : 0) + (tabla.permisos.delete ? 1 : 0) }}/4
-                    </span>
-                    <span class="material-icons chevron">
-                      {{ tabla.mostrarPermisos ? 'expand_less' : 'expand_more' }}
-                    </span>
-                  </div>
-                </div>
-
-                <div class="permisos-grid" *ngIf="tabla.mostrarPermisos">
-                  <label class="permiso-checkbox select">
-                    <input
-                      type="checkbox"
-                      [(ngModel)]="tabla.permisos.select"
-                      (change)="cambiarPermisoTabla(esquema, tabla)"
-                      [disabled]="esquema.permisoGlobal">
-                    <span class="material-icons">visibility</span>
-                    <span>SELECT</span>
-                  </label>
-
-                  <label class="permiso-checkbox insert">
-                    <input
-                      type="checkbox"
-                      [(ngModel)]="tabla.permisos.insert"
-                      (change)="cambiarPermisoTabla(esquema, tabla)"
-                      [disabled]="esquema.permisoGlobal">
-                    <span class="material-icons">add_circle</span>
-                    <span>INSERT</span>
-                  </label>
-
-                  <label class="permiso-checkbox update">
-                    <input
-                      type="checkbox"
-                      [(ngModel)]="tabla.permisos.update"
-                      (change)="cambiarPermisoTabla(esquema, tabla)"
-                      [disabled]="esquema.permisoGlobal">
-                    <span class="material-icons">edit</span>
-                    <span>UPDATE</span>
-                  </label>
-
-                  <label class="permiso-checkbox delete">
-                    <input
-                      type="checkbox"
-                      [(ngModel)]="tabla.permisos.delete"
-                      (change)="cambiarPermisoTabla(esquema, tabla)"
-                      [disabled]="esquema.permisoGlobal">
-                    <span class="material-icons">delete</span>
-                    <span>DELETE</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ========== ACCIONES ========== -->
-      <div class="form-actions">
-        <button class="btn-secondary" (click)="irALista()">
-          Cancelar
-        </button>
-        <button class="btn-primary" (click)="guardarRol()" [disabled]="guardando">
-          <span class="material-icons">{{ guardando ? 'hourglass_empty' : 'save' }}</span>
-          {{ guardando ? 'Guardando...' : 'Guardar Rol' }}
-        </button>
-      </div>
-    </div>
-  </div>
 </div>
