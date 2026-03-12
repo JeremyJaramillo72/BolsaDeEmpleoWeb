@@ -13,23 +13,11 @@ import { Subscription } from 'rxjs';
 })
 export class NotificationBellComponent implements OnInit, OnDestroy {
   notificaciones: any[] = [];
+  notificacionesActivas: any[] = [];
   dropdownOpen: boolean = false;
-  activeTab: 'nuevas' | 'leidas' = 'nuevas';
   isLoading: boolean = true;
   private sub?: Subscription;
   idUsuario: number = 0;
-
-  get notificacionesNuevas(): any[] {
-    return this.notificaciones.filter(n => !n.leida);
-  }
-
-  get notificacionesLeidas(): any[] {
-    return this.notificaciones.filter(n => n.leida);
-  }
-
-  get listaActual(): any[] {
-    return this.activeTab === 'nuevas' ? this.notificacionesNuevas : this.notificacionesLeidas;
-  }
 
   constructor(
     public notificationService: NotificationService,
@@ -42,15 +30,26 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     this.idUsuario = Number(localStorage.getItem('idUsuario'));
 
     if (this.idUsuario) {
-      this.notificationService.cargarHistorial(this.idUsuario);
       this.notificationService.conectarWebSocket(this.idUsuario);
+      this.cargarNotificacionesActivas();
     }
+  }
 
-    this.sub = this.notificationService.notificaciones$.subscribe(data => {
-      this.notificaciones = data;
-      this.isLoading = false;
-      this.cdr.detectChanges();
-    });
+  private cargarNotificacionesActivas(): void {
+    if (this.idUsuario) {
+      this.notificationService.cargarNotificacionesActivas(this.idUsuario).subscribe({
+        next: (data) => {
+          this.notificacionesActivas = data;
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error cargando notificaciones activas:', err);
+          this.notificacionesActivas = [];
+          this.isLoading = false;
+        }
+      });
+    }
   }
 
   ngOnDestroy(): void {
@@ -67,9 +66,6 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   toggleDropdown(event: Event) {
     event.stopPropagation();
     this.dropdownOpen = !this.dropdownOpen;
-    if (this.dropdownOpen) {
-      this.activeTab = 'nuevas';
-    }
   }
 
   cerrarDropdown() {
@@ -91,6 +87,15 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     if (this.idUsuario) {
       this.notificationService.marcarTodasComoLeidas(this.idUsuario);
     }
+  }
+
+  navigate(ruta: string) {
+    this.router.navigate([ruta]);
+    this.dropdownOpen = false;
+  }
+
+  get cantidadActivasSinLeer(): number {
+    return this.notificacionesActivas.filter(n => !n.leida).length;
   }
 
   tiempoTranscurrido(fechaCreacion: string): string {

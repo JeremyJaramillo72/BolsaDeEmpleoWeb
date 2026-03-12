@@ -283,6 +283,15 @@ export class MenuprincipalComponent implements OnInit {
         roles: ['ADMINISTRADOR'],
         path: '/GestionRolesbd',
         route: '/menu-principal/GestionRolesbd'
+      },
+      {
+        icon: 'settings_backup_restore',
+        title: 'Configuración del Sistema',
+        description: 'Gestiona configuración de correo, plantillas y más',
+        colorHex: '#7c3aed', bgHex: '#f5f3ff',
+        roles: ['ADMINISTRADOR'],
+        path: '/configuracion-sistema',
+        route: '/menu-principal/configuracion-sistema'
       }
     ];
 

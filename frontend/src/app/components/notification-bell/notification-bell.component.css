@@ -270,3 +270,58 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+/* Footer del dropdown - Enlace al historial */
+.dropdown-footer {
+  padding: 8px 16px;
+  border-top: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  text-align: center;
+}
+
+.ver-todas {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-block;
+  opacity: 0.7;
+  font-weight: 500;
+}
+
+.ver-todas:hover {
+  color: #2563EB;
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* Dark mode support */
+:host-context(.dark-mode) .dropdown-menu {
+  background-color: #1a202c;
+  border-color: #2d3748;
+}
+
+:host-context(.dark-mode) .dropdown-header {
+  background-color: #2d3748;
+  border-color: #4a5568;
+}
+
+:host-context(.dark-mode) .dropdown-header h4 {
+  color: #f7fafc;
+}
+
+:host-context(.dark-mode) .notif-item {
+  border-color: #2d3748;
+}
+
+:host-context(.dark-mode) .notif-item.unread {
+  background-color: #1e3a5f;
+}
+
+:host-context(.dark-mode) .notif-title {
+  color: #f7fafc;
+}
+
+:host-context(.dark-mode) .ver-todas {
+  color: #a0aec0;
+}
