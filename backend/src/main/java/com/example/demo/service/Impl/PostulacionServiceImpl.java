@@ -1,10 +1,7 @@
 package com.example.demo.service.Impl;
 
-import com.example.demo.dto.ItemEvaluacionDTO;
-import com.example.demo.dto.PerfilPostulanteDTO;
-import com.example.demo.dto.PostulanteResumenDTO;
-import com.example.demo.dto.ResumenPerfilBaseDTO;
-import com.example.demo.dto.ResumenSeccionDTO;
+import com.example.demo.dto.*;
+import com.example.demo.repository.Impl.PerfilProfesionalRepository;
 import com.example.demo.repository.Impl.PostulacionCustomRepository;
 import com.example.demo.repository.PostulacionRepository;
 import com.example.demo.repository.Views.IMisPostulaciones;
@@ -29,11 +26,12 @@ public class PostulacionServiceImpl implements IPostulacionService {
     private final NotificacionService notificacionService;
     private final IPdfService iPdfService;
     private final GeminiAiService geminiAiService;
+    private final PerfilProfesionalRepository perfilProfesionalRepository;
 
 
 
     @Override
-    @Transactional(rollbackFor = Exception.class) // VITAL: Si el CV es inválido o Gemini falla, se cancela todo
+    @Transactional(rollbackFor = Exception.class)
     public void registrarPostulacion(Long idUsuario, Integer idOferta, MultipartFile archivo) throws Exception {
 
         String urlCv = null;
@@ -42,19 +40,20 @@ public class PostulacionServiceImpl implements IPostulacionService {
 
         if (archivo != null && !archivo.isEmpty()) {
 
-            // 1. Extraemos el texto del PDF
+
             String textoCv = iPdfService.extraerTextoDePdf(archivo);
             if (textoCv == null || textoCv.isBlank() || textoCv.length() < 50) {
                 throw new IllegalArgumentException("El documento no contiene texto legible o está vacío. Asegúrate de subir un PDF válido.");
             }
 
-            // 2. Traemos los datos de la oferta usando tu majestuosa Interfaz
+
             IOfertaDatosIaDTO datosOferta = postulacionRepository.obtenerDatosOfertaParaIa(idOferta);
             if (datosOferta == null) {
                 throw new IllegalArgumentException("No se encontró la oferta laboral especificada.");
             }
+            PerfilProfesionalDTO perfilUsuario = perfilProfesionalRepository.obtenerPerfilCompleto(idUsuario);
 
-            // 3. Armamos los requisitos para Gemini
+
             String requisitosOferta = String.format(
                     "Experiencia mínima requerida: %d años. Habilidades técnicas: %s. Otros requisitos: %s",
                     datosOferta.getExperienciaMinima() != null ? datosOferta.getExperienciaMinima() : 0,
@@ -67,7 +66,8 @@ public class PostulacionServiceImpl implements IPostulacionService {
                     textoCv,
                     datosOferta.getTitulo(),
                     datosOferta.getDescripcion(),
-                    requisitosOferta
+                    requisitosOferta,
+                    perfilUsuario
             );
 
             // 5. Validamos si la IA aprobó el documento como un "CV real"

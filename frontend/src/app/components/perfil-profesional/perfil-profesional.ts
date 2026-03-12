@@ -83,7 +83,7 @@
     nuevoCurso: any = {nombre_curso: '', institucion: '', horas_duracion: null, archivo: null, nombreArchivo: ''};
     nuevoIdioma: any = {id_idioma: null, nivel: null, archivo: null, nombreArchivo: ''};
 
-
+    mensajeError = null;
     cargoActual: number | null = null;
     cargosTemporales: any[] = [];
     nuevaExperiencia: any = {
@@ -754,6 +754,7 @@
           error: (err) => {
             console.error(err);
             this.notif.error('Error al actualizar la experiencia.');
+
           }
         });
       } else {
