@@ -129,6 +129,150 @@
   justify-content: flex-end;
   gap: 12px;
 }
+/* ── TARJETA DE INTELIGENCIA ARTIFICIAL (VERSIÓN COMPACTA) ──────────────────────────────── */
+.ia-results-card {
+  background: linear-gradient(145deg, #f8faff 0%, #f0fdf4 100%);
+  border: 1px solid #c7d2fe;
+  padding: 1rem 1.2rem; /* Reducido el padding interno */
+}
+
+.ia-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0.6rem; /* Más pegado al contenido */
+  border-bottom: 1px dashed #c7d2fe;
+  padding-bottom: 0.6rem;
+}
+
+.ia-icon {
+  color: #6366f1;
+  font-size: 1.3rem !important; /* Ícono más pequeño */
+}
+
+.spin-slow {
+  animation: spin 4s linear infinite;
+}
+
+.ia-header h4 {
+  margin: 0;
+  color: #3730a3;
+  font-size: 0.95rem; /* Letra del título más pequeña */
+  font-weight: 700;
+}
+
+.ia-content {
+  display: flex;
+  gap: 1.2rem;
+  align-items: center; /* Centramos verticalmente para que se vea más limpio */
+}
+
+/* Círculo de porcentaje */
+.ia-score-box {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Círculo de porcentaje ajustado */
+.score-circle {
+  width: 90px;  /* Subimos de 75px a 85px */
+  height: 85px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: white;
+  box-shadow: inset 0 0 0 5px #e0e7ff; /* Borde un pelín más grueso */
+}
+
+.score-number {
+  font-size: 1.5rem; /* Un poquito más grande */
+  font-weight: 900;
+  color: #1e293b;
+  line-height: 1;
+}
+
+.score-label {
+  font-size: 0.5rem; /* Letra más pequeña para que entre en el círculo */
+  text-transform: uppercase;
+  font-weight: 800;
+  color: #64748b;
+  margin-top: 4px;
+  letter-spacing: 0.5px; /* Le da aire entre las letras */
+  text-align: center;
+  width: 90%; /* Evita que choque con los bordes */
+}
+/* Colores dinámicos del borde del círculo */
+.score-high { box-shadow: inset 0 0 0 4px #22c55e; }
+.score-medium { box-shadow: inset 0 0 0 4px #eab308; }
+.score-low { box-shadow: inset 0 0 0 4px #ef4444; }
+
+/* Caja de comentarios */
+.ia-feedback-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* Menos espacio entre viñetas */
+}
+
+.feedback-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.85rem; /* Texto más pequeño */
+  background: white;
+  padding: 0.6rem 0.8rem; /* Cajitas más ajustadas */
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.feedback-item.success { border-left: 3px solid #22c55e; }
+.feedback-item.success .material-icons { color: #22c55e; font-size: 1.1rem !important; }
+
+.feedback-item.warning { border-left: 3px solid #f59e0b; }
+.feedback-item.warning .material-icons { color: #f59e0b; font-size: 1.1rem !important; }
+
+.feedback-item strong {
+  display: block;
+  color: #1e293b;
+  margin-bottom: 2px;
+  font-size: 0.85rem;
+}
+
+.feedback-item ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: #475569;
+}
+
+.feedback-item li {
+  margin-bottom: 1px;
+}
+
+.feedback-item.success { border-left: 4px solid #22c55e; }
+.feedback-item.success .material-icons { color: #22c55e; font-size: 1.3rem !important; }
+
+.feedback-item.warning { border-left: 4px solid #f59e0b; }
+.feedback-item.warning .material-icons { color: #f59e0b; font-size: 1.3rem !important; }
+
+.feedback-item strong {
+  display: block;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.feedback-item ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: #475569;
+}
+
+.feedback-item li {
+  margin-bottom: 2px;
+}
 .btn-cancel { padding: 9px 16px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: 1px solid #CBD5E1; background: white; color: #475569; transition: all 0.2s; }
 .btn-cancel:hover { background: #F1F5F9; color: #0F172A; border-color:#94A3B8; }
 .btn-confirm { padding: 9px 16px; font-size: 0.9rem;}

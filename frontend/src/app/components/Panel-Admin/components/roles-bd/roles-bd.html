@@ -1,10 +1,12 @@
 <div class="page-container">
   <div class="page-header">
-    <h1>
-      <span class="header-icon">🔐</span>
-      Gestión de Roles y Permisos de Base de Datos
-    </h1>
-    <p class="page-description">Administre roles SQL y asigne permisos granulares a nivel de esquema y tabla</p>
+    <div class="header-text">
+      <h1>
+        <span class="material-icons header-icon-main">admin_panel_settings</span>
+        Gestión de Roles y Permisos
+      </h1>
+      <p class="page-description">Administre roles SQL y asigne permisos granulares a nivel de esquema y tabla</p>
+    </div>
   </div>
 
   <div class="alert alert-success" *ngIf="mensajeExito">
@@ -13,7 +15,7 @@
   </div>
 
   <div class="alert alert-error" *ngIf="mensajeError">
-    <span class="material-icons">error</span>
+    <span class="material-icons">error_outline</span>
     {{ mensajeError }}
   </div>
 
@@ -27,24 +29,38 @@
 
     <div class="roles-grid" *ngIf="!cargando">
       <div class="rol-card" *ngFor="let rol of rolesCreados">
+
         <div class="rol-header">
           <div class="rol-title-section">
+            <div class="icon-box-role">
+              <span class="material-icons">shield</span>
+            </div>
             <h3>{{ rol.nombre }}</h3>
           </div>
+
+          <div class="rol-actions">
+            <button class="btn-action-icon edit" (click)="irAEditar(rol)" title="Editar Rol">
+              <span class="material-icons">edit</span>
+            </button>
+            <button class="btn-action-icon delete" (click)="eliminarRol(rol)" title="Eliminar Rol">
+              <span class="material-icons">delete_outline</span>
+            </button>
+          </div>
         </div>
+
         <div class="rol-body">
           <div class="rol-info">
             <div class="info-item">
-              <span class="material-icons">security</span>
-              <span>{{ rol.totalPermisos }} permisos asignados</span>
+              <span class="material-icons icon-detail">vpn_key</span>
+              <span><strong>{{ rol.totalPermisos }}</strong> permisos asignados</span>
             </div>
             <div class="info-item">
-              <span class="material-icons">people</span>
-              <span>{{ rol.usuariosAsignados }} usuario(s) asignado(s)</span>
+              <span class="material-icons icon-detail">group</span>
+              <span><strong>{{ rol.usuariosAsignados }}</strong> usuario(s) asignado(s)</span>
             </div>
             <div class="info-item">
-              <span class="material-icons">calendar_today</span>
-              <span>{{ rol.fechaCreacion | date:'dd/MM/yyyy' }}</span>
+              <span class="material-icons icon-detail">calendar_today</span>
+              <span>Creado el {{ rol.fechaCreacion | date:'dd/MM/yyyy' }}</span>
             </div>
           </div>
         </div>
@@ -53,12 +69,13 @@
       <div class="empty-state" *ngIf="rolesCreados.length === 0">
         <span class="material-icons">security</span>
         <p>No hay roles creados. Crea tu primer rol de base de datos.</p>
+        <button class="btn-primary mt-3" (click)="irACrear()">Crear Rol Ahora</button>
       </div>
     </div>
 
     <div class="loading-container" *ngIf="cargando">
       <div class="spinner"></div>
-      <p>Cargando roles...</p>
+      <p>Cargando roles del sistema...</p>
     </div>
   </div>
 

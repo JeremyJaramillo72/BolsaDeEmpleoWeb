@@ -30,6 +30,43 @@
         </div>
       </div>
 
+      <div class="card ia-results-card" *ngIf="perfil?.analisisIa">
+        <div class="ia-header">
+          <span class="material-icons ia-icon spin-slow">auto_awesome</span>
+          <h4>Análisis de Inteligencia Artificial</h4>
+        </div>
+
+        <div class="ia-content">
+          <div class="ia-score-box">
+            <div class="score-circle" [ngClass]="getScoreClass(perfil?.porcentajeMatch)">
+              <span class="score-number">{{ perfil?.porcentajeMatch || 0 }}%</span>
+              <span class="score-label">Compatibilidad</span>
+            </div>
+          </div>
+
+          <div class="ia-feedback-box">
+            <div class="feedback-item success" *ngIf="getIaPuntosFuertes(perfil?.analisisIa).length > 0">
+              <span class="material-icons">check_circle</span>
+              <div>
+                <strong>Puntos Fuertes:</strong>
+                <ul>
+                  <li *ngFor="let fuerte of getIaPuntosFuertes(perfil?.analisisIa)">{{ fuerte }}</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="feedback-item warning" *ngIf="getIaPuntosDebiles(perfil?.analisisIa).length > 0">
+              <span class="material-icons">error_outline</span>
+              <div>
+                <strong>Áreas de Mejora:</strong>
+                <ul>
+                  <li *ngFor="let debil of getIaPuntosDebiles(perfil?.analisisIa)">{{ debil }}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="card section-card">
         <h3 class="section-title"><span class="material-icons">work_outline</span> Experiencia Laboral</h3>
         <div *ngIf="experienciaList.length === 0" class="empty-info">No ha registrado experiencia.</div>

@@ -1,20 +1,24 @@
 <div class="fade-in">
   <div class="section-card">
     <div class="section-header">
-      <h3>
-        <span class="section-icon">
-          {{ vistaActual === 'CREAR' ? '➕' : '✏️' }}
-        </span>
-        {{ vistaActual === 'CREAR' ? 'Crear Nuevo Rol' : 'Editar Rol' }}
-      </h3>
+      <div class="header-title-wrapper">
+        <button class="btn-back-icon" (click)="irALista()" title="Volver">
+          <span class="material-icons">arrow_back</span>
+        </button>
+        <h3>
+          {{ vistaActual === 'CREAR' ? 'Crear Nuevo Rol' : 'Modificar Rol Existente' }}
+        </h3>
+      </div>
     </div>
 
     <div class="form-section">
-      <h4 class="subsection-title">Información del Rol</h4>
+      <h4 class="subsection-title">
+        <span class="material-icons text-blue">badge</span> Información del Rol
+      </h4>
 
       <div class="form-grid">
         <div class="form-group">
-          <label>Nombre del Rol SQL *</label>
+          <label>Nombre del Rol SQL <span class="required">*</span></label>
           <input
             type="text"
             [(ngModel)]="nuevoRol.nombre"
@@ -29,7 +33,7 @@
 
     <div class="form-section">
       <h4 class="subsection-title">
-        <span class="material-icons">people</span>
+        <span class="material-icons text-blue">people</span>
         Asignar Usuarios a este Rol
         <span class="users-count" *ngIf="totalUsuariosSeleccionados > 0">
           ({{ totalUsuariosSeleccionados }} seleccionado{{ totalUsuariosSeleccionados > 1 ? 's' : '' }})
@@ -49,12 +53,10 @@
 
         <div class="usuarios-actions">
           <button class="btn-select-all" (click)="toggleTodosUsuarios(true)">
-            <span class="material-icons">done_all</span>
-            Seleccionar Todos
+            <span class="material-icons">done_all</span> Seleccionar Todos
           </button>
           <button class="btn-deselect-all" (click)="toggleTodosUsuarios(false)">
-            <span class="material-icons">clear</span>
-            Deseleccionar Todos
+            <span class="material-icons">clear_all</span> Quitar Todos
           </button>
         </div>
       </div>
@@ -62,9 +64,7 @@
       <div class="usuarios-container">
         <div class="usuario-item" *ngFor="let usuario of usuariosFiltrados">
           <label class="usuario-checkbox">
-            <input
-              type="checkbox"
-              [(ngModel)]="usuario.seleccionado">
+            <input type="checkbox" [(ngModel)]="usuario.seleccionado">
             <div class="usuario-info">
               <div class="usuario-avatar">
                 {{ usuario.nombreCompleto.charAt(0).toUpperCase() }}
@@ -89,7 +89,7 @@
 
     <div class="form-section">
       <h4 class="subsection-title">
-        <span class="material-icons">database</span>
+        <span class="material-icons text-blue">database</span>
         Permisos de Esquemas y Tablas
       </h4>
 
@@ -104,7 +104,7 @@
                   [(ngModel)]="esquema.usage"
                   (change)="cambiarUsageEsquema(esquema)">
                 <label [for]="'usage-' + esquema.nombre">
-                  <span class="material-icons">folder</span>
+                  <span class="material-icons schema-icon">folder_open</span>
                   <strong>{{ esquema.nombre }}</strong>
                 </label>
               </div>
@@ -117,24 +117,16 @@
 
             <div class="esquema-controls">
               <div class="switch-container" *ngIf="esquema.usage">
+                <span class="switch-label">Todos los permisos</span>
                 <label class="switch">
-                  <input
-                    type="checkbox"
-                    [(ngModel)]="esquema.permisoGlobal"
-                    (change)="cambiarPermisoGlobal(esquema)">
+                  <input type="checkbox" [(ngModel)]="esquema.permisoGlobal" (change)="cambiarPermisoGlobal(esquema)">
                   <span class="slider"></span>
                 </label>
-                <span class="switch-label">Todos los permisos</span>
               </div>
 
-              <button
-                class="btn-expand"
-                (click)="toggleMostrarTablas(esquema)"
-                [disabled]="!esquema.usage">
-                <span class="material-icons">
-                  {{ esquema.mostrarTablas ? 'expand_less' : 'expand_more' }}
-                </span>
+              <button class="btn-expand" (click)="toggleMostrarTablas(esquema)" [disabled]="!esquema.usage">
                 {{ esquema.mostrarTablas ? 'Ocultar' : 'Ver' }} Tablas
+                <span class="material-icons">{{ esquema.mostrarTablas ? 'expand_less' : 'expand_more' }}</span>
               </button>
             </div>
           </div>
@@ -143,8 +135,7 @@
             <div class="tabla-item" *ngFor="let tabla of esquema.tablas">
               <div class="tabla-header" (click)="tabla.mostrarPermisos = !tabla.mostrarPermisos">
                 <div class="tabla-title">
-                  <span class="material-icons">table_chart</span>
-                  {{ tabla.nombre }}
+                  <span class="material-icons text-muted">table_chart</span> {{ tabla.nombre }}
                 </div>
 
                 <div class="tabla-status">
@@ -153,50 +144,30 @@
                   (tabla.permisos.update ? 1 : 0) + (tabla.permisos.delete ? 1 : 0) }}/4
                   </span>
                   <span class="material-icons chevron">
-                    {{ tabla.mostrarPermisos ? 'expand_less' : 'expand_more' }}
+                    {{ tabla.mostrarPermisos ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}
                   </span>
                 </div>
               </div>
 
               <div class="permisos-grid" *ngIf="tabla.mostrarPermisos">
-                <label class="permiso-checkbox select">
-                  <input
-                    type="checkbox"
-                    [(ngModel)]="tabla.permisos.select"
-                    (change)="cambiarPermisoTabla(esquema, tabla)"
-                    [disabled]="esquema.permisoGlobal">
-                  <span class="material-icons">visibility</span>
-                  <span>SELECT</span>
+                <label class="permiso-checkbox select" [class.active-select]="tabla.permisos.select">
+                  <input type="checkbox" [(ngModel)]="tabla.permisos.select" (change)="cambiarPermisoTabla(esquema, tabla)" [disabled]="esquema.permisoGlobal">
+                  <span class="material-icons">visibility</span> SELECT
                 </label>
 
-                <label class="permiso-checkbox insert">
-                  <input
-                    type="checkbox"
-                    [(ngModel)]="tabla.permisos.insert"
-                    (change)="cambiarPermisoTabla(esquema, tabla)"
-                    [disabled]="esquema.permisoGlobal">
-                  <span class="material-icons">add_circle</span>
-                  <span>INSERT</span>
+                <label class="permiso-checkbox insert" [class.active-insert]="tabla.permisos.insert">
+                  <input type="checkbox" [(ngModel)]="tabla.permisos.insert" (change)="cambiarPermisoTabla(esquema, tabla)" [disabled]="esquema.permisoGlobal">
+                  <span class="material-icons">add_circle_outline</span> INSERT
                 </label>
 
-                <label class="permiso-checkbox update">
-                  <input
-                    type="checkbox"
-                    [(ngModel)]="tabla.permisos.update"
-                    (change)="cambiarPermisoTabla(esquema, tabla)"
-                    [disabled]="esquema.permisoGlobal">
-                  <span class="material-icons">edit</span>
-                  <span>UPDATE</span>
+                <label class="permiso-checkbox update" [class.active-update]="tabla.permisos.update">
+                  <input type="checkbox" [(ngModel)]="tabla.permisos.update" (change)="cambiarPermisoTabla(esquema, tabla)" [disabled]="esquema.permisoGlobal">
+                  <span class="material-icons">edit</span> UPDATE
                 </label>
 
-                <label class="permiso-checkbox delete">
-                  <input
-                    type="checkbox"
-                    [(ngModel)]="tabla.permisos.delete"
-                    (change)="cambiarPermisoTabla(esquema, tabla)"
-                    [disabled]="esquema.permisoGlobal">
-                  <span class="material-icons">delete</span>
-                  <span>DELETE</span>
+                <label class="permiso-checkbox delete" [class.active-delete]="tabla.permisos.delete">
+                  <input type="checkbox" [(ngModel)]="tabla.permisos.delete" (change)="cambiarPermisoTabla(esquema, tabla)" [disabled]="esquema.permisoGlobal">
+                  <span class="material-icons">delete_outline</span> DELETE
                 </label>
               </div>
             </div>
@@ -205,13 +176,11 @@
       </div>
     </div>
 
-    <div class="form-actions">
-      <button class="btn-secondary" (click)="irALista()">
-        Cancelar
-      </button>
+    <div class="form-actions-bottom">
+      <button class="btn-secondary" (click)="irALista()">Cancelar</button>
       <button class="btn-primary" (click)="guardarRol()" [disabled]="guardando">
-        <span class="material-icons">{{ guardando ? 'hourglass_empty' : 'save' }}</span>
-        {{ guardando ? 'Guardando...' : 'Guardar Rol' }}
+        <span class="material-icons">{{ guardando ? 'sync' : 'save' }}</span>
+        {{ guardando ? 'Guardando...' : (vistaActual === 'CREAR' ? 'Crear Rol' : 'Guardar Cambios') }}
       </button>
     </div>
   </div>

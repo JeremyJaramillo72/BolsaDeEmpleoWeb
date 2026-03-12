@@ -66,15 +66,27 @@ export class GestionOfertasComponent implements OnInit {
 
 
   cargarOfertas(): void {
-
     this.ofertaService.obtenerOfertasPorEmpresa(this.idEmpresaLogueada).subscribe({
       next: (datosDelBackend) => {
+
+        const fechaLocal = new Date();
+        const anio = fechaLocal.getFullYear();
+        const mes = String(fechaLocal.getMonth() + 1).padStart(2, '0');
+        const dia = String(fechaLocal.getDate()).padStart(2, '0');
+        const hoyStr = `${anio}-${mes}-${dia}`;
+
         this.ofertas = datosDelBackend.map((oferta: any) => {
+          let estadoReal = (oferta.estado_oferta || oferta.estadoOferta || 'pendiente').toLowerCase();
+          const fechaCierre = oferta.fecha_cierre || oferta.fechaCierre;
+
+          if (estadoReal !== 'rechazada' && fechaCierre && fechaCierre < hoyStr) {
+            estadoReal = 'cerrada';
+          }
+
           return {
             ...oferta,
-
-            estadoOferta: oferta.estado_oferta || oferta.estadoOferta || 'pendiente',
-            fechaCierre: oferta.fecha_cierre || oferta.fechaCierre,
+            estadoOferta: estadoReal,
+            fechaCierre: fechaCierre,
             salarioMin: oferta.salario_min || oferta.salarioMin,
             salarioMax: oferta.salario_max || oferta.salarioMax,
 
@@ -99,14 +111,30 @@ export class GestionOfertasComponent implements OnInit {
     return this.ofertas.filter((oferta: any) => {
       const titulo = oferta.titulo ? oferta.titulo.toLowerCase() : '';
       const descripcion = oferta.descripcion ? oferta.descripcion.toLowerCase() : '';
-      const texto = this.textoBusqueda ? this.textoBusqueda.toLowerCase() : '';
+      const texto = this.textoBusqueda ? this.textoBusqueda.toLowerCase().trim() : '';
 
-      const coincideTexto = titulo.includes(texto) || descripcion.includes(texto);
-      const estadoReal = oferta.estadoOferta || oferta.estado_oferta || '';
+      const coincideTexto = texto === '' || titulo.includes(texto) || descripcion.includes(texto);
 
-      const coincideEstado = this.filtroEstado === 'Todos' ||
-        estadoReal.toLowerCase() === this.filtroEstado.toLowerCase();
+      const estadoReal = (oferta.estadoOferta || oferta.estado_oferta || 'pendiente').toString().toLowerCase();
+      const estadoFiltro = this.filtroEstado.toLowerCase();
 
+      let coincideEstado = false;
+
+      if (estadoFiltro === 'todos') {
+        coincideEstado = true;
+      }
+      else if (estadoFiltro === 'aprobado' && (estadoReal === 'aprobado' || estadoReal === 'activa')) {
+        coincideEstado = true;
+      }
+      else if (estadoFiltro === 'rechazada' && (estadoReal === 'rechazada' || estadoReal === 'rechazado')) {
+        coincideEstado = true;
+      }
+      else if (estadoFiltro === 'cerrada' && estadoReal === 'cerrada') {
+        coincideEstado = true;
+      }
+      else if (estadoFiltro === 'pendiente' && estadoReal === 'pendiente') {
+        coincideEstado = true;
+      }
       return coincideTexto && coincideEstado;
     });
   }

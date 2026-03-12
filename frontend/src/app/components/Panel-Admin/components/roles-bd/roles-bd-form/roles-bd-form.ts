@@ -1,8 +1,9 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../services/admin.service';
 import { Esquema, RolBase, RolCreado, Tabla, Usuario } from '../roles-bd';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-roles-bd-form',
@@ -32,7 +33,12 @@ export class RolesBdFormComponent implements OnInit {
   esquemas: Esquema[] = [];
   guardando = false;
 
-  constructor(private adminService: AdminService) {}
+  // INYECTAMOS EL ChangeDetectorRef AQUÍ
+  constructor(
+    private adminService: AdminService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.cargarRolesBase();
@@ -53,6 +59,7 @@ export class RolesBdFormComponent implements OnInit {
           nombre: rol.nombreRol,
           descripcion: rol.descripcion || 'Rol de grupo en PostgreSQL'
         }));
+        this.cdr.detectChanges(); // <-- FORZAMOS RENDERIZADO
       },
       error: (err) => {
         console.error('Error al cargar roles base:', err);
@@ -61,6 +68,7 @@ export class RolesBdFormComponent implements OnInit {
           { id: '2', nombre: 'grupo_empresa', descripcion: 'Permisos base para empresas' },
           { id: '3', nombre: 'grupo_admin', descripcion: 'Permisos base para administradores' }
         ];
+        this.cdr.detectChanges(); // <-- FORZAMOS RENDERIZADO
       }
     });
   }
@@ -76,10 +84,12 @@ export class RolesBdFormComponent implements OnInit {
           seleccionado: false
         }));
         this.usuariosFiltrados = [...this.usuariosDisponibles];
+        this.cdr.detectChanges(); // <-- FORZAMOS RENDERIZADO
       },
       error: (err) => {
         console.error('Error al cargar usuarios:', err);
         this.mostrarError('Error al cargar usuarios del sistema');
+        this.cdr.detectChanges(); // <-- FORZAMOS RENDERIZADO
       }
     });
   }
@@ -98,10 +108,12 @@ export class RolesBdFormComponent implements OnInit {
             mostrarPermisos: false
           }))
         }));
+        this.cdr.detectChanges(); // <-- AQUÍ ESTÁ LA MAGIA PARA QUE CARGUEN LOS ESQUEMAS
       },
       error: (err) => {
         console.error('Error al cargar esquemas:', err);
         this.cargarEsquemasDefault();
+        this.cdr.detectChanges(); // <-- FORZAMOS RENDERIZADO
       }
     });
   }
@@ -239,11 +251,13 @@ export class RolesBdFormComponent implements OnInit {
       next: () => {
         this.mostrarExito(`Rol creado exitosamente. ${this.totalUsuariosSeleccionados} usuario(s) asignado(s).`);
         this.guardando = false;
+        this.cdr.detectChanges(); // <-- FORZAMOS RENDERIZADO
       },
       error: (err) => {
         console.error('Error al crear rol:', err);
         this.mostrarError('Error al crear rol en la base de datos');
         this.guardando = false;
+        this.cdr.detectChanges(); // <-- FORZAMOS RENDERIZADO
       }
     });
   }
@@ -254,11 +268,13 @@ export class RolesBdFormComponent implements OnInit {
       next: () => {
         this.mostrarExito('Rol actualizado exitosamente');
         this.guardando = false;
+        this.cdr.detectChanges(); // <-- FORZAMOS RENDERIZADO
       },
       error: (err) => {
         console.error('Error al actualizar rol:', err);
         this.mostrarError('Error al actualizar rol');
         this.guardando = false;
+        this.cdr.detectChanges(); // <-- FORZAMOS RENDERIZADO
       }
     });
   }
@@ -299,10 +315,12 @@ export class RolesBdFormComponent implements OnInit {
         this.aplicarPermisosAEsquemas(data);
         this.nuevoRol.nombre = data.nombreRol || '';
         this.nuevoRol.rolBaseId = data.rolBaseId ? String(data.rolBaseId) : null;
+        this.cdr.detectChanges(); // <-- FORZAMOS RENDERIZADO
       },
       error: (err) => {
         console.error('Error al cargar permisos:', err);
         this.mostrarError('Error al cargar permisos del rol');
+        this.cdr.detectChanges(); // <-- FORZAMOS RENDERIZADO
       }
     });
   }
@@ -315,9 +333,11 @@ export class RolesBdFormComponent implements OnInit {
           usuario.seleccionado = idsUsuariosDelRol.includes(usuario.id);
         });
         this.usuariosFiltrados = [...this.usuariosDisponibles];
+        this.cdr.detectChanges(); // <-- FORZAMOS RENDERIZADO
       },
       error: (err) => {
         console.error('Error al cargar usuarios del rol:', err);
+        this.cdr.detectChanges(); // <-- FORZAMOS RENDERIZADO
       }
     });
   }

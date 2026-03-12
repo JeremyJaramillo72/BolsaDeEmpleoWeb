@@ -17,22 +17,26 @@
 
     <div class="offers-grid">
 
+      <!-- CARGANDO -->
       <div *ngIf="cargando" class="no-data">
         <span class="material-icons spin">sync</span>
         <p>Cargando postulaciones...</p>
       </div>
 
+      <!-- ERROR -->
       <div *ngIf="errorConexion" class="no-data error-card">
         <span class="material-icons">cloud_off</span>
         <p>No se pudo conectar con el servidor.</p>
         <button class="btn-reintentar" (click)="cargarPostulaciones()">Reintentar</button>
       </div>
 
+      <!-- SIN POSTULACIONES -->
       <div *ngIf="!cargando && !errorConexion && postulaciones.length === 0" class="no-data">
         <span class="material-icons">inbox</span>
         <p>Aún no tienes postulaciones enviadas.</p>
       </div>
 
+      <!-- TARJETAS -->
       <div class="modern-card" *ngFor="let p of postulaciones">
 
         <div class="header-row">
@@ -86,6 +90,7 @@
           </p>
         </div>
 
+        <!-- Observación de la empresa (solo lectura) -->
         <div class="obs-empresa" *ngIf="p.observaciones">
           <span class="material-icons">comment</span>
           <div>
@@ -108,8 +113,10 @@
           </button>
         </div>
 
+        <!-- DETALLES EXPANDIBLES -->
         <div class="card-details" *ngIf="p.mostrarDetalles">
 
+          <!-- HABILIDADES -->
           <div class="details-section" *ngIf="p.habilidades && p.habilidades.length > 0">
             <h4 class="details-title">
               <span class="material-icons">psychology</span> Habilidades Requeridas
@@ -126,6 +133,7 @@
             </p>
           </div>
 
+          <!-- REQUISITOS -->
           <div class="details-section" *ngIf="p.requisitos_manuales && p.requisitos_manuales.length > 0">
             <h4 class="details-title">
               <span class="material-icons">format_list_bulleted</span> Requisitos Específicos
@@ -145,12 +153,15 @@
 
         </div>
 
-      </div></div>
+      </div><!-- /modern-card -->
+    </div>
   </section>
 
+  <!-- ── MODAL DE VALIDACIÓN ─────────────────────────────────────────── -->
   <div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
     <div class="modal-container" (click)="$event.stopPropagation()">
 
+      <!-- HEADER -->
       <div class="modal-header">
         <div class="modal-header-info">
           <span class="material-icons modal-header-icon">fact_check</span>
@@ -164,13 +175,16 @@
         </button>
       </div>
 
+      <!-- CARGANDO -->
       <div class="modal-loading" *ngIf="cargandoModal">
         <span class="material-icons spin">sync</span>
         <p>Cargando información...</p>
       </div>
 
+      <!-- CONTENIDO -->
       <div class="modal-body" *ngIf="!cargandoModal && perfilModal">
 
+        <!-- DATOS BÁSICOS -->
         <div class="modal-section perfil-basico">
           <div class="perfil-foto-wrap">
             <img *ngIf="perfilModal.urlFotoPerfil" [src]="perfilModal.urlFotoPerfil" class="foto-perfil" alt="Foto perfil">
@@ -196,45 +210,7 @@
           </div>
         </div>
 
-        <div class="modal-section ia-results-card" *ngIf="perfilModal.analisisIa">
-          <div class="ia-header">
-            <span class="material-icons ia-icon spin-slow">auto_awesome</span>
-            <h4>Análisis de Inteligencia Artificial</h4>
-          </div>
-
-          <div class="ia-content">
-            <div class="ia-score-box">
-              <div class="score-circle" [ngClass]="getScoreClass(perfilModal.porcentajeMatch)">
-                <span class="score-number">{{ perfilModal.porcentajeMatch || 0 }}%</span>
-                <span class="score-label">Compatibilidad</span>
-              </div>
-            </div>
-
-            <div class="ia-feedback-box">
-
-              <div class="feedback-item success" *ngIf="getIaPuntosFuertes(perfilModal.analisisIa).length > 0">
-                <span class="material-icons">check_circle</span>
-                <div>
-                  <strong>Puntos Fuertes:</strong>
-                  <ul>
-                    <li *ngFor="let fuerte of getIaPuntosFuertes(perfilModal.analisisIa)">{{ fuerte }}</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div class="feedback-item warning" *ngIf="getIaPuntosDebiles(perfilModal.analisisIa).length > 0">
-                <span class="material-icons">error_outline</span>
-                <div>
-                  <strong>Áreas de Mejora:</strong>
-                  <ul>
-                    <li *ngFor="let debil of getIaPuntosDebiles(perfilModal.analisisIa)">{{ debil }}</li>
-                  </ul>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
+        <!-- OBSERVACIÓN GENERAL DE LA EMPRESA -->
         <div class="modal-obs-general" *ngIf="perfilModal.mensajeEvaluacion">
           <span class="material-icons">comment</span>
           <div>
@@ -243,6 +219,7 @@
           </div>
         </div>
 
+        <!-- FORMACIÓN ACADÉMICA -->
         <div class="modal-section" *ngIf="perfilModal.formacionAcademica?.length">
           <h4 class="modal-section-title">
             <span class="material-icons">school</span> Formación Académica
@@ -270,6 +247,7 @@
           </div>
         </div>
 
+        <!-- EXPERIENCIA LABORAL -->
         <div class="modal-section" *ngIf="perfilModal.experienciaLaboral?.length">
           <h4 class="modal-section-title">
             <span class="material-icons">work</span> Experiencia Laboral
@@ -297,6 +275,7 @@
           </div>
         </div>
 
+        <!-- CURSOS -->
         <div class="modal-section" *ngIf="perfilModal.cursosRealizados?.length">
           <h4 class="modal-section-title">
             <span class="material-icons">menu_book</span> Cursos Realizados
@@ -324,6 +303,7 @@
           </div>
         </div>
 
+        <!-- IDIOMAS -->
         <div class="modal-section" *ngIf="perfilModal.idiomas?.length">
           <h4 class="modal-section-title">
             <span class="material-icons">language</span> Idiomas
@@ -351,10 +331,15 @@
           </div>
         </div>
 
+        <!-- Sin ítems validados aún -->
         <p class="modal-empty"
            *ngIf="!perfilModal.formacionAcademica?.length && !perfilModal.experienciaLaboral?.length
                   && !perfilModal.cursosRealizados?.length && !perfilModal.idiomas?.length">
           <span class="material-icons">info</span> No hay ítems validados aún.
         </p>
 
-      </div></div></div></main>
+      </div><!-- /modal-body -->
+    </div><!-- /modal-container -->
+  </div><!-- /modal-overlay -->
+
+</main>

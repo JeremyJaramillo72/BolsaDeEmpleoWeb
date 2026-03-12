@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit,ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../services/admin.service';
@@ -57,13 +57,13 @@ export class ValidarEmpresaComponent implements OnInit {
     totalRechazadas: 0
   };
 
-  constructor(private adminService: AdminService) {}
+  constructor(private adminService: AdminService, private cdr:ChangeDetectorRef) {}
 
   ngOnInit() {
     this.cargarEmpresas();
   }
 
-  // ========== CARGA DE DATOS ==========
+
   cargarEmpresas(): void {
     this.cargando = true;
 
@@ -73,6 +73,7 @@ export class ValidarEmpresaComponent implements OnInit {
         this.todasLasEmpresas = data;
         this.calcularEstadisticas();
         this.cargando = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.mostrarError('Error al conectar con el servidor.');

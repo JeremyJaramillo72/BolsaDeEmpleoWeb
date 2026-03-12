@@ -165,6 +165,34 @@ export class PerfilCandidatoComponent implements OnInit {
       }
     });
   }
+  // --- MÉTODOS PARA LA TARJETA DE IA ---
+
+  getScoreClass(porcentaje: number | null | undefined): string {
+    const score = porcentaje || 0;
+    if (score >= 80) return 'score-high';
+    if (score >= 50) return 'score-medium';
+    return 'score-low';
+  }
+
+  getIaPuntosFuertes(jsonString: string | any): string[] {
+    try {
+      if (!jsonString) return [];
+      const iaData = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
+      return iaData?.match_oferta?.puntos_fuertes || [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  getIaPuntosDebiles(jsonString: string | any): string[] {
+    try {
+      if (!jsonString) return [];
+      const iaData = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
+      return iaData?.match_oferta?.puntos_debiles || [];
+    } catch (e) {
+      return [];
+    }
+  }
 
   volver(): void {
     this.router.navigate(['/menu-principal/revision-postulantes']);

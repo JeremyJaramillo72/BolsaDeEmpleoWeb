@@ -28,8 +28,9 @@
           <div class="select-wrapper">
             <select [(ngModel)]="filtroEstado">
               <option value="Todos">Todas las ofertas</option>
-              <option value="activa">Activas</option>
+              <option value="aprobado">Activas</option>
               <option value="pendiente">Pendientes</option>
+              <option value="rechazada">Rechazadas</option>
               <option value="cerrada">Cerradas</option>
             </select>
             <span class="material-icons select-icon">expand_more</span>
@@ -66,12 +67,12 @@
                 <h3>{{ oferta.titulo }}</h3>
                 <span class="status-badge"
                       [ngClass]="{
-                        'badge-draft': oferta.estadoOferta === 'pendiente',
-                        'badge-active': oferta.estadoOferta === 'activa',
-                        'badge-closed': oferta.estadoOferta === 'cerrada'
-                      }">
-                  {{ oferta.estadoOferta | titlecase }}
-                </span>
+          'badge-draft': oferta.estadoOferta === 'pendiente',
+          'badge-active': oferta.estadoOferta === 'aprobado' || oferta.estadoOferta === 'activa',
+          'badge-closed': oferta.estadoOferta === 'rechazada' || oferta.estadoOferta === 'cerrada'
+        }">
+    {{ oferta.estadoOferta | titlecase }}
+  </span>
               </div>
 
               <div class="details-row">

@@ -1,10 +1,12 @@
 <div class="page-container">
   <div class="page-header">
-    <h1>
-      <span class="material-icons text-primary" style="vertical-align: middle;">verified_user</span>
-      Validación de Empresas
-    </h1>
-    <p class="page-description">Revise y valide las empresas registradas en el sistema</p>
+    <div class="header-text">
+      <h1>
+        <span class="material-icons header-icon-main">verified_user</span>
+        Validación de Empresas
+      </h1>
+      <p class="page-description">Revise, apruebe o rechace las solicitudes de las empresas que desean usar la bolsa de empleo.</p>
+    </div>
   </div>
 
   <div class="alert alert-success" *ngIf="mensajeExito">
@@ -12,12 +14,12 @@
   </div>
 
   <div class="alert alert-danger" *ngIf="mensajeError">
-    <span class="material-icons">error</span> {{ mensajeError }}
+    <span class="material-icons">error_outline</span> {{ mensajeError }}
   </div>
 
-  <div class="stats-grid">
+  <div class="stats-grid fade-in">
     <div class="stat-card pendiente">
-      <div class="stat-icon"><span class="material-icons">pending</span></div>
+      <div class="stat-icon"><span class="material-icons">pending_actions</span></div>
       <div class="stat-content">
         <h4>Pendientes</h4>
         <p class="stat-number">{{ estadisticas.totalPendientes }}</p>
@@ -25,7 +27,7 @@
     </div>
 
     <div class="stat-card verificada">
-      <div class="stat-icon"><span class="material-icons">verified</span></div>
+      <div class="stat-icon"><span class="material-icons">task_alt</span></div>
       <div class="stat-content">
         <h4>Aprobadas</h4>
         <p class="stat-number">{{ estadisticas.totalVerificadas }}</p>
@@ -33,7 +35,7 @@
     </div>
 
     <div class="stat-card rechazada">
-      <div class="stat-icon"><span class="material-icons">cancel</span></div>
+      <div class="stat-icon"><span class="material-icons">block</span></div>
       <div class="stat-content">
         <h4>Rechazadas</h4>
         <p class="stat-number">{{ estadisticas.totalRechazadas }}</p>
@@ -41,159 +43,194 @@
     </div>
   </div>
 
-  <div class="section-card mt-4">
-    <div class="filters-row">
-      <div class="filter-tabs">
-        <button class="filter-tab" [class.active]="filtroEstado === 'Pendiente'" (click)="cambiarFiltroEstado('Pendiente')">
-          Pendientes
-        </button>
-        <button class="filter-tab" [class.active]="filtroEstado === 'Verificada'" (click)="cambiarFiltroEstado('Verificada')">
-          Aprobadas
-        </button>
-        <button class="filter-tab" [class.active]="filtroEstado === 'Rechazada'" (click)="cambiarFiltroEstado('Rechazada')">
-          Rechazadas
-        </button>
-      </div>
+  <div class="filter-section fade-in">
+    <div class="filter-tabs">
+      <button class="filter-tab" [class.active]="filtroEstado === 'Pendiente'" (click)="cambiarFiltroEstado('Pendiente')">
+        Pendientes
+      </button>
+      <button class="filter-tab" [class.active]="filtroEstado === 'Verificada'" (click)="cambiarFiltroEstado('Verificada')">
+        Aprobadas
+      </button>
+      <button class="filter-tab" [class.active]="filtroEstado === 'Rechazada'" (click)="cambiarFiltroEstado('Rechazada')">
+        Rechazadas
+      </button>
+    </div>
 
-      <div class="search-box">
-        <span class="material-icons">search</span>
-        <input type="text" [(ngModel)]="filtrosBusqueda" placeholder="Buscar empresa, RUC o correo..." class="search-input">
-      </div>
+    <div class="search-box">
+      <span class="material-icons text-muted">search</span>
+      <input type="text" [(ngModel)]="filtrosBusqueda" placeholder="Buscar por nombre, RUC o correo..." class="search-input">
     </div>
   </div>
 
-  <div class="empresas-list mt-3" *ngIf="!cargando">
+  <div class="empresas-list fade-in" *ngIf="!cargando">
 
     <div class="empresa-card" *ngFor="let empresa of empresasPaginadas">
-      <div class="empresa-header">
+      <div class="empresa-header" [ngClass]="{'border-top-pendiente': empresa.estado === 'Pendiente'}">
         <div class="empresa-info-principal">
-          <h3 class="empresa-nombre">{{ empresa.nombreEmpresa }}</h3>
-          <span class="badge" [ngClass]="getEstadoBadgeClass(empresa.estado)">
-            {{ empresa.estado }}
-          </span>
+          <div class="icon-box-company">
+            <span class="material-icons">business</span>
+          </div>
+          <div>
+            <h3 class="empresa-nombre">{{ empresa.nombreEmpresa }}</h3>
+            <span class="badge" [ngClass]="getEstadoBadgeClass(empresa.estado)">
+              {{ empresa.estado }}
+            </span>
+          </div>
         </div>
+
         <div class="empresa-dias" *ngIf="empresa.estado === 'Pendiente'">
-          <span class="material-icons" style="font-size: 16px;">schedule</span>
-          {{ calcularDiasDesdeRegistro(empresa.fechaRegistro) }} días de espera
+          <span class="material-icons text-muted">schedule</span>
+          {{ calcularDiasDesdeRegistro(empresa.fechaRegistro) }} días en espera
         </div>
       </div>
 
       <div class="empresa-body">
         <div class="empresa-info-grid">
           <div class="info-item">
-            <span class="material-icons">badge</span>
+            <span class="material-icons icon-detail">badge</span>
             <div class="info-content">
-              <span class="info-label">RUC</span>
+              <span class="info-label">RUC / Identificación</span>
               <span class="info-value">{{ empresa.ruc }}</span>
             </div>
           </div>
 
           <div class="info-item">
-            <span class="material-icons">location_on</span>
+            <span class="material-icons icon-detail">location_on</span>
             <div class="info-content">
-              <span class="info-label">Ciudad</span>
-              <span class="info-value">{{ empresa.nombreCiudad || 'No registrada' }}</span>
+              <span class="info-label">Sede / Ciudad</span>
+              <span class="info-value">{{ empresa.nombreCiudad || 'Por definir' }}</span>
             </div>
           </div>
 
           <div class="info-item">
-            <span class="material-icons">email</span>
+            <span class="material-icons icon-detail">mail</span>
             <div class="info-content">
-              <span class="info-label">Correo</span>
+              <span class="info-label">Correo Electrónico</span>
               <span class="info-value">{{ empresa.correo }}</span>
             </div>
           </div>
 
           <div class="info-item">
-            <span class="material-icons">calendar_today</span>
+            <span class="material-icons icon-detail">event</span>
             <div class="info-content">
-              <span class="info-label">Registro</span>
-              <span class="info-value">{{ empresa.fechaRegistro | date:'dd/MM/yyyy' }}</span>
+              <span class="info-label">Fecha de Registro</span>
+              <span class="info-value">{{ empresa.fechaRegistro | date:'dd MMM yyyy' }}</span>
             </div>
           </div>
         </div>
 
-        <div class="mt-2 text-muted" *ngIf="empresa.descripcion">
-          <small><em>{{ empresa.descripcion | slice:0:100 }}...</em></small>
-        </div>
-
-        <div class="empresa-actions mt-3">
+        <div class="empresa-actions">
           <button class="btn-action view" (click)="abrirModalDetalle(empresa)">
-            <span class="material-icons">visibility</span> Ver Detalle
+            <span class="material-icons">visibility</span> Ver Detalles
           </button>
-
-          <button class="btn-action approve" *ngIf="empresa.estado === 'Pendiente'" (click)="abrirModalDetalle(empresa)">
-            <span class="material-icons">gavel</span> Validar
+          <button class="btn-action approve-fast" *ngIf="empresa.estado === 'Pendiente'" (click)="abrirModalDetalle(empresa)">
+            <span class="material-icons">fact_check</span> Gestionar
           </button>
         </div>
       </div>
     </div>
 
-    <div class="empty-state text-center p-5" *ngIf="empresasPaginadas.length === 0">
-      <span class="material-icons" style="font-size: 48px; color: #ccc;">inbox</span>
-      <p class="text-muted mt-2">No se encontraron empresas con los filtros actuales.</p>
+    <div class="empty-state" *ngIf="empresasPaginadas.length === 0">
+      <span class="material-icons">domain_disabled</span>
+      <p>No se encontraron empresas con los filtros actuales.</p>
     </div>
   </div>
 
   <div class="pagination-container" *ngIf="totalPaginas > 1">
-    <button class="btn-page" (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">Anterior</button>
+    <button class="btn-page" (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">
+      <span class="material-icons">chevron_left</span>
+    </button>
     <span class="page-info">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-    <button class="btn-page" (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">Siguiente</button>
+    <button class="btn-page" (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">
+      <span class="material-icons">chevron_right</span>
+    </button>
   </div>
 
-  <div class="loading-overlay" *ngIf="cargando">
+  <div class="loading-container" *ngIf="cargando">
     <div class="spinner"></div>
-    <p>Cargando...</p>
+    <p>Cargando información de empresas...</p>
   </div>
 </div>
 
 <div class="modal-overlay" *ngIf="mostrarModal && empresaSeleccionada" (click)="cerrarModal()">
-  <div class="modal-container" (click)="$event.stopPropagation()">
+  <div class="modal-container slide-up" (click)="$event.stopPropagation()">
 
     <div class="modal-header">
-      <h2>{{ empresaSeleccionada.nombreEmpresa }}</h2>
-      <button class="btn-close" (click)="cerrarModal()">&times;</button>
+      <div class="modal-title-wrapper">
+        <div class="icon-box-company white-bg">
+          <span class="material-icons text-blue">business</span>
+        </div>
+        <h2>{{ empresaSeleccionada.nombreEmpresa }}</h2>
+      </div>
+      <button class="btn-close-icon" (click)="cerrarModal()">
+        <span class="material-icons">close</span>
+      </button>
     </div>
 
     <div class="modal-body">
+
       <div class="detail-section">
-        <h4>Información General</h4>
-        <p><strong>RUC:</strong> {{ empresaSeleccionada.ruc }}</p>
-        <p><strong>Correo:</strong> {{ empresaSeleccionada.correo }}</p>
-        <p><strong>Ciudad:</strong> {{ empresaSeleccionada.nombreCiudad }}</p>
-        <p><strong>Sitio Web:</strong> <a [href]="'http://' + empresaSeleccionada.sitioWeb" target="_blank">{{ empresaSeleccionada.sitioWeb || 'N/A' }}</a></p>
-        <p><strong>Descripción:</strong></p>
-        <p class="text-muted">{{ empresaSeleccionada.descripcion }}</p>
+        <h4 class="section-title"><span class="material-icons text-blue">info</span> Información General</h4>
+
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">RUC</span>
+            <span class="detail-value">{{ empresaSeleccionada.ruc }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Correo Electrónico</span>
+            <span class="detail-value">{{ empresaSeleccionada.correo }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Ubicación</span>
+            <span class="detail-value">{{ empresaSeleccionada.nombreCiudad || 'N/A' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Sitio Web</span>
+            <a *ngIf="empresaSeleccionada.sitioWeb" [href]="'http://' + empresaSeleccionada.sitioWeb" target="_blank" class="detail-link">
+              Visitar Página <span class="material-icons text-sm">open_in_new</span>
+            </a>
+            <span class="detail-value text-muted" *ngIf="!empresaSeleccionada.sitioWeb">No registrado</span>
+          </div>
+        </div>
+
+        <div class="detail-item-full mt-3">
+          <span class="detail-label">Descripción de la Empresa</span>
+          <p class="detail-desc-text">{{ empresaSeleccionada.descripcion || 'Sin descripción disponible.' }}</p>
+        </div>
       </div>
 
-      <div class="validation-section mt-4" *ngIf="empresaSeleccionada.estado === 'Pendiente'">
-        <hr>
-        <h4 class="mb-3">Zona de Validación</h4>
+      <div class="validation-section" *ngIf="empresaSeleccionada.estado === 'Pendiente'">
+        <h4 class="section-title text-center"><span class="material-icons text-primary">fact_check</span> Dictamen de Validación</h4>
+        <p class="text-center text-muted mb-4">Por favor, revise la información antes de aprobar o rechazar a esta empresa.</p>
 
-        <div class="d-flex gap-2" *ngIf="!accionValidacion">
-          <button class="btn btn-success flex-grow-1" (click)="setAccion('Aprobado')">
-            <span class="material-icons">check</span> Aprobar
+        <div class="action-buttons-group" *ngIf="!accionValidacion">
+          <button class="btn-modern btn-outline-danger" (click)="setAccion('Rechazado')">
+            <span class="material-icons">block</span> Rechazar Empresa
           </button>
-          <button class="btn btn-danger flex-grow-1" (click)="setAccion('Rechazado')">
-            <span class="material-icons">close</span> Rechazar
+          <button class="btn-modern btn-success-fill" (click)="setAccion('Aprobado')">
+            <span class="material-icons">check_circle</span> Aprobar Empresa
           </button>
         </div>
 
-        <div *ngIf="accionValidacion" class="confirm-box p-3 mt-2" [ngClass]="{'bg-light-success': accionValidacion==='Aprobado', 'bg-light-danger': accionValidacion==='Rechazado'}">
-          <h5>Confirmar {{ accionValidacion }}</h5>
-          <p>¿Está seguro de cambiar el estado de la empresa?</p>
+        <div *ngIf="accionValidacion" class="confirm-box" [ngClass]="{'box-success': accionValidacion==='Aprobado', 'box-danger': accionValidacion==='Rechazado'}">
+          <div class="confirm-header">
+            <span class="material-icons" [ngClass]="accionValidacion==='Aprobado' ? 'text-green' : 'text-red'">
+              {{ accionValidacion === 'Aprobado' ? 'verified' : 'warning' }}
+            </span>
+            <h5>Confirmar {{ accionValidacion }}</h5>
+          </div>
+          <p>¿Está seguro de que desea <strong>{{ accionValidacion === 'Aprobado' ? 'aprobar' : 'rechazar' }}</strong> a esta empresa?</p>
 
-          <div class="d-flex justify-content-end gap-2 mt-3">
-            <button class="btn btn-secondary" (click)="setAccion(null)">Cancelar</button>
-            <button class="btn"
-                    [ngClass]="accionValidacion==='Aprobado' ? 'btn-success' : 'btn-danger'"
-                    (click)="confirmarValidacion()">
-              Confirmar
+          <div class="confirm-actions">
+            <button class="btn-modern btn-cancel" (click)="setAccion(null)">Cancelar</button>
+            <button class="btn-modern" [ngClass]="accionValidacion==='Aprobado' ? 'btn-success-fill' : 'btn-danger-fill'" (click)="confirmarValidacion()">
+              Confirmar Decisión
             </button>
           </div>
         </div>
       </div>
-    </div>
 
+    </div>
   </div>
 </div>

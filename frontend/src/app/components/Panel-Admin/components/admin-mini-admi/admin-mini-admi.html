@@ -1,255 +1,210 @@
-<div class="main-container">
+<div class="page-container fade-in">
 
-  <!-- ================= HEADER ================= -->
   <header class="page-header">
-    <div class="title-section">
-      <span class="material-icons icon-header">manage_accounts</span>
-      <h2>Gestión de Personal Interno</h2>
+    <div class="header-text">
+      <h1>
+        <span class="material-icons header-icon-main">manage_accounts</span>
+        Gestión de Personal Interno
+      </h1>
+      <p class="page-description">Administre los usuarios del sistema, sus roles de base de datos y permisos de interfaz.</p>
     </div>
 
     <button
       *ngIf="vistaActual === 'LISTA'"
-      class="btn btn-primary"
+      class="btn-primary"
       (click)="iniciarCreacion()">
-      <span class="material-icons">add</span>
-      Nuevo Personal Interno
+      <span class="material-icons">person_add</span>
+      Nuevo Personal
     </button>
   </header>
 
-  <!-- ================= LISTA ================= -->
-  <div *ngIf="vistaActual === 'LISTA'" class="content-area fade-in">
-    <div class="card">
+  <div *ngIf="vistaActual === 'LISTA'" class="section-card fade-in">
 
-      <!-- LOADING INSIDE TABLE -->
-      <div *ngIf="isLoading" class="table-loading">
-        <div class="mini-spinner">
-          <div class="spinner-mini"></div>
-        </div>
-        <p class="loading-text-mini">Cargando...</p>
-      </div>
+    <div *ngIf="isLoading" class="loading-container">
+      <div class="spinner"></div>
+      <p>Cargando administradores...</p>
+    </div>
 
-      <table class="modern-table" [class.hidden]="isLoading">
+    <div class="table-responsive" *ngIf="!isLoading">
+      <table class="modern-table">
         <thead>
         <tr>
-          <th>Usuario</th>
-          <th>Rol BD</th>
+          <th>Usuario y Contacto</th>
+          <th>Rol de Base de Datos</th>
           <th>Fecha Creación</th>
-          <th class="text-center">Permisos UI</th>
+          <th>Permisos de Interfaz</th>
           <th class="text-center">Estado</th>
           <th class="text-center">Acciones</th>
         </tr>
         </thead>
 
         <tbody>
-        <tr *ngFor="let admin of adminsPagina">
-          <td class="font-bold">{{ admin.usuario }}</td>
-
+        <tr *ngFor="let admin of adminsPagina" class="table-row">
           <td>
-            <span class="badge badge-gray">{{ admin.rolBD }}</span>
+            <div class="user-cell">
+              <div class="avatar-circle">
+                {{ admin.usuario.charAt(0).toUpperCase() }}
+              </div>
+              <div class="user-info">
+                <span class="user-name">{{ admin.usuario }}</span>
+              </div>
+            </div>
           </td>
 
-          <td>{{ admin.fechaCreacion | date:'dd/MM/yyyy' }}</td>
+          <td>
+              <span class="badge badge-role">
+                <span class="material-icons text-sm">shield</span>
+                {{ admin.rolBD }}
+              </span>
+          </td>
+
+          <td>
+            <div class="date-cell">
+              <span class="material-icons text-muted">calendar_today</span>
+              {{ admin.fechaCreacion | date:'dd/MM/yyyy' }}
+            </div>
+          </td>
 
           <td>
             <div class="permisos-list">
-                <span
-                  *ngFor="let p of admin.permisosUI"
-                  class="permiso-tag">
+                <span *ngFor="let p of admin.permisosUI" class="badge badge-permission">
                   {{ p }}
+                </span>
+              <span class="text-muted text-sm" *ngIf="!admin.permisosUI || admin.permisosUI.length === 0">
+                  Sin permisos
                 </span>
             </div>
           </td>
 
           <td class="text-center">
             <button
-              class="status-pill cursor-pointer transition-colors hover:opacity-80"
+              class="status-pill cursor-pointer"
               [class.active]="admin.estadoValidacion === 'Activo'"
               [class.inactive]="admin.estadoValidacion !== 'Activo'"
               (click)="toggleEstado(admin)"
               [disabled]="isLoading"
               title="Clic para cambiar estado">
-
+              <span class="material-icons text-sm">{{ admin.estadoValidacion === 'Activo' ? 'check_circle' : 'cancel' }}</span>
               {{ formatEstado(admin) }}
-
             </button>
           </td>
 
-
           <td class="text-center actions-cell">
-            <!-- Edit removed per request -->
-            <button
-              class="icon-btn delete"
-              title="Desactivar"
-              [disabled]="isLoading"
-              (click)="desactivarUsuario(admin)">
-              <span class="material-icons">delete</span>
+            <button class="btn-action-icon delete" title="Eliminar / Desactivar" [disabled]="isLoading" (click)="desactivarUsuario(admin)">
+              <span class="material-icons">delete_outline</span>
             </button>
           </td>
         </tr>
 
-        <tr *ngIf="listaAdmins.length === 0 && !isLoading">
-          <td colspan="6" class="empty-state">
-            No hay administradores registrados.
+        <tr *ngIf="listaAdmins.length === 0">
+          <td colspan="6">
+            <div class="empty-state">
+              <span class="material-icons">group_off</span>
+              <p>No hay administradores registrados en el sistema.</p>
+            </div>
           </td>
         </tr>
         </tbody>
       </table>
+    </div>
 
-      <!-- PAGINACIÓN -->
-      <div *ngIf="listaAdmins.length > 0 && !isLoading" class="pagination-container" style="padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
-        <div class="pagination-info">Mostrando {{ displayStart }} - {{ displayEnd }} de {{ listaAdmins.length }}</div>
-        <div class="pagination-controls" style="display:flex; gap:8px; align-items:center;">
-          <button class="page-btn" (click)="goToPage(1)" [disabled]="currentPage===1 || isLoading" title="Ir al inicio">
-            <span class="material-icons">first_page</span>
-          </button>
-          <button class="page-btn" (click)="prevPage()" [disabled]="currentPage===1 || isLoading" title="Anterior">
-            <span class="material-icons">chevron_left</span>
-          </button>
-          <button class="page-btn page-number" *ngFor="let p of pages" (click)="goToPage(p)" [class.active]="currentPage === p" [disabled]="isLoading">
-            {{ p }}
-          </button>
-          <button class="page-btn" (click)="nextPage()" [disabled]="currentPage===totalPages || isLoading" title="Siguiente">
-            <span class="material-icons">chevron_right</span>
-          </button>
-          <button class="page-btn" (click)="goToPage(totalPages)" [disabled]="currentPage===totalPages || isLoading" title="Ir al final">
-            <span class="material-icons">last_page</span>
-          </button>
-        </div>
+    <div class="pagination-wrapper" *ngIf="listaAdmins.length > 0 && !isLoading">
+      <span class="pagination-info">Mostrando {{ displayStart }} - {{ displayEnd }} de {{ listaAdmins.length }} usuarios</span>
+      <div class="pagination-controls">
+        <button class="btn-page" (click)="goToPage(1)" [disabled]="currentPage===1 || isLoading" title="Inicio"><span class="material-icons">keyboard_double_arrow_left</span></button>
+        <button class="btn-page" (click)="prevPage()" [disabled]="currentPage===1 || isLoading" title="Anterior"><span class="material-icons">chevron_left</span></button>
+        <button class="btn-page number" *ngFor="let p of pages" (click)="goToPage(p)" [class.active]="currentPage === p" [disabled]="isLoading">{{ p }}</button>
+        <button class="btn-page" (click)="nextPage()" [disabled]="currentPage===totalPages || isLoading" title="Siguiente"><span class="material-icons">chevron_right</span></button>
+        <button class="btn-page" (click)="goToPage(totalPages)" [disabled]="currentPage===totalPages || isLoading" title="Fin"><span class="material-icons">keyboard_double_arrow_right</span></button>
       </div>
     </div>
   </div>
 
-  <!-- ================= CREAR ================= -->
-  <div *ngIf="vistaActual === 'CREAR'" class="content-area fade-in">
-    <div class="card form-card">
+  <div *ngIf="vistaActual === 'CREAR'" class="fade-in">
+    <div class="section-card form-container-custom">
 
-      <div class="form-header">
-        <h3>Nuevo Usuario Administrativo</h3>
-        <p>
-          Crea un usuario con acceso a base de datos y permisos de interfaz.
-        </p>
+      <div class="form-header-bar">
+        <button class="btn-back-icon" (click)="cancelarCreacion()" title="Volver">
+          <span class="material-icons">arrow_back</span>
+        </button>
+        <div>
+          <h3 class="form-title">Crear Nuevo Personal</h3>
+          <p class="form-subtitle">Registre un nuevo usuario con acceso administrativo al sistema.</p>
+        </div>
       </div>
 
       <div class="form-grid">
-
-        <!-- ===== DATOS PRINCIPALES ===== -->
         <div class="form-section">
+          <h4 class="section-subtitle"><span class="material-icons text-blue">badge</span> Datos del Usuario</h4>
 
-          <div class="form-group">
-            <label>Usuario (Correo)</label>
-
+          <div class="form-group mt-3">
+            <label>Correo Electrónico (Usuario) <span class="required">*</span></label>
             <div class="input-wrapper">
-              <span class="material-icons">person</span>
-
-              <input
-                type="email"
-                name="usuario"
-                required
-                [(ngModel)]="nuevoAdmin.usuario"
-                #usuarioCtrl="ngModel"
-                placeholder="ejemplo@correo.com">
+              <span class="material-icons">mail</span>
+              <input type="email" name="usuario" required [(ngModel)]="nuevoAdmin.usuario" #usuarioCtrl="ngModel" placeholder="ejemplo@correo.com">
             </div>
-
-            @if (usuarioCtrl.invalid && usuarioCtrl.touched) {
-              <small class="error">
-                Ingresa un correo válido
-              </small>
-            }
-          </div>
-
-
-          <div class="form-group">
-            <label>Contraseña</label>
-            <div class="input-wrapper">
-              <span class="material-icons">vpn_key</span>
-              <input
-                type="password"
-                [(ngModel)]="nuevoAdmin.contrasena"
-                placeholder="********">
-            </div>
+            <small class="error-text" *ngIf="usuarioCtrl.invalid && usuarioCtrl.touched">Ingresa un correo válido.</small>
           </div>
 
           <div class="form-group">
-            <label>Nombre</label>
+            <label>Contraseña Temporal <span class="required">*</span></label>
             <div class="input-wrapper">
-              <span class="material-icons">account_circle</span>
-              <input
-                type="text"
-                [(ngModel)]="nuevoAdmin.nombre"
-                placeholder="Juan">
+              <span class="material-icons">password</span>
+              <input type="password" [(ngModel)]="nuevoAdmin.contrasena" placeholder="********">
             </div>
           </div>
 
-
-          <div class="form-group">
-            <label>Apellido</label>
-            <div class="input-wrapper">
-              <span class="material-icons">account_circle</span>
-              <input
-                type="text"
-                [(ngModel)]="nuevoAdmin.apellido"
-                placeholder="Piguave">
+          <div class="form-group-row">
+            <div class="form-group">
+              <label>Nombre</label>
+              <div class="input-wrapper">
+                <span class="material-icons">person</span>
+                <input type="text" [(ngModel)]="nuevoAdmin.nombre" placeholder="Ej: Juan">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Apellido</label>
+              <div class="input-wrapper">
+                <input type="text" [(ngModel)]="nuevoAdmin.apellido" placeholder="Ej: Pérez">
+              </div>
             </div>
           </div>
 
-
           <div class="form-group">
-            <label>Rol de Grupo</label>
+            <label>Rol de Base de Datos <span class="required">*</span></label>
             <div class="input-wrapper">
-              <span class="material-icons">security</span>
+              <span class="material-icons text-blue">shield</span>
               <select [(ngModel)]="nuevoAdmin.rolId">
-                <option [ngValue]="null" disabled>
-                  Seleccione un rol...
-                </option>
-
-                <option
-                  *ngFor="let rol of rolesDisponibles"
-                  [ngValue]="rol.id">
-                  {{ rol.etiqueta }}
-                </option>
+                <option [ngValue]="null" disabled>Seleccione un rol...</option>
+                <option *ngFor="let rol of rolesDisponibles" [ngValue]="rol.id">{{ rol.etiqueta }}</option>
               </select>
+              <span class="material-icons select-chevron">expand_more</span>
             </div>
           </div>
-
         </div>
-        <!-- ===== PERMISOS UI ===== -->
+
         <div class="form-section">
-          <label class="section-label">
-            Permisos de Acceso (Interfaz)
-          </label>
+          <h4 class="section-subtitle"><span class="material-icons text-green">dashboard_customize</span> Permisos de Interfaz (UI)</h4>
+          <p class="text-muted text-sm mb-3">Seleccione las pantallas a las que tendrá acceso este usuario.</p>
 
           <div class="checkbox-grid">
-            <label
-              *ngFor="let seccion of seccionesDisponibles"
-              class="checkbox-card"
-              [class.checked]="seccion.seleccionada">
-
-              <input
-                type="checkbox"
-                [(ngModel)]="seccion.seleccionada">
-
+            <label *ngFor="let seccion of seccionesDisponibles" class="checkbox-card" [class.checked]="seccion.seleccionada">
+              <input type="checkbox" [(ngModel)]="seccion.seleccionada">
+              <span class="material-icons card-icon">{{ seccion.seleccionada ? 'check_box' : 'check_box_outline_blank' }}</span>
               <span>{{ seccion.nombre }}</span>
             </label>
           </div>
         </div>
+      </div>
 
-
-        <!-- ===== ACCIONES ===== -->
-      <div class="form-actions">
-        <button
-          class="btn btn-secondary"
-          (click)="cancelarCreacion()">
-          Cancelar
-        </button>
-
-        <button
-          class="btn btn-primary"
-          (click)="guardarAdmin()">
-          Guardar Usuario
+      <div class="form-actions-bottom">
+        <button class="btn-secondary" (click)="cancelarCreacion()">Cancelar</button>
+        <button class="btn-primary" (click)="guardarAdmin()">
+          <span class="material-icons">save</span> Guardar Usuario
         </button>
       </div>
 
     </div>
   </div>
-  </div>
+
 </div>

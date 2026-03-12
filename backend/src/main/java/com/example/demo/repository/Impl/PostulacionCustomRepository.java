@@ -37,6 +37,8 @@ public class PostulacionCustomRepository {
             dto.setIdiomas(rs.getString("idiomas"));
             dto.setEstadoPostulacion(rs.getString("estado_postulacion"));
             dto.setMensajeEvaluacion(rs.getString("mensaje_evaluacion"));
+            dto.setPorcentajeMatch(rs.getObject("porcentaje_match") != null ? rs.getInt("porcentaje_match") : null);
+            dto.setAnalisisIa(rs.getString("analisis_ia"));
             try { dto.setNombreEmpresa(rs.getString("nombre_empresa")); } catch (Exception ignored) {}
             return dto;
         }, idPostulacion);
@@ -85,6 +87,7 @@ public class PostulacionCustomRepository {
             dto.setEstadoPostulacion(rs.getString("p_estado_postulacion"));
             dto.setMensajeEvaluacion(rs.getString("p_mensaje_evaluacion"));
             dto.setNombreEmpresa(rs.getString("p_nombre_empresa"));
+
             return dto;
         }, idPostulacion);
         return res.isEmpty() ? null : res.get(0);

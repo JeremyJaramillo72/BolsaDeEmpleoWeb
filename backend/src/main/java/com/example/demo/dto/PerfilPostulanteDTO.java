@@ -22,4 +22,6 @@ public class PerfilPostulanteDTO {
     private String estadoPostulacion;
     private String mensajeEvaluacion;
     private String nombreEmpresa;
+    private Integer porcentajeMatch;
+    private String analisisIa;
 }
