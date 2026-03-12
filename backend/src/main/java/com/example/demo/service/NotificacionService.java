@@ -3,9 +3,11 @@ package com.example.demo.service;
 import com.example.demo.dto.IOfertaResumen;
 import com.example.demo.dto.NotificacionDTO;
 import com.example.demo.model.Notificacion;
+import com.example.demo.model.PlantillaNotificacion;
 import com.example.demo.model.Usuario;
 import com.example.demo.repository.NotificacionRepository;
 import com.example.demo.repository.OfertaLaboralRepository;
+import com.example.demo.repository.PlantillaNotificacionRepository;
 import com.example.demo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -25,6 +27,7 @@ public class NotificacionService {
     private final NotificacionRepository notificacionRepo;
     private final UsuarioRepository usuarioRepo;
     private final OfertaLaboralRepository ofertaRepo;
+    private final PlantillaNotificacionRepository plantillaRepo;
     private final SimpMessagingTemplate messagingTemplate;
     private final EmailService emailService;
 
@@ -37,7 +40,8 @@ public class NotificacionService {
             "oferta_pendiente", "La empresa {empresa} ha publicado una nueva oferta: '{titulo}'. Requiere revisión.",
             "nueva_oferta_zona", "Hola {nombre}, hay una nueva oferta '{titulo}' disponible en tu zona ({provincia}).",
             "empresa_pendiente_aprobacion", "Se ha registrado una nueva empresa: '{nombreEmpresa}'. Requiere revisión.",
-            "empresa_aprobada", "¡Felicidades! Tu empresa ha sido aprobada. Ya puedes iniciar sesión y publicar ofertas."
+            "empresa_aprobada", "¡Felicidades! Tu empresa ha sido aprobada. Ya puedes iniciar sesión y publicar ofertas.",
+            "configuracion_correo_actualizada", "⚠️ ALERTA DE SEGURIDAD: El administrador {adminNombre} ha actualizado la configuración de correo. Anterior: {correoAnterior} → Nuevo: {correoNuevo}"
     );
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -46,8 +50,8 @@ public class NotificacionService {
             Usuario usuario = usuarioRepo.findById(idUsuario)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-            // 1. Generar Mensaje
-            String plantilla = templates.getOrDefault(tipo, "Tienes una nueva notificación");
+            // 1. Generar Mensaje - Obtener plantilla desde BD
+            String plantilla = obtenerPlantillaConContenido(tipo);
             String mensajeFinal = plantilla;
             for (Map.Entry<String, String> entry : variables.entrySet()) {
                 mensajeFinal = mensajeFinal.replace("{" + entry.getKey() + "}", entry.getValue());
@@ -87,7 +91,8 @@ public class NotificacionService {
                         case "postulacion_aprobada",
                              "proceso_entrevista",
                              "oferta_aprobada",
-                             "empresa_aprobada" -> true;   // notifica a empresa/postulante
+                             "empresa_aprobada",
+                             "configuracion_correo_actualizada" -> true;   // notifica a empresa/postulante/admin
                         default -> false;
                     };
 
@@ -126,6 +131,7 @@ public class NotificacionService {
             case "nueva_oferta_zona" -> "Nueva Oferta en tu Zona";
             case "empresa_pendiente_aprobacion" -> "Empresa Pendiente de Aprobacion";
             case "empresa_aprobada" -> "Empresa Aprobada";
+            case "configuracion_correo_actualizada" -> "Alerta de Seguridad: Correo Actualizado";
             default -> "Nueva Notificacion";
         };
     }
@@ -144,7 +150,7 @@ public class NotificacionService {
                     Notificacion notif = new Notificacion();
                     notif.setUsuario(admin);
 
-                    String plantilla = templates.getOrDefault(tipo, "Tienes una nueva notificación");
+                    String plantilla = obtenerPlantillaConContenido(tipo);
                     String mensaje = plantilla;
                     for (Map.Entry<String, String> entry : variables.entrySet()) {
                         mensaje = mensaje.replace("{" + entry.getKey() + "}", entry.getValue());
@@ -198,7 +204,7 @@ public class NotificacionService {
                     System.out.println("   📨 Guardando notificación para usuario: " + u.getIdUsuario());
 
                     // Crear notificación directamente sin llamar a crearYEnviarNotificacion
-                    String plantilla = templates.getOrDefault(tipo, "Tienes una nueva notificación");
+                    String plantilla = obtenerPlantillaConContenido(tipo);
                     String mensajeFinal = plantilla;
                     for (Map.Entry<String, String> entry : variables.entrySet()) {
                         mensajeFinal = mensajeFinal.replace("{" + entry.getKey() + "}", entry.getValue());
@@ -238,6 +244,12 @@ public class NotificacionService {
     @Transactional(readOnly = true)
     public List<NotificacionDTO> obtenerNotificacionesUsuario(Long idUsuario) {
         return notificacionRepo.findByUsuarioId(idUsuario)
+                .stream().map(this::mapearADTO).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<NotificacionDTO> obtenerNotificacionesActivas(Long idUsuario) {
+        return notificacionRepo.findNotificacionesActivas(idUsuario)
                 .stream().map(this::mapearADTO).collect(Collectors.toList());
     }
 
@@ -385,5 +397,23 @@ public class NotificacionService {
         } catch (Exception e) {
             System.err.println("Error enviando WebSocket de empresas pendientes: " + e.getMessage());
         }
+    }
+
+    /**
+     * Obtiene el contenido de una plantilla desde la BD.
+     * Si existe en BD, devuelve el contenido de la plantilla.
+     * Si no existe, devuelve un fallback desde templates en memoria.
+     */
+    private String obtenerPlantillaConContenido(String tipo) {
+        try {
+            var plantilla = plantillaRepo.findByTipoAndActivo(tipo, true);
+            if (plantilla.isPresent()) {
+                return plantilla.get().getContenido();
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ Error consultando plantilla de BD para tipo '" + tipo + "': " + e.getMessage());
+        }
+        // Fallback a templates en memoria si no existe en BD
+        return templates.getOrDefault(tipo, "Tienes una nueva notificación");
     }
 }

@@ -150,6 +150,7 @@ public class AuthController {
                             sesionService.registrarLogin(seguridad.getIdSeguridad(), ip, navegador, dispositivo);
                         }
 
+
                         httpResponse.addHeader("X-Auth-Token", UUID.randomUUID().toString());
                         httpResponse.addHeader("X-UTEQ-Session", "Active");
 
@@ -160,6 +161,14 @@ public class AuthController {
                         response.put("rol", usuario.getRol());
                         response.put("nombre", usuario.getNombre());
                         response.put("permisosUi", usuario.getPermisosUi());
+                        if ("Administrador".equalsIgnoreCase(nombreRol)) {
+                            try {
+                                String ip = obtenerIp(httpRequest);
+                                emailService.notificarLoginAdmin(usuario.getCorreo(), ip, "Ecuador");
+                            } catch (Exception e) {
+                                System.out.println("⚠️ No se pudo enviar alerta de login admin: " + e.getMessage());
+                            }
+                        }
 
                         if (nombreRol != null && nombreRol.equalsIgnoreCase("EMPRESA")) {
                             UsuarioEmpresa empresa = usuarioEmpresaRepository.findByIdUsuario(Long.valueOf(usuario.getIdUsuario()));

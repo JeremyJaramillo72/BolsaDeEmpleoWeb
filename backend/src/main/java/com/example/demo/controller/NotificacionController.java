@@ -57,4 +57,17 @@ public class NotificacionController {
             return ResponseEntity.internalServerError().body(Collections.emptyList());
         }
     }
+
+    @GetMapping("/usuario/{idUsuario}/activas")
+    public ResponseEntity<List<NotificacionDTO>> obtenerNotificacionesActivas(@PathVariable Long idUsuario) {
+        try {
+            log.info("Consultando notificaciones activas para usuario: {}", idUsuario);
+            List<NotificacionDTO> notificaciones = notificacionService.obtenerNotificacionesActivas(idUsuario);
+            log.info("Notificaciones activas encontradas: {}", notificaciones.size());
+            return ResponseEntity.ok(notificaciones);
+        } catch (Exception e) {
+            log.error("ERROR obteniendo notificaciones activas para usuario {}: {}", idUsuario, e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(Collections.emptyList());
+        }
+    }
 }

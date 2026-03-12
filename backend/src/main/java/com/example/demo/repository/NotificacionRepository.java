@@ -65,4 +65,8 @@ public interface NotificacionRepository extends JpaRepository<Notificacion, Inte
 
     @Query(value = "select * from usuarios.fn_obtener_notificaciones_empresa_historico(:idEmpresa)", nativeQuery = true)
     List<Object[]> getHistoric12MonthsByEmpresa(@Param("idEmpresa") Long idEmpresa);
+
+    // Obtener notificaciones activas: últimos 5 días + no leídas (para el bell icon)
+    @Query(value = "SELECT * FROM usuarios.fn_obtener_notificaciones_activas(:idUsuario)", nativeQuery = true)
+    List<Notificacion> findNotificacionesActivas(@Param("idUsuario") Long idUsuario);
 }

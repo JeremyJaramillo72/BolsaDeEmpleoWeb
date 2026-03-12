@@ -228,7 +228,7 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
             // Notificar a postulantes de la misma zona (provincia) que la oferta
             try {
                 List<Object[]> ubicacion = ofertaRepository.obtenerDatosUbicacionOferta(Math.toIntExact(idOferta));
-                System.out.println(">>> ZONA: Datos ubicacion oferta " + idOferta + ": " + (ubicacion.isEmpty() ? "VACIO" : "OK, filas=" + ubicacion.size()));
+                System.out.println(" ZONA: Datos ubicacion oferta " + idOferta + ": " + (ubicacion.isEmpty() ? "VACIO" : "OK, filas=" + ubicacion.size()));
 
                 if (!ubicacion.isEmpty()) {
                     Object[] loc = ubicacion.get(0);
@@ -238,10 +238,10 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
                     String nombreProvincia = (String) loc[3];
                     Integer idProvincia = ((Number) loc[4]).intValue(); 
 
-                    System.out.println(">>> ZONA: Oferta '" + tituloOfertaZona + "' en " + nombreCiudad + ", " + nombreProvincia + " (prov=" + idProvincia + ")");
+                    System.out.println(" ZONA: Oferta '" + tituloOfertaZona + "' en " + nombreCiudad + ", " + nombreProvincia + " (prov=" + idProvincia + ")");
 
                     List<Object[]> postulantes = usuarioRepository.findPostulantesByProvinciaNativo(idProvincia);
-                    System.out.println(">>> ZONA: Postulantes encontrados en provincia " + idProvincia + ": " + postulantes.size());
+                    System.out.println(" ZONA: Postulantes encontrados en provincia " + idProvincia + ": " + postulantes.size());
 
                     for (Object[] post : postulantes) {
                         try {
