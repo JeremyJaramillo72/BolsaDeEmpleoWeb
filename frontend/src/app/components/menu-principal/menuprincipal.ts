@@ -348,18 +348,19 @@ export class MenuprincipalComponent implements OnInit {
   }
 
   cerrarSesion() {
-    this.notificationService.desconectar(); //cerrando ws
+    this.notificationService.desconectar(); // cerrando ws
     this.authService.logout().subscribe({
       next: () => {
         localStorage.clear();
         sessionStorage.clear();
-        this.router.navigate(['/login']);
         console.log("⏪ Conexión de BD reseteada al default y sesión cerrada");
+        window.location.href = '/login';
       },
       error: (err) => {
         console.error("Error al cerrar sesión en el servidor", err);
         localStorage.clear();
-        this.router.navigate(['/login']);
+        sessionStorage.clear();
+        window.location.href = '/login';
       }
     });
   }
