@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
 
 @Data
@@ -48,12 +50,15 @@ public class Auditoria {
 
 
     @Column(name = "datos_anteriores", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String datosAnteriores;
 
     @Column(name = "datos_nuevos", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String datosNuevos;
 
     @Column(name = "campos_modificados", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String  camposModificados;  // o String, o JsonNode
 
     @PrePersist

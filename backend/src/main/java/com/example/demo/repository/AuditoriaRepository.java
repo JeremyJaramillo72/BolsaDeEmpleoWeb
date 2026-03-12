@@ -28,4 +28,7 @@ public interface AuditoriaRepository extends JpaRepository<Auditoria, Integer> {
     // Método para obtener auditorías de top 4-5 usuarios con datos mensuales (para gráfico multi-línea)
     @Query(value = "select * from seguridad.fn_obtener_auditorias_top_usuarios_historico()", nativeQuery = true)
     List<Object[]> getTopUsersAuditHistoric();
+
+    // Método para obtener historial de un registro específico (ej: configuración de correo)
+    List<Auditoria> findByTablaAfectadaAndIdRegistroAfectadoOrderByFechaHoraDesc(String tablaAfectada, Integer idRegistroAfectado);
 }

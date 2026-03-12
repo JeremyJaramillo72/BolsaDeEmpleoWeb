@@ -1,6 +1,9 @@
 package com.example.demo.service;
 
-import lombok.AllArgsConstructor;
+import com.example.demo.config.DynamicMailConfig;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -11,94 +14,145 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
+@Slf4j
 public class EmailService {
 
-    private JavaMailSender mailSender;
+    private final DynamicMailConfig dynamicMailConfig;
 
     public void enviarCodigo(String destino, String codigo) {
         try {
+            JavaMailSender mailSender = dynamicMailConfig.getJavaMailSender();
             MimeMessage mensaje = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
             helper.setTo(destino);
             helper.setSubject("Código de Verificación - Bolsa de Empleos");
-            helper.setFrom("kespanav@uteq.edu.ec");
+            helper.setFrom(obtenerCorreoConfiguracion());
             helper.setText(generarTemplateCodigoVerificacion(codigo), true);
             mailSender.send(mensaje);
+            log.info("✅ Correo de verificación enviado a: {}", destino);
+        } catch (MailException e) {
+            log.error("❌ Error enviando email de verificación a {}: {}", destino, e.getMessage());
         } catch (MessagingException e) {
-            e.printStackTrace();
+            log.error("❌ Error de mensajería al enviar email de verificación a {}: {}", destino, e.getMessage());
+        } catch (Exception e) {
+            log.error("❌ Error inesperado al enviar email de verificación a {}: {}", destino, e.getMessage());
         }
     }
 
     public void enviarCorreoValidacion(String destinatario, String nombreEmpresa, String estado) {
         try {
+            JavaMailSender mailSender = dynamicMailConfig.getJavaMailSender();
             MimeMessage mensaje = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
-            helper.setFrom("kespanav@uteq.edu.ec");
+            helper.setFrom(obtenerCorreoConfiguracion());
             helper.setTo(destinatario);
             helper.setSubject("Respuesta de Solicitud - Bolsa de Empleos");
             helper.setText(generarTemplateValidacion(nombreEmpresa, estado), true);
             mailSender.send(mensaje);
+            log.info("✅ Correo de validación enviado a: {}", destinatario);
+        } catch (MailException e) {
+            log.error("❌ Error enviando email de validación a {}: {}", destinatario, e.getMessage());
         } catch (MessagingException e) {
-            e.printStackTrace();
+            log.error("❌ Error de mensajería al enviar email de validación a {}: {}", destinatario, e.getMessage());
+        } catch (Exception e) {
+            log.error("❌ Error inesperado al enviar email de validación a {}: {}", destinatario, e.getMessage());
         }
     }
 
     public void enviarCorreoCuentaNoAprobada(String destinatario, String nombreEmpresa, String estadoActual) {
         try {
+            JavaMailSender mailSender = dynamicMailConfig.getJavaMailSender();
             MimeMessage mensaje = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
-            helper.setFrom("kespanav@uteq.edu.ec");
+            helper.setFrom(obtenerCorreoConfiguracion());
             helper.setTo(destinatario);
             helper.setSubject("Aviso de Inicio de Sesión - Bolsa de Empleos");
             helper.setText(generarTemplateCuentaNoAprobada(nombreEmpresa, estadoActual), true);
             mailSender.send(mensaje);
+            log.info("✅ Correo de cuenta no aprobada enviado a: {}", destinatario);
+        } catch (MailException e) {
+            log.error("❌ Error enviando email de cuenta no aprobada a {}: {}", destinatario, e.getMessage());
         } catch (MessagingException e) {
-            e.printStackTrace();
+            log.error("❌ Error de mensajería al enviar email de cuenta no aprobada a {}: {}", destinatario, e.getMessage());
+        } catch (Exception e) {
+            log.error("❌ Error inesperado al enviar email de cuenta no aprobada a {}: {}", destinatario, e.getMessage());
         }
     }
 
     public void sendSimpleEmail(String to, String subject, String text) {
         try {
+            JavaMailSender mailSender = dynamicMailConfig.getJavaMailSender();
             MimeMessage mensaje = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
-            helper.setFrom("kespanav@uteq.edu.ec");
+            helper.setFrom(obtenerCorreoConfiguracion());
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(generarTemplateGenerico(text), true);
             mailSender.send(mensaje);
+            log.info("✅ Email simple enviado a: {}", to);
+        } catch (MailException e) {
+            log.error("❌ Error enviando email simple a {}: {}", to, e.getMessage());
         } catch (MessagingException e) {
-            e.printStackTrace();
+            log.error("❌ Error de mensajería al enviar email simple a {}: {}", to, e.getMessage());
+        } catch (Exception e) {
+            log.error("❌ Error inesperado al enviar email simple a {}: {}", to, e.getMessage());
         }
     }
 
     public void notificarLoginAdmin(String adminEmail, String ipAddress, String location) {
         try {
+            JavaMailSender mailSender = dynamicMailConfig.getJavaMailSender();
             MimeMessage mensaje = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
-            helper.setFrom("kespanav@uteq.edu.ec");
+            helper.setFrom(obtenerCorreoConfiguracion());
             helper.setTo(adminEmail);
             helper.setSubject("🔒 ALERTA DE SEGURIDAD: Nuevo inicio de sesión de Administrador");
 
             String time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             helper.setText(generarTemplateAlertaSeguridad(time, ipAddress, location), true);
             mailSender.send(mensaje);
+            log.info("✅ Alerta de seguridad enviada a: {}", adminEmail);
+        } catch (MailException e) {
+            log.error("❌ Error enviando alerta de seguridad a {}: {}", adminEmail, e.getMessage());
         } catch (MessagingException e) {
-            e.printStackTrace();
+            log.error("❌ Error de mensajería al enviar alerta de seguridad a {}: {}", adminEmail, e.getMessage());
+        } catch (Exception e) {
+            log.error("❌ Error inesperado al enviar alerta de seguridad a {}: {}", adminEmail, e.getMessage());
         }
     }
 
     public void notificarAprobacionEmpresa(String correoEmpresa, String nombreEmpresa) {
         try {
+            JavaMailSender mailSender = dynamicMailConfig.getJavaMailSender();
             MimeMessage mensaje = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
-            helper.setFrom("kespanav@uteq.edu.ec");
+            helper.setFrom(obtenerCorreoConfiguracion());
             helper.setTo(correoEmpresa);
             helper.setSubject("✅ Tu Empresa ha sido Aprobada - Bolsa de Empleos");
             helper.setText(generarTemplateAprobacionEmpresa(nombreEmpresa), true);
             mailSender.send(mensaje);
+            log.info("✅ Correo de aprobación de empresa enviado a: {}", correoEmpresa);
+        } catch (MailException e) {
+            log.error("❌ Error enviando correo de aprobación a {}: {}", correoEmpresa, e.getMessage());
         } catch (MessagingException e) {
-            e.printStackTrace();
+            log.error("❌ Error de mensajería al enviar correo de aprobación a {}: {}", correoEmpresa, e.getMessage());
+        } catch (Exception e) {
+            log.error("❌ Error inesperado al enviar correo de aprobación a {}: {}", correoEmpresa, e.getMessage());
+        }
+    }
+
+    // ==================== HELPER METHODS ====================
+
+    /**
+     * Obtener el correo configurado desde la base de datos
+     */
+    private String obtenerCorreoConfiguracion() {
+        try {
+            return dynamicMailConfig.obtenerCorreoConfiguracion();
+        } catch (Exception e) {
+            log.warn("⚠️ Error obteniendo correo de configuración: {}. Usando correo por defecto.", e.getMessage());
+            return "noreply@bolsa-empleos.uteq.edu.ec";
         }
     }
 
