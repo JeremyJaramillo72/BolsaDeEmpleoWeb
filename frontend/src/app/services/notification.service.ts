@@ -47,6 +47,17 @@ export class NotificationService {
     });
   }
 
+  // 1B. CARGAR SOLO NOTIFICACIONES ACTIVAS (últimos 5 días + no leídas)
+  cargarNotificacionesActivas(idUsuario: number): Observable<NotificacionDTO[]> {
+    console.log('Cargando notificaciones activas para usuario:', idUsuario);
+    return this.http.get<NotificacionDTO[]>(`${this.apiUrl}/usuario/${idUsuario}/activas`).pipe(
+      catchError((err) => {
+        console.error('Error cargando notificaciones activas:', err.status, err.message, err);
+        return of([] as NotificacionDTO[]);
+      })
+    );
+  }
+
   // 2. CONECTAR WEBSOCKET
   conectarWebSocket(idUsuario: number): void {
     this.stompClient = new Client({

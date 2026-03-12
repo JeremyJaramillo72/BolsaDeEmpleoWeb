@@ -27,6 +27,8 @@ import {RegistroOfertasAdministradorComponent} from './components/Panel-Admin/co
 import { DashboardAdminComponent } from './components/menu-principal/dashboard-admin/dashboard-admin.component';
 import { DashboardEmpresaComponent } from './components/menu-principal/dashboard-empresa/dashboard-empresa.component';
 import { DashboardPostulanteComponent } from './components/menu-principal/dashboard-postulante/dashboard-postulante.component';
+import { NotificacionesComponent } from './components/notificaciones/notificaciones.component';
+import { ConfiguracionSistemaComponent } from './components/Panel-Admin/components/configuracion-sistema/configuracion-sistema';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -78,7 +80,9 @@ export const routes: Routes = [
       {   path: 'mis-postulaciones', component: MisPostulacionesComponent },
       {   path: 'GestionRolesbd', component: RolesBdComponent },
       {   path: 'Busqueda/empleo', component: BusquedaEmpleoComponent },
-      {   path: 'postulacion/empleo', component: MisPostulacionesComponent }
+      {   path: 'postulacion/empleo', component: MisPostulacionesComponent },
+      {   path: 'notificaciones', component: NotificacionesComponent },
+      {   path: 'configuracion-sistema', component: ConfiguracionSistemaComponent }
     ]
   },
   { path: '', redirectTo: '/login', pathMatch: 'full' },

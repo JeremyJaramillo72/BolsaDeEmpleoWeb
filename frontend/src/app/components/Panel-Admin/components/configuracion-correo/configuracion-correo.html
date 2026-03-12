@@ -1,0 +1,248 @@
+<div class="config-container">
+  <!-- Header -->
+  <div class="header-section">
+    <div class="header-content">
+      <h1>⚙️ Configuración de Correo</h1>
+      <p class="subtitle">Gestiona la configuración SMTP y audita los cambios realizados</p>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="cargando" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando configuración...</p>
+  </div>
+
+  <!-- Contenido Principal -->
+  <div *ngIf="!cargando && configuracion" class="content-wrapper">
+
+    <!-- Sección 1: Información Actual -->
+    <div class="card-section">
+      <div class="card-header">
+        <h2>📧 Configuración Actual</h2>
+      </div>
+      <div class="card-body">
+        <div class="info-row">
+          <label>Correo Remitente (FROM):</label>
+          <div class="info-value">{{ configuracion.valor }}</div>
+        </div>
+        <div class="info-row">
+          <label>Estado:</label>
+          <div class="badge-activo">{{ configuracion.activo ? '✅ Activo' : '❌ Inactivo' }}</div>
+        </div>
+        <div class="info-row">
+          <label>Última Modificación:</label>
+          <div class="info-value">{{ formatearFecha(configuracion.fechaModificacion) }}</div>
+        </div>
+        <div class="info-note">
+          <strong>ℹ️ Nota:</strong> La configuración SMTP (host, puerto, usuario y contraseña) puede modificarse desde la sección "Configuración SMTP Avanzada" más abajo.
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección 2: Prueba de Correo -->
+    <div class="card-section">
+      <div class="card-header">
+        <h2>🧪 Probar Correo</h2>
+      </div>
+      <div class="card-body">
+        <p class="section-desc">Envía un correo de prueba antes de guardar cambios:</p>
+
+        <div class="form-group">
+          <label>Dirección a Probar:</label>
+          <div class="input-group">
+            <input
+              type="email"
+              [(ngModel)]="correoParaPrueba"
+              placeholder="correo@ejemplo.com"
+              [disabled]="enviandoPrueba"
+              class="input-field">
+            <button
+              (click)="probarCorreo()"
+              [disabled]="enviandoPrueba"
+              class="btn btn-prueba">
+              {{ enviandoPrueba ? 'Enviando...' : '📬 Enviar Prueba' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Mensaje de respuesta -->
+        <div *ngIf="mensajePrueba" [ngClass]="'message-' + tipoPrueba" class="message-box">
+          {{ mensajePrueba }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección 3: Configuración de Email y Credenciales -->
+    <div class="card-section">
+      <div class="card-header">
+        <h2>⚙️ Configuración de Email</h2>
+      </div>
+      <div class="card-body">
+        <p class="section-desc">Configura el email de la bolsa y su credencial de autenticación:</p>
+
+        <!-- Mensajes -->
+        <div *ngIf="mensajeExito" class="message-exito">
+          {{ mensajeExito }}
+        </div>
+        <div *ngIf="mensajeError" class="message-error">
+          {{ mensajeError }}
+        </div>
+
+        <!-- Grid de formulario -->
+        <div class="smtp-grid">
+          <!-- Email de la Bolsa -->
+          <div class="form-group form-group-full">
+            <label>📧 Email de la Bolsa (Educativo/Gmail) *</label>
+            <input
+              type="email"
+              [(ngModel)]="correoNuevo"
+              placeholder="bolsa@universida.edu.ec"
+              [disabled]="guardando"
+              class="input-field">
+            <div class="input-helper">
+              Email desde el que se enviarán las notificaciones
+            </div>
+          </div>
+
+          <!-- Contraseña/Token -->
+          <div class="form-group form-group-full">
+            <label>🔐 Contraseña/Token de Aplicación *</label>
+            <div class="password-input-group">
+              <input
+                [type]="mostrarPassword ? 'text' : 'password'"
+                [(ngModel)]="smtpPassword"
+                placeholder="●●●●●●●●"
+                [disabled]="guardando"
+                class="input-field">
+              <button
+                type="button"
+                (click)="toggleMostrarPassword()"
+                [disabled]="guardando"
+                class="btn-toggle-password">
+                {{ mostrarPassword ? '👁️ Ocultar' : '👁️ Mostrar' }}
+              </button>
+            </div>
+            <div class="input-helper">
+              Para Gmail: genera un "App Password" en tu cuenta
+            </div>
+          </div>
+        </div>
+
+        <!-- Información -->
+        <div class="info-section">
+          <!-- Info Box 1: Google App Password -->
+          <div class="info-box">
+            <button
+              type="button"
+              class="info-box-header"
+              (click)="toggleInfoBox('appPassword')">
+              <span class="info-icon">❓</span>
+              <span class="info-title">Cómo generar Google App Password</span>
+              <span class="info-toggle">{{ infoBoxes['appPassword'] ? '▼' : '▶' }}</span>
+            </button>
+            <div *ngIf="infoBoxes['appPassword']" class="info-box-content">
+              <ol class="steps-list">
+                <li>Ve a <a href="https://myaccount.google.com/apppasswords" target="_blank" class="link-btn">Google App Passwords →</a></li>
+                <li>Selecciona: <strong>Mail</strong> → <strong>Windows Computer</strong></li>
+                <li>Gmail generará 16 caracteres (sin espacios)</li>
+                <li>Cópialo y pégalo en el campo "Contraseña/Token" de arriba</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="action-buttons">
+          <button
+            (click)="guardarCambios()"
+            [disabled]="guardando || !validarCorreo(correoNuevo)"
+            class="btn btn-guardar">
+            {{ guardando ? '💾 Guardando...' : '💾 Guardar Cambios' }}
+          </button>
+          <button
+            (click)="correoNuevo = configuracion!.valor; smtpPassword = ''"
+            [disabled]="guardando"
+            class="btn btn-cancelar">
+            ↺ Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección 4: Historial de Cambios (Timeline) -->
+    <div class="card-section">
+      <div class="card-header">
+        <h2>📊 Historial de Cambios</h2>
+      </div>
+      <div class="card-body">
+        <p class="section-desc">Línea de tiempo de todos los cambios de configuración realizados:</p>
+
+        <div *ngIf="historial.length === 0" class="empty-state">
+          <p>🔓 Sin cambios registrados aún</p>
+        </div>
+
+        <div *ngIf="historial.length > 0" class="timeline">
+          <div
+            *ngFor="let item of historial; let i = index"
+            class="timeline-item"
+            [ngClass]="{'item-exitoso': item.exitoso, 'item-error': !item.exitoso}">
+
+            <!-- Indicador visual -->
+            <div class="timeline-marker" [style.border-left-color]="getStatusColor(item.exitoso)">
+              <div class="marker-dot" [style.background-color]="getStatusColor(item.exitoso)"></div>
+            </div>
+
+            <!-- Contenido -->
+            <div class="timeline-content">
+              <div class="timeline-header">
+                <div class="status-badge" [style.background-color]="item.exitoso ? '#d1fae5' : '#fee2e2'">
+                  {{ getStatusIcon(item.exitoso) }} {{ item.accion }}
+                </div>
+                <span class="fecha-pequeña">{{ formatearFecha(item.fechaCreacion) }}</span>
+              </div>
+
+              <div class="timeline-body">
+                <p class="admin-info">
+                  <strong>Admin:</strong> {{ item.adminNombre }}
+                  <span class="email-small">({{ item.adminEmail }})</span>
+                </p>
+
+                <div class="cambio-valores">
+                  <div class="valor-anterior">
+                    <strong>Anterior:</strong>
+                    <code>{{ item.valorAnterior }}</code>
+                  </div>
+                  <div class="flecha">→</div>
+                  <div class="valor-nuevo">
+                    <strong>Nuevo:</strong>
+                    <code>{{ item.valorNuevo }}</code>
+                  </div>
+                </div>
+
+                <!-- Detalles expandibles -->
+                <div *ngIf="item.ipAddress || item.detalleError" class="timeline-details">
+                  <button
+                    class="btn-expandir"
+                    (click)="toggleHistorial(item.idHistorial)">
+                    {{ expandidoHistorial[item.idHistorial] ? '▼' : '▶' }} Detalles
+                  </button>
+
+                  <div *ngIf="expandidoHistorial[item.idHistorial]" class="details-expanded">
+                    <div *ngIf="item.ipAddress" class="detail-item">
+                      <strong>IP Address:</strong> {{ item.ipAddress }}
+                    </div>
+                    <div *ngIf="item.detalleError" class="detail-item error-detail">
+                      <strong>Error:</strong> {{ item.detalleError }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
