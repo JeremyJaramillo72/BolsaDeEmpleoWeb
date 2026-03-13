@@ -50,7 +50,9 @@ public class SecurityConfig {
                                 "/api/academico/roles",
                                 "/api/auditorias",
                                 "/api/auditoria/ofertas/**",
-                                "/api/auth/Email"
+                                "/api/auth/Email",
+                                "/api/configuracion/correo/**",
+                                "/api/plantilla-notificacion/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 );

@@ -2,17 +2,21 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.PlantillaNotificacionDTO;
 import com.example.demo.service.PlantillaNotificacionService;
+import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.model.Usuario;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -21,14 +25,43 @@ import java.util.Map;
 public class PlantillaNotificacionController {
 
     private final PlantillaNotificacionService plantillaService;
+    private final UsuarioRepository usuarioRepository;
+
+    /**
+     * Validar que el usuario sea administrador
+     */
+    private ResponseEntity<?> validarAdministrador(HttpSession session) {
+        Long idUsuario = (Long) session.getAttribute("idUsuario");
+        if (idUsuario == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Collections.singletonMap("error", "No estás autenticado"));
+        }
+
+        Optional<Usuario> usuario = usuarioRepository.findById(idUsuario);
+        if (usuario.isEmpty() || usuario.get().getRol() == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Collections.singletonMap("error", "Usuario no encontrado"));
+        }
+
+        String nombreRol = usuario.get().getRol().getNombreRol();
+        if (!"Administrador".equalsIgnoreCase(nombreRol)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Collections.singletonMap("error", "Solo administradores pueden acceder"));
+        }
+
+        return null; // Validación exitosa
+    }
 
     /**
      * Obtener todas las plantillas
      */
     @GetMapping
-    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
-    public ResponseEntity<List<PlantillaNotificacionDTO>> obtenerPlantillas() {
+    public ResponseEntity<?> obtenerPlantillas(HttpSession session) {
         try {
+            // Validar administrador
+            ResponseEntity<?> validacion = validarAdministrador(session);
+            if (validacion != null) return validacion;
+
             List<PlantillaNotificacionDTO> plantillas = plantillaService.obtenerPlantillas();
             return ResponseEntity.ok(plantillas);
         } catch (Exception e) {
@@ -41,9 +74,12 @@ public class PlantillaNotificacionController {
      * Obtener plantilla por tipo
      */
     @GetMapping("/{tipo}")
-    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
-    public ResponseEntity<PlantillaNotificacionDTO> obtenerPlantilla(@PathVariable String tipo) {
+    public ResponseEntity<?> obtenerPlantilla(@PathVariable String tipo, HttpSession session) {
         try {
+            // Validar administrador
+            ResponseEntity<?> validacion = validarAdministrador(session);
+            if (validacion != null) return validacion;
+
             PlantillaNotificacionDTO plantilla = plantillaService.obtenerPlantilla(tipo);
             return ResponseEntity.ok(plantilla);
         } catch (RuntimeException e) {
@@ -59,15 +95,17 @@ public class PlantillaNotificacionController {
      * Actualizar plantilla
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
-    public ResponseEntity<Map<String, Object>> actualizarPlantilla(
+    public ResponseEntity<?> actualizarPlantilla(
             @PathVariable Integer id,
             @RequestBody Map<String, String> payload,
-            HttpServletRequest request) {
+            HttpSession session) {
         try {
+            // Validar administrador
+            ResponseEntity<?> validacion = validarAdministrador(session);
+            if (validacion != null) return validacion;
+
             String titulo = payload.get("titulo");
             String contenido = payload.get("contenido");
-            Long idUsuario = Long.valueOf(payload.getOrDefault("idUsuario", "0"));
 
             if (titulo == null || titulo.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(
@@ -81,14 +119,7 @@ public class PlantillaNotificacionController {
                 );
             }
 
-            if (idUsuario <= 0) {
-                return ResponseEntity.badRequest().body(
-                        Map.of("exito", false, "mensaje", "Usuario no válido")
-                );
-            }
-
-            String ipAddress = getClientIpAddress(request);
-            plantillaService.actualizarPlantilla(id, titulo, contenido, idUsuario, ipAddress);
+            plantillaService.actualizarPlantilla(id, titulo, contenido);
 
             return ResponseEntity.ok(Map.of(
                     "exito", true,
@@ -112,9 +143,12 @@ public class PlantillaNotificacionController {
      * Obtener historial de cambios
      */
     @GetMapping("/{id}/historial")
-    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
-    public ResponseEntity<List<PlantillaNotificacionDTO.HistorialItem>> obtenerHistorial(@PathVariable Integer id) {
+    public ResponseEntity<?> obtenerHistorial(@PathVariable Integer id, HttpSession session) {
         try {
+            // Validar administrador
+            ResponseEntity<?> validacion = validarAdministrador(session);
+            if (validacion != null) return validacion;
+
             List<PlantillaNotificacionDTO.HistorialItem> historial = plantillaService.obtenerHistorial(id);
             return ResponseEntity.ok(historial);
         } catch (Exception e) {

@@ -2,18 +2,21 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.ConfiguracionCorreoDTO;
 import com.example.demo.service.ConfiguracionCorreoService;
+import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.model.Usuario;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -22,14 +25,43 @@ import java.util.Map;
 public class ConfiguracionCorreoController {
 
     private final ConfiguracionCorreoService configuracionService;
+    private final UsuarioRepository usuarioRepository;
+
+    /**
+     * Validar que el usuario sea administrador
+     */
+    private ResponseEntity<?> validarAdministrador(HttpSession session) {
+        Long idUsuario = (Long) session.getAttribute("idUsuario");
+        if (idUsuario == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Collections.singletonMap("error", "No estás autenticado"));
+        }
+
+        Optional<Usuario> usuario = usuarioRepository.findById(idUsuario);
+        if (usuario.isEmpty() || usuario.get().getRol() == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Collections.singletonMap("error", "Usuario no encontrado"));
+        }
+
+        String nombreRol = usuario.get().getRol().getNombreRol();
+        if (!"Administrador".equalsIgnoreCase(nombreRol)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Collections.singletonMap("error", "Solo administradores pueden acceder"));
+        }
+
+        return null; // Validación exitosa
+    }
 
     /**
      * Obtener configuración actual de correo
      */
     @GetMapping
-    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
-    public ResponseEntity<ConfiguracionCorreoDTO> obtenerConfiguracion() {
+    public ResponseEntity<?> obtenerConfiguracion(HttpSession session) {
         try {
+            // Validar administrador
+            ResponseEntity<?> validacion = validarAdministrador(session);
+            if (validacion != null) return validacion;
+
             ConfiguracionCorreoDTO config = configuracionService.obtenerConfiguracion();
             return ResponseEntity.ok(config);
         } catch (Exception e) {
@@ -42,10 +74,14 @@ public class ConfiguracionCorreoController {
      * Probar correo antes de guardar
      */
     @PostMapping("/probar")
-    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
-    public ResponseEntity<Map<String, Object>> probarCorreo(
-            @RequestBody Map<String, String> payload) {
+    public ResponseEntity<?> probarCorreo(
+            @RequestBody Map<String, String> payload,
+            HttpSession session) {
         try {
+            // Validar administrador
+            ResponseEntity<?> validacion = validarAdministrador(session);
+            if (validacion != null) return validacion;
+
             String correoNuevo = payload.get("correo");
 
             if (correoNuevo == null || correoNuevo.trim().isEmpty()) {
@@ -81,11 +117,15 @@ public class ConfiguracionCorreoController {
      * Actualizar configuración SMTP completa
      */
     @PutMapping("/smtp")
-    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
-    public ResponseEntity<Map<String, Object>> actualizarSmtp(
+    public ResponseEntity<?> actualizarSmtp(
             @RequestBody Map<String, String> payload,
-            HttpServletRequest request) {
+            HttpServletRequest request,
+            HttpSession session) {
         try {
+            // Validar administrador
+            ResponseEntity<?> validacion = validarAdministrador(session);
+            if (validacion != null) return validacion;
+
             String correoNuevo = payload.get("valor");
             String password = payload.get("password");
             Long idUsuario = Long.valueOf(payload.getOrDefault("idUsuario", "0"));
@@ -142,9 +182,12 @@ public class ConfiguracionCorreoController {
      * Obtener historial de cambios
      */
     @GetMapping("/historial")
-    @PreAuthorize("hasAuthority('ADMINISTRADOR')")
-    public ResponseEntity<List<ConfiguracionCorreoDTO.HistorialItem>> obtenerHistorial() {
+    public ResponseEntity<?> obtenerHistorial(HttpSession session) {
         try {
+            // Validar administrador
+            ResponseEntity<?> validacion = validarAdministrador(session);
+            if (validacion != null) return validacion;
+
             List<ConfiguracionCorreoDTO.HistorialItem> historial = configuracionService.obtenerHistorial();
             return ResponseEntity.ok(historial);
         } catch (Exception e) {
