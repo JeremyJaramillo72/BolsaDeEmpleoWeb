@@ -1,34 +1,5 @@
 <div class="backup-module fade-in">
-  <div class="config-card">
-    <div class="card-header-flex">
-      <div class="title-group">
-        <span class="material-icons text-indigo icon-large">folder_managed</span>
-        <h2>Ruta de Almacenamiento Local</h2>
-      </div>
-    </div>
-    <p class="description-text">
-      Defina la ubicación física (Disco duro interno, externo o Pendrive USB) donde se guardará la copia comprimida de la base de datos.
-    </p>
 
-    <div class="form-group">
-      <label>Ruta de destino <span class="text-red">*</span></label>
-
-      <div class="input-browse-wrapper">
-        <span class="material-icons input-icon text-muted">save</span>
-        <input
-          type="text"
-          class="form-control"
-          [(ngModel)]="rutaLocal"
-          placeholder="Ejemplo: E:\Backups_Bolsa_Empleo\"
-          [disabled]="isBackingUp">
-      </div>
-
-      <small class="help-text text-muted">
-        <span class="material-icons text-sm">info</span>
-        Copie y pegue la ruta desde su explorador de archivos. Asegúrese de terminar la ruta con una barra inclinada (\) o (/).
-      </small>
-    </div>
-  </div>
 
   <div class="execution-card mt-4">
     <div class="card-header-flex border-bottom mb-3 pb-3">
