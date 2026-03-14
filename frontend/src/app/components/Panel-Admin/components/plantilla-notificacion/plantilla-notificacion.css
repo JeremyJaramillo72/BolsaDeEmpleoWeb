@@ -591,3 +591,117 @@
     align-items: flex-start;
   }
 }
+
+
+.variables-protegidas {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+}
+
+.variables-label {
+  font-size: 12px;
+  color: #92400e;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip-variable {
+  background: #92400e;
+  color: white;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-family: monospace;
+  font-weight: 600;
+  cursor: default;
+  user-select: none;
+}
+
+.input-helper.restriccion {
+  background: #fef2f2;
+  border-left: 3px solid #dc2626;
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: #7f1d1d;
+  font-size: 12px;
+  margin-top: 8px;
+}
+.input-helper-restriccion {
+  background: #fef2f2;
+  border-left: 3px solid #dc2626;
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: #7f1d1d;
+  font-size: 12px;
+  margin-top: 8px;
+}
+.contenido-editor {
+  min-height: 160px;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  outline: none;
+  font-family: inherit;
+  color: #1f2937;
+  background: #fff;
+  transition: border-color 0.2s;
+}
+
+.contenido-editor:focus {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.contenido-editor.disabled {
+  background: #f9fafb;
+  cursor: not-allowed;
+}
+
+/* El chip de variable — no editable, con color */
+
+
+.input-helper-restriccion {
+  background: #fef2f2;
+  border-left: 3px solid #dc2626;
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: #7f1d1d;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+
+/* El chip de variable — dentro del editor */
+/* El chip de variable — no editable, con estilo científico visual */
+.var-chip {
+  display: inline-block;
+  background: #ede9fe; /* Un fondito morado muy suave para que no se pierda del todo */
+  color: #5b21b6; /* Un color morado oscuro para el texto, para que resalte */
+  border: 1px solid #c4b5fd;
+  border-radius: 4px;
+  padding: 1px 7px;
+  font-size: 13px;
+
+  /* 👇 AQUÍ ESTÁ LA MAGIA CIENTÍFICA VISUAL 👇 */
+  font-family: 'Courier New', Courier, monospace; /* Una fuente tipo código para que sea distinta */
+  font-weight: bolder; /* ¡SÚPER NEGRITA! */
+  font-style: italic; /* ¡CURSIVA! */
+
+  /* 👇 LA CIENCIA DEL CURSOR 👇 */
+  cursor: default;
+  user-select: none;
+  pointer-events: none; /* Evita que el usuario haga clic dentro */
+}

@@ -17,6 +17,9 @@ public class UsuarioServiceGoogle {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private NotificacionService notificacionService;
+
     @Transactional // 🔥 Importante: Si falla el segundo procedure, que no se guarde el primero
     public Long registrarUsuarioCompletoGoogle(String nombre, String apellido, String correo, String fotoUrl) {
         try {
@@ -53,6 +56,34 @@ public class UsuarioServiceGoogle {
             ));
 
             System.out.println("✅ Usuario y Seguridad creados para: " + correo);
+
+            try {
+                // Notificación in-app
+                notificacionService.crearYEnviarNotificacion(
+                        nuevoIdUsuario,
+                        "in_app_registro_completado",
+                        Map.of("usuarioNombre", nombre),
+                        Map.of("origen", "google"),
+                        "/menu-principal/perfil",
+                        "waving_hand"
+                );
+
+                // Notificación por correo
+                notificacionService.crearYEnviarNotificacion(
+                        nuevoIdUsuario,
+                        "email_registro_postulante",
+                        Map.of(
+                                "postulanteName", nombre,
+                                "correoPostulante", correo
+                        ),
+                        Map.of("origen", "google"),
+                        "/menu-principal",
+                        "email"
+                );
+            }
+            catch (Exception e) {
+                System.err.println("Error enviando alertas de bienvenida Google: " + e.getMessage());
+            }
 
             // 5. 🔥 RETORNAR EL ID DEL USUARIO CREADO
             return nuevoIdUsuario;

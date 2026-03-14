@@ -4,6 +4,8 @@ import com.example.demo.dto.*;
 import com.example.demo.repository.Impl.PerfilProfesionalRepository;
 import com.example.demo.repository.Impl.PostulacionCustomRepository;
 import com.example.demo.repository.PostulacionRepository;
+import com.example.demo.repository.UsuarioEmpresaRepository;
+import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.repository.Views.IMisPostulaciones;
 import com.example.demo.repository.Views.IOfertaDatosIaDTO;
 import com.example.demo.service.*;
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 
 import java.util.List;
 import java.util.Map;
@@ -27,7 +30,8 @@ public class PostulacionServiceImpl implements IPostulacionService {
     private final IPdfService iPdfService;
     private final GeminiAiService geminiAiService;
     private final PerfilProfesionalRepository perfilProfesionalRepository;
-
+    private final UsuarioRepository usuarioRepository;
+    private final UsuarioEmpresaRepository usuarioEmpresaRepository;
 
 
     @Override
@@ -88,7 +92,7 @@ public class PostulacionServiceImpl implements IPostulacionService {
         // 8. Guardamos en la Base de Datos llamando a tu procedure (con los nuevos campos)
         postulacionRepository.registrarPostulacionPro(idUsuario, idOferta, urlCv, porcentajeMatch, jsonAnalisis);
 
-        // 9. Notificación a la empresa (Se mantiene intacto)
+        // 9. Notificación a la empresa y al candidato
         try {
             List<Object[]> datosOferta = postulacionRepository.obtenerDatosEmpresaPorOfertaId(idOferta);
 
@@ -97,6 +101,16 @@ public class PostulacionServiceImpl implements IPostulacionService {
                 Long idUsuarioEmpresa = ((Number) fila[0]).longValue();
                 String tituloOferta = (String) fila[1];
 
+                // 🧪 CONSULTAS RÁPIDAS: Obtenemos los nombres reales
+                String nombreCandidato = usuarioRepository.findById(idUsuario)
+                        .map(u -> u.getNombre() + " " + (u.getApellido() != null ? u.getApellido() : ""))
+                        .orElse("Candidato").trim();
+
+                String nombreEmpresa = usuarioEmpresaRepository.findById(idUsuarioEmpresa)
+                        .map(e -> e.getUsuario() != null ? e.getUsuario().getNombre() : "La Empresa")
+                        .orElse("La Empresa");
+
+                // Notificación para la empresa
                 notificacionService.crearYEnviarNotificacion(
                         idUsuarioEmpresa,
                         "nueva_postulacion",
@@ -105,9 +119,23 @@ public class PostulacionServiceImpl implements IPostulacionService {
                         "/menu-principal/gestion-ofertas",
                         "person_add"
                 );
+
+                // Notificación al candidato
+                notificacionService.crearYEnviarNotificacion(
+                        idUsuario,
+                        "in_app_postulacion_recibida",
+                        Map.of(
+                                "candidatoNombre", nombreCandidato,
+                                "empresaNombre", nombreEmpresa,
+                                "ofertaTitulo", tituloOferta
+                        ),
+                        Map.of("idOferta", idOferta),
+                        "/menu-principal/mis-postulaciones",
+                        "send"
+                );
             }
         } catch (Exception e) {
-            System.err.println("Error enviando notificación a la empresa: " + e.getMessage());
+            System.err.println("Error enviando notificaciones de postulación: " + e.getMessage());
         }
     }
 
@@ -148,31 +176,53 @@ public class PostulacionServiceImpl implements IPostulacionService {
 
         postulacionCustomRepository.evaluarPostulacionGeneral(idPostulacion, estado, mensaje);
 
-        if ("aprobado".equalsIgnoreCase(estado)) {
-            try {
-                List<Object[]> datos = postulacionRepository.obtenerDatosParaNotificacion(Math.toIntExact(idPostulacion));
+        try {
+            List<Object[]> datos = postulacionRepository.obtenerDatosParaNotificacion(Math.toIntExact(idPostulacion));
 
-                if (!datos.isEmpty()) {
-                    Object[] fila = datos.get(0);
-                    Long idCandidatoReal = (Long) fila[0];
-                    String tituloOfertaReal = (String) fila[1];
-                    String nombreEmpresaReal = (String) fila[2];
+            if (!datos.isEmpty()) {
+                Object[] fila = datos.get(0);
+                Long idCandidatoReal = (Long) fila[0];
+                String tituloOfertaReal = (String) fila[1];
+                String nombreEmpresaReal = (String) fila[2];
+                String correoDeLaEmpresa = (String) fila[3];
 
+                String nombreCandidato = usuarioRepository.findById(idCandidatoReal)
+                        .map(u -> u.getNombre() + " " + (u.getApellido() != null ? u.getApellido() : ""))
+                        .orElse("Candidato").trim();
+
+                if ("aprobado".equalsIgnoreCase(estado)) {
+                    // Notificación Candidato Aprobado
                     notificacionService.crearYEnviarNotificacion(
                             idCandidatoReal,
-                            "postulacion_aprobada",
+                            "in_app_postulacion_aceptada",
                             Map.of(
-                                    "oferta", tituloOfertaReal,
-                                    "empresa", nombreEmpresaReal
+                                    "candidatoNombre", nombreCandidato,
+                                    "empresaNombre", nombreEmpresaReal,
+                                    "ofertaTitulo", tituloOfertaReal,
+                                    "correoEmpresa", correoDeLaEmpresa
                             ),
                             Map.of("idPostulacion", idPostulacion),
                             "/menu-principal/mis-postulaciones",
                             "check_circle"
                     );
+                } else if ("rechazado".equalsIgnoreCase(estado)) {
+                    // Notificación Candidato Rechazado
+                    notificacionService.crearYEnviarNotificacion(
+                            idCandidatoReal,
+                            "in_app_postulacion_rechazada",
+                            Map.of(
+                                    "candidatoNombre", nombreCandidato,
+                                    "empresaNombre", nombreEmpresaReal,
+                                    "ofertaTitulo", tituloOfertaReal
+                            ),
+                            Map.of("idPostulacion", idPostulacion),
+                            "/menu-principal/mis-postulaciones",
+                            "cancel"
+                    );
                 }
-            } catch (Exception e) {
-                System.err.println("Error enviando notificacion de postulacion aprobada: " + e.getMessage());
             }
+        } catch (Exception e) {
+            System.err.println("Error enviando notificacion de postulacion evaluada: " + e.getMessage());
         }
     }
 

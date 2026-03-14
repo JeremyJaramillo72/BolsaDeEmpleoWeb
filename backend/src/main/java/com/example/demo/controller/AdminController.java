@@ -6,8 +6,10 @@ import com.example.demo.repository.CiudadRepository;
 import com.example.demo.repository.UsuarioEmpresaRepository;
 import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.repository.Views.IEmpresaResumenProjection;
+
 import com.example.demo.service.IUsuarioService;
 import com.example.demo.service.EmailService; // asegurate de tener este import
+import com.example.demo.service.NotificacionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,7 @@ public class AdminController {
     private final UsuarioEmpresaRepository usuarioEmpresaRepository;
     private final CiudadRepository ciudadRepository;
     private final EmailService emailService;
+    private final NotificacionService notificacionService;
 
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -78,20 +81,20 @@ public class AdminController {
     public ResponseEntity<?> cambiarEstadoEmpresa(@PathVariable Long idUsuario, @RequestBody Map<String, String> body) {
         try {
             String nuevoEstado = body.get("nuevoEstado");
+            usuarioService.cambiarEstadoUsuario(idUsuario, nuevoEstado); //nue
 
             return usuarioRepository.findById(idUsuario).map(usuario -> {
 
                 // 1. cambiamos el estado y guardamos
                 usuario.setEstadoValidacion(nuevoEstado);
                 usuarioRepository.save(usuario);
-
+                // 2 notificacmos al usuario por correo
 
                 try {
                     emailService.enviarCorreoValidacion(usuario.getCorreo(), usuario.getNombre(), nuevoEstado);
                 } catch (Exception e) {
                     System.out.println("no se pudo enviar el correo: " + e.getMessage());
                 }
-
                 return ResponseEntity.ok(Map.of("mensaje", "empresa " + nuevoEstado + " correctamente."));
             }).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "usuario no encontrado")));

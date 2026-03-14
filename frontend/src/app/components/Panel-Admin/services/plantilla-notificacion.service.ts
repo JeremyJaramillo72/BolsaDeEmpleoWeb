@@ -19,11 +19,11 @@ export class PlantillaNotificacionService {
     return this.http.get(`${this.apiUrl}/${tipo}`);
   }
 
-  actualizarPlantilla(id: number, titulo: string, contenido: string, idUsuario: string | null): Observable<any> {
+  // Ya no mandamos el idUsuario
+  actualizarPlantilla(id: number, titulo: string, contenido: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}`, {
       titulo,
-      contenido,
-      idUsuario
+      contenido
     });
   }
 

@@ -10,6 +10,7 @@ import com.example.demo.repository.OfertaLaboralRepository;
 import com.example.demo.repository.PlantillaNotificacionRepository;
 import com.example.demo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class NotificacionService {
 
     private final NotificacionRepository notificacionRepo;
@@ -31,19 +33,6 @@ public class NotificacionService {
     private final SimpMessagingTemplate messagingTemplate;
     private final EmailService emailService;
 
-    private final Map<String, String> templates = Map.of(
-            "postulacion_aprobada", "¡Felicidades! Tu postulación a '{oferta}' fue APROBADA por {empresa}.",
-            "oferta_aprobada", "Tu oferta de empleo '{titulo}' ha sido marcada como {estado} y ya es visible.",
-            "nueva_oferta", "Nueva oferta publicada: '{titulo}' en {empresa}.",
-            "nueva_postulacion", "¡Tienes un nuevo candidato! Alguien se ha postulado a tu oferta '{titulo}'.",
-            "feedback_postulacion", "La empresa {empresa} ha dejado feedback en tu postulación a '{oferta}'.",
-            "oferta_pendiente", "La empresa {empresa} ha publicado una nueva oferta: '{titulo}'. Requiere revisión.",
-            "nueva_oferta_zona", "Hola {nombre}, hay una nueva oferta '{titulo}' disponible en tu zona ({provincia}).",
-            "empresa_pendiente_aprobacion", "Se ha registrado una nueva empresa: '{nombreEmpresa}'. Requiere revisión.",
-            "empresa_aprobada", "¡Felicidades! Tu empresa ha sido aprobada. Ya puedes iniciar sesión y publicar ofertas.",
-            "configuracion_correo_actualizada", "⚠️ ALERTA DE SEGURIDAD: El administrador {adminNombre} ha actualizado la configuración de correo. Anterior: {correoAnterior} → Nuevo: {correoNuevo}"
-    );
-
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void crearYEnviarNotificacion(Long idUsuario, String tipo, Map<String, String> variables, Map<String, Object> datosJson, String enlace, String icono) {
         try {
@@ -51,16 +40,20 @@ public class NotificacionService {
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
             // 1. Generar Mensaje - Obtener plantilla desde BD
-            String plantilla = obtenerPlantillaConContenido(tipo);
-            String mensajeFinal = plantilla;
+            PlantillaNotificacion plantilla = obtenerPlantillaConContenido(tipo);
+            String mensajeFinal = plantilla.getContenido();
+            String tituloFinal = plantilla.getTitulo();
             for (Map.Entry<String, String> entry : variables.entrySet()) {
-                mensajeFinal = mensajeFinal.replace("{" + entry.getKey() + "}", entry.getValue());
+                String llave = "{" + entry.getKey() + "}";
+                mensajeFinal = mensajeFinal.replace(llave, entry.getValue());
+                tituloFinal = tituloFinal.replace(llave, entry.getValue());
+
             }
 
             // 2. Guardar en PostgreSQL
             Notificacion notif = new Notificacion();
             notif.setUsuario(usuario);
-            notif.setTitulo(generarTituloPorTipo(tipo));
+            notif.setTitulo(tituloFinal);
             notif.setMensaje(mensajeFinal);
             notif.setTipo(tipo);
             notif.setIcono(icono != null ? icono : "bell");
@@ -120,6 +113,8 @@ public class NotificacionService {
 
     }
 
+
+
     private String generarTituloPorTipo(String tipo) {
         return switch (tipo) {
             case "postulacion_aprobada" -> "Postulacion Aprobada";
@@ -150,14 +145,17 @@ public class NotificacionService {
                     Notificacion notif = new Notificacion();
                     notif.setUsuario(admin);
 
-                    String plantilla = obtenerPlantillaConContenido(tipo);
-                    String mensaje = plantilla;
+                    PlantillaNotificacion plantilla =  obtenerPlantillaConContenido(tipo);
+                    String tituloFinal = plantilla.getTitulo();
+                    String mensajeFinal = plantilla.getContenido();
                     for (Map.Entry<String, String> entry : variables.entrySet()) {
-                        mensaje = mensaje.replace("{" + entry.getKey() + "}", entry.getValue());
+                        String llave = "{" + entry.getKey() + "}";
+                        tituloFinal = tituloFinal.replace(llave, entry.getValue());
+                        mensajeFinal = mensajeFinal.replace(llave, entry.getValue());
                     }
 
-                    notif.setTitulo(generarTituloPorTipo(tipo));
-                    notif.setMensaje(mensaje);
+                    notif.setTitulo(tituloFinal);
+                    notif.setMensaje(mensajeFinal);
                     notif.setTipo(tipo);
                     notif.setIcono(icono != null ? icono : "bell");
                     notif.setEnlace(enlace != null ? enlace : "");
@@ -204,15 +202,18 @@ public class NotificacionService {
                     System.out.println("   📨 Guardando notificación para usuario: " + u.getIdUsuario());
 
                     // Crear notificación directamente sin llamar a crearYEnviarNotificacion
-                    String plantilla = obtenerPlantillaConContenido(tipo);
-                    String mensajeFinal = plantilla;
+                    PlantillaNotificacion platilla = obtenerPlantillaConContenido(tipo);
+                    String tituloFinal = platilla.getTitulo();
+                    String mensajeFinal = platilla.getContenido();
                     for (Map.Entry<String, String> entry : variables.entrySet()) {
-                        mensajeFinal = mensajeFinal.replace("{" + entry.getKey() + "}", entry.getValue());
+                        String llave = "{" + entry.getKey() + "}";
+                        mensajeFinal = mensajeFinal.replace(llave, entry.getValue());
+                        tituloFinal = tituloFinal.replace(llave, entry.getValue());
                     }
 
                     Notificacion notif = new Notificacion();
                     notif.setUsuario(u);
-                    notif.setTitulo(generarTituloPorTipo(tipo));
+                    notif.setTitulo(tituloFinal);
                     notif.setMensaje(mensajeFinal);
                     notif.setTipo(tipo);
                     notif.setIcono(icono != null ? icono : "bell");
@@ -402,18 +403,24 @@ public class NotificacionService {
     /**
      * Obtiene el contenido de una plantilla desde la BD.
      * Si existe en BD, devuelve el contenido de la plantilla.
-     * Si no existe, devuelve un fallback desde templates en memoria.
+     * Si no existe, devuelve un fallback genérico (sin hardcoding por tipo).
      */
-    private String obtenerPlantillaConContenido(String tipo) {
+
+    private PlantillaNotificacion obtenerPlantillaConContenido(String tipo) {
         try {
             var plantilla = plantillaRepo.findByTipoAndActivo(tipo, true);
             if (plantilla.isPresent()) {
-                return plantilla.get().getContenido();
+                return plantilla.get();  // ✅ Devuelve la plantilla completa con Título y Contenido
             }
         } catch (Exception e) {
-            System.err.println("⚠️ Error consultando plantilla de BD para tipo '" + tipo + "': " + e.getMessage());
+            log.error("❌ Error consultando plantilla de BD para tipo '{}': {}", tipo, e.getMessage());
         }
-        // Fallback a templates en memoria si no existe en BD
-        return templates.getOrDefault(tipo, "Tienes una nueva notificación");
+
+        // Fallback genérico si no existe en BD
+        log.warn("⚠️ Plantilla '{}' no encontrada en BD. Usando fallback genérico.", tipo);
+        PlantillaNotificacion fallback = new PlantillaNotificacion();
+        fallback.setTitulo(generarTituloPorTipo(tipo)); // Usamos tu switch antiguo como salvavidas
+        fallback.setContenido("Tienes una nueva notificación: " + tipo);
+        return fallback;
     }
 }

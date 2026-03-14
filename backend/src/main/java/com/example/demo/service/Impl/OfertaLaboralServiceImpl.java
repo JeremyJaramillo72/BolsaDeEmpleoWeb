@@ -112,8 +112,20 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
 
             // Notificar a admins sobre nueva oferta pendiente
             try {
+
+                String nombreEmpresa = usuarioEmpresaRepository.findById(dto.getIdEmpresa()).
+                        map(empresa -> {
+                            if (empresa.getIdEmpresa() != null)
+                            {
+                                String nombreE = empresa.getUsuario().getNombre() != null ? empresa.getUsuario().getNombre() : "";
+                                String apellidoE = empresa.getUsuario().getApellido() != null ? empresa.getUsuario().getApellido() : "";
+                                return (nombreE + " " + apellidoE).trim();
+                            }
+                            return "Empresa ID: " + dto.getIdEmpresa();
+                        }).orElse("Empresa F");
+
                 Map<String, String> variables = new java.util.HashMap<>();
-                variables.put("empresa", dto.getIdEmpresa().toString()); // o el nombre si lo tienes
+                variables.put("empresaNombre", nombreEmpresa); // o el nombre si lo tienes
                 variables.put("titulo", dto.getTitulo());
 
                 Map<String, Object> datos = new java.util.HashMap<>();

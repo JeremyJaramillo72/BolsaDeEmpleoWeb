@@ -34,6 +34,7 @@
         <h2>✏️ Editar Plantilla</h2>
       </div>
       <div class="card-body">
+
         <!-- Mensajes -->
         <div *ngIf="mensajeExito" class="message-exito">
           {{ mensajeExito }}
@@ -60,17 +61,28 @@
         </div>
 
         <!-- Contenido -->
+        <!-- Contenido -->
         <div class="form-group">
           <label>Contenido:</label>
-          <div class="editor-wrapper">
-            <textarea
-              [(ngModel)]="contenidoEditado"
-              [disabled]="guardando"
-              class="textarea-field"
-              placeholder="Escribe el contenido de la notificación aquí..."></textarea>
+
+          <div class="variables-protegidas" *ngIf="variablesProtegidas.length > 0">
+            <span class="variables-label">⚠️ Variables detectadas que NO debes borrar:</span>
+            <div class="chips-container">
+              <span *ngFor="let v of variablesProtegidas" class="chip-variable">{{ v }}</span>
+            </div>
           </div>
-          <div class="input-helper">
-            💡 Para insertar variables dinámicas, escribe: <span class="code-var">variable</span> (ej: <span class="code-var">adminNombre</span>, <span class="code-var">correoNuevo</span>)
+
+          <div class="editor-wrapper">
+            <div
+              #editorRef
+              class="contenido-editor"
+              [class.disabled]="guardando"
+              [attr.contenteditable]="!guardando">
+            </div>
+          </div>
+
+          <div class="input-helper-restriccion">
+            🔒 Las variables entre llaves son obligatorias. Solo edita el texto a su alrededor.
           </div>
         </div>
 
@@ -92,23 +104,7 @@
       </div>
     </div>
 
-    <!-- Sección 3: Variables Disponibles (READ-ONLY) -->
-    <div *ngIf="plantillaSeleccionada && variablesDisponibles.length > 0" class="card-section">
-      <div class="card-header">
-        <h2>📌 Variables Disponibles</h2>
-      </div>
-      <div class="card-body">
-        <p class="section-desc">Estas variables se reemplazan automáticamente cuando se envía la notificación:</p>
-        <div class="variables-list">
-          <div *ngFor="let variable of variablesDisponibles" class="variable-ref">
-            <span class="variable-nombre">{{'{{'}}{{ variable.nombre }}{{'}}'}}</span>
-            <span class="variable-desc">— {{ variable.descripcion }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Sección 4: Historial de Cambios -->
+    <!-- Sección 3: Historial de Cambios -->
     <div *ngIf="plantillaSeleccionada" class="card-section">
       <div class="card-header">
         <h2>📊 Historial de Cambios</h2>
@@ -125,12 +121,10 @@
             *ngFor="let item of historial; let i = index"
             class="timeline-item">
 
-            <!-- Indicador visual -->
             <div class="timeline-marker">
               <div class="marker-dot"></div>
             </div>
 
-            <!-- Contenido -->
             <div class="timeline-content">
               <div class="timeline-header">
                 <div class="status-badge">
@@ -145,43 +139,32 @@
                   <span class="email-small">({{ item.adminEmail }})</span>
                 </p>
 
-                <!-- Cambios -->
                 <div *ngIf="item.tituloAnterior || item.contenidoAnterior" class="cambios-list">
                   <div *ngIf="item.tituloAnterior && item.tituloNuevo" class="cambio-item">
                     <strong>Título:</strong>
                     <div class="cambio-valores">
-                      <div class="valor-anterior">
-                        <code>{{ item.tituloAnterior }}</code>
-                      </div>
+                      <div class="valor-anterior"><code>{{ item.tituloAnterior }}</code></div>
                       <div class="flecha">→</div>
-                      <div class="valor-nuevo">
-                        <code>{{ item.tituloNuevo }}</code>
-                      </div>
+                      <div class="valor-nuevo"><code>{{ item.tituloNuevo }}</code></div>
                     </div>
                   </div>
 
                   <div *ngIf="item.contenidoAnterior && item.contenidoNuevo" class="cambio-item">
                     <strong>Contenido:</strong>
                     <div class="cambio-valores">
-                      <div class="valor-anterior">
-                        <code>{{ item.contenidoAnterior }}</code>
-                      </div>
+                      <div class="valor-anterior"><code>{{ item.contenidoAnterior }}</code></div>
                       <div class="flecha">→</div>
-                      <div class="valor-nuevo">
-                        <code>{{ item.contenidoNuevo }}</code>
-                      </div>
+                      <div class="valor-nuevo"><code>{{ item.contenidoNuevo }}</code></div>
                     </div>
                   </div>
                 </div>
 
-                <!-- Detalles expandibles -->
                 <div *ngIf="item.ipAddress" class="timeline-details">
                   <button
                     class="btn-expandir"
                     (click)="toggleHistorial(item.idHistorial)">
                     {{ expandidoHistorial[item.idHistorial] ? '▼' : '▶' }} Detalles
                   </button>
-
                   <div *ngIf="expandidoHistorial[item.idHistorial]" class="details-expanded">
                     <div class="detail-item">
                       <strong>IP Address:</strong> {{ item.ipAddress }}

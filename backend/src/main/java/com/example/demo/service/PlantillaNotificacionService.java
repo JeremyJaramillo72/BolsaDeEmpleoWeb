@@ -55,64 +55,24 @@ public class PlantillaNotificacionService {
     /**
      * Actualizar plantilla y registrar en auditoría
      */
+
+    /**
+     * Actualizar plantilla (La auditoría la maneja el Trigger en la BD)
+     */
     @Transactional
-    public void actualizarPlantilla(Integer idPlantilla, String titulo, String contenido, Long idUsuario, String ipAddress) {
+    public void actualizarPlantilla(Integer idPlantilla, String titulo, String contenido) {
         PlantillaNotificacion plantilla = plantillaRepo
                 .findById(idPlantilla)
                 .orElseThrow(() -> new RuntimeException("Plantilla no encontrada: " + idPlantilla));
 
-        Usuario usuario = usuarioRepo
-                .findById(idUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        Seguridad seguridad = seguridadRepo.findByUsuario(usuario)
-                .orElseThrow(() -> new RuntimeException("Usuario de seguridad no encontrado"));
-
-        String tituloAnterior = plantilla.getTitulo();
-        String contenidoAnterior = plantilla.getContenido();
-
         plantilla.setTitulo(titulo);
         plantilla.setContenido(contenido);
-        PlantillaNotificacion plantillaGuardada = plantillaRepo.save(plantilla);
 
-        // Registrar en auditoría
-        Auditoria auditoria = new Auditoria();
-        auditoria.setIdSeguridad(seguridad.getIdSeguridad());
-        auditoria.setUsuarioDb(seguridad.getLoginName());
-        auditoria.setFechaHora(LocalDateTime.now());
-        auditoria.setAccion("UPDATE");
-        auditoria.setTablaAfectada("plantilla_notificacion");
-        auditoria.setIdRegistroAfectado(plantillaGuardada.getIdPlantilla());
+        // Al guardar, el Trigger AFTER UPDATE saltará en tu base de datos
+        // y registrará el cambio en la tabla de auditoría con el usuario de BD actual.
+        plantillaRepo.save(plantilla);
 
-        Map<String, Object> datosAnteriores = new HashMap<>();
-        datosAnteriores.put("titulo", tituloAnterior);
-        datosAnteriores.put("contenido", contenidoAnterior);
-
-        Map<String, Object> datosNuevos = new HashMap<>();
-        datosNuevos.put("titulo", titulo);
-        datosNuevos.put("contenido", contenido);
-        datosNuevos.put("ipAddress", ipAddress);
-        datosNuevos.put("nombreAdmin", usuario.getNombre());
-        datosNuevos.put("tipo", plantilla.getTipo());
-
-        Map<String, Object> camposModificados = new HashMap<>();
-        if (!tituloAnterior.equals(titulo)) {
-            camposModificados.put("titulo", Map.of("anterior", tituloAnterior, "nuevo", titulo));
-        }
-        if (!contenidoAnterior.equals(contenido)) {
-            camposModificados.put("contenido", Map.of("anterior", contenidoAnterior, "nuevo", contenido));
-        }
-
-        try {
-            auditoria.setDatosAnteriores(objectMapper.writeValueAsString(datosAnteriores));
-            auditoria.setDatosNuevos(objectMapper.writeValueAsString(datosNuevos));
-            auditoria.setCamposModificados(objectMapper.writeValueAsString(camposModificados));
-            auditoriaRepo.save(auditoria);
-
-            log.info("✅ Plantilla actualizada: " + plantilla.getTipo() + " por usuario: " + usuario.getNombre());
-        } catch (Exception e) {
-            log.error("❌ Error registrando auditoría: " + e.getMessage());
-        }
+        log.info("✅ Plantilla actualizada: " + plantilla.getTipo());
     }
 
     /**
@@ -131,7 +91,7 @@ public class PlantillaNotificacionService {
         List<Auditoria> registros = auditoriaRepo
                 .findByTablaAfectadaAndIdRegistroAfectadoOrderByFechaHoraDesc(
                         "plantilla_notificacion",
-                        idPlantilla
+                        (int) idPlantilla.longValue() // Aseguramos el casteo a Long
                 );
 
         List<PlantillaNotificacionDTO.HistorialItem> items = new ArrayList<>();

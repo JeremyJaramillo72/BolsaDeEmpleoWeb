@@ -69,6 +69,32 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 usuarioGuardado.getIdUsuario().intValue(),
                 idRolParaGuardar// ID del rol Postulante
         );
+        try {
+            // 1. Notificación en Campanita (In-App)
+            notificacionService.crearYEnviarNotificacion(
+                    usuarioGuardado.getIdUsuario(),
+                    "in_app_registro_completado",
+                    Map.of("usuarioNombre", usuarioGuardado.getNombre()),
+                    Map.of(),
+                    "/menu-principal/perfil", // de una al cv
+                    "waving_hand"
+            );
+
+            // 2. Notificación por Correo
+            notificacionService.crearYEnviarNotificacion(
+                    usuarioGuardado.getIdUsuario(),
+                    "email_registro_postulante",
+                    Map.of(
+                            "postulanteName", usuarioGuardado.getNombre(),
+                            "correoPostulante", usuarioGuardado.getCorreo()
+                    ),
+                    Map.of(),
+                    "/menu-principal",
+                    "email"
+            );
+        } catch (Exception e) {
+            System.err.println("⚠️ Error al enviar notificaciones de bienvenida a postulante: " + e.getMessage());
+        }
     }
 
     @Override
@@ -189,6 +215,33 @@ public class UsuarioServiceImpl implements IUsuarioService {
             );
         } catch (Exception e) {
             System.err.println("⚠️ Warning - Notificación empresa no guardada: " + e.getMessage());
+        }
+
+        try {
+            // 1. Notificación en Campanita (In-App)
+            notificacionService.crearYEnviarNotificacion(
+                    usuarioGuardado.getIdUsuario(),
+                    "in_app_registro_completado",
+                    Map.of("usuarioNombre", nombreEmp),
+                    Map.of(),
+                    "/menu-principal/perfil",
+                    "waving_hand"
+            );
+
+            // 2. Notificación por Correo
+            notificacionService.crearYEnviarNotificacion(
+                    usuarioGuardado.getIdUsuario(),
+                    "email_registro_empresa",
+                    Map.of(
+                            "empresaNombre", nombreEmp,
+                            "correoEmpresa", usuarioGuardado.getCorreo()
+                    ),
+                    Map.of(),
+                    "/menu-principal",
+                    "email"
+            );
+        } catch (Exception e) {
+            System.err.println("⚠️ Error al enviar notificaciones de bienvenida a empresa: " + e.getMessage());
         }
     }
     @Override

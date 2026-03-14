@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PlantillaNotificacionService } from '../../services/plantilla-notificacion.service';
@@ -11,11 +11,6 @@ export interface PlantillaDTO {
   activo: boolean;
   fechaCreacion: string;
   fechaModificacion: string;
-}
-
-export interface VariableTemplate {
-  nombre: string;
-  descripcion: string;
 }
 
 export interface HistorialItem {
@@ -31,27 +26,6 @@ export interface HistorialItem {
   ipAddress?: string;
 }
 
-// Variables disponibles por tipo de plantilla (hardcoded)
-const VARIABLES_POR_TIPO: { [key: string]: VariableTemplate[] } = {
-  'EMAIL_CORREO_ACTUALIZADO': [
-    { nombre: 'adminNombre', descripcion: 'Nombre del administrador que realizó el cambio' },
-    { nombre: 'correoAnterior', descripcion: 'Dirección de correo anterior' },
-    { nombre: 'correoNuevo', descripcion: 'Dirección de correo nueva' },
-    { nombre: 'fecha', descripcion: 'Fecha y hora del cambio' }
-  ],
-  'EMAIL_POSTULACION_RECIBIDA': [
-    { nombre: 'nombrePostulante', descripcion: 'Nombre del postulante' },
-    { nombre: 'tituloPuesto', descripcion: 'Título del puesto' },
-    { nombre: 'empresa', descripcion: 'Nombre de la empresa' },
-    { nombre: 'fecha', descripcion: 'Fecha de postulación' }
-  ],
-  'IN_APP_POSTULACION_RECIBIDA': [
-    { nombre: 'nombrePostulante', descripcion: 'Nombre del postulante' },
-    { nombre: 'tituloPuesto', descripcion: 'Título del puesto' },
-    { nombre: 'empresa', descripcion: 'Nombre de la empresa' }
-  ]
-};
-
 @Component({
   selector: 'app-plantilla-notificacion',
   standalone: true,
@@ -60,19 +34,21 @@ const VARIABLES_POR_TIPO: { [key: string]: VariableTemplate[] } = {
   styleUrls: ['./plantilla-notificacion.css']
 })
 export class PlantillaNotificacionComponent implements OnInit {
+
+  @ViewChild('editorRef') editorRef!: ElementRef;
+
   plantillas: PlantillaDTO[] = [];
   plantillaSeleccionada: PlantillaDTO | null = null;
   historial: HistorialItem[] = [];
-  variablesDisponibles: VariableTemplate[] = [];
+  variablesProtegidas: string[] = [];
 
   tituloEditado: string = '';
-  contenidoEditado: string = '';
+  contenidoEditado: string = ''; // valor real con variables para guardar en BD
 
   cargando: boolean = true;
   guardando: boolean = false;
   mensajeExito: string = '';
   mensajeError: string = '';
-
   expandidoHistorial: { [key: number]: boolean } = {};
 
   constructor(
@@ -103,80 +79,122 @@ export class PlantillaNotificacionComponent implements OnInit {
       }
     });
   }
-
   seleccionarPlantilla(plantilla: PlantillaDTO): void {
     this.plantillaSeleccionada = plantilla;
     this.tituloEditado = plantilla.titulo;
     this.contenidoEditado = plantilla.contenido;
+
+    // ✅ Agregamos esta línea para llenar la cajita de arriba
+    this.variablesProtegidas = this.extraerVariables(plantilla.contenido);
+
     this.mensajeExito = '';
     this.mensajeError = '';
-
-    // Obtener variables según el tipo de plantilla
-    this.variablesDisponibles = VARIABLES_POR_TIPO[plantilla.tipo] || [];
-
     this.cargarHistorial();
+
+    setTimeout(() => this.renderizarEditor(), 50);
   }
 
-  cargarHistorial(): void {
-    if (!this.plantillaSeleccionada) return;
+  // Convierte el texto plano con variables en HTML con spans de colores
+  // Convierte el texto plano con variables en HTML con spans de colores y estilos
+  contenidoAHtml(texto: string): string {
+    const escaped = texto
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\n/g, '<br>');
 
-    this.plantillaService.obtenerHistorial(this.plantillaSeleccionada.idPlantilla).subscribe({
-      next: (data: HistorialItem[]) => {
-        this.historial = data;
-        this.cdr.detectChanges();
-      },
-      error: (err: any) => {
-        console.error('Error cargando historial:', err);
-      }
+    return escaped.replace(/(\{\{[^}]+\}\}|\{[^}]+\})/g, (match) => {
+      // 🚀 CIENCIA PURA: Le inyectamos el style directamente aquí "ahí mismo"
+      return `<span class="var-chip" contenteditable="false" data-var="${match}" style="font-weight: bold; font-style: italic; font-family: monospace; color: #5b21b6; background-color: #ede9fe; padding: 2px 4px; border-radius: 4px;">${match}</span>`;
     });
+
   }
 
+  renderizarEditor(): void {
+    if (!this.editorRef) return;
+    const el = this.editorRef.nativeElement;
+    el.innerHTML = this.contenidoAHtml(this.contenidoEditado);
+  }
+
+  // Extrae el texto real del editor (reponiendo las variables desde data-var)
+  extraerContenidoReal(): string {
+    if (!this.editorRef) return this.contenidoEditado;
+    const el = this.editorRef.nativeElement;
+
+    // Clonar para no modificar el DOM real
+    const clon = el.cloneNode(true) as HTMLElement;
+
+    // Reemplazar cada span de variable por su valor original
+    clon.querySelectorAll('.var-chip').forEach((span: Element) => {
+      const valorOriginal = span.getAttribute('data-var') || '';
+      const text = document.createTextNode(valorOriginal);
+      span.replaceWith(text);
+    });
+
+    // Convertir <br> de vuelta a saltos de línea
+    return clon.innerHTML
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/<[^>]+>/g, ''); // limpiar cualquier tag sobrante
+  }
+
+  extraerVariables(texto: string): string[] {
+    // Busca todo lo que esté entre {llaves} o {{dobles llaves}}
+    const matches = texto.match(/(\{\{[^}]+\}\}|\{[^}]+\})/g) || [];
+    // Retorna solo los valores únicos para que no se repitan en la lista
+    return Array.from(new Set(matches));
+  }
   guardarCambios(): void {
     if (!this.plantillaSeleccionada) return;
 
-    if (!this.tituloEditado || !this.tituloEditado.trim()) {
+    if (!this.tituloEditado?.trim()) {
       this.mensajeError = '❌ El título no puede estar vacío';
       this.mensajeExito = '';
       return;
     }
 
-    if (!this.contenidoEditado || !this.contenidoEditado.trim()) {
+    const contenidoReal = this.extraerContenidoReal();
+
+    if (!contenidoReal?.trim()) {
       this.mensajeError = '❌ El contenido no puede estar vacío';
       this.mensajeExito = '';
       return;
     }
 
     if (this.tituloEditado === this.plantillaSeleccionada.titulo &&
-        this.contenidoEditado === this.plantillaSeleccionada.contenido) {
+      contenidoReal === this.plantillaSeleccionada.contenido) {
       this.mensajeError = '❌ No hay cambios para guardar';
       this.mensajeExito = '';
       return;
     }
 
     this.guardando = true;
-    const idUsuario = localStorage.getItem('idUsuario');
 
     this.plantillaService.actualizarPlantilla(
       this.plantillaSeleccionada.idPlantilla,
       this.tituloEditado,
-      this.contenidoEditado,
-      idUsuario
+      contenidoReal
     ).subscribe({
       next: (response: any) => {
         if (response.exito) {
           this.mensajeExito = response.mensaje;
+          this.mensajeError = '';
           this.plantillaSeleccionada!.titulo = this.tituloEditado;
-          this.plantillaSeleccionada!.contenido = this.contenidoEditado;
+          this.plantillaSeleccionada!.contenido = contenidoReal;
+          this.contenidoEditado = contenidoReal;
           this.cargarHistorial();
         } else {
           this.mensajeError = response.mensaje;
+          this.mensajeExito = '';
         }
         this.guardando = false;
         this.cdr.detectChanges();
       },
       error: (err: any) => {
-        console.error('Error:', err);
         this.mensajeError = '❌ Error al guardar: ' + (err.error?.mensaje || err.message);
+        this.mensajeExito = '';
         this.guardando = false;
         this.cdr.detectChanges();
       }
@@ -189,6 +207,18 @@ export class PlantillaNotificacionComponent implements OnInit {
     this.contenidoEditado = this.plantillaSeleccionada.contenido;
     this.mensajeError = '';
     this.mensajeExito = '';
+    setTimeout(() => this.renderizarEditor(), 50);
+  }
+
+  cargarHistorial(): void {
+    if (!this.plantillaSeleccionada) return;
+    this.plantillaService.obtenerHistorial(this.plantillaSeleccionada.idPlantilla).subscribe({
+      next: (data: HistorialItem[]) => {
+        this.historial = data;
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => console.error('Error cargando historial:', err)
+    });
   }
 
   toggleHistorial(idHistorial: number): void {
