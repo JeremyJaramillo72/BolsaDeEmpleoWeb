@@ -1,0 +1,85 @@
+<div class="backup-module fade-in">
+  <div class="config-card">
+    <div class="card-header-flex">
+      <div class="title-group">
+        <span class="material-icons text-indigo icon-large">folder_managed</span>
+        <h2>Ruta de Almacenamiento Local</h2>
+      </div>
+    </div>
+    <p class="description-text">
+      Defina la ubicación física (Disco duro interno, externo o Pendrive USB) donde se guardará la copia comprimida de la base de datos.
+    </p>
+
+    <div class="form-group">
+      <label>Ruta de destino <span class="text-red">*</span></label>
+
+      <div class="input-browse-wrapper">
+        <span class="material-icons input-icon text-muted">save</span>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="rutaLocal"
+          placeholder="Ejemplo: E:\Backups_Bolsa_Empleo\"
+          [disabled]="isBackingUp">
+      </div>
+
+      <small class="help-text text-muted">
+        <span class="material-icons text-sm">info</span>
+        Copie y pegue la ruta desde su explorador de archivos. Asegúrese de terminar la ruta con una barra inclinada (\) o (/).
+      </small>
+    </div>
+  </div>
+
+  <div class="execution-card mt-4">
+    <div class="card-header-flex border-bottom mb-3 pb-3">
+      <div class="title-group">
+        <span class="material-icons text-green icon-large">security</span>
+        <h2>Ejecutar Respaldo Maestro</h2>
+      </div>
+    </div>
+
+    <div class="execution-layout">
+      <div class="destinations-panel">
+        <h4 class="panel-subtitle">Destinos de la copia:</h4>
+
+        <div class="dest-item">
+          <div class="dest-icon bg-indigo-light text-indigo">
+            <span class="material-icons">hard_drive</span>
+          </div>
+          <div class="dest-info">
+            <strong>Almacenamiento Físico</strong>
+            <span>Se guardará en la ruta configurada arriba.</span>
+          </div>
+        </div>
+
+        <div class="dest-item">
+          <div class="dest-icon bg-cyan-light text-cyan">
+            <span class="material-icons">cloud_upload</span>
+          </div>
+          <div class="dest-info">
+            <strong>Nube (Azure Blob Storage)</strong>
+            <span>Sincronización automática de seguridad.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-panel">
+        <button
+          class="btn-generate"
+          [class.loading]="isBackingUp"
+          (click)="ejecutarBackup()"
+          [disabled]="isBackingUp || !rutaLocal">
+          <span class="material-icons icon-spin" *ngIf="isBackingUp">sync</span>
+          <span class="material-icons" *ngIf="!isBackingUp">backup</span>
+          {{ isBackingUp ? 'Creando respaldo seguro...' : 'Generar Copia Ahora' }}
+        </button>
+
+        <div class="last-backup-info mt-3">
+          <span class="material-icons text-muted text-sm">history</span>
+          <span>Último respaldo: <strong>12/03/2026 - 14:30 PM</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
