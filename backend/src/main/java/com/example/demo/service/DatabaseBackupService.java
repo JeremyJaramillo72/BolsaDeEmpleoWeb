@@ -4,8 +4,10 @@ import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -20,6 +22,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 @Service
+@RequiredArgsConstructor
 public class DatabaseBackupService {
 
     @Value("${backup.pgdump.path:pg_dump}")
@@ -36,7 +39,7 @@ public class DatabaseBackupService {
 
     @Value("${azure.storage.container-name.backups}")
     private String containerNameBackups;
-
+ private final JdbcTemplate jdbcTemplate;
     public File generarBackupYSubirAzure() throws Exception {
 
         // 1. Nombres de Archivos
@@ -148,5 +151,109 @@ public class DatabaseBackupService {
                 throw new RuntimeException("Error subiendo a Azure: " + e.getMessage());
             }
         }
+    public String restaurarEnNuevaBd(Long idBackup) throws Exception {
+
+        // 1. Ir a la base de datos para obtener el nombre del archivo ZIP y la fecha del backup
+        String sql = "SELECT url_azure, fecha_ejecucion FROM seguridad.historial_backups WHERE id_backup = ?";
+        java.util.Map<String, Object> backupRecord = jdbcTemplate.queryForMap(sql, idBackup);
+
+        String urlAzure = (String) backupRecord.get("url_azure");
+        Date fechaEjecucion = (Date) backupRecord.get("fecha_ejecucion");
+
+        // Extraer solo el nombre del archivo si la URL viene completa
+        String zipFileName = urlAzure.substring(urlAzure.lastIndexOf('/') + 1);
+
+        // 2. Generar el nombre AUTOMÁTICO de la nueva Base de Datos (Postgres exige minúsculas y sin guiones medios)
+        String fechaSegura = new SimpleDateFormat("yyyy_MM_dd_HHmm").format(fechaEjecucion);
+        String nuevaBd = "bolsa_uteq_" + fechaSegura;
+
+        // Rutas temporales en el servidor
+        String tempZipPath = Paths.get(System.getProperty("java.io.tmpdir"), zipFileName).toString();
+        String tempUnzippedPath = null;
+
+        try {
+            // 3. Descargar el archivo .ZIP desde Azure al disco duro
+            BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().connectionString(azureConnectionString).buildClient();
+            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerNameBackups);
+            BlobClient blobClient = containerClient.getBlobClient(zipFileName);
+
+            if (!blobClient.exists()) {
+                throw new RuntimeException("El backup no existe en la nube: " + zipFileName);
+            }
+            blobClient.downloadToFile(tempZipPath, true); // true = sobreescribir si ya existe
+
+            // 4. DESCOMPRIMIR EL .ZIP para sacar el archivo .backup (pg_restore no lee zips)
+            tempUnzippedPath = descomprimirZip(tempZipPath);
+
+            // 5. Crear la nueva base de datos vacía
+            jdbcTemplate.execute("CREATE DATABASE " + nuevaBd);
+            System.out.println("Base de datos clonada creada: " + nuevaBd);
+
+            ProcessBuilder pb = new ProcessBuilder(
+                    "pg_restore",
+                    "-U", dbUser,
+                    "-h", "bolsa-empleo-dbpg.postgres.database.azure.com",
+                    "-p", "5432",
+                    "-d", nuevaBd,
+                    "--no-owner",            // Evita cambiar el dueño de las tablas
+                    // 🔥 QUITAMOS --no-privileges PARA QUE SÍ RESTAURE TUS ROLES Y PERMISOS
+                    "--role=" + dbUser,
+                    tempUnzippedPath
+            );
+
+            // Inyectar contraseña para automatizar
+            pb.environment().put("PGPASSWORD", dbPassword);
+            pb.environment().put("PGSSLMODE", "require");
+            pb.redirectErrorStream(true);
+
+            System.out.println("Iniciando inyección de datos con pg_restore en " + nuevaBd + "...");
+            Process proceso = pb.start();
+
+            // Leer logs de la consola por si Postgres se queja
+            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(proceso.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println("pg_restore: " + line);
+            }
+
+            int exitCode = proceso.waitFor();
+
+            if (exitCode > 1) {
+                throw new RuntimeException("Fallo pg_restore. Código fatal: " + exitCode);
+            }
+
+            return nuevaBd;
+
+        } finally {
+            // 7. LIMPIEZA EXTREMA: Borramos el .zip y el .backup del servidor temporal
+            Files.deleteIfExists(Paths.get(tempZipPath));
+            if (tempUnzippedPath != null) {
+                Files.deleteIfExists(Paths.get(tempUnzippedPath));
+            }
+            System.out.println("Archivos temporales limpiados del servidor.");
+        }
+    }
+
+    // 🔥 MÉTODO AYUDANTE: Extrae el .backup del .zip
+    private String descomprimirZip(String zipFilePath) throws Exception {
+        String unzippedFilePath = zipFilePath.replace(".zip", ".backup");
+
+        try (java.util.zip.ZipInputStream zis = new java.util.zip.ZipInputStream(new FileInputStream(zipFilePath))) {
+            java.util.zip.ZipEntry zipEntry = zis.getNextEntry();
+
+            if (zipEntry != null) {
+                try (FileOutputStream fos = new FileOutputStream(unzippedFilePath)) {
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = zis.read(buffer)) > 0) {
+                        fos.write(buffer, 0, len);
+                    }
+                }
+            } else {
+                throw new RuntimeException("El archivo ZIP de Azure estaba vacío.");
+            }
+        }
+        return unzippedFilePath;
+    }
 
 }

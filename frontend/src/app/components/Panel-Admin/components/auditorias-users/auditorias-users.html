@@ -1,31 +1,36 @@
-<div class="page-container">
-  <div class="page-header">
-    <h1>
-      <span class="header-icon">👥</span>
-      Auditorías de Usuarios
-    </h1>
-    <p class="page-description">Gestione los usuarios y sesiones del sistema</p>
+<div class="page-container fade-in">
+  <div class="page-header-pro mb-4">
+    <div class="header-content">
+      <div class="icon-box bg-indigo-light text-indigo">
+        <span class="material-icons">admin_panel_settings</span>
+      </div>
+      <div>
+        <h1 class="text-gray-900">Auditorías del Sistema</h1>
+        <p class="text-muted">Monitoreo avanzado de usuarios, sesiones y movimientos de ofertas.</p>
+      </div>
+    </div>
   </div>
 
-  <div class="alert alert-error" *ngIf="mensajeError">
+  <div class="alert alert-error shadow-sm" *ngIf="mensajeError">
     <span class="material-icons">error</span>
     {{ mensajeError }}
   </div>
 
-  <div class="main-tabs-container">
-    <button class="main-tab-btn" [class.active]="tabPrincipal === 'usuarios'" (click)="tabPrincipal = 'usuarios'">
-      <span class="material-icons">people</span> Usuarios
+  <div class="nav-pills-container mb-4">
+    <button class="nav-pill" [class.active]="tabPrincipal === 'usuarios'" (click)="tabPrincipal = 'usuarios'">
+      <span class="material-icons">people_alt</span> Usuarios
     </button>
-    <button class="main-tab-btn" [class.active]="tabPrincipal === 'sesiones'" (click)="tabPrincipal = 'sesiones'">
-      <span class="material-icons">login</span> Sesiones
+    <button class="nav-pill" [class.active]="tabPrincipal === 'sesiones'" (click)="tabPrincipal = 'sesiones'">
+      <span class="material-icons">security</span> Sesiones
     </button>
-    <button class="main-tab-btn" [class.active]="tabPrincipal === 'ofertas'" (click)="tabPrincipal = 'ofertas'">
+    <button class="nav-pill" [class.active]="tabPrincipal === 'ofertas'" (click)="tabPrincipal = 'ofertas'">
       <span class="material-icons">work_history</span> Histórico Ofertas
     </button>
   </div>
 
-  <app-usuarios *ngIf="tabPrincipal === 'usuarios'"></app-usuarios>
-  <app-sesiones *ngIf="tabPrincipal === 'sesiones'"></app-sesiones>
-  <app-ofertas *ngIf="tabPrincipal === 'ofertas'"></app-ofertas>
-
+  <div class="tab-content">
+    <app-usuarios *ngIf="tabPrincipal === 'usuarios'"></app-usuarios>
+    <app-sesiones *ngIf="tabPrincipal === 'sesiones'"></app-sesiones>
+    <app-ofertas *ngIf="tabPrincipal === 'ofertas'"></app-ofertas>
+  </div>
 </div>

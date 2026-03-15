@@ -1,133 +1,96 @@
-<div class="section-card">
-  <div class="filters-section">
-    <div class="search-box">
-      <span class="material-icons">search</span>
-      <input
-        type="text"
-        [(ngModel)]="filtroBusquedaSesiones"
-        (ngModelChange)="aplicarFiltrosSesiones()"
-        placeholder="Buscar por usuario, IP o acción..."
-        class="search-input">
+<div class="pro-card">
+  <div class="filters-bar flex-between border-bottom pb-3 mb-3">
+    <div class="search-wrapper">
+      <span class="material-icons search-icon">search</span>
+      <input type="text" [(ngModel)]="filtroBusquedaSesiones" (ngModelChange)="aplicarFiltrosSesiones()"
+             placeholder="Buscar usuario o IP..." class="form-control pro-input">
     </div>
-    <div class="filter-group">
-      <select [(ngModel)]="filtroAccionSesion" (ngModelChange)="aplicarFiltrosSesiones()" class="filter-select">
-        <option value="">Todas las acciones</option>
-        <option value="ACTIVA">ACTIVA</option>
-        <option value="CERRADA">CERRADA</option>
-        <option value="INACTIVA">INACTIVA</option>
-      </select>
-      <button class="btn-clear" (click)="limpiarFiltrosSesiones()">
+
+    <div class="actions-wrapper">
+      <div class="select-wrapper">
+        <span class="material-icons select-icon">filter_list</span>
+        <select [(ngModel)]="filtroAccionSesion" (ngModelChange)="aplicarFiltrosSesiones()" class="form-control pro-select">
+          <option value="">Todas las acciones</option>
+          <option value="ACTIVA">Sesión Activa</option>
+          <option value="CERRADA">Sesión Cerrada</option>
+          <option value="INACTIVA">Inactiva</option>
+        </select>
+      </div>
+
+      <button class="btn-icon-text btn-light" (click)="limpiarFiltrosSesiones()" title="Limpiar Filtros">
         <span class="material-icons">refresh</span>
-        Limpiar
       </button>
-      <button class="btn-export" (click)="exportarSesionesExcel()">
-        <span class="material-icons">download</span>
-        Exportar Excel
+      <button class="btn-icon-text btn-primary" (click)="exportarSesionesExcel()">
+        <span class="material-icons">download</span> Exportar
       </button>
     </div>
   </div>
-</div>
 
-<div class="table-section" *ngIf="!cargandoSesiones">
-  <div class="table-header">
-    <h3>Registro de Sesiones</h3>
-    <span class="table-count">{{ sesionesFiltradas.length }} registros</span>
-  </div>
-
-  <div class="table-container">
-    <table class="data-table">
+  <div class="table-responsive" *ngIf="!cargandoSesiones">
+    <table class="table-custom">
       <thead>
       <tr>
         <th>Usuario</th>
-        <th>Fecha Inicio</th>
-        <th>Fecha Cierre</th>
+        <th>Conexión</th>
         <th>IP Address</th>
         <th>Navegador</th>
-        <th>Sesión</th>
-        <th>Estado Cuenta</th>
-        <th>Acciones</th>
+        <th class="text-center">Estado Sesión</th>
+        <th class="text-center">Cuenta</th>
+        <th class="text-center">Acciones</th>
       </tr>
       </thead>
       <tbody>
-      <tr *ngFor="let sesion of sesionesPaginadas">
+      <tr *ngFor="let sesion of sesionesPaginadas" class="hover-row">
         <td>
-          <div class="user-cell">
-            <div class="user-avatar">{{ sesion.loginName?.charAt(0)?.toUpperCase() || '?' }}</div>
-            <span class="user-name">{{ sesion.loginName }}</span>
+          <div class="user-profile">
+            <div class="avatar-circle bg-indigo-light text-indigo">
+              {{ sesion.loginName?.charAt(0)?.toUpperCase() || '?' }}
+            </div>
+            <span class="font-medium">{{ sesion.loginName }}</span>
           </div>
         </td>
-        <td>{{ formatearFechaHora(sesion.fechaInicio) }}</td>
-        <td>{{ sesion.fechaCierre ? formatearFechaHora(sesion.fechaCierre) : '—' }}</td>
         <td>
-            <span class="ip-badge">
-              <span class="material-icons">location_on</span>
-              {{ sesion.ipAddress || 'N/A' }}
-            </span>
-        </td>
-        <td class="navegador-cell">{{ sesion.navegador || 'N/A' }}</td>
-
-        <td>
-            <span class="badge sesion-badge" [ngClass]="getAccionSesionClass(sesion.accion)">
-              {{ sesion.accion }}
-            </span>
-        </td>
-
-        <td>
-            <span class="badge estado-badge" [ngClass]="getEstadoClass(sesion.estadoValidacion || 'Activo')">
-              {{ sesion.estadoValidacion || 'Activo' }}
-            </span>
-        </td>
-
-        <td>
-          <div class="action-buttons">
-            <button
-              class="btn-action btn-bloquear"
-              *ngIf="(sesion.estadoValidacion | lowercase) !== 'inactivo'"
-              (click)="bloquearUsuario(sesion)"
-              title="Bloquear y cerrar sesión">
-              <span class="material-icons">block</span>
-              Dar de Baja
-            </button>
-
-            <button
-              class="btn-action btn-reactivar"
-              *ngIf="(sesion.estadoValidacion | lowercase) === 'inactivo'"
-              (click)="reactivarUsuario(sesion)"
-              title="Reactivar acceso">
-              <span class="material-icons">check_circle</span>
-              Reactivar
-            </button>
+          <div class="date-block">
+            <span class="text-dark"><span class="material-icons text-sm text-green">login</span> {{ formatearFechaHora(sesion.fechaInicio) }}</span>
+            <span class="text-muted text-sm" *ngIf="sesion.fechaCierre"><span class="material-icons text-sm text-red">logout</span> {{ formatearFechaHora(sesion.fechaCierre) }}</span>
           </div>
         </td>
+        <td>
+          <span class="badge-ip"><span class="material-icons text-sm">wifi</span> {{ sesion.ipAddress || 'N/A' }}</span>
+        </td>
+        <td><span class="text-muted text-sm truncate-text" [title]="sesion.navegador">{{ sesion.navegador || 'N/A' }}</span></td>
 
+        <td class="text-center">
+          <span class="badge" [ngClass]="sesion.accion === 'ACTIVA' ? 'badge-success' : 'badge-gray'">
+            {{ sesion.accion }}
+          </span>
+        </td>
+        <td class="text-center">
+          <span class="badge" [ngClass]="(sesion.estadoValidacion | lowercase) === 'inactivo' ? 'badge-error' : 'badge-success'">
+            {{ sesion.estadoValidacion || 'Activo' }}
+          </span>
+        </td>
+        <td class="text-center">
+          <button class="btn-action-pill btn-danger-outline" *ngIf="(sesion.estadoValidacion | lowercase) !== 'inactivo'" (click)="bloquearUsuario(sesion)">
+            <span class="material-icons">block</span> Bloquear
+          </button>
+          <button class="btn-action-pill btn-success-outline" *ngIf="(sesion.estadoValidacion | lowercase) === 'inactivo'" (click)="reactivarUsuario(sesion)">
+            <span class="material-icons">verified_user</span> Reactivar
+          </button>
+        </td>
       </tr>
       </tbody>
     </table>
 
-    <div class="empty-state" *ngIf="sesionesFiltradas.length === 0 && !cargandoSesiones">
-      <span class="material-icons">wifi_off</span>
-      <p>No hay sesiones registradas</p>
+    <div class="empty-state-pro" *ngIf="sesionesFiltradas.length === 0">
+      <div class="empty-icon bg-gray-100 text-gray-400"><span class="material-icons">search_off</span></div>
+      <h4>No se encontraron sesiones</h4>
+      <p>Intenta ajustar tus filtros de búsqueda.</p>
     </div>
   </div>
 
-  <div class="pagination" *ngIf="totalPaginasSesiones > 1">
-    <button
-      class="page-btn"
-      (click)="cambiarPaginaSesiones(paginaSesiones - 1)"
-      [disabled]="paginaSesiones === 1">
-      <span class="material-icons">chevron_left</span>
-    </button>
-    <span class="page-info">Página {{ paginaSesiones }} de {{ totalPaginasSesiones }}</span>
-    <button
-      class="page-btn"
-      (click)="cambiarPaginaSesiones(paginaSesiones + 1)"
-      [disabled]="paginaSesiones === totalPaginasSesiones">
-      <span class="material-icons">chevron_right</span>
-    </button>
+  <div class="loading-state-pro" *ngIf="cargandoSesiones">
+    <span class="material-icons icon-spin text-indigo">sync</span>
+    <p>Cargando registros...</p>
   </div>
-</div>
-
-<div class="loading-container" *ngIf="cargandoSesiones">
-  <div class="spinner"></div>
-  <p>Cargando sesiones...</p>
 </div>

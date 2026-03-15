@@ -23,6 +23,9 @@ export class RespaldosDbService {
   obtenerHistorial(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/historial`);
   }
+  restaurarEnNuevaBd(idBackup: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/restaurar/${idBackup}`, {});
+  }
 
   descargarDeAzure(fileName: string): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/descargar-nube`, {

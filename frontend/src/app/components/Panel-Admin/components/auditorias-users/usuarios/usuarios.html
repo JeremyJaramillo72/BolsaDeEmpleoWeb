@@ -1,359 +1,259 @@
-<div class="section-card">
-  <div class="filters-section">
-    <div class="search-box">
-      <span class="material-icons">search</span>
-      <input
-        type="text"
-        [(ngModel)]="filtroBusqueda"
-        (ngModelChange)="aplicarFiltros()"
-        placeholder="Buscar por nombre, email o rol..."
-        class="search-input">
+<div class="pro-card fade-in">
+  <div class="filters-bar flex-between border-bottom pb-3 mb-3">
+    <div class="search-wrapper" style="max-width: 350px;">
+      <span class="material-icons search-icon">search</span>
+      <input type="text" [(ngModel)]="filtroBusqueda" (ngModelChange)="aplicarFiltros()"
+             placeholder="Buscar por nombre, email o rol..." class="form-control pro-input">
     </div>
 
-    <div class="filter-group">
-      <select [(ngModel)]="filtroRol" (ngModelChange)="aplicarFiltros()" class="filter-select">
-        <option value="">Todos los roles</option>
-        <option *ngFor="let rol of rolesDisponibles" [value]="rol">{{ rol }}</option>
-      </select>
+    <div class="actions-wrapper">
+      <div class="select-wrapper">
+        <select [(ngModel)]="filtroRol" (ngModelChange)="aplicarFiltros()" class="form-control pro-select">
+          <option value="">Todos los roles</option>
+          <option *ngFor="let rol of rolesDisponibles" [value]="rol">{{ rol }}</option>
+        </select>
+      </div>
 
-      <select [(ngModel)]="filtroEstado" (ngModelChange)="aplicarFiltros()" class="filter-select">
-        <option value="">Todos los estados</option>
-        <option *ngFor="let estado of estadosDisponibles" [value]="estado">{{ estado }}</option>
-      </select>
+      <div class="select-wrapper">
+        <select [(ngModel)]="filtroEstado" (ngModelChange)="aplicarFiltros()" class="form-control pro-select">
+          <option value="">Todos los estados</option>
+          <option *ngFor="let estado of estadosDisponibles" [value]="estado">{{ estado }}</option>
+        </select>
+      </div>
 
-      <button class="btn-clear" (click)="limpiarFiltros()">
-        <span class="material-icons">refresh</span>
-        Limpiar
+      <button class="btn-icon-text btn-light" (click)="limpiarFiltros()" title="Limpiar Filtros">
+        <span class="material-icons">refresh</span> Limpiar
       </button>
-
-      <button class="btn-export" (click)="exportarUsuarios()">
-        <span class="material-icons">download</span>
-        Exportar Excel
+      <button class="btn-icon-text btn-primary" (click)="exportarUsuarios()">
+        <span class="material-icons">download</span> Exportar Excel
       </button>
     </div>
   </div>
-</div>
 
-<div class="table-section" *ngIf="!cargando">
-  <div class="table-header">
-    <h3>Lista de Usuarios</h3>
-    <span class="table-count">{{ rangoMostrado }}</span>
+  <div class="flex-between mb-3 mt-2">
+    <h3 class="text-gray-800 font-medium">Lista de Usuarios</h3>
+    <span class="text-sm text-muted">{{ rangoMostrado }}</span>
   </div>
 
-  <div class="table-container">
-    <table class="data-table">
+  <div class="table-responsive" *ngIf="!cargando">
+    <table class="table-custom">
       <thead>
       <tr>
-        <th class="sortable" (click)="ordenarPor('nombre')">
-          <div class="th-content">
-            Nombre
-            <span class="material-icons sort-icon" *ngIf="columnaOrden === 'nombre'">
-                {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
-              </span>
-          </div>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th class="text-center">Rol</th>
+        <th class="text-center">Estado</th>
+        <th class="text-center cursor-pointer" (click)="ordenarPor('fechaRegistro')">
+          Fecha Registro
+          <span class="material-icons text-sm align-middle" *ngIf="columnaOrden === 'fechaRegistro'">
+            {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
+          </span>
         </th>
-        <th class="sortable" (click)="ordenarPor('email')">
-          <div class="th-content">
-            Email
-            <span class="material-icons sort-icon" *ngIf="columnaOrden === 'email'">
-                {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
-              </span>
-          </div>
-        </th>
-        <th class="sortable" (click)="ordenarPor('rol')">
-          <div class="th-content">
-            Rol
-            <span class="material-icons sort-icon" *ngIf="columnaOrden === 'rol'">
-                {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
-              </span>
-          </div>
-        </th>
-        <th class="sortable" (click)="ordenarPor('estado')">
-          <div class="th-content">
-            Estado
-            <span class="material-icons sort-icon" *ngIf="columnaOrden === 'estado'">
-                {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
-              </span>
-          </div>
-        </th>
-        <th class="sortable" (click)="ordenarPor('fechaRegistro')">
-          <div class="th-content">
-            Fecha Registro
-            <span class="material-icons sort-icon" *ngIf="columnaOrden === 'fechaRegistro'">
-                {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
-              </span>
-          </div>
-        </th>
-        <th class="sortable" (click)="ordenarPor('auditorias')">
-          <div class="th-content">
-            Auditorías
-            <span class="material-icons sort-icon" *ngIf="columnaOrden === 'auditorias'">
-                {{ direccionOrden === 'asc' ? 'arrow_upward' : 'arrow_downward' }}
-              </span>
-          </div>
-        </th>
-        <th>Acciones</th>
+        <th class="text-center">Auditorías</th>
+        <th class="text-center">Acciones</th>
       </tr>
       </thead>
       <tbody>
-      <tr *ngFor="let usuario of usuariosPaginados">
+      <tr *ngFor="let usuario of usuariosPaginados" class="hover-row">
         <td>
-          <div class="user-cell">
-            <div class="user-avatar">
-              {{ usuario?.nombreCompleto?.charAt(0)?.toUpperCase() || '?' }}
+          <div class="user-profile">
+            <div class="avatar-circle bg-indigo-light text-indigo">
+              {{ usuario.nombreCompleto?.charAt(0)?.toUpperCase() || '?' }}
             </div>
-            <span class="user-name">{{ usuario.nombreCompleto }}</span>
+            <span class="font-medium text-dark">{{ usuario.nombreCompleto }}</span>
           </div>
         </td>
-        <td>{{ usuario.email }}</td>
-        <td>
-            <span class="badge rol-badge" [ngClass]="getRolClass(usuario.rol)">
-              {{ usuario.rol }}
-            </span>
-        </td>
-        <td>
-            <span class="badge estado-badge" [ngClass]="getEstadoClass(usuario.estado)">
-              {{ usuario.estado }}
-            </span>
-        </td>
-        <td>{{ usuario.fechaRegistro | date:'dd/MM/yyyy' }}</td>
+        <td class="text-gray-600">{{ usuario.email }}</td>
+
         <td class="text-center">
-          <span class="audit-count">{{ usuario.totalAuditorias }}</span>
+          <span class="badge badge-indigo">{{ usuario.rol }}</span>
         </td>
-        <td>
-          <button class="btn-action" (click)="verAuditorias(usuario)">
-            <span class="material-icons">history</span>
-            Ver Auditorías
+
+        <td class="text-center">
+          <span class="badge" [ngClass]="usuario.estado.toLowerCase() === 'aprobado' || usuario.estado.toLowerCase() === 'activo' ? 'badge-success' : 'badge-error'">
+            {{ usuario.estado }}
+          </span>
+        </td>
+
+        <td class="text-center text-gray-600">{{ formatearFechaHora(usuario.fechaRegistro) }}</td>
+
+        <td class="text-center font-medium">{{ usuario.totalAuditorias || 0 }}</td>
+
+        <td class="text-center">
+          <button class="btn-action-pill btn-indigo-outline" (click)="verAuditorias(usuario)">
+            <span class="material-icons">history</span> Ver Auditorías
           </button>
         </td>
       </tr>
       </tbody>
     </table>
 
-    <div class="empty-state" *ngIf="usuariosFiltrados.length === 0">
-      <span class="material-icons">person_search</span>
-      <p>No se encontraron usuarios con los filtros seleccionados</p>
+    <div class="empty-state-pro" *ngIf="usuariosFiltrados.length === 0">
+      <div class="empty-icon bg-gray-100 text-gray-400"><span class="material-icons">person_off</span></div>
+      <h4>No se encontraron usuarios</h4>
+      <p>Intenta ajustar tus filtros de búsqueda.</p>
     </div>
   </div>
 
-  <div class="pagination" *ngIf="totalPaginas > 1">
-    <button
-      class="page-btn"
-      (click)="cambiarPagina(paginaActual - 1)"
-      [disabled]="paginaActual === 1">
+  <div class="pagination flex-center gap-2 mt-4" *ngIf="totalPaginas > 1">
+    <button class="btn-icon-text btn-light" (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">
       <span class="material-icons">chevron_left</span>
     </button>
-
-    <div class="page-numbers">
-      <button
-        *ngFor="let p of [].constructor(totalPaginas); let i = index"
-        class="page-number"
-        [class.active]="paginaActual === i + 1"
-        (click)="cambiarPagina(i + 1)"
-        [hidden]="totalPaginas > 7 && (i + 1 < paginaActual - 2 || i + 1 > paginaActual + 2) && i + 1 !== 1 && i + 1 !== totalPaginas">
-        {{ i + 1 }}
-      </button>
-    </div>
-
-    <button
-      class="page-btn"
-      (click)="cambiarPagina(paginaActual + 1)"
-      [disabled]="paginaActual === totalPaginas">
+    <span class="text-sm font-medium">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+    <button class="btn-icon-text btn-light" (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">
       <span class="material-icons">chevron_right</span>
     </button>
   </div>
+
+  <div class="loading-state-pro" *ngIf="cargando">
+    <span class="material-icons icon-spin text-indigo">sync</span>
+    <p>Cargando usuarios...</p>
+  </div>
 </div>
 
-<div class="loading-container" *ngIf="cargando">
-  <div class="spinner"></div>
-  <p>Cargando usuarios...</p>
-</div>
+<div class="modal-overlay fade-in" *ngIf="mostrarModalAuditorias" (click)="cerrarModalAuditorias()">
+  <div class="modal-pro large" style="max-width: 900px;" (click)="$event.stopPropagation()">
 
-<div class="modal-overlay" *ngIf="mostrarModalAuditorias" (click)="cerrarModalAuditorias()">
-  <div class="modal-container large" (click)="$event.stopPropagation()">
-
-    <div class="modal-header">
-      <div class="modal-title-section">
-        <h2>Historial de Auditorías</h2>
-        <p class="modal-subtitle" *ngIf="usuarioSeleccionado">
+    <div class="modal-header-pro border-bottom pb-3">
+      <div>
+        <h2 class="text-dark">Historial de Auditorías</h2>
+        <p class="text-muted mt-1" *ngIf="usuarioSeleccionado">
           {{ usuarioSeleccionado.nombreCompleto }} - {{ usuarioSeleccionado.email }}
         </p>
       </div>
-      <div class="modal-actions-header">
-        <button class="btn-export-modal" (click)="exportarAuditorias()">
-          <span class="material-icons">download</span>
-          Exportar
+      <div class="flex-between gap-2">
+        <button class="btn-icon-text btn-primary" (click)="exportarAuditorias()">
+          <span class="material-icons">download</span> Exportar Todo
         </button>
-        <button class="btn-close" (click)="cerrarModalAuditorias()">
-          <span class="material-icons">close</span>
-        </button>
+        <button class="btn-close-pro" (click)="cerrarModalAuditorias()"><span class="material-icons">close</span></button>
       </div>
     </div>
 
-    <div class="modal-body" *ngIf="!cargandoAuditorias">
+    <div class="modal-body-pro p-4 bg-gray-50">
 
-      <div class="audit-summary">
-        <div class="summary-item">
-          <span class="material-icons">assignment</span>
-          <div class="summary-content">
-            <span class="summary-label">Total de Acciones</span>
-            <span class="summary-value">{{ auditorias.length }}</span>
+      <div class="stats-grid mb-4" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <div class="pro-card shadow-sm border-0 p-3 flex-between align-center m-0">
+          <div>
+            <p class="text-sm text-muted font-medium">Total de Acciones</p>
+            <h3 class="text-dark font-bold text-2xl m-0">{{ auditorias.length }}</h3>
+          </div>
+          <div class="icon-box bg-indigo-light text-indigo" style="width: 40px; height: 40px;">
+            <span class="material-icons">assignment</span>
           </div>
         </div>
-        <div class="summary-item" *ngIf="usuarioSeleccionado?.ultimoAcceso">
-          <span class="material-icons">access_time</span>
-          <div class="summary-content">
-            <span class="summary-label">Último Acceso</span>
-            <span class="summary-value">{{ formatearFechaHora(usuarioSeleccionado?.ultimoAcceso) }}</span>
+
+        <div class="pro-card shadow-sm border-0 p-3 flex-between align-center m-0">
+          <div>
+            <p class="text-sm text-muted font-medium">Último Acceso</p>
+            <h3 class="text-dark font-bold text-lg m-0">{{ formatearFechaHora(usuarioSeleccionado?.ultimoAcceso) || 'Sin registros' }}</h3>
+          </div>
+          <div class="icon-box bg-blue-100 text-blue-600" style="width: 40px; height: 40px;">
+            <span class="material-icons">schedule</span>
           </div>
         </div>
       </div>
 
-      <div class="tabs-container">
-        <div class="tabs-nav">
-          <button
-            class="tab-btn"
-            [class.active]="tabActivo === 'INSERT'"
-            (click)="cambiarTab('INSERT')">
-            <span class="material-icons">add_circle</span>
-            Insert
-            <span class="tab-badge">{{ contarPorTipo('INSERT') }}</span>
+      <div class="flex-between mb-4 mt-2">
+        <div class="action-chips" style="display: flex; gap: 0.5rem;">
+          <button class="btn-action-pill" [ngClass]="tabActivo === 'INSERT' ? 'btn-primary' : 'btn-light'" (click)="cambiarTab('INSERT')">
+            <span class="material-icons text-sm">add_circle</span> Insert <span class="badge bg-white text-indigo ml-1" style="padding: 2px 6px;">{{ contarPorTipo('INSERT') }}</span>
           </button>
-          <button
-            class="tab-btn"
-            [class.active]="tabActivo === 'DELETE'"
-            (click)="cambiarTab('DELETE')">
-            <span class="material-icons">delete</span>
-            Delete
-            <span class="tab-badge">{{ contarPorTipo('DELETE') }}</span>
+          <button class="btn-action-pill" [ngClass]="tabActivo === 'DELETE' ? 'btn-danger-outline' : 'btn-light'" (click)="cambiarTab('DELETE')">
+            <span class="material-icons text-sm">delete</span> Delete <span class="badge bg-gray-200 text-gray-700 ml-1" style="padding: 2px 6px;">{{ contarPorTipo('DELETE') }}</span>
           </button>
-          <button
-            class="tab-btn"
-            [class.active]="tabActivo === 'UPDATE'"
-            (click)="cambiarTab('UPDATE')">
-            <span class="material-icons">edit</span>
-            Update
-            <span class="tab-badge">{{ contarPorTipo('UPDATE') }}</span>
+          <button class="btn-action-pill" [ngClass]="tabActivo === 'UPDATE' ? 'btn-success-outline' : 'btn-light'" (click)="cambiarTab('UPDATE')">
+            <span class="material-icons text-sm">edit</span> Update <span class="badge bg-gray-200 text-gray-700 ml-1" style="padding: 2px 6px;">{{ contarPorTipo('UPDATE') }}</span>
           </button>
         </div>
 
-        <div class="tab-export-actions">
-          <button class="btn-tab-export pdf" (click)="exportarTabPdf()">
-            <span class="material-icons">picture_as_pdf</span>
-            PDF
-          </button>
-          <button class="btn-tab-export excel" (click)="exportarTabExcel()">
-            <span class="material-icons">table_chart</span>
-            Excel
-          </button>
+        <div class="export-actions" style="display: flex; gap: 0.5rem;">
+          <button class="btn-action-pill btn-danger-outline" (click)="exportarTabPdf()"><span class="material-icons text-sm">picture_as_pdf</span> PDF</button>
+          <button class="btn-action-pill btn-success-outline" (click)="exportarTabExcel()"><span class="material-icons text-sm">table_view</span> Excel</button>
         </div>
       </div>
 
-      <div class="audit-timeline">
-        <div class="audit-item" *ngFor="let auditoria of auditoriasPaginadas">
-          <div class="audit-marker" [ngClass]="getAccionClass(auditoria.accion)">
-            <span class="material-icons">
-              {{ getAccionClass(auditoria.accion) === 'accion-crear' ? 'add_circle' :
-              getAccionClass(auditoria.accion) === 'accion-editar' ? 'edit' :
-                getAccionClass(auditoria.accion) === 'accion-eliminar' ? 'delete' :
-                  getAccionClass(auditoria.accion) === 'accion-acceso' ? 'login' : 'circle' }}
-            </span>
-          </div>
-          <div class="audit-content">
-            <div class="audit-header">
-              <h4 class="audit-action">{{ auditoria.accion }}</h4>
-              <span class="audit-time">{{ formatearFechaHora(auditoria.fechaHora) }}</span>
-            </div>
-            <div class="audit-details">
-              <div class="audit-module">
-                <span class="material-icons">table_chart</span>
-                Tabla: {{ auditoria.tablaAfectada || auditoria.modulo }}
-              </div>
-              <p class="audit-description">{{ auditoria.descripcion }}</p>
-
-              <button
-                class="btn-detalles-update"
-                (click)="abrirModalDetalles(auditoria)">
-                <span class="material-icons">visibility</span>
-                Ver Detalles
+      <div class="table-responsive rounded border bg-white" *ngIf="auditoriasFiltradas.length > 0 && !cargandoAuditorias">
+        <table class="table-custom m-0">
+          <thead class="bg-gray-50">
+          <tr>
+            <th>Fecha y Hora</th>
+            <th>Tabla</th>
+            <th>Acción</th>
+            <th class="text-center">Detalles</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let audit of auditoriasPaginadas">
+            <td class="text-sm text-gray-600">{{ formatearFechaHora(audit.fechaHora) }}</td>
+            <td class="font-medium text-gray-800"><code class="text-indigo bg-indigo-light px-2 py-1 rounded">{{ audit.tablaAfectada }}</code></td>
+            <td>
+              <span class="badge" [ngClass]="tabActivo === 'INSERT' ? 'badge-success' : (tabActivo === 'DELETE' ? 'badge-error' : 'badge-indigo')">
+                {{ audit.accion }}
+              </span>
+            </td>
+            <td class="text-center">
+              <button class="btn-action-pill btn-light" *ngIf="audit.camposModificados" (click)="abrirModalDetalles(audit)">
+                <span class="material-icons text-sm">visibility</span> Ver
               </button>
-
-              <div class="audit-meta" *ngIf="auditoria.ipAddress || auditoria.navegador">
-                <span class="meta-item" *ngIf="auditoria.ipAddress">
-                  <span class="material-icons">location_on</span>
-                  IP: {{ auditoria.ipAddress }}
-                </span>
-                <span class="meta-item" *ngIf="auditoria.navegador">
-                  <span class="material-icons">computer</span>
-                  {{ auditoria.navegador }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="empty-audit" *ngIf="auditoriasFiltradas.length === 0">
-          <span class="material-icons">history</span>
-          <p>No hay auditorías de tipo "{{ tabActivo }}" registradas</p>
-        </div>
+              <span class="text-muted text-sm" *ngIf="!audit.camposModificados">—</span>
+            </td>
+          </tr>
+          </tbody>
+        </table>
       </div>
 
-      <div class="pagination" *ngIf="totalPaginasAuditorias > 1">
-        <button
-          class="page-btn"
-          (click)="cambiarPaginaAuditorias(paginaAuditorias - 1)"
-          [disabled]="paginaAuditorias === 1">
-          <span class="material-icons">chevron_left</span>
+      <div class="pagination flex-center gap-2 mt-3" *ngIf="totalPaginasAuditorias > 1">
+        <button class="btn-icon-text btn-light" (click)="cambiarPaginaAuditorias(paginaAuditorias - 1)" [disabled]="paginaAuditorias === 1">
+          <span class="material-icons text-sm">chevron_left</span>
         </button>
-        <span class="page-info">
-          Página {{ paginaAuditorias }} de {{ totalPaginasAuditorias }}
-        </span>
-        <button
-          class="page-btn"
-          (click)="cambiarPaginaAuditorias(paginaAuditorias + 1)"
-          [disabled]="paginaAuditorias === totalPaginasAuditorias">
-          <span class="material-icons">chevron_right</span>
+        <span class="text-xs text-muted">Pág {{ paginaAuditorias }} de {{ totalPaginasAuditorias }}</span>
+        <button class="btn-icon-text btn-light" (click)="cambiarPaginaAuditorias(paginaAuditorias + 1)" [disabled]="paginaAuditorias === totalPaginasAuditorias">
+          <span class="material-icons text-sm">chevron_right</span>
         </button>
       </div>
-    </div>
 
-    <div class="loading-modal" *ngIf="cargandoAuditorias">
-      <div class="spinner"></div>
-      <p>Cargando auditorías...</p>
+      <div class="empty-state-pro pro-card border-0 shadow-sm mt-4" *ngIf="auditoriasFiltradas.length === 0 && !cargandoAuditorias">
+        <div class="empty-icon bg-gray-100 text-gray-400"><span class="material-icons">history</span></div>
+        <h4 class="text-gray-600">No hay auditorías registradas</h4>
+        <p>No se encontraron registros de tipo "{{ tabActivo }}" para este usuario.</p>
+      </div>
+
+      <div class="loading-state-pro" *ngIf="cargandoAuditorias">
+        <span class="material-icons icon-spin text-indigo">sync</span>
+        <p>Consultando registros...</p>
+      </div>
+
     </div>
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
-  <div class="modal-container medium details-modal" (click)="$event.stopPropagation()">
-
-    <div class="modal-header">
-      <h2>Detalles de Modificación</h2>
-      <button class="btn-close" (click)="cerrarModalDetalles()">
-        <span class="material-icons">close</span>
-      </button>
+<div class="modal-overlay fade-in" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
+  <div class="modal-pro medium" (click)="$event.stopPropagation()">
+    <div class="modal-header-pro border-bottom pb-3">
+      <h2 class="text-dark">Comparación de Datos</h2>
+      <button class="btn-close-pro" (click)="cerrarModalDetalles()"><span class="material-icons">close</span></button>
     </div>
 
-    <div class="modal-body">
-      <div class="details-info-bar">
-        <span><strong>Tabla:</strong> {{ auditoriaDetalleSeleccionada?.tablaAfectada }}</span>
-        <span><strong>Fecha:</strong> {{ formatearFechaHora(auditoriaDetalleSeleccionada?.fechaHora) }}</span>
+    <div class="modal-body-pro p-4">
+      <div class="diff-metadata bg-gray-50 rounded p-3 mb-4 flex-between text-sm">
+        <span><strong>Tabla:</strong> <code class="text-indigo">{{ auditoriaDetalleSeleccionada?.tablaAfectada }}</code></span>
+        <span><strong>ID Registro:</strong> {{ auditoriaDetalleSeleccionada?.id }}</span>
       </div>
 
-      <div class="diff-table-container">
-        <table class="diff-table">
-          <thead>
+      <div class="table-responsive rounded border">
+        <table class="table-custom m-0">
+          <thead class="bg-gray-50">
           <tr>
-            <th>Campo Modificado</th>
-            <th>Valor Anterior <span class="material-icons icon-rojo">remove_circle_outline</span></th>
-            <th>Valor Nuevo <span class="material-icons icon-verde">add_circle_outline</span></th>
+            <th>Campo</th>
+            <th class="text-red-600 bg-red-50"><span class="material-icons text-sm align-middle">remove</span> Anterior</th>
+            <th class="text-green-600 bg-green-50"><span class="material-icons text-sm align-middle">add</span> Nuevo</th>
           </tr>
           </thead>
           <tbody>
           <tr *ngFor="let campo of getCamposModificadosList(auditoriaDetalleSeleccionada)">
-            <td class="campo-name">{{ campo.nombre }}</td>
-            <td class="valor-anterior">{{ campo.anterior !== null ? campo.anterior : 'N/A' }}</td>
-            <td class="valor-nuevo">{{ campo.nuevo !== null ? campo.nuevo : 'N/A' }}</td>
+            <td class="font-medium text-gray-700">{{ campo.nombre }}</td>
+            <td class="bg-red-50 text-red-800 deletion-text">{{ campo.anterior }}</td>
+            <td class="bg-green-50 text-green-800 addition-text">{{ campo.nuevo }}</td>
           </tr>
           </tbody>
         </table>

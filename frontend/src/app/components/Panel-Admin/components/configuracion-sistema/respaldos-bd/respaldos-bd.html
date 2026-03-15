@@ -169,7 +169,7 @@
           <th>Tipo</th>
           <th>Estado</th>
           <th>Tamaño</th>
-          <th>Acciones</th>
+          <th style="text-align: center; width: 120px;">Acciones</th>
         </tr>
         </thead>
         <tbody>
@@ -193,19 +193,34 @@
             <div *ngIf="item.estado === 'ERROR'" class="text-muted text-sm" style="font-size: 0.75rem; margin-top: 4px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="item.mensajeError">
               {{ item.mensajeError }}
             </div>
-          </td>
+          </td> <td>
+          <strong>{{ formatearTamano(item.tamanoBytes) }}</strong>
+        </td>
 
-          <td><strong>{{ formatearTamano(item.tamanoBytes) }}</strong></td>
+          <td style="text-align: center; vertical-align: middle;">
 
-          <td>
-            <button class="btn-action hover-effect"
-                    title="Descargar desde Azure"
-                    [disabled]="item.estado === 'ERROR' || descargandoArchivo === item.idBackup"
-                    (click)="descargarRespaldoHistorial(item)">
-              <span class="material-icons" [class.icon-spin]="descargandoArchivo === item.idBackup">
-                {{ descargandoArchivo === item.idBackup ? 'sync' : 'cloud_download' }}
-              </span>
-            </button>
+            <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+
+              <button class="btn-action hover-effect"
+                      title="Descargar desde Azure"
+                      [disabled]="item.estado === 'ERROR' || descargandoArchivo === item.idBackup"
+                      (click)="descargarRespaldoHistorial(item)">
+                <span class="material-icons" [class.icon-spin]="descargandoArchivo === item.idBackup">
+                  {{ descargandoArchivo === item.idBackup ? 'sync' : 'cloud_download' }}
+                </span>
+              </button>
+
+              <button class="btn-action hover-effect"
+                      title="Restaurar copia como nueva Base de Datos"
+                      style="color: #f59e0b;"
+                      [disabled]="item.estado === 'ERROR' || restaurandoArchivo === item.idBackup"
+                      (click)="restaurarBackup(item.idBackup)">
+                <span class="material-icons" [class.icon-spin]="restaurandoArchivo === item.idBackup">
+                  {{ restaurandoArchivo === item.idBackup ? 'sync' : 'settings_backup_restore' }}
+                </span>
+              </button>
+
+            </div>
           </td>
         </tr>
 

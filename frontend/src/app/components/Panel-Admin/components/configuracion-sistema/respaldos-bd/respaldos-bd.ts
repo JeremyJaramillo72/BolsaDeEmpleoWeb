@@ -13,7 +13,7 @@ import { RespaldosDbService } from '../../../services/respaldos-db.service';
 export class RespaldosBd implements OnInit {
   private respaldosService = inject(RespaldosDbService);
   public cdr = inject(ChangeDetectorRef);
-
+  restaurandoArchivo: number | null = null;
   tipoFrecuencia: string = 'SEMANAL';
   intervaloValor: number = 1;
   isBackingUp: boolean = false;
@@ -151,6 +151,32 @@ export class RespaldosBd implements OnInit {
     const mb = bytes / (1024 * 1024);
     if (mb < 1024) return mb.toFixed(2) + ' MB';
     return (mb / 1024).toFixed(2) + ' GB';
+  }
+  restaurarBackup(idBackup: number) {
+    const confirmado = confirm(
+      'Esto descargará el respaldo desde Azure y creará una NUEVA base de datos. El proceso puede tardar un par de minutos. ¿Deseas continuar?'
+    );
+
+    if (confirmado) {
+      this.restaurandoArchivo = idBackup;
+      this.cdr.detectChanges();
+
+      this.respaldosService.restaurarEnNuevaBd(idBackup).subscribe({
+        next: (res: any) => {
+          this.restaurandoArchivo = null;
+          this.cdr.detectChanges();
+
+          const nombreDb = res?.nombreNuevaBd || 'creada exitosamente';
+          alert(`¡Éxito! Nueva base de datos clonada: ${nombreDb}`);
+        },
+        error: (err) => {
+          this.restaurandoArchivo = null;
+          this.cdr.detectChanges();
+          console.error('Error restaurando la base de datos:', err);
+          alert('Hubo un error crítico al intentar restaurar la base de datos. Revisa la consola para más detalles.');
+        }
+      });
+    }
   }
 
   descargarRespaldoHistorial(item: any) {

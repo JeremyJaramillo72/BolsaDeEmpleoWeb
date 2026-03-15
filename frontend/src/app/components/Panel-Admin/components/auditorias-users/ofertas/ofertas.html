@@ -1,201 +1,128 @@
-<div class="section-card">
-  <div class="filters-section">
-    <div class="search-box">
-      <span class="material-icons">search</span>
-      <input
-        type="text"
-        [(ngModel)]="filtroBusquedaOfertas"
-        (ngModelChange)="aplicarFiltrosOfertas()"
-        placeholder="Buscar por Título, Acción o Usuario BD..."
-        class="search-input">
+<div class="pro-card">
+  <div class="filters-bar border-bottom pb-3 mb-3">
+    <div class="search-wrapper" style="max-width: 400px;">
+      <span class="material-icons search-icon">search</span>
+      <input type="text" [(ngModel)]="filtroBusquedaOfertas" (ngModelChange)="aplicarFiltrosOfertas()"
+             placeholder="Buscar por Título, Acción o Usuario..." class="form-control pro-input">
     </div>
   </div>
-</div>
 
-<div class="table-section" *ngIf="!cargandoOfertas">
-  <div class="table-header">
-    <h3>Registro General de Ofertas</h3>
-    <span class="table-count">{{ ofertasPaginadas.length }} movimientos</span>
-  </div>
-
-  <div class="table-container">
-    <table class="data-table">
+  <div class="table-responsive" *ngIf="!cargandoOfertas">
+    <table class="table-custom">
       <thead>
       <tr>
-        <th>Título Oferta</th>
+        <th>Oferta Laboral</th>
         <th>Empresa</th>
-        <th>Usuario BD</th>
-        <th>Acción</th>
-        <th>Estado Actual</th>
-        <th>Acciones</th>
+        <th>Ejecutor (Usuario BD)</th>
+        <th class="text-center">Acción</th>
+        <th class="text-center">Estado Oferta</th>
+        <th class="text-center">Auditoría</th>
       </tr>
       </thead>
       <tbody>
-      <tr *ngFor="let auditoria of ofertasPaginadas">
+      <tr *ngFor="let auditoria of ofertasPaginadas" class="hover-row">
         <td>
-          <strong>#{{ auditoria.idOferta }}</strong> - {{ auditoria.tituloOferta }}<br>
-          <small class="text-muted" style="color: #6c757d; font-size: 0.85em;">
-            {{ formatearFechaHora(auditoria.fechaHora) }}
-          </small>
+          <div class="font-medium text-dark">#{{ auditoria.idOferta }} - {{ auditoria.tituloOferta }}</div>
+          <div class="text-muted text-sm"><span class="material-icons text-sm">schedule</span> {{ formatearFechaHora(auditoria.fechaHora) }}</div>
         </td>
-
-        <td>{{ auditoria.empresa }}</td>
-
         <td>
-          <div style="display: flex; align-items: center; gap: 5px;">
-            <span class="material-icons" style="font-size: 16px; color: #4b5563;">terminal</span>
-            {{ auditoria.usuarioBd }}
-          </div>
+          <span class="badge-company"><span class="material-icons text-sm">business</span> {{ auditoria.empresa }}</span>
         </td>
-
         <td>
-          <span class="badge" [ngClass]="getAccionOfertaClass(auditoria.accion)">
-            {{ formatAccionOferta(auditoria.accion) }}
-          </span>
+          <span class="badge-db-user"><span class="material-icons text-sm">terminal</span> {{ auditoria.usuarioBd }}</span>
         </td>
-
-        <td>
-            <span class="badge estado-badge" [ngClass]="getEstadoClass(auditoria.estadoActual)">
-              {{ auditoria.estadoActual }}
-            </span>
+        <td class="text-center">
+          <span class="badge badge-indigo">{{ formatAccionOferta(auditoria.accion) }}</span>
         </td>
-
-        <td>
-          <button class="btn-action" (click)="verHistorialOferta(auditoria)">
-            <span class="material-icons">timeline</span>
-            Ver Auditorías
+        <td class="text-center">
+          <span class="badge" [ngClass]="getEstadoClass(auditoria.estadoActual)">{{ auditoria.estadoActual }}</span>
+        </td>
+        <td class="text-center">
+          <button class="btn-action-pill btn-indigo-outline" (click)="verHistorialOferta(auditoria)">
+            <span class="material-icons">history</span> Trazabilidad
           </button>
         </td>
       </tr>
       </tbody>
     </table>
 
-    <div class="empty-state" *ngIf="ofertasPaginadas.length === 0">
-      <span class="material-icons">work_off</span>
-      <p>No hay registros de auditoría para ofertas.</p>
+    <div class="empty-state-pro" *ngIf="ofertasPaginadas.length === 0">
+      <div class="empty-icon bg-gray-100 text-gray-400"><span class="material-icons">work_off</span></div>
+      <h4>Sin movimientos</h4>
+      <p>No hay registros de auditoría para mostrar.</p>
     </div>
   </div>
 </div>
 
-<div class="loading-container" *ngIf="cargandoOfertas">
-  <div class="spinner"></div>
-  <p>Cargando registros...</p>
-</div>
-
-<div class="modal-overlay" *ngIf="mostrarModalHistorialOferta" (click)="cerrarModalHistorialOferta()">
-  <div class="modal-container large" (click)="$event.stopPropagation()">
-
-    <div class="modal-header">
-      <div class="modal-title-section">
-        <h2>Línea de Tiempo de la Oferta</h2>
-        <p class="modal-subtitle" *ngIf="ofertaSeleccionada">
-          #{{ ofertaSeleccionada.idOferta }} - {{ ofertaSeleccionada.tituloOferta }}
-        </p>
+<div class="modal-overlay fade-in" *ngIf="mostrarModalHistorialOferta" (click)="cerrarModalHistorialOferta()">
+  <div class="modal-pro large" (click)="$event.stopPropagation()">
+    <div class="modal-header-pro">
+      <div>
+        <h2 class="text-indigo-dark">Trazabilidad de la Oferta</h2>
+        <p class="text-muted mt-1">#{{ ofertaSeleccionada?.idOferta }} - {{ ofertaSeleccionada?.tituloOferta }}</p>
       </div>
-      <div class="modal-actions-header">
-        <button class="btn-close" (click)="cerrarModalHistorialOferta()">
-          <span class="material-icons">close</span>
-        </button>
-      </div>
+      <button class="btn-close-pro" (click)="cerrarModalHistorialOferta()"><span class="material-icons">close</span></button>
     </div>
 
-    <div class="modal-body" *ngIf="!cargandoHistorialOferta">
-
-      <div class="audit-timeline">
-        <div class="audit-item" *ngFor="let historial of listaHistorialOferta">
-
-          <div class="audit-marker" [ngClass]="getAccionOfertaClass(historial.accion)">
+    <div class="modal-body-pro bg-gray-50" *ngIf="!cargandoHistorialOferta">
+      <div class="modern-timeline">
+        <div class="timeline-item" *ngFor="let historial of listaHistorialOferta">
+          <div class="timeline-icon shadow-sm" [ngClass]="getAccionOfertaClass(historial.accion)">
             <span class="material-icons">
-              {{
-                historial.accion === 'OFERTA_CREADA' ? 'campaign' :
-                  historial.accion === 'OFERTA_ACTUALIZADA' ? 'edit_note' :
-                    historial.accion === 'NUEVA_POSTULACION' ? 'person_add' :
-                      historial.accion === 'OFERTA_APROBADA' ? 'verified' :
-                        historial.accion === 'OFERTA_RECHAZADA' ? 'block' : 'info'
-              }}
+              {{ historial.accion === 'OFERTA_CREADA' ? 'campaign' :
+              historial.accion === 'OFERTA_ACTUALIZADA' ? 'edit' :
+                historial.accion === 'NUEVA_POSTULACION' ? 'person_add' : 'info' }}
             </span>
           </div>
-
-          <div class="audit-content">
-            <div class="audit-header">
-              <h4 class="audit-action">{{ formatAccionOferta(historial.accion) }}</h4>
-              <span class="audit-time">{{ formatearFechaHora(historial.fechaHora) }}</span>
+          <div class="timeline-content pro-card shadow-sm border-0">
+            <div class="flex-between mb-2">
+              <h4 class="font-bold text-gray-800">{{ formatAccionOferta(historial.accion) }}</h4>
+              <span class="text-sm text-muted bg-gray-100 px-2 py-1 rounded">{{ formatearFechaHora(historial.fechaHora) }}</span>
             </div>
-
-            <div class="audit-details">
-              <p class="audit-description" *ngIf="historial.campoModificado">
-                <strong>Campos afectados:</strong> {{ historial.campoModificado }}
-              </p>
-
-              <button
-                class="btn-detalles-update"
-                *ngIf="historial.accion === 'OFERTA_ACTUALIZADA' || historial.accion === 'NUEVA_POSTULACION' || historial.accion === 'OFERTA_CREADA'"
-                (click)="abrirModalDetallesOferta(historial)">
-                <span class="material-icons">visibility</span>
-                {{ historial.accion === 'OFERTA_ACTUALIZADA' ? 'Ver Cambios' : 'Ver Detalles' }}
+            <p class="text-sm text-gray-600 mb-3" *ngIf="historial.campoModificado">
+              <strong class="text-gray-800">Campos alterados:</strong> {{ historial.campoModificado }}
+            </p>
+            <div class="flex-between align-center border-top pt-2 mt-2">
+              <span class="badge-db-user text-xs"><span class="material-icons text-xs">admin_panel_settings</span> User DB: {{ historial.usuarioBd || historial.idSeguridad }}</span>
+              <button class="btn-link text-indigo" *ngIf="historial.accion === 'OFERTA_ACTUALIZADA' || historial.accion === 'NUEVA_POSTULACION' || historial.accion === 'OFERTA_CREADA'" (click)="abrirModalDetallesOferta(historial)">
+                {{ historial.accion === 'OFERTA_ACTUALIZADA' ? 'Comparar Cambios →' : 'Ver Detalles →' }}
               </button>
-
-              <div class="audit-meta">
-                <span class="meta-item" *ngIf="historial.idSeguridad">
-                  <span class="material-icons">admin_panel_settings</span>
-                  Usuario DB (ID: {{ historial.idSeguridad }})
-                </span>
-              </div>
             </div>
           </div>
         </div>
-
-        <div class="empty-audit" *ngIf="listaHistorialOferta.length === 0">
-          <span class="material-icons">history_toggle_off</span>
-          <p>Esta oferta aún no tiene historial registrado.</p>
-        </div>
       </div>
-
-    </div>
-
-    <div class="loading-modal" *ngIf="cargandoHistorialOferta">
-      <div class="spinner"></div>
-      <p>Consultando la línea de tiempo...</p>
     </div>
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
-  <div class="modal-container medium details-modal" (click)="$event.stopPropagation()">
-
-    <div class="modal-header">
-      <h2>
-        {{ !auditoriaDetalleSeleccionada?.esResumen ? 'Detalles de Modificación' :
-        (auditoriaDetalleSeleccionada?.tipoResumen === 'CREACION' ? 'Resumen de Creación' : 'Resumen de Postulación') }}
-      </h2>
-      <button class="btn-close" (click)="cerrarModalDetalles()">
-        <span class="material-icons">close</span>
-      </button>
+<div class="modal-overlay fade-in" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
+  <div class="modal-pro medium" (click)="$event.stopPropagation()">
+    <div class="modal-header-pro border-bottom pb-3">
+      <h2 class="text-dark">{{ !auditoriaDetalleSeleccionada?.esResumen ? 'Comparación de Datos (Diff)' : 'Resumen de Acción' }}</h2>
+      <button class="btn-close-pro" (click)="cerrarModalDetalles()"><span class="material-icons">close</span></button>
     </div>
 
-    <div class="modal-body">
-
+    <div class="modal-body-pro p-4">
       <ng-container *ngIf="!auditoriaDetalleSeleccionada?.esResumen">
-        <div class="details-info-bar">
-          <span><strong>Tabla:</strong> {{ auditoriaDetalleSeleccionada?.tablaAfectada }}</span>
-          <span><strong>Usuario BD:</strong> {{ auditoriaDetalleSeleccionada?.usuarioBd || 'N/A' }}</span>
-          <span><strong>Fecha:</strong> {{ formatearFechaHora(auditoriaDetalleSeleccionada?.fechaHora) }}</span>
+        <div class="diff-metadata bg-gray-50 rounded p-3 mb-4 flex-between text-sm">
+          <span><strong>Tabla:</strong> <code class="text-indigo">{{ auditoriaDetalleSeleccionada?.tablaAfectada }}</code></span>
+          <span><strong>Autor:</strong> {{ auditoriaDetalleSeleccionada?.usuarioBd || 'N/A' }}</span>
         </div>
 
-        <div class="diff-table-container">
-          <table class="diff-table">
-            <thead>
+        <div class="table-responsive rounded border">
+          <table class="table-custom m-0">
+            <thead class="bg-gray-50">
             <tr>
-              <th>Campo Modificado</th>
-              <th>Valor Anterior <span class="material-icons icon-rojo">remove_circle_outline</span></th>
-              <th>Valor Nuevo <span class="material-icons icon-verde">add_circle_outline</span></th>
+              <th>Campo</th>
+              <th class="text-red-600 bg-red-50"><span class="material-icons text-sm align-middle">remove</span> Valor Anterior</th>
+              <th class="text-green-600 bg-green-50"><span class="material-icons text-sm align-middle">add</span> Valor Nuevo</th>
             </tr>
             </thead>
             <tbody>
             <tr *ngFor="let campo of getCamposModificadosList(auditoriaDetalleSeleccionada)">
-              <td class="campo-name">{{ campo.nombre }}</td>
-              <td class="valor-anterior">{{ campo.anterior !== null ? campo.anterior : 'N/A' }}</td>
-              <td class="valor-nuevo">{{ campo.nuevo !== null ? campo.nuevo : 'N/A' }}</td>
+              <td class="font-medium text-gray-700">{{ campo.nombre }}</td>
+              <td class="bg-red-50 text-red-800 deletion-text">{{ campo.anterior !== null ? campo.anterior : 'N/A' }}</td>
+              <td class="bg-green-50 text-green-800 addition-text">{{ campo.nuevo !== null ? campo.nuevo : 'N/A' }}</td>
             </tr>
             </tbody>
           </table>
@@ -203,36 +130,25 @@
       </ng-container>
 
       <ng-container *ngIf="auditoriaDetalleSeleccionada?.esResumen">
-        <div class="resumen-minimalista" [ngStyle]="{'border-left-color': auditoriaDetalleSeleccionada.tipoResumen === 'CREACION' ? '#3b82f6' : '#22c55e'}">
-
-          <div class="resumen-icon" [ngStyle]="{'background': auditoriaDetalleSeleccionada.tipoResumen === 'CREACION' ? '#dbeafe' : '#d1fae5', 'color': auditoriaDetalleSeleccionada.tipoResumen === 'CREACION' ? '#1e40af' : '#059669'}">
+        <div class="action-summary-card" [ngClass]="auditoriaDetalleSeleccionada.tipoResumen === 'CREACION' ? 'border-blue' : 'border-green'">
+          <div class="summary-icon" [ngClass]="auditoriaDetalleSeleccionada.tipoResumen === 'CREACION' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'">
             <span class="material-icons">{{ auditoriaDetalleSeleccionada.tipoResumen === 'CREACION' ? 'campaign' : 'check_circle' }}</span>
           </div>
-
-          <div class="resumen-content">
-
-            <p class="resumen-texto" *ngIf="auditoriaDetalleSeleccionada.tipoResumen === 'POSTULACION'">
-              El usuario <strong>{{ auditoriaDetalleSeleccionada.usuarioBd }}</strong> se postuló a la oferta
+          <div class="summary-text">
+            <p class="text-gray-700 text-lg mb-3">
+              {{ auditoriaDetalleSeleccionada.tipoResumen === 'POSTULACION' ?
+              'El usuario se postuló a la oferta ' : 'La oferta laboral ' }}
               <strong>"{{ auditoriaDetalleSeleccionada.tituloOferta }}"</strong>
-              perteneciente a la empresa <strong>{{ auditoriaDetalleSeleccionada.empresa }}</strong>.
+              {{ auditoriaDetalleSeleccionada.tipoResumen === 'POSTULACION' ? 'de la empresa' : 'fue creada para' }}
+              <strong>{{ auditoriaDetalleSeleccionada.empresa }}</strong>.
             </p>
-
-            <p class="resumen-texto" *ngIf="auditoriaDetalleSeleccionada.tipoResumen === 'CREACION'">
-              La oferta laboral <strong>"{{ auditoriaDetalleSeleccionada.tituloOferta }}"</strong>
-              fue creada por <strong>{{ auditoriaDetalleSeleccionada.usuarioBd }}</strong>
-              para la empresa <strong>{{ auditoriaDetalleSeleccionada.empresa }}</strong>.
-            </p>
-
-            <div class="resumen-badges">
-              <span class="r-badge"><span class="material-icons">event</span> {{ formatearFechaHora(auditoriaDetalleSeleccionada.fecha) }}</span>
-              <span class="r-badge" *ngIf="auditoriaDetalleSeleccionada.tipoResumen === 'POSTULACION'">
-                <span class="material-icons">analytics</span> Afinidad IA: {{ auditoriaDetalleSeleccionada.match }}%
-              </span>
-            </div>
+            <span class="badge badge-gray mr-2"><span class="material-icons text-sm">event</span> {{ formatearFechaHora(auditoriaDetalleSeleccionada.fecha) }}</span>
+            <span class="badge badge-indigo" *ngIf="auditoriaDetalleSeleccionada.tipoResumen === 'POSTULACION'">
+              <span class="material-icons text-sm">auto_awesome</span> Match: {{ auditoriaDetalleSeleccionada.match }}%
+            </span>
           </div>
         </div>
       </ng-container>
-
     </div>
   </div>
 </div>
