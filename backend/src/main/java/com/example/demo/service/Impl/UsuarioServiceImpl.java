@@ -67,7 +67,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
         jdbcTemplate.update("CALL seguridad.registroUsuarioLogin(?, ?, ?)",
                 usuarioGuardado.getCorreo(),
                 usuarioGuardado.getIdUsuario().intValue(),
-                idRolParaGuardar// ID del rol Postulante
+                idRolParaGuardar
         );
         try {
             // 1. Notificación en Campanita (In-App)
@@ -76,7 +76,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
                     "in_app_registro_completado",
                     Map.of("usuarioNombre", usuarioGuardado.getNombre()),
                     Map.of(),
-                    "/menu-principal/perfil", // de una al cv
+                    "/menu-principal/perfil",
                     "waving_hand"
             );
 
@@ -118,13 +118,10 @@ public class UsuarioServiceImpl implements IUsuarioService {
     public void registrarUsuarioConAccesoBD(Usuario usuario) {
 
         String contrasenaEncriptada = passwordEncoder.encode(usuario.getContrasena());
-
-        // Obtenemos el ID del rol para la validación
         Integer idRol = usuario.getRol().getIdRol();
 
         try {
-            // Asumiendo que 3 es Postulante y 2 es Empresa.
-            // Si no es 3 ni 2, entonces es un Admin Interno.
+
             if (idRol != 3 && idRol != 2) {
 
                 // ¡ACTUALIZADO! Ya no enviamos usuario.getPermisosUi() al final
@@ -158,7 +155,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
             throw new RuntimeException("El correo " + usuario.getCorreo() + " ya está registrado.");
         }
 
-        // 3. RECUPERAR ID Y CREAR LOGIN
+
         Usuario usuarioGuardado = usuarioRepository.findByCorreo(usuario.getCorreo())
                 .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado tras registro."));
 
@@ -179,6 +176,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Override
     @Transactional
     public void registrarEmpresaCompleta(Usuario usuario, String nombreEmp, String desc, String web, String ruc) {
+
         usuarioRepository.registrarEmpresaPro(
                 usuario.getCorreo(),
                 usuario.getContrasena(),
@@ -193,58 +191,15 @@ public class UsuarioServiceImpl implements IUsuarioService {
         Usuario usuarioGuardado = usuarioRepository.findByCorreo(usuario.getCorreo())
                 .orElseThrow(() -> new RuntimeException("Error al recuperar empresa registrada."));
 
+        enviarNotificacionesRegistro(usuarioGuardado, nombreEmp);
+    }
 
-        jdbcTemplate.update("CALL seguridad.registroUsuarioLogin(?, ?, ?)",
-                usuarioGuardado.getCorreo(),
-                usuarioGuardado.getIdUsuario().intValue(),
-                2 // ID del rol Empresa
-        );
 
-        // Notificar a admins sobre nueva empresa registrada
+    private void enviarNotificacionesRegistro(Usuario usuario, String nombreEmp) {
         try {
-            Map<String, String> variables = new java.util.HashMap<>();
-            variables.put("nombreEmpresa", nombreEmp);
 
-            Map<String, Object> datos = new java.util.HashMap<>();
-            datos.put("idUsuarioEmpresa", usuarioGuardado.getIdUsuario());
-            datos.put("nombreEmpresa", nombreEmp);
-
-            notificacionService.notificarAdminsDirecto(
-                    "empresa_pendiente_aprobacion",
-                    variables,
-                    datos,
-                    "/menu-principal/PanelAdmi/AprobacionEmpresas",
-                    "domain"
-            );
         } catch (Exception e) {
-            System.err.println("⚠️ Warning - Notificación empresa no guardada: " + e.getMessage());
-        }
-
-        try {
-            // 1. Notificación en Campanita (In-App)
-            notificacionService.crearYEnviarNotificacion(
-                    usuarioGuardado.getIdUsuario(),
-                    "in_app_registro_completado",
-                    Map.of("usuarioNombre", nombreEmp),
-                    Map.of(),
-                    "/menu-principal/perfil",
-                    "waving_hand"
-            );
-
-            // 2. Notificación por Correo
-            notificacionService.crearYEnviarNotificacion(
-                    usuarioGuardado.getIdUsuario(),
-                    "email_registro_empresa",
-                    Map.of(
-                            "empresaNombre", nombreEmp,
-                            "correoEmpresa", usuarioGuardado.getCorreo()
-                    ),
-                    Map.of(),
-                    "/menu-principal",
-                    "email"
-            );
-        } catch (Exception e) {
-            System.err.println("⚠️ Error al enviar notificaciones de bienvenida a empresa: " + e.getMessage());
+            System.err.println("⚠️ Error en notificaciones: " + e.getMessage());
         }
     }
     @Override
