@@ -1,0 +1,234 @@
+/* ============================================================
+   configuracion-app.css
+   Reutiliza las mismas clases base de configuracion-correo.css
+   Solo se agregan los estilos específicos del logo y el grid.
+   ============================================================ */
+
+/* ── Base (idéntica a configuracion-correo.css) ────────────── */
+.config-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+.header-section {
+  margin-bottom: 30px;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+.header-content h1 { font-size: 28px; font-weight: 700; color: #1a202c; margin: 0 0 8px 0; }
+.subtitle          { font-size: 14px; color: #718096; margin: 0; }
+
+.loading-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 400px; gap: 20px;
+  background: white; border-radius: 12px; margin-top: 20px;
+}
+.spinner {
+  width: 40px; height: 40px; border: 4px solid #e2e8f0;
+  border-top: 4px solid #7c3aed; border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+.content-wrapper { display: flex; flex-direction: column; gap: 20px; }
+
+.card-section {
+  background: white; border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08); overflow: hidden;
+  transition: box-shadow .3s ease;
+}
+.card-section:hover { box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+
+.card-header {
+  background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+  color: white; padding: 20px;
+}
+.card-header h2 { font-size: 18px; font-weight: 600; margin: 0; }
+.card-body      { padding: 25px; }
+
+.section-desc { color: #4b5563; font-size: 14px; margin: 0 0 20px 0; line-height: 1.6; }
+
+.info-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e2e8f0;
+}
+.info-row:last-child  { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.info-row label       { font-weight: 600; color: #2d3748; font-size: 14px; }
+.info-value {
+  color: #4b5563; font-family: 'Courier New', monospace;
+  background: #f7f9fc; padding: 8px 12px; border-radius: 6px;
+  border-left: 3px solid #7c3aed;
+}
+.logo-url-value { font-family: inherit; font-size: 13px; }
+.logo-link      { color: #7c3aed; text-decoration: none; font-weight: 600; }
+.logo-link:hover { text-decoration: underline; }
+
+.info-note {
+  background: #f5f3ff; border-left: 4px solid #7c3aed;
+  padding: 12px; border-radius: 4px; color: #5b21b6;
+  font-size: 13px; line-height: 1.6; margin-top: 20px;
+}
+
+/* ── Formulario ──────────────────────────────────────────────── */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.form-group       { margin-bottom: 0; }
+.form-group-full  { grid-column: 1 / -1; }
+.form-group label {
+  display: block; font-weight: 600; color: #2d3748;
+  margin-bottom: 8px; font-size: 14px;
+}
+.input-field {
+  width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0;
+  border-radius: 8px; font-size: 15px; transition: all .3s ease;
+  font-family: inherit; box-sizing: border-box;
+}
+.input-field:focus  { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,.1); }
+.input-field:disabled { background: #f7f9fc; cursor: not-allowed; }
+.textarea-field     { resize: vertical; min-height: 80px; }
+.input-helper       { font-size: 12px; color: #718096; margin-top: 6px; }
+
+/* ── Botones ─────────────────────────────────────────────────── */
+.action-buttons { display: flex; gap: 12px; margin-top: 24px; }
+.btn {
+  padding: 12px 20px; border: none; border-radius: 8px;
+  cursor: pointer; font-size: 14px; font-weight: 600;
+  transition: all .3s ease; white-space: nowrap;
+}
+.btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.btn-guardar { background: #10b981; color: white; }
+.btn-guardar:hover:not(:disabled) {
+  background: #059669; transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16,185,129,.25);
+}
+.btn-cancelar { background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
+.btn-cancelar:hover:not(:disabled) { background: #e5e7eb; }
+
+.btn-cambiar-logo {
+  display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+  color: white; padding: 12px 20px; border-radius: 8px;
+  cursor: pointer; font-size: 14px; font-weight: 600; transition: all .3s ease;
+}
+.btn-cambiar-logo:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(124,58,237,.3); }
+
+/* ── Área del logo con drag-and-drop ─────────────────────────── */
+.logo-area-wrapper {
+  display: flex; align-items: flex-start; gap: 32px;
+  padding: 24px; background: #f9f7ff; border-radius: 12px;
+  border: 2px dashed #c4b5fd;
+}
+
+/* Zona clicable y de drop — mismo estilo que .logo-circle de empresa */
+.logo-drop-zone {
+  position: relative;
+  width: 160px; height: 160px; flex-shrink: 0;
+  border-radius: 12px; border: 2px dashed #c4b5fd;
+  background: white; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  transition: border-color .2s, box-shadow .2s;
+}
+.logo-drop-zone:hover,
+.logo-drop-zone.dragging {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 4px rgba(124,58,237,.12);
+}
+.logo-drop-zone.dragging {
+  background: #f5f3ff;
+}
+
+/* Imagen actual dentro de la zona */
+.logo-img {
+  width: 100%; height: 100%; object-fit: contain;
+  padding: 8px; border-radius: 12px;
+}
+
+/* Placeholder sin imagen */
+.logo-placeholder-content {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 8px; padding: 12px; text-align: center;
+  color: #9ca3af;
+}
+.upload-icon { font-size: 36px; }
+.upload-hint { font-size: 12px; margin: 0; line-height: 1.4; }
+
+/* Overlay que aparece en hover/drag */
+.logo-overlay {
+  position: absolute; inset: 0;
+  background: rgba(124, 58, 237, 0.75);
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 6px;
+  opacity: 0; transition: opacity .2s;
+  border-radius: 10px;
+}
+.logo-drop-zone:hover .logo-overlay,
+.logo-drop-zone.dragging .logo-overlay { opacity: 1; }
+.overlay-icon  { font-size: 28px; }
+.overlay-text  { color: white; font-size: 13px; font-weight: 700; text-align: center; padding: 0 8px; }
+
+/* Badge vista previa */
+.preview-badge {
+  position: absolute; top: -8px; right: -8px;
+  background: #f59e0b; color: white;
+  font-size: 11px; font-weight: 700;
+  padding: 3px 8px; border-radius: 12px;
+  pointer-events: none;
+}
+
+/* Panel derecho */
+.logo-actions  { display: flex; flex-direction: column; gap: 12px; flex: 1; justify-content: center; }
+.logo-info     { display: flex; flex-direction: column; gap: 8px; flex: 1; justify-content: center; }
+.archivo-nombre  { font-size: 13px; color: #4b5563; font-weight: 600; word-break: break-all; margin: 0; }
+.info-small      { font-size: 12px; color: #9ca3af; margin: 0; }
+.info-note-small { font-size: 12px; color: #7c3aed; background: #f5f3ff; padding: 8px; border-radius: 6px; margin: 0; }
+.logo-btn-group  { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ── Mensajes ────────────────────────────────────────────────── */
+.message-exito {
+  background: #d1fae5; border-left: 4px solid #10b981;
+  color: #065f46; padding: 12px; border-radius: 6px;
+  margin-bottom: 15px; font-size: 14px;
+}
+.message-error {
+  background: #fee2e2; border-left: 4px solid #ef4444;
+  color: #991b1b; padding: 12px; border-radius: 6px;
+  margin-bottom: 15px; font-size: 14px;
+}
+
+/* ── Dark Mode ───────────────────────────────────────────────── */
+:host-context(.dark-mode) .config-container  { background: #1a202c; }
+:host-context(.dark-mode) .header-section    { background: #2d3748; }
+:host-context(.dark-mode) .header-content h1 { color: #f7fafc; }
+:host-context(.dark-mode) .subtitle          { color: #a0aec0; }
+:host-context(.dark-mode) .card-section      { background: #2d3748; }
+:host-context(.dark-mode) .info-value        { background: #1a202c; color: #cbd5e0; }
+:host-context(.dark-mode) .logo-area         { background: #374151; border-color: #6d28d9; }
+:host-context(.dark-mode) .logo-placeholder  { background: #1a202c; border-color: #4a5568; color: #718096; }
+:host-context(.dark-mode) .input-field       { background: #1a202c; border-color: #4a5568; color: #cbd5e0; }
+:host-context(.dark-mode) .input-field:focus { border-color: #7c3aed; }
+:host-context(.dark-mode) .form-group label  { color: #cbd5e0; }
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .config-container { padding: 12px; }
+  .header-section   { padding: 20px; }
+  .header-content h1 { font-size: 22px; }
+  .card-body        { padding: 16px; }
+  .form-grid        { grid-template-columns: 1fr; }
+  .form-group-full  { grid-column: 1; }
+  .logo-area-wrapper { flex-direction: column; align-items: center; }
+  .logo-drop-zone    { width: 120px; height: 120px; }
+  .logo-actions      { align-items: center; text-align: center; }
+  .logo-info         { align-items: center; text-align: center; }
+  .action-buttons   { flex-direction: column; }
+  .btn              { width: 100%; }
+  .logo-btn-group   { flex-direction: column; width: 100%; }
+}

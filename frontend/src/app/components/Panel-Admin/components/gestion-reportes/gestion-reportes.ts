@@ -105,11 +105,8 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
   jornadaOpen          = false;
   jornadaSeleccionada: JornadaDTO | null = null;
 
-  // ─── Validaciones UI ────────────────────────────────────────────────────
   erroresFiltros: string[] = [];
 
-  // ─── Instancias de Chart.js ─────────────────────────────────────────────
-  // ✅ Se guardan para destruirlas antes de recrear (evita "Canvas is already in use")
   private chartsInstances: Chart[] = [];
 
   // ─── Getters: filtrado de comboboxes ────────────────────────────────────
@@ -158,7 +155,6 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
     this.cargarCatalogos();
   }
 
-  // ✅ Destruir charts al destruir el componente para evitar memory leaks
   ngOnDestroy(): void {
     this.destruirCharts();
   }
@@ -301,9 +297,6 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // ESTADÍSTICAS — muestra los gráficos Chart.js
-  // ═══════════════════════════════════════════════════════════════════════════
   verEstadisticas(): void {
     if (this.resultados.length === 0) {
       this.vistaPrevia();
@@ -315,7 +308,6 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
               this.mostrandoGrafico    = true;
               this.mostrandoResultados = false;
               this.cdr.detectChanges();
-              // ✅ Esperar que Angular renderice los canvas antes de inicializar Chart.js
               setTimeout(() => this.crearCharts(), 100);
             });
           }
@@ -345,17 +337,6 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
     this.chartsInstances = [];
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // CHART.JS — crear instancias según tipo de reporte
-  //
-  // Asignación de tipos de gráfico:
-  //   Ofertas:       [0] Categoría → Doughnut
-  //                  [1] Ciudad    → Barra Horizontal
-  //                  [2] Modalidad → Barra Vertical
-  //   Postulaciones: [0] Estado    → Doughnut
-  //                  [1] Categoría → Barra Vertical
-  //                  [2] Ciudad    → Barra Horizontal
-  // ═══════════════════════════════════════════════════════════════════════════
   crearCharts(): void {
     this.destruirCharts();
 

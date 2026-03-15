@@ -36,13 +36,12 @@ export class ReporteEmpresaComponent implements OnInit, OnDestroy {
   private readonly API_CATEGORIAS   = `${this.API_BASE}/categorias`;
   private readonly API_MODALIDADES  = `${this.API_BASE}/modalidades`;
   private readonly API_JORNADAS     = `${this.API_BASE}/jornadas`;
-  // ✅ Endpoint que devuelve la URL de la última imagen del usuario
-  // Backend: GET /api/usuarios-bd/{idUsuario}/ultima-imagen → { urlImagen: string | null }
+  // Endpoint que devuelve la URL de la última imagen del usuario
   private readonly API_ULTIMA_IMAGEN = `${this.API_BASE}/usuarios-bd/empresa`;
 
   idEmpresa: number | null = null;
 
-  // ✅ URL de la imagen de perfil de la empresa (última en fecha de usuario_imagen)
+  // URL de la imagen de perfil de la empresa (última en fecha de usuario_imagen)
   imagenPerfilUrl: string | null = null;
 
   resultados:  any[]         = [];
@@ -64,7 +63,7 @@ export class ReporteEmpresaComponent implements OnInit, OnDestroy {
   modalidades: ModalidadDTO[] = [];
   jornadas:    JornadaDTO[]   = [];
 
-  // ✅ Estados reales según la BD (minúsculas igual que reporte admin)
+  // Estados reales según la BD (minúsculas igual que reporte admin)
   estadosOferta = ['aprobado', 'pendiente', 'rechazada', 'cancelada'];
 
   opcionesTop: TopOpcion[] = [
@@ -174,7 +173,6 @@ export class ReporteEmpresaComponent implements OnInit, OnDestroy {
     this.cargarImagenPerfil();
   }
 
-  // ✅ Limpiar charts al destruir el componente
   ngOnDestroy(): void {
     this.destruirCharts();
   }
@@ -200,19 +198,8 @@ export class ReporteEmpresaComponent implements OnInit, OnDestroy {
 
   // ═══════════════════════════════════════════════════════════════════════════
   // CARGA DE IMAGEN DE PERFIL
-  // Obtiene la URL de la última imagen subida por el usuario de la empresa.
-  // La query en el backend es:
-  //   SELECT i.url_imagen
-  //   FROM usuario_imagen ui JOIN imagenes i ON ui.id_imagen = i.id_imagen
-  //   WHERE ui.id_usuario = :idUsuario
-  //     AND i.url_imagen NOT LIKE '/assets/%'   -- excluye imágenes por defecto
-  //     AND i.url_imagen NOT LIKE '%.pdf'       -- excluye PDFs subidos
-  //   ORDER BY ui.fecha_registro DESC LIMIT 1
   // ═══════════════════════════════════════════════════════════════════════════
   cargarImagenPerfil(): void {
-    // ✅ Usa this.idEmpresa — ya está cargado en ngOnInit desde localStorage('idEmpresa')
-    // No depende de adivinar la clave del idUsuario.
-    // Backend: GET /api/usuarios-bd/empresa/{idEmpresa}/ultima-imagen
     if (!this.idEmpresa) return;
 
     const url = `${this.API_ULTIMA_IMAGEN}/${this.idEmpresa}/ultima-imagen`;
@@ -346,18 +333,11 @@ export class ReporteEmpresaComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  // ✅ Destruir instancias previas para evitar "Canvas is already in use"
   destruirCharts(): void {
     this.chartsInstances.forEach(c => c.destroy());
     this.chartsInstances = [];
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // CHART.JS — crear gráficos
-  //   [0] Estado Postulaciones  → Doughnut
-  //   [1] Ofertas + Postuladas  → Barras Horizontales
-  //   [2] Ofertas por Categoría → Barras Verticales
-  // ═══════════════════════════════════════════════════════════════════════════
   crearCharts(): void {
     this.destruirCharts();
 
@@ -574,20 +554,8 @@ export class ReporteEmpresaComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ═══════════════════════════════════════════════════════════════════════════
   // EXPORTAR PDF
-  //   • A4 landscape, márgenes 6 mm → 285 mm útiles
-  //   • Todas las columnas (reduce fuente 8→5pt, luego comprime proporcional)
-  //   • Logo embebido base64 (no depende de rutas ni servidor)
-  //   • Nombre usuario desde localStorage('nombre')
-  //   • Footer: "Página X de N" a la derecha
-  //   • Última página: gráficos sin distorsión (ratio real)
-  // ═══════════════════════════════════════════════════════════════════════════
-  // ═══════════════════════════════════════════════════════════════════════════
-  // CHARTS PARA PDF — animaciones desactivadas para captura con html2canvas
-  // ═══════════════════════════════════════════════════════════════════════════
   crearChartsParaPDF(): void {
-    // Igual que crearCharts() pero con duration:0 en todas las animaciones
     this.destruirCharts();
 
     const SOLID: string[] = [
@@ -612,7 +580,6 @@ export class ReporteEmpresaComponent implements OnInit, OnDestroy {
       const bg     = labels.map((_, i) => ALPHA(SOLID[i % SOLID.length], 0.75));
       const total  = values.reduce((a, b) => a + b, 0);
 
-      // ✅ animation: { duration: 0 } en todos los charts
       const NO_ANIM = { animation: { duration: 0 } };
 
       let chart: Chart;
@@ -685,13 +652,6 @@ export class ReporteEmpresaComponent implements OnInit, OnDestroy {
         localStorage.getItem('username')      ||
         localStorage.getItem('user')          || '';
 
-      // ── Logo PDF: imagen de perfil de la empresa (última por fecha) ──────
-      // Se obtiene de: usuario_imagen JOIN imagenes WHERE id_usuario = X
-      //                ORDER BY fecha_registro DESC LIMIT 1
-      // La URL es de Cloudinary → CORS habilitado → fetch funciona sin problemas
-      // ✅ Usa Image() + Canvas — mismo mecanismo que html2canvas internamente.
-      //    No depende de fetch/CORS/FileReader. El navegador carga la imagen
-      //    con crossOrigin='anonymous' y el canvas la convierte a base64 PNG.
       const cargarLogoDesdeUrl = (url: string): Promise<string | null> =>
         new Promise(resolve => {
           const img    = new Image();
@@ -713,9 +673,6 @@ export class ReporteEmpresaComponent implements OnInit, OnDestroy {
             : url + '?_cb=' + Date.now();
         });
 
-      // ✅ Si imagenPerfilUrl aún no se cargó (race condition en ngOnInit),
-      // intentamos cargarla de nuevo directamente aquí antes de continuar
-      // ✅ Si imagenPerfilUrl es null (race condition), reintentar con idEmpresa
       if (!this.imagenPerfilUrl && this.idEmpresa) {
         await new Promise<void>(resolve => {
           const urlFallback = `${this.API_ULTIMA_IMAGEN}/${this.idEmpresa}/ultima-imagen`;

@@ -4,9 +4,13 @@ import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { UsuarioEmpresaService } from '../../services/usuario-empresa.service';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 
 import { NotificationService } from '../../services/notification.service';
 import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
+import {PerfilEmpresaComponent} from '../perfil-empresa/perfil-empresa';
+import { SistemaConfigService } from '../Panel-Admin/services/sistema-config.service';
+
 // 1. ACTUALIZAMOS LAS INTERFACES CON LOS NUEVOS CAMPOS VISUALES
 export interface MenuItem {
   icon: string;
@@ -34,7 +38,7 @@ export interface StatCard {
 @Component({
   selector: 'app-menuprincipal',
   standalone: true,
-  imports: [CommonModule, RouterModule, NotificationBellComponent],
+  imports: [CommonModule, RouterModule, NotificationBellComponent, HttpClientModule],
   templateUrl: './menuprincipal.html',
   styleUrls: ['./menuprincipal.css']
 })
@@ -45,18 +49,24 @@ export class MenuprincipalComponent implements OnInit {
   fotoMenu: string = '';
 
 
- // dashboardHomeVisible: boolean = true;
+  // ✅ Logo y nombre del SISTEMA (sidebar brand) — separado de fotoMenu del usuario
+  logoSistema:   string = '';
+  nombreSistema: string = 'Bolsa de Empleo';
+
+  // dashboardHomeVisible: boolean = true;
   isDarkMode: boolean = false;
 
   menuItems: MenuItem[] = [];
- // statsCards: StatCard[] = [];
+  // statsCards: StatCard[] = [];
 
   constructor(
     public router: Router,
     public authService: AuthService,
     private cdr: ChangeDetectorRef,
     private usuarioEmpresaService: UsuarioEmpresaService,
-    public notificationService: NotificationService
+    public notificationService: NotificationService,
+    private http: HttpClient,        // ✅ para cargar config del sistema
+    private sistemaConfigService: SistemaConfigService  // ✅ actualizaciones en tiempo real
   ) {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -90,6 +100,21 @@ export class MenuprincipalComponent implements OnInit {
       }
     });
 
+    // ✅ Suscribirse a actualizaciones en tiempo real del logo y nombre del sistema
+    // SistemaConfigService usa BehaviorSubject — emite de inmediato con el valor actual
+    // y cada vez que configuracion-app.ts suba un nuevo logo o guarde un nombre.
+    this.sistemaConfigService.logo$.subscribe(url => {
+      this.logoSistema = url;
+      this.cdr.detectChanges();
+    });
+    this.sistemaConfigService.nombre$.subscribe(nombre => {
+      if (nombre) this.nombreSistema = nombre;
+      this.cdr.detectChanges();
+    });
+
+    // ✅ También consultar la API para tener el valor más fresco del servidor
+    this.cargarConfiguracionSistema();
+
     this.verificarRutaActual();
     this.inicializarMenuPorRol();
 
@@ -107,6 +132,29 @@ export class MenuprincipalComponent implements OnInit {
     }
   }
 
+  // ✅ Carga logo y nombre desde la BD vía API.
+  // Primero muestra lo que hay en localStorage (instantáneo, sin parpadeo)
+  // y luego actualiza con la respuesta del servidor.
+  private cargarConfiguracionSistema(): void {
+    // El BehaviorSubject ya emitió los valores de localStorage en ngOnInit
+    // — no necesitamos leer localStorage aquí directamente.
+    // Solo mostramos un log para debug en desarrollo.
+    // console.log('[Menu] Config sistema cargando desde API...');
+
+    // Actualizar desde el servidor en segundo plano
+    this.http.get<any>('http://localhost:8080/api/configuracion-sistema').subscribe({
+      next: cfg => {
+        // Actualizar a través del service para que quede en caché y emita a suscriptores
+        if (cfg?.logoUrl)          this.sistemaConfigService.actualizarLogo(cfg.logoUrl);
+        if (cfg?.nombreAplicativo) this.sistemaConfigService.actualizarNombre(cfg.nombreAplicativo);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        // Si falla la API, queda el valor de caché o el default
+      }
+    });
+  }
+
   private verificarRutaActual(): void {
 
     /* const urlActual = this.router.url.split('?')[0];
@@ -115,12 +163,11 @@ export class MenuprincipalComponent implements OnInit {
      */
 
   }
-
-/*
-  isDashboardHome(): boolean {
-    return this.dashboardHomeVisible;
-  }
- */
+  /*
+    isDashboardHome(): boolean {
+      return this.dashboardHomeVisible;
+    }
+   */
 
   private actualizarKPIsNotificaciones() {
     /* Actualiza la tarjetita de arriba con el número real de notificaciones
@@ -144,8 +191,7 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#2563EB', bgHex: '#EFF6FF',
         roles: ['EMPRESA'],
         path: '/empresa/perfil',
-        route: '/menu-principal/empresa/perfil',
-        permiso: 'PERFIL_EMP'
+        route: '/menu-principal/empresa/perfil'
       },
       {
         icon: 'work',
@@ -154,8 +200,7 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#0891b2', bgHex: '#ecfeff',
         roles: ['EMPRESA'],
         path: '/gestion-ofertas',
-        route: '/menu-principal/gestion-ofertas',
-        permiso: 'OFERTAS_EMP'
+        route: '/menu-principal/gestion-ofertas'
       },
       {
         icon: 'groups',
@@ -164,8 +209,7 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#10b981', bgHex: '#ecfdf5',
         roles: ['EMPRESA'],
         path: '/revision-postulantes',
-        route: '/menu-principal/revision-postulantes',
-        permiso: 'POSTULANTES_EMP'
+        route: '/menu-principal/revision-postulantes'
       },
       {
         icon: 'work',
@@ -174,8 +218,7 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#059669', bgHex: '#ecfdf5',
         roles: ['EMPRESA'],
         path: 'Reportes-Empresa',
-        route: '/menu-principal/Reporte-Empresa',
-        permiso: 'REPORTES_EMP'
+        route: '/menu-principal/Reporte-Empresa'
       },
 
 
@@ -187,18 +230,16 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#2563EB', bgHex: '#EFF6FF',
         roles: ['POSTULANTE'],
         path: '/perfil-profesional',
-        route: '/menu-principal/perfil-profesional',
-        permiso: 'PERFIL_POS'
+        route: '/menu-principal/perfil-profesional'
       },
       {
         icon: 'search',
         title: 'Búsqueda de Empleos',
         description: 'Encuentra vacantes disponibles',
         colorHex: '#0891b2', bgHex: '#ecfeff',
-        roles: ['POSTULANTE', 'SUPERVISOR'],
+        roles: ['POSTULANTE'],
         path: '/Busqueda/empleo',
-        route: '/menu-principal/busqueda-empleo',
-        permiso: 'BUSQUEDA_POS'
+        route: '/menu-principal/busqueda-empleo'
       },
       {
         icon: 'assignment',
@@ -207,8 +248,7 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#10b981', bgHex: '#ecfdf5',
         roles: ['POSTULANTE'],
         path: '/postulacion/empleo',
-        route: '/menu-principal/mis-postulaciones',
-        permiso: 'POSTULACIONES_POS'
+        route: '/menu-principal/mis-postulaciones'
       },
 
       // --- COMPARTIDO ---
@@ -219,11 +259,10 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#8b5cf6', bgHex: '#f5f3ff',
         roles: ['EMPRESA', 'POSTULANTE'],
         path: '/notificaciones',
-        route: '/menu-principal/notificaciones',
-        permiso: 'NOTIFICACIONES'
+        route: '/menu-principal/notificaciones'
       },
-
       // --- MÓDULOS DE ADMINISTRADOR ---
+
       {
         icon: 'admin_panel_settings',
         title: 'Auditorias',
@@ -252,7 +291,7 @@ export class MenuprincipalComponent implements OnInit {
         roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
         path: '/PanelAdmi/RegistroOfertas',
         route: '/menu-principal/PanelAdmi/RegistroOfertas',
-        permiso: 'REGISTRO_OFERTAS'
+        permiso: 'VALIDACION_O'
       },
       {
         icon: 'fact_check',
@@ -271,8 +310,7 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#7c3aed', bgHex: '#f5f3ff',
         roles: ['ADMINISTRADOR'],
         path: '/PanelAdmi/admin-MiniAdmi',
-        route: '/menu-principal/PanelAdmi/admin-MiniAdmi',
-        permiso: 'GESTION_ADMINS'
+        route: '/menu-principal/PanelAdmi/admin-MiniAdmi'
       },
       {
         icon: 'bar_chart',
@@ -301,8 +339,7 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#0f172a', bgHex: '#f1f5f9',
         roles: ['ADMINISTRADOR'],
         path: '/GestionRolesbd',
-        route: '/menu-principal/GestionRolesbd',
-        permiso: 'ROLES_BD'
+        route: '/menu-principal/GestionRolesbd'
       },
       {
         icon: 'settings_backup_restore',
@@ -311,30 +348,16 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#7c3aed', bgHex: '#f5f3ff',
         roles: ['ADMINISTRADOR'],
         path: '/configuracion-sistema',
-        route: '/menu-principal/configuracion-sistema',
-        permiso: 'CONFIG_SISTEMA'
+        route: '/menu-principal/configuracion-sistema'
       }
     ];
 
     this.menuItems = todasLasOpciones.filter(item => {
-
-      // 1. Usuarios Base (No usan permisos dinámicos, entran por su rol puro)
-      if (this.rolUsuario === 'EMPRESA' || this.rolUsuario === 'POSTULANTE') {
-        return item.roles?.includes(this.rolUsuario);
-      }
-
-      // 2. Administrador Maestro (Entra a todo lo que sea de Admin, sin restricciones)
-      if (this.rolUsuario === 'ADMINISTRADOR') {
-        return item.roles?.includes(this.rolUsuario);
-      }
-
-      // 3. ROLES DINÁMICOS (Supervisor, Gerente, Nuevo Rol... ¡AQUÍ MANDA EL PERMISO!)
-      if (item.permiso) {
+      const rolCoincide = item.roles?.includes(this.rolUsuario);
+      if (rolCoincide && item.permiso) {
         return this.authService.tienePermiso(item.permiso);
       }
-
-      // 4. Si es un módulo compartido sin permiso específico (Ej: Notificaciones)
-      return item.roles?.includes(this.rolUsuario);
+      return rolCoincide;
 
     });
     this.cdr.detectChanges();

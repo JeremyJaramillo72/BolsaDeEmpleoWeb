@@ -4,18 +4,19 @@
 
     <div class="sidebar-header">
       <div class="brand-logo">
-        <span class="material-icons">shield</span>
+        <!-- ✅ Si hay logo del sistema → mostrar imagen; si no → icono shield por defecto -->
+        <img *ngIf="logoSistema" [src]="logoSistema" alt="Logo" class="brand-logo-img">
+        <span *ngIf="!logoSistema" class="material-icons">shield</span>
       </div>
       <div class="brand-text" *ngIf="isSidebarOpen">
-        <h2>Bolsa de Empleo</h2>
+        <!-- ✅ Nombre del sistema desde BD; fallback: 'Bolsa de Empleo' -->
+        <h2>{{ nombreSistema }}</h2>
         <p>UTEQ</p>
       </div>
     </div>
 
     <div class="sidebar-profile" *ngIf="isSidebarOpen">
-      <img *ngIf="fotoMenu" [src]="fotoMenu" class="sp-avatar-img">
-      <div *ngIf="!fotoMenu" class="sp-avatar">{{ nombreUsuario.charAt(0) | uppercase }}</div>
-
+      <div class="sp-avatar">{{ nombreUsuario.charAt(0) | uppercase }}</div>
       <div class="sp-info">
         <span class="sp-name">{{ nombreUsuario }}</span>
         <span class="sp-role">{{ rolUsuario | titlecase }}</span>
@@ -30,15 +31,15 @@
 
       <div class="menu-label" *ngIf="isSidebarOpen">MENÚ PRINCIPAL</div>
 
-    <!--  <a routerLink="/menu-principal"
-         [routerLinkActiveOptions]="{exact: true}"
-         routerLinkActive="active"
-         class="nav-item"
-         (click)="dashboardHomeVisible = true">
-        <span class="material-icons nav-icon">grid_view</span>
-        <span class="nav-text" *ngIf="isSidebarOpen">Inicio</span>
-      </a>
-      -->
+      <!--  <a routerLink="/menu-principal"
+           [routerLinkActiveOptions]="{exact: true}"
+           routerLinkActive="active"
+           class="nav-item"
+           (click)="dashboardHomeVisible = true">
+          <span class="material-icons nav-icon">grid_view</span>
+          <span class="nav-text" *ngIf="isSidebarOpen">Inicio</span>
+        </a>
+        -->
       <a (click)="irAInicio()" class="nav-item" style="cursor: pointer;">
         <span class="material-icons nav-icon">grid_view</span>
         <span class="nav-text" *ngIf="isSidebarOpen">Inicio</span>
@@ -78,10 +79,11 @@
         <app-notification-bell></app-notification-bell>
 
         <div class="user-profile">
-          <img *ngIf="fotoMenu" [src]="fotoMenu" class="avatar-img" alt="Logo">
+          <!-- fotoMenu = foto del usuario logueado (empresa/postulante), sin cambios -->
           <div class="avatar" *ngIf="!fotoMenu">
             {{ nombreUsuario.charAt(0) | uppercase }}
           </div>
+          <img *ngIf="fotoMenu" [src]="fotoMenu" class="avatar-img" alt="Logo">
 
           <div class="user-info">
             <span class="user-name">{{ nombreUsuario }}</span>
@@ -99,80 +101,77 @@
     </div>
 
   </main>
+  <!-- <main class="main-content">
 
-
- <!-- <main class="main-content">
-
-    <header class="topbar">
-      <div class="topbar-left">
-        <h2>Panel de Control</h2>
-        <p>Bienvenido al sistema de administración UTEQ</p>
-      </div>
-
-      <div class="topbar-right">
-        <app-notification-bell></app-notification-bell>
-
-        <div class="user-profile">
-          <div class="avatar" *ngIf="!fotoMenu">
-            {{ nombreUsuario.charAt(0) | uppercase }}
-          </div>
-          <img *ngIf="fotoMenu" [src]="fotoMenu" class="avatar-img" alt="Logo">
-
-          <div class="user-info">
-            <span class="user-name">{{ nombreUsuario }}</span>
-            <span class="user-role">{{ rolUsuario | titlecase }}</span>
-          </div>
-          <span class="material-icons text-gray">expand_more</span>
-        </div>
-      </div>
-    </header>
-
-    <div class="scroll-area">
-      <div class="dashboard-wrapper animate-fade" *ngIf="isDashboardHome()">
-
-        <div class="welcome-header">
-          <h1>Bienvenido, <span class="text-primary">{{ nombreUsuario }}</span> 👋</h1>
-          <p>Accede rápidamente a cualquier módulo del sistema desde aquí.</p>
+      <header class="topbar">
+        <div class="topbar-left">
+          <h2>Panel de Control</h2>
+          <p>Bienvenido al sistema de administración UTEQ</p>
         </div>
 
-        <div class="stats-row">
-          <div class="stat-card" *ngFor="let stat of statsCards">
-            <div class="stat-icon-wrap" [ngStyle]="{'background-color': (stat.colorHex || '#2563EB') + '15'}">
-              <span class="material-icons" [ngStyle]="{'color': stat.colorHex || '#2563EB'}">{{ stat.icon || 'analytics' }}</span>
+        <div class="topbar-right">
+          <app-notification-bell></app-notification-bell>
+
+          <div class="user-profile">
+            <div class="avatar" *ngIf="!fotoMenu">
+              {{ nombreUsuario.charAt(0) | uppercase }}
             </div>
-            <div class="stat-data">
-              <span class="stat-label">{{ stat.label }}</span>
-              <span class="stat-value">{{ stat.value }}</span>
+            <img *ngIf="fotoMenu" [src]="fotoMenu" class="avatar-img" alt="Logo">
+
+            <div class="user-info">
+              <span class="user-name">{{ nombreUsuario }}</span>
+              <span class="user-role">{{ rolUsuario | titlecase }}</span>
             </div>
+            <span class="material-icons text-gray">expand_more</span>
           </div>
         </div>
+      </header>
 
-        <div class="modules-grid">
-          <div class="module-card" *ngFor="let item of menuItems" (click)="onMenuItemClick(item)">
+      <div class="scroll-area">
+        <div class="dashboard-wrapper animate-fade" *ngIf="isDashboardHome()">
 
-            <div class="module-badge" *ngIf="item.badge">{{ item.badge }}</div>
+          <div class="welcome-header">
+            <h1>Bienvenido, <span class="text-primary">{{ nombreUsuario }}</span> 👋</h1>
+            <p>Accede rápidamente a cualquier módulo del sistema desde aquí.</p>
+          </div>
 
-            <div class="module-icon-wrap" [ngStyle]="{'background-color': item.bgHex || '#EFF6FF'}">
-              <span class="material-icons" [ngStyle]="{'color': item.colorHex || '#2563EB'}">{{ item.icon }}</span>
-            </div>
-
-            <h3 class="module-title">{{ item.title }}</h3>
-            <p class="module-desc">{{ item.description || 'Administración de este módulo.' }}</p>
-
-            <div class="module-action" [ngStyle]="{'color': item.colorHex || '#2563EB'}">
-              Acceder <span class="material-icons">arrow_forward</span>
+          <div class="stats-row">
+            <div class="stat-card" *ngFor="let stat of statsCards">
+              <div class="stat-icon-wrap" [ngStyle]="{'background-color': (stat.colorHex || '#2563EB') + '15'}">
+                <span class="material-icons" [ngStyle]="{'color': stat.colorHex || '#2563EB'}">{{ stat.icon || 'analytics' }}</span>
+              </div>
+              <div class="stat-data">
+                <span class="stat-label">{{ stat.label }}</span>
+                <span class="stat-value">{{ stat.value }}</span>
+              </div>
             </div>
           </div>
+
+          <div class="modules-grid">
+            <div class="module-card" *ngFor="let item of menuItems" (click)="onMenuItemClick(item)">
+
+              <div class="module-badge" *ngIf="item.badge">{{ item.badge }}</div>
+
+              <div class="module-icon-wrap" [ngStyle]="{'background-color': item.bgHex || '#EFF6FF'}">
+                <span class="material-icons" [ngStyle]="{'color': item.colorHex || '#2563EB'}">{{ item.icon }}</span>
+              </div>
+
+              <h3 class="module-title">{{ item.title }}</h3>
+              <p class="module-desc">{{ item.description || 'Administración de este módulo.' }}</p>
+
+              <div class="module-action" [ngStyle]="{'color': item.colorHex || '#2563EB'}">
+                Acceder <span class="material-icons">arrow_forward</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="router-wrapper" [class.hidden]="isDashboardHome()">
+          <router-outlet></router-outlet>
         </div>
 
       </div>
-
-      <div class="router-wrapper" [class.hidden]="isDashboardHome()">
-        <router-outlet></router-outlet>
-      </div>
-
-    </div>
-  </main>
-  -->
+    </main>
+    -->
 </div>
-

@@ -7,6 +7,16 @@
   </div>
 
   <div class="tabs-navigation">
+
+    <!-- Tab nuevo: Aplicación (primero) -->
+    <button
+      class="tab-button"
+      [class.active]="activeTab === 'aplicacion'"
+      (click)="activeTab = 'aplicacion'">
+      <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">tune</span>
+      Aplicación
+    </button>
+
     <button
       class="tab-button"
       [class.active]="activeTab === 'correo'"
@@ -14,6 +24,7 @@
       <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">email</span>
       Configuración de Correo
     </button>
+
     <button
       class="tab-button"
       [class.active]="activeTab === 'plantillas'"
@@ -21,6 +32,7 @@
       <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">description</span>
       Plantillas de Notificaciones
     </button>
+
     <button
       class="tab-button"
       [class.active]="activeTab === 'respaldos'"
@@ -28,9 +40,16 @@
       <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">storage</span>
       Respaldos de Base de Datos
     </button>
+
   </div>
 
   <div class="tabs-content">
+
+    <!-- Tab nuevo: Configuración de la Aplicación -->
+    <div *ngIf="activeTab === 'aplicacion'" class="tab-pane active">
+      <app-configuracion-app></app-configuracion-app>
+    </div>
+
     <div *ngIf="activeTab === 'correo'" class="tab-pane active">
       <app-configuracion-correo></app-configuracion-correo>
     </div>
@@ -42,5 +61,6 @@
     <div *ngIf="activeTab === 'respaldos'" class="tab-pane active">
       <app-respaldos-bd></app-respaldos-bd>
     </div>
+
   </div>
 </div>

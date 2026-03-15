@@ -62,41 +62,71 @@
 
 /* 1. CABECERA DEL SIDEBAR (Bolsa de Empleo UTEQ) */
 .sidebar-header {
-  padding: 1.8rem 1.5rem; /* Más espacio arriba y abajo */
+  padding: 1.8rem 1.5rem;
   display: flex;
-  align-items: center;
-  gap: 14px; /* Más separación entre logo y texto */
-  min-height: 85px; /* Cabecera más alta */
+  align-items: flex-start; /* ✅ FIX: flex-start para que no quede raro cuando el texto baja */
+  gap: 14px;
+  min-height: 85px;
 }
+
+/* ✅ FIX 1: overflow:hidden + position:relative para que la imagen
+   tape por completo el fondo azul */
 .brand-logo {
-  width: 44px; /* Logo más grande */
+  width: 44px;
   height: 44px;
-  background-color: #2563EB;
   border-radius: 12px;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
 }
 .brand-logo .material-icons { font-size: 1.5rem; }
-.brand-text { display: flex; flex-direction: column; overflow: hidden; white-space: nowrap; }
-.brand-text h2 { font-size: 1.15rem; font-weight: 800; color: #0F172A; line-height: 1.2; }
+
+/* ✅ FIX 2: imagen absoluta que tapa completamente el fondo azul */
+.brand-logo-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+/* ✅ FIX 3: permitir que el texto baje en lugar de cortarse */
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  white-space: normal;  /* era nowrap — causaba el texto cortado */
+  min-width: 0;
+}
+.brand-text h2 {
+  font-size: 1rem;      /* ligeramente más pequeño para caber mejor */
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.25;
+  white-space: normal;
+  word-break: break-word;
+}
 .brand-text p { font-size: 0.7rem; font-weight: 700; color: #64748B; letter-spacing: 0.5px; margin-top: 3px;}
 
 /* 2. TARJETA DE PERFIL (Importadora Castro / Empresa) */
 .sidebar-profile {
-  margin: 0.5rem 1.2rem 1.5rem 1.2rem; /* Más margen a los lados y abajo */
-  padding: 1rem 1.2rem; /* Más espacio interno (padding) */
+  margin: 0.5rem 1.2rem 1.5rem 1.2rem;
+  padding: 1rem 1.2rem;
   background-color: #F8FAFC;
   border: 1px solid #E2E8F0;
-  border-radius: 14px; /* Bordes un poco más suaves */
+  border-radius: 14px;
   display: flex;
   align-items: center;
-  gap: 14px; /* Separación entre el cuadrito azul y el texto */
+  gap: 14px;
 }
 .sp-avatar {
-  width: 42px; /* Cuadrito azul más grande */
+  width: 42px;
   height: 42px;
   background: #2563EB;
   color: white;
@@ -109,7 +139,7 @@
   flex-shrink: 0;
 }
 .sp-info { display: flex; flex-direction: column; overflow: hidden; white-space: nowrap;}
-.sp-name { font-size: 0.95rem; font-weight: 700; color: #0F172A; margin-bottom: 2px; } /* Letra más grandecita */
+.sp-name { font-size: 0.95rem; font-weight: 700; color: #0F172A; margin-bottom: 2px; }
 .sp-role { font-size: 0.75rem; color: #64748B; }
 
 .nav-item {
@@ -528,4 +558,3 @@
 .theme-toggle-btn:hover .material-icons {
   transform: rotate(25deg);
 }
-

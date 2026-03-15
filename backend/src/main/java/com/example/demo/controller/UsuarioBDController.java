@@ -115,16 +115,9 @@ public class UsuarioBDController {
         }
     }
 
-    // ── Endpoint nuevo ────────────────────────────────────────────────────
-    // GET /api/usuarios-bd/empresa/{idEmpresa}/ultima-imagen
-    //
-    // Recibe el idEmpresa (que el frontend YA tiene en localStorage con
-    // certeza como 'idEmpresa') y devuelve la URL de la última imagen
-    // personalizada subida por el usuario propietario de esa empresa.
-    //
-    // Respuesta:
-    //   { "urlImagen": "https://res.cloudinary.com/..." }  ← tiene imagen
-    //   { "urlImagen": "" }                                 ← sin imagen válida
+    // ── Endpoint nuevo
+    // Recibe el idEmpresa (que el frontend ya tiene en localStorage con
+    // certeza como 'idEmpresa')
     @GetMapping("/empresa/{idEmpresa}/ultima-imagen")
     public ResponseEntity<?> getUltimaImagenEmpresa(@PathVariable Long idEmpresa) {
         try {

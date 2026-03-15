@@ -10,7 +10,7 @@ import { GestionOfertasComponent } from './components/gestion-ofertas/gestion-of
 import { AdminValidarComponent} from './components/Panel-Admin/components/admin-validar/admin-validar';
 import { AdminUsuariosComponent} from './components/Panel-Admin/components/auditorias-users/auditorias-users'
 import {AdminMiniAdmiComponent} from './components/Panel-Admin/components/admin-mini-admi/admin-mini-admi';
-import  {GestionCatalogosComponent} from './components/Panel-Admin/components/gestion-catalogos/gestion-catalogos';
+import {GestionCatalogosComponent} from './components/Panel-Admin/components/gestion-catalogos/gestion-catalogos';
 import {GestionReportesComponent} from './components/Panel-Admin/components/gestion-reportes/gestion-reportes';
 import { ReporteEmpresaComponent} from './components/Reporte-Empresa/Reporte-Empresa';
 import {ValidarEmpresaComponent} from './components/Panel-Admin/components/validar-empresa/validar-empresa';

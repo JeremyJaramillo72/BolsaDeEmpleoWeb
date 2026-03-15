@@ -1,0 +1,254 @@
+<div class="config-container">
+
+    <!-- Header -->
+    <div class="header-section">
+        <div class="header-content">
+            <h1>🖼️ Configuración de la Aplicación</h1>
+            <p class="subtitle">Personaliza el logo, nombre e información de contacto del sistema</p>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="cargando" class="loading-state">
+        <div class="spinner"></div>
+        <p>Cargando configuración...</p>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div *ngIf="!cargando && config" class="content-wrapper">
+
+        <!-- Mensajes globales -->
+        <div *ngIf="mensajeExito" class="message-exito">{{ mensajeExito }}</div>
+        <div *ngIf="mensajeError" class="message-error">{{ mensajeError }}</div>
+
+        <!-- ══════════════════════════════════════════════════════════════════
+             SECCIÓN 1: LOGO DE LA APLICACIÓN
+        ══════════════════════════════════════════════════════════════════ -->
+        <div class="card-section">
+            <div class="card-header">
+                <h2>🖼️ Logo de la Aplicación</h2>
+            </div>
+            <div class="card-body">
+                <p class="section-desc">
+                    Este logo aparece en el menú principal. Tamaño recomendado: <strong>200×200 px</strong> —
+                    Formatos: JPG, PNG, WebP — Máx. 5 MB.<br>
+                    <strong>Haz clic en el área</strong> o <strong>arrastra y suelta</strong> una imagen para cambiarla.
+                </p>
+
+                <div class="logo-area-wrapper">
+
+                    <!-- ✅ Área clicable + drag-and-drop — clic directo sobre la imagen -->
+                    <div
+                            class="logo-drop-zone"
+                            [class.dragging]="isDragging"
+                            [class.has-logo]="logoActual"
+                            (click)="abrirSelectorArchivo()"
+                            (dragover)="onDragOver($event)"
+                            (dragleave)="onDragLeave($event)"
+                            (drop)="onDrop($event)">
+
+                        <!-- Imagen actual o preview -->
+                        <img
+                                *ngIf="logoActual"
+                                [src]="logoActual"
+                                alt="Logo actual"
+                                class="logo-img"
+                        />
+
+                        <!-- Placeholder cuando no hay imagen -->
+                        <div *ngIf="!logoActual" class="logo-placeholder-content">
+                            <span class="upload-icon">🏢</span>
+                            <p class="upload-hint">Clic o arrastra una imagen aquí</p>
+                        </div>
+
+                        <!-- Overlay de hover/drag -->
+                        <div class="logo-overlay">
+                            <span class="overlay-icon">📁</span>
+                            <span class="overlay-text">{{ isDragging ? 'Suelta la imagen' : 'Cambiar logo' }}</span>
+                        </div>
+
+                        <!-- Badge "vista previa" cuando hay imagen nueva sin guardar -->
+                        <span *ngIf="logoPreviewUrl" class="preview-badge">Vista previa</span>
+                    </div>
+
+                    <!-- Input file oculto -->
+                    <input
+                            type="file"
+                            id="logoInput"
+                            accept="image/*"
+                            style="display: none;"
+                            (change)="onArchivoSeleccionado($event)"
+                    />
+
+                    <!-- Panel de acciones cuando hay archivo seleccionado -->
+                    <div *ngIf="archivoLogo" class="logo-actions">
+                        <p class="archivo-nombre">📎 {{ archivoLogo.name }}</p>
+                        <div class="logo-btn-group">
+                            <button
+                                    (click)="subirLogo()"
+                                    [disabled]="subiendoLogo"
+                                    class="btn btn-guardar">
+                                {{ subiendoLogo ? '⏳ Subiendo...' : '☁️ Subir logo' }}
+                            </button>
+                            <button
+                                    (click)="cancelarLogo()"
+                                    [disabled]="subiendoLogo"
+                                    class="btn btn-cancelar">
+                                ✕ Cancelar
+                            </button>
+                        </div>
+                        <p class="info-note-small">
+                            El logo se sube de forma independiente. Los demás datos se guardan con el botón de abajo.
+                        </p>
+                    </div>
+
+                    <!-- Info cuando no hay archivo seleccionado -->
+                    <div *ngIf="!archivoLogo" class="logo-info">
+                        <p *ngIf="tieneLogoActual" class="info-small">
+                            Última actualización: {{ formatearFecha(config!.fechaActualizacion) }}
+                        </p>
+                        <p *ngIf="!tieneLogoActual" class="info-small">
+                            Sin logo configurado — se muestra el ícono por defecto en el menú.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════════
+             SECCIÓN 2: INFORMACIÓN GENERAL
+        ══════════════════════════════════════════════════════════════════ -->
+        <div class="card-section">
+            <div class="card-header">
+                <h2>📋 Información General</h2>
+            </div>
+            <div class="card-body">
+                <p class="section-desc">
+                    Estos datos identifican al sistema y se muestran en el menú principal.
+                </p>
+
+                <div class="form-grid">
+
+                    <div class="form-group form-group-full">
+                        <label>Nombre del Aplicativo *</label>
+                        <input
+                                type="text"
+                                [(ngModel)]="nombreAplicativo"
+                                maxlength="150"
+                                placeholder="Ej: Bolsa de Empleo UTEQ"
+                                class="input-field"
+                                [disabled]="guardando"
+                        />
+                        <div class="input-helper">Nombre que aparece en el menú lateral.</div>
+                    </div>
+
+                    <div class="form-group form-group-full">
+                        <label>Descripción</label>
+                        <textarea
+                                [(ngModel)]="descripcion"
+                                rows="3"
+                                placeholder="Breve descripción del sistema..."
+                                class="input-field textarea-field"
+                                [disabled]="guardando"
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📧 Correo de Soporte</label>
+                        <input
+                                type="email"
+                                [(ngModel)]="correoSoporte"
+                                placeholder="soporte@uteq.edu.ec"
+                                class="input-field"
+                                [disabled]="guardando"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label>📞 Teléfono de Contacto</label>
+                        <input
+                                type="text"
+                                [(ngModel)]="telefonoContacto"
+                                maxlength="20"
+                                placeholder="02-123-4567"
+                                class="input-field"
+                                [disabled]="guardando"
+                        />
+                    </div>
+
+                    <div class="form-group form-group-full">
+                        <label>📍 Dirección de la Institución</label>
+                        <input
+                                type="text"
+                                [(ngModel)]="direccionInstitucion"
+                                maxlength="255"
+                                placeholder="Quevedo, Ecuador"
+                                class="input-field"
+                                [disabled]="guardando"
+                        />
+                    </div>
+
+                </div>
+
+                <div class="action-buttons">
+                    <button
+                            (click)="guardarConfiguracion()"
+                            [disabled]="guardando || !nombreAplicativo.trim()"
+                            class="btn btn-guardar">
+                        {{ guardando ? '💾 Guardando...' : '💾 Guardar Cambios' }}
+                    </button>
+                    <button
+                            (click)="cancelar()"
+                            [disabled]="guardando"
+                            class="btn btn-cancelar">
+                        ↺ Cancelar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════════
+             SECCIÓN 3: ESTADO ACTUAL (readonly)
+        ══════════════════════════════════════════════════════════════════ -->
+        <div class="card-section">
+            <div class="card-header">
+                <h2>📊 Estado Actual</h2>
+            </div>
+            <div class="card-body">
+                <div class="info-row">
+                    <label>Nombre Aplicativo:</label>
+                    <div class="info-value">{{ config.nombreAplicativo }}</div>
+                </div>
+                <div class="info-row">
+                    <label>Correo Soporte:</label>
+                    <div class="info-value">{{ config.correoSoporte || '—' }}</div>
+                </div>
+                <div class="info-row">
+                    <label>Teléfono:</label>
+                    <div class="info-value">{{ config.telefonoContacto || '—' }}</div>
+                </div>
+                <div class="info-row">
+                    <label>Dirección:</label>
+                    <div class="info-value">{{ config.direccionInstitucion || '—' }}</div>
+                </div>
+                <div class="info-row">
+                    <label>Última Actualización:</label>
+                    <div class="info-value">{{ formatearFecha(config.fechaActualizacion) }}</div>
+                </div>
+                <div class="info-row">
+                    <label>Logo URL:</label>
+                    <div class="info-value logo-url-value">
+                        <a *ngIf="config.logoUrl" [href]="config.logoUrl" target="_blank" class="logo-link">Ver imagen actual →</a>
+                        <span *ngIf="!config.logoUrl">Sin logo configurado</span>
+                    </div>
+                </div>
+                <div class="info-note">
+                    ℹ️ El logo y el nombre se reflejan en el menú principal automáticamente al guardar. Si no los ves, recarga la página.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
