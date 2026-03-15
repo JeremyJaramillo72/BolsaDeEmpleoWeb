@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { NotificationService, NotificacionDTO } from '../../services/notification.service';
@@ -19,7 +19,8 @@ export class NotificacionesComponent implements OnInit {
 
   constructor(
     private notificationService: NotificationService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -73,16 +74,28 @@ export class NotificacionesComponent implements OnInit {
 
   marcarComoLeida(notif: NotificacionDTO): void {
     if (notif.leida) return;
+
+    // Actualizar estado local inmediatamente para mejor UX
+    const index = this.notificaciones.findIndex(n => n.idNotificacion === notif.idNotificacion);
+    if (index !== -1) {
+      this.notificaciones[index].leida = true;
+      this.notificaciones = [...this.notificaciones]; // Trigger change detection
+      this.cdr.detectChanges(); // Forza detección de cambios
+    }
+
+    // Llamar al servicio para actualizar en el backend
     this.notificationService.marcarComoLeida(notif.idNotificacion).subscribe();
   }
 
   marcarTodasComoLeidas(): void {
     const idUsuario = parseInt(this.idUsuario, 10);
     this.notificationService.marcarTodasComoLeidas(idUsuario);
+    this.cdr.detectChanges(); // Forza detección de cambios
   }
 
   navigarSiTieneEnlace(notif: NotificacionDTO): void {
     this.marcarComoLeida(notif);
+    this.cdr.detectChanges(); // Fuerza actualización de contadores
     if (notif.enlace) {
       this.router.navigateByUrl(notif.enlace);
     }
