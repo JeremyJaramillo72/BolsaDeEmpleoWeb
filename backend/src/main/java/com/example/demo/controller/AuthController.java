@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.model.Seguridad;
 import com.example.demo.model.UsuarioEmpresa;
+import com.example.demo.repository.Impl.PerfilProfesionalRepository;
 import com.example.demo.repository.SeguridadRepository;
 import com.example.demo.repository.UsuarioEmpresaRepository;
 import com.example.demo.repository.UsuarioRepository;
@@ -10,6 +11,7 @@ import com.example.demo.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +23,10 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "http://localhost:4200" , allowCredentials = "true")
+@RequiredArgsConstructor
 public class AuthController {
 
+    private final PerfilProfesionalRepository perfilProfesionalRepository;
     @Autowired
     private AuthService authService;
 
@@ -228,5 +232,11 @@ public class AuthController {
         }
 
         return ResponseEntity.ok(Map.of("usuario_actual", nombre, "estado", "logueado"));
+    }
+
+    @GetMapping("/foto-perfil/{idUsuario}")
+    public ResponseEntity<Map<String, String>> obtenerFotoPerfil(@PathVariable Long idUsuario) {
+        String url = perfilProfesionalRepository.obtenerUrlFoto(idUsuario);
+        return ResponseEntity.ok(Map.of("url", url != null ? url : ""));
     }
 }

@@ -11,16 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface UsuarioImagenRepository extends JpaRepository<UsuarioImagen, Integer> {
 
-    // ── Método existente — sin cambios ────────────────────────────────────
     @Modifying
     @Transactional
     @Query(value = "call usuarios.sp_guardar_url_imagen(?1, ?2)", nativeQuery = true)
     void guardarUrlImagen(Integer idUsuario, String url);
 
-    // ── Método nuevo ──────────────────────────────────────────────────────
-    // Llama a la función PostgreSQL usuarios.fn_ultima_imagen_empresa.
-    // La función encapsula el JOIN entre los tres esquemas y los filtros.
     @Query(value = "SELECT usuarios.fn_ultima_imagen_empresa(:idEmpresa)",
             nativeQuery = true)
     String findUltimaImagenUrlByEmpresa(@Param("idEmpresa") Long idEmpresa);
+
+
 }
