@@ -1,0 +1,63 @@
+<div class="custom-card form-card">
+  <div class="card-header">
+    <div class="icon-box"><span class="material-icons">person</span></div>
+    <div>
+      <h1>Información Personal</h1>
+      <p>Tus datos básicos y de contacto profesional</p>
+    </div>
+  </div>
+
+  <div class="form-grid">
+    <div class="form-group">
+      <label>Nombre Completo</label>
+      <input type="text" [(ngModel)]="perfil.nombreCompleto" name="nombreCompleto" (ngModelChange)="onInputChange()">
+    </div>
+
+    <div class="form-group">
+      <label>Fecha de Nacimiento</label>
+      <input type="date" [(ngModel)]="perfil.fechaNacimiento" name="fechaNacimiento" (ngModelChange)="onInputChange()">
+    </div>
+
+    <div class="form-group">
+      <label>Género</label>
+      <select [(ngModel)]="perfil.genero" name="genero" (ngModelChange)="onInputChange()">
+        <option value="">Seleccionar...</option>
+        <option value="Masculino">Masculino</option>
+        <option value="Femenino">Femenino</option>
+        <option value="Otro">Otro</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Email Corporativo</label>
+      <input type="email" [(ngModel)]="perfil.correo" name="correo" readonly style="background-color: #f1f5f9; cursor: not-allowed; color: #64748b;">
+    </div>
+
+    <div class="form-group">
+      <label>Teléfono Móvil</label>
+      <input type="tel" [(ngModel)]="perfil.telefono" name="telefono" (ngModelChange)="onInputChange()">
+    </div>
+
+    <div class="form-group">
+      <label>Provincia</label>
+      <select [(ngModel)]="perfil.id_provincia" name="id_provincia" (change)="onProvinciaChange()">
+        <option [ngValue]="null" disabled>Seleccionar Provincia...</option>
+        <option *ngFor="let p of provincias" [value]="p.idProvincia">{{ p.nombreProvincia }}</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Ciudad</label>
+      <select [(ngModel)]="perfil.id_ciudad" name="id_ciudad" [disabled]="!perfil.id_provincia" (ngModelChange)="onInputChange()">
+        <option [ngValue]="null" disabled>Seleccionar Ciudad...</option>
+        <option *ngFor="let c of ciudades" [value]="c.idCiudad">{{ c.nombreCiudad }}</option>
+      </select>
+    </div>
+
+    <div style="text-align: right; margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 15px; grid-column: 1 / -1;">
+      <button class="btn-save-item" (click)="guardarDatos()">
+        <span class="material-icons">save</span> Guardar Datos Personales
+      </button>
+    </div>
+  </div>
+</div>

@@ -2,508 +2,68 @@
   <div class="content-grid">
 
     <div class="sidebar-column">
-      <div class="custom-card summary-card sticky-card">
-        <div class="logo-circle" (click)="triggerFileInput()" title="Clic para subir foto" style="position: relative; border-style: solid;">
-          <input type="file" id="fotoInput" accept="image/*" style="display: none" (change)="seleccionarImagen($event)">
-          <img *ngIf="fotoUrl" [src]="fotoUrl" alt="Foto del Postulante">
-          <div *ngIf="!fotoUrl" class="empty-photo">
-            <span class="material-icons">add_a_photo</span>
-            <small>Subir Foto</small>
-          </div>
-          <div class="edit-overlay-icon">
-            <span class="material-icons">photo_camera</span>
-          </div>
-        </div>
-        <h2>{{ perfil.nombreCompleto || 'Tu Nombre Completo' }}</h2>
-        <p class="role-text">{{ rol || 'Postulante' }}</p>
-        <div class="divider"></div>
-        <div class="progress-section">
-          <div class="progress-label">
-            <span>Completitud del Perfil</span>
-            <span class="percentage">{{ completitudPerfil || 0 }}%</span>
-          </div>
-          <div class="progress-track">
-            <div class="progress-fill" [style.width.%]="completitudPerfil"></div>
-          </div>
-        </div>
-      </div>
+      <app-sidebar-perfil
+        [perfil]="perfil"
+        [rol]="rol"
+        [completitudPerfil]="completitudPerfil"
+        [fotoUrl]="fotoUrl"
+        (fotoSeleccionada)="seleccionarImagen($event)">
+      </app-sidebar-perfil>
     </div>
 
     <div class="form-column">
 
-      <div class="custom-card form-card">
-        <div class="card-header">
-          <div class="icon-box"><span class="material-icons">person</span></div>
-          <div>
-            <h1>Información Personal</h1>
-            <p>Tus datos básicos y de contacto profesional</p>
-          </div>
-        </div>
-        <div class="form-grid">
-          <div class="form-group"><label>Nombre Completo</label><input type="text" [(ngModel)]="perfil.nombreCompleto" name="nombreCompleto" (ngModelChange)="onInputChange()"></div>
-          <div class="form-group"><label>Fecha de Nacimiento</label><input type="date" [(ngModel)]="perfil.fechaNacimiento" name="fechaNacimiento" (ngModelChange)="onInputChange()"></div>
-          <div class="form-group">
-            <label>Género</label>
-            <select [(ngModel)]="perfil.genero" name="genero" (ngModelChange)="onInputChange()">
-              <option value="">Seleccionar...</option>
-              <option value="Masculino">Masculino</option>
-              <option value="Femenino">Femenino</option>
-              <option value="Otro">Otro</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Email Corporativo</label>
-            <input type="email"
-                   [(ngModel)]="perfil.correo"
-                   name="correo"
-                   readonly
-                   style="background-color: #f1f5f9; cursor: not-allowed; color: #64748b;">
-          </div>
-          <div class="form-group"><label>Teléfono Móvil</label><input type="tel" [(ngModel)]="perfil.telefono" name="telefono" (ngModelChange)="onInputChange()"></div>
+      <app-form-datos-personales
+        [perfil]="perfil"
+        [provincias]="provincias"
+        [ciudades]="ciudades"
+        (cambioProvincia)="onProvinciaChange()"
+        (inputChange)="onInputChange()"
+        (guardar)="guardarInformacionPersonal()">
+      </app-form-datos-personales>
 
-          <div class="form-group">
-            <label>Provincia</label>
-            <select [(ngModel)]="perfil.id_provincia" name="id_provincia" (change)="onProvinciaChange()">
-              <option [ngValue]="null" disabled>Seleccionar Provincia...</option>
-              <option *ngFor="let p of provincias" [value]="p.idProvincia">{{ p.nombreProvincia }}</option>
-            </select>
-          </div>
+      <app-seccion-academica
+        [titulos]="perfil.titulos"
+        [facultades]="facultades"
+        [carrerasNuevoTitulo]="carrerasNuevoTitulo"
+        (onCambioFacultad)="cargarCarrerasPorFacultad($event)"
+        (onGuardarAcademica)="guardarAcademicaDesdeHijo($event)"
+        (onEliminar)="eliminarTitulo($event.index, $event.id)"
+        (onVerPdf)="verPdf($event)">
+      </app-seccion-academica>
 
-          <div class="form-group">
-            <label>Ciudad</label>
-            <select [(ngModel)]="perfil.id_ciudad" name="id_ciudad" [disabled]="!perfil.id_provincia" (ngModelChange)="onInputChange()">
-              <option [ngValue]="null" disabled>Seleccionar Ciudad...</option>
-              <option *ngFor="let c of ciudades" [value]="c.idCiudad">{{ c.nombreCiudad }}</option>
-            </select>
-          </div>
+      <app-seccion-idiomas
+        [idiomas]="perfil.idiomas"
+        [idiomasDisponibles]="idiomasDisponibles"
+        [niveles]="niveles"
+        (onGuardarIdioma)="guardarIdiomaDesdeHijo($event)"
+        (onEliminar)="eliminarIdioma($event.index, $event.id)"
+        (onVerPdf)="verPdf($event)">
+      </app-seccion-idiomas>
 
-          <div style="text-align: right; margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
-            <button class="btn-save-item" (click)="guardarInformacionPersonal()">
-              <span class="material-icons">save</span> Guardar Datos Personales
-            </button>
-          </div>
-        </div>
+      <app-seccion-experiencia
+        [experiencias]="perfil.experiencias"
+        [provincias]="provincias"
+        [ciudadesExp]="ciudadesExp"
+        [categorias]="categorias"
+        [cargosDisponibles]="cargosDisponibles"
+        [empresasDisponibles]="empresasDisponibles"
+        (onBuscarCargo)="buscarCargoDinamicoPadre($event)"
+        (onBuscarEmpresa)="buscarEmpresaDinamicaPadre($event)"
+        (onCambioProvincia)="cargarCiudadesExpPadre($event)"
+        (onCrearCargo)="crearCargoDesdeHijo($event)"
+        (onCrearEmpresa)="crearEmpresaDesdeHijo($event)"
+        (onGuardarExperiencia)="guardarExperienciaDesdeHijo($event)"
+        (onEliminar)="eliminarExperiencia($event.index, $event.id)"
+        (onVerPdf)="verPdf($event)">
+      </app-seccion-experiencia>
 
-        <div class="custom-card form-card mt-4">
-          <div class="card-header" style="justify-content: space-between; margin-bottom: 16px;">
-            <div style="display: flex; gap: 16px; align-items: center;">
-              <div class="icon-box"><span class="material-icons">school</span></div>
-              <div>
-                <h1>Información Académica</h1>
-                <p>Tu formación universitaria, institutos y títulos</p>
-              </div>
-            </div>
-            <button (click)="abrirModalAcademica()" class="btn-add-section" type="button">
-              <span class="material-icons">add</span> Añadir Formación
-            </button>
-          </div>
+      <app-seccion-cursos
+        [cursos]="perfil.cursos"
+        (onGuardarCurso)="guardarCursoDesdeHijo($event)"
+        (onEliminar)="eliminarCurso($event.index, $event.id)"
+        (onVerPdf)="verPdf($event)">
+      </app-seccion-cursos>
 
-          <div class="registered-items" *ngIf="perfil.titulos?.length > 0">
-            <div *ngFor="let titulo of perfil.titulos; let i = index" class="document-item-card">
-              <div class="card-left-icon status-valid"><span class="material-icons">verified_user</span></div>
-              <div class="card-content">
-                <h3>{{ titulo.nombreCarrera || 'Título' }}</h3>
-                <p>{{ titulo.nombreFacultad || 'Facultad' }} | Graduado: {{ titulo.fechaGraduacion | date: 'yyyy' }}</p>
-              </div>
-              <div class="card-actions">
-                <button class="btn-ver-pdf" (click)="verPdf(titulo.nombreArchivo)" *ngIf="titulo.nombreArchivo">
-                  <span class="material-icons">description</span> Ver PDF
-                </button>
-                <button class="btn-eliminar" (click)="editarTitulo(titulo)" title="Editar">
-                  <span class="material-icons" style="color: #3b82f6;">edit</span>
-                </button>
-                <button class="btn-eliminar" (click)="eliminarTitulo(i, titulo.id_academico)" title="Eliminar">
-                  <span class="material-icons">delete</span>
-                </button>
-              </div>
-            </div>
-          </div>
+    </div> </div> </div>
 
-          <div *ngIf="!perfil.titulos || perfil.titulos.length === 0" style="text-align: center; padding: 20px; color: #64748b;">
-            <span class="material-icons" style="font-size: 40px; opacity: 0.5;">school</span>
-            <p>No tienes formación académica registrada.</p>
-          </div>
-        </div>
-
-        <div class="custom-card form-card mt-4">
-          <div class="card-header" style="justify-content: space-between; margin-bottom: 16px;">
-            <div style="display: flex; gap: 16px; align-items: center;">
-              <div class="icon-box"><span class="material-icons">language</span></div>
-              <div>
-                <h1>Idiomas</h1>
-                <p>Lenguajes que dominas y certificaciones</p>
-              </div>
-            </div>
-            <button (click)="abrirModalIdioma()" class="btn-add-section" type="button">
-              <span class="material-icons">add</span> Añadir Idioma
-            </button>
-          </div>
-
-          <div class="registered-items" *ngIf="perfil.idiomas?.length > 0">
-            <div *ngFor="let item of perfil.idiomas; let i = index" class="document-item-card">
-              <div class="card-left-icon status-valid"><span class="material-icons">translate</span></div>
-              <div class="card-content">
-                <h3>{{ item.nombre_idioma }}</h3>
-                <p>Nivel de Dominio: {{ item.nivel }}</p>
-              </div>
-              <div class="card-actions">
-                <button class="btn-ver-pdf" (click)="verPdf(item.nombreArchivo)" *ngIf="item.nombreArchivo">
-                  <span class="material-icons">description</span> Ver PDF
-                </button>
-                <button class="btn-eliminar" (click)="editarIdioma(item)" title="Editar">
-                  <span class="material-icons" style="color: #3b82f6;">edit</span>
-                </button>
-                <button class="btn-eliminar" (click)="eliminarIdioma(i, item.id_usuario_idioma)" title="Eliminar">
-                  <span class="material-icons">delete</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div *ngIf="!perfil.idiomas || perfil.idiomas.length === 0" style="text-align: center; padding: 20px; color: #64748b;">
-            <span class="material-icons" style="font-size: 40px; opacity: 0.5;">g_translate</span>
-            <p>No tienes idiomas registrados.</p>
-          </div>
-        </div>
-
-        <div class="custom-card form-card mt-4">
-          <div class="card-header" style="justify-content: space-between; margin-bottom: 16px;">
-            <div style="display: flex; gap: 16px; align-items: center;">
-              <div class="icon-box"><span class="material-icons">work</span></div>
-              <div>
-                <h1>Experiencia Laboral</h1>
-                <p>Tu trayectoria profesional y cargos anteriores</p>
-              </div>
-            </div>
-            <button (click)="abrirModalExperiencia()" class="btn-add-section" type="button">
-              <span class="material-icons">add</span> Añadir Experiencia
-            </button>
-          </div>
-
-          <div class="registered-items" *ngIf="perfil.experiencias?.length > 0">
-            <div *ngFor="let item of perfil.experiencias; let i = index" class="document-item-card">
-              <div class="card-left-icon status-valid"><span class="material-icons">badge</span></div>
-
-              <div class="card-content">
-                <h3>
-        <span *ngFor="let c of item.cargos; let isLast = last">
-          {{ c.nombre_cargo }}{{ !isLast ? ', ' : '' }}
-        </span>
-                  - {{ item.nombre_empresa }}
-                </h3>
-
-                <p>{{ item.fecha_inicio | date: 'MM/yyyy' }} - {{ item.fecha_fin ? (item.fecha_fin | date: 'MM/yyyy') : 'Actualidad' }} | {{ item.nombre_ciudad }}, {{ item.nombre_provincia }}</p>
-              </div>
-
-              <div class="card-actions">
-                <button class="btn-ver-pdf" (click)="verPdf(item.nombreArchivo)" *ngIf="item.nombreArchivo">
-                  <span class="material-icons">description</span> Ver PDF
-                </button>
-                <button class="btn-eliminar" (click)="editarExperiencia(item)" title="Editar">
-                  <span class="material-icons" style="color: #3b82f6;">edit</span>
-                </button>
-                <button class="btn-eliminar" (click)="eliminarExperiencia(i, item.id_exp_laboral)" title="Eliminar">
-                  <span class="material-icons">delete</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div *ngIf="!perfil.experiencias || perfil.experiencias.length === 0" style="text-align: center; padding: 20px; color: #64748b;">
-            <span class="material-icons" style="font-size: 40px; opacity: 0.5;">work_outline</span>
-            <p>No tienes experiencias laborales registradas.</p>
-          </div>
-        </div>
-
-        <div class="custom-card form-card mt-4">
-          <div class="card-header" style="justify-content: space-between; margin-bottom: 16px;">
-            <div style="display: flex; gap: 16px; align-items: center;">
-              <div class="icon-box"><span class="material-icons">workspace_premium</span></div>
-              <div>
-                <h1>Cursos y Certificaciones</h1>
-                <p>Formación adicional, talleres y certificaciones obtenidas</p>
-              </div>
-            </div>
-            <button (click)="abrirModalCurso()" class="btn-add-section" type="button">
-              <span class="material-icons">add</span> Añadir Curso
-            </button>
-          </div>
-
-          <div class="registered-items" *ngIf="perfil.cursos?.length > 0">
-            <div *ngFor="let item of perfil.cursos; let i = index" class="document-item-card">
-              <div class="card-left-icon status-valid"><span class="material-icons">military_tech</span></div>
-              <div class="card-content">
-                <h3>{{ item.nombre_curso }}</h3>
-                <p>{{ item.institucion }} | Duración: {{ item.horas_duracion }} horas</p>
-              </div>
-              <div class="card-actions">
-                <button class="btn-ver-pdf" (click)="verPdf(item.nombreArchivo)" *ngIf="item.nombreArchivo">
-                  <span class="material-icons">description</span> Ver PDF
-                </button>
-                <button class="btn-eliminar" (click)="editarCurso(item)" title="Editar">
-                  <span class="material-icons" style="color: #3b82f6;">edit</span>
-                </button>
-                <button class="btn-eliminar" (click)="eliminarCurso(i, item.id_curso)" title="Eliminar">
-                  <span class="material-icons">delete</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div *ngIf="!perfil.cursos || perfil.cursos.length === 0" style="text-align: center; padding: 20px; color: #64748b;">
-            <span class="material-icons" style="font-size: 40px; opacity: 0.5;">emoji_events</span>
-            <p>No tienes cursos o certificaciones registradas.</p>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" *ngIf="modalAcademica">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>{{ idEdicionAcademica ? 'Editar' : 'Añadir' }} Formación Académica</h2>
-        <button class="btn-close" (click)="cerrarModales()"><span class="material-icons">close</span></button>
-      </div>
-      <div class="modal-body">
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Facultad</label>
-            <select [(ngModel)]="nuevoTitulo.id_facultad" name="id_facultad" (change)="onFacultadNuevaChange()">
-              <option [ngValue]="null" disabled>Seleccionar Facultad...</option>
-              <option *ngFor="let f of facultades" [value]="f.idFacultad">{{ f.nombreFacultad }}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Carrera</label>
-            <select [(ngModel)]="nuevoTitulo.id_carrera" name="id_carrera" [disabled]="!nuevoTitulo.id_facultad">
-              <option [ngValue]="null" disabled>Seleccionar Carrera...</option>
-              <option *ngFor="let c of carrerasNuevoTitulo" [value]="c.idCarrera">{{ c.nombreCarrera }}</option>
-            </select>
-          </div>
-          <div class="form-group"><label>Fecha de Graduación</label><input type="date" [(ngModel)]="nuevoTitulo.fechaGraduacion" name="fechaGraduacion"></div>
-          <div class="form-group"><label>Registro SENESCYT</label><input type="text" [(ngModel)]="nuevoTitulo.registroSenescyt" name="registroSenescyt" placeholder="Ej: 1234-56-789012"></div>
-        </div>
-        <div class="actions-row mt-4">
-          <button type="button" class="btn-attach" (click)="fileInputAcad.click()"><span class="material-icons">attach_file</span> {{ nuevoTitulo.nombreArchivo || 'Adjuntar Título (PDF)' }}</button>
-          <input #fileInputAcad type="file" (change)="onFileSelected($event, 'academico')" hidden accept=".pdf">
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-cancel" (click)="cerrarModales()">Cancelar</button>
-        <button class="btn-save-item" (click)="agregarTituloBd()"><span class="material-icons">cloud_upload</span> {{ idEdicionAcademica ? 'Actualizar' : 'Guardar' }} Título</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" *ngIf="modalIdioma">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>{{ idEdicionIdioma ? 'Editar' : 'Añadir' }} Idioma</h2>
-        <button class="btn-close" (click)="cerrarModales()"><span class="material-icons">close</span></button>
-      </div>
-      <div class="modal-body">
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Seleccionar Idioma</label>
-            <select [(ngModel)]="nuevoIdioma.id_idioma" name="id_idioma">
-              <option [ngValue]="null" disabled>Seleccionar...</option>
-              <option *ngFor="let idm of idiomasDisponibles" [value]="idm.idIdioma">{{ idm.nombreIdioma }}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Nivel de Dominio</label>
-            <select [(ngModel)]="nuevoIdioma.nivel" name="nivel">
-              <option [ngValue]="null" disabled>Seleccionar...</option>
-              <option *ngFor="let n of niveles" [value]="n">{{ n }}</option>
-            </select>
-          </div>
-        </div>
-        <div class="actions-row mt-4">
-          <button type="button" class="btn-attach" (click)="fileInputIdm.click()"><span class="material-icons">attach_file</span> {{ nuevoIdioma.nombreArchivo || 'Adjuntar Certificado (PDF)' }}</button>
-          <input #fileInputIdm type="file" (change)="onFileSelected($event, 'idioma')" hidden accept=".pdf">
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-cancel" (click)="cerrarModales()">Cancelar</button>
-        <button class="btn-save-item" (click)="agregarIdiomaBd()"><span class="material-icons">cloud_upload</span> {{ idEdicionIdioma ? 'Actualizar' : 'Guardar' }} Idioma</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" *ngIf="modalExperiencia">
-    <div class="modal-content" style="max-width: 700px; width: 90%;">
-      <div class="modal-header">
-        <h2>{{ idEdicionExperiencia ? 'Editar' : 'Añadir' }} Experiencia Laboral</h2>
-        <button class="btn-close" (click)="cerrarModales()"><span class="material-icons">close</span></button>
-      </div>
-      <div class="modal-body">
-
-        <div class="form-group full-width" style="background: #f8fafc; padding: 15px; border-radius: 8px;">
-          <label>Cargos Desempeñados *</label>
-
-          <div style="display: flex; gap: 10px;" *ngIf="!mostrarNuevoCargo">
-
-            <div style="position: relative; flex: 1;">
-
-              <input type="text"
-                     placeholder="Escribe para buscar un cargo (ej: Desarrollador)..."
-                     [(ngModel)]="busquedaCargoTexto"
-                     (input)="buscarCargoDinamico($event)"
-                     style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px;">
-
-              <div *ngIf="cargosDisponibles.length > 0"
-                   style="position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 50; max-height: 200px; overflow-y: auto; margin-top: 4px;">
-
-                <div *ngFor="let cargo of cargosDisponibles"
-                     (click)="seleccionarCargoPred(cargo)"
-                     style="padding: 10px; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background 0.2s;"
-                     onmouseover="this.style.background='#f8fafc'"
-                     onmouseout="this.style.background='white'">
-                  {{ cargo.nombreCargo }}
-                </div>
-
-              </div>
-            </div>
-
-            <button type="button" class="btn-add-cargo" (click)="agregarCargoTemporal()" title="Añadir a la lista">
-              <span class="material-icons">add</span>
-            </button>
-            <button type="button" class="btn-add-section" (click)="mostrarNuevoCargo = true" style="padding: 0 15px;">Crear Nuevo</button>
-          </div>
-
-          <div style="display: flex; gap: 10px;" *ngIf="mostrarNuevoCargo">
-            <input type="text" [(ngModel)]="nuevoNombreCargo" placeholder="Escriba el nombre del nuevo cargo" style="flex: 1;">
-            <button type="button" class="btn-save-item" (click)="guardarNuevoCargoCatalogo()">Guardar y Usar</button>
-            <button type="button" class="btn-cancel" (click)="mostrarNuevoCargo = false">Cancelar</button>
-          </div>
-
-          <div class="chips-container mt-2">
-          <span class="chip" *ngFor="let cargo of cargosTemporales; let i = index">
-            {{ cargo.nombre_cargo }} <span class="material-icons" (click)="eliminarCargoTemporal(i)">cancel</span>
-          </span>
-          </div>
-        </div>
-
-        <div class="form-group full-width mt-4" style="background: #f8fafc; padding: 15px; border-radius: 8px;">
-          <label>Empresa *</label>
-
-          <div style="display: flex; gap: 10px;" *ngIf="!mostrarNuevaEmpresa">
-
-            <div style="position: relative; flex: 1;">
-
-              <input type="text"
-                     placeholder="Busca por nombre o RUC de la empresa..."
-                     [(ngModel)]="busquedaEmpresaTexto"
-                     (input)="buscarEmpresaDinamica($event)"
-                     style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px;">
-
-              <div *ngIf="empresasDisponibles.length > 0"
-                   style="position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 50; max-height: 200px; overflow-y: auto; margin-top: 4px;">
-
-                <div *ngFor="let empresa of empresasDisponibles"
-                     (click)="seleccionarEmpresaPred(empresa)"
-                     style="padding: 10px; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background 0.2s;"
-                     onmouseover="this.style.background='#f8fafc'"
-                     onmouseout="this.style.background='white'">
-                  <strong>{{ empresa.nombreEmpresa }}</strong> <br>
-                  <small style="color: #64748b;">RUC: {{ empresa.ruc }}</small>
-                </div>
-
-              </div>
-            </div>
-
-            <button type="button" class="btn-add-section" (click)="mostrarNuevaEmpresa = true" style="padding: 0 15px;">
-              <span class="material-icons">add_business</span> Crear Nueva
-            </button>
-          </div>
-
-          <div class="form-grid" *ngIf="mostrarNuevaEmpresa">
-          <div class="form-group full-width">
-              <input type="text" [(ngModel)]="nuevaEmpresaObj.nombre_empresa" name="nombre_empresa" placeholder="Nombre de la empresa *">
-            </div>
-            <div class="form-group">
-              <input type="text" [(ngModel)]="nuevaEmpresaObj.ruc" name="ruc" placeholder="RUC">
-            </div>
-            <div class="form-group">
-              <select [(ngModel)]="nuevaEmpresaObj.id_categoria" name="id_categoria">
-                <option [ngValue]="null" disabled>Seleccionar Sector/Categoría...</option>
-                <option *ngFor="let cat of categorias" [value]="cat.idCategoria">{{ cat.nombreCategoria }}</option>
-              </select>
-            </div>
-            <div class="form-group full-width" style="display: flex; gap: 10px;">
-              <button type="button" class="btn-save-item" (click)="guardarNuevaEmpresaCatalogo()">Guardar Empresa</button>
-              <button type="button" class="btn-cancel" (click)="mostrarNuevaEmpresa = false">Cancelar</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-grid mt-4">
-          <div class="form-group">
-            <label>Provincia</label>
-            <select [(ngModel)]="nuevaExperiencia.id_provincia" name="id_provincia_exp" (change)="onProvinciaExpChange()">
-              <option [ngValue]="null" disabled>Seleccionar Provincia...</option>
-              <option *ngFor="let p of provincias" [value]="p.idProvincia">{{ p.nombreProvincia }}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Ciudad</label>
-            <select [(ngModel)]="nuevaExperiencia.id_ciudad" name="id_ciudad_exp" [disabled]="!nuevaExperiencia.id_provincia">
-              <option [ngValue]="null" disabled>Seleccionar Ciudad...</option>
-              <option *ngFor="let c of ciudadesExp" [value]="c.idCiudad">{{ c.nombreCiudad }}</option>
-            </select>
-          </div>
-
-          <div class="form-group"><label>Fecha de Inicio *</label><input type="date" [(ngModel)]="nuevaExperiencia.fecha_inicio" name="fecha_inicio"></div>
-          <div class="form-group"><label>Fecha de Fin </label><input type="date" [(ngModel)]="nuevaExperiencia.fecha_fin" name="fecha_fin"></div>
-          <div class="form-group full-width"><label>Descripción de Funciones *</label><textarea [(ngModel)]="nuevaExperiencia.descripcion" name="descripcion" rows="3"></textarea></div>
-        </div>
-
-        <div class="actions-row mt-4">
-          <button type="button" class="btn-attach" (click)="fileInputExp.click()"><span class="material-icons">attach_file</span> {{ nuevaExperiencia.nombreArchivo || 'Adjuntar Certificado (PDF)' }}</button>
-          <input #fileInputExp type="file" (change)="onFileSelected($event, 'experiencia')" hidden accept=".pdf">
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-cancel" (click)="cerrarModales()">Cancelar</button>
-        <button class="btn-save-item" (click)="agregarExperienciaBd()"><span class="material-icons">cloud_upload</span> {{ idEdicionExperiencia ? 'Actualizar' : 'Guardar' }} Experiencia</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" *ngIf="modalCurso">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>{{ idEdicionCurso ? 'Editar' : 'Añadir' }} Curso o Certificación</h2>
-        <button class="btn-close" (click)="cerrarModales()"><span class="material-icons">close</span></button>
-      </div>
-      <div class="modal-body">
-        <div class="form-grid">
-          <div class="form-group full-width">
-            <label>Nombre del Curso/Certificación *</label>
-            <input type="text" [(ngModel)]="nuevoCurso.nombre_curso" name="nombre_curso" placeholder="Ej: AWS Certified Cloud Practitioner">
-          </div>
-          <div class="form-group">
-            <label>Institución *</label>
-            <input type="text" [(ngModel)]="nuevoCurso.institucion" name="institucion" placeholder="Ej: Udemy, Coursera">
-          </div>
-          <div class="form-group">
-            <label>Duración (Horas)</label>
-            <input type="number" [(ngModel)]="nuevoCurso.horas_duracion" name="horas_duracion" placeholder="Ej: 40">
-          </div>
-        </div>
-        <div class="actions-row mt-4">
-          <button type="button" class="btn-attach" (click)="fileInputCurso.click()">
-            <span class="material-icons">attach_file</span> {{ nuevoCurso.nombreArchivo || 'Adjuntar Certificado (PDF)' }}
-          </button>
-          <input #fileInputCurso type="file" (change)="onFileSelected($event, 'curso')" hidden accept=".pdf">
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-cancel" (click)="cerrarModales()">Cancelar</button>
-        <button class="btn-save-item" (click)="agregarCursoBd()"><span class="material-icons">cloud_upload</span> {{ idEdicionCurso ? 'Actualizar' : 'Guardar' }} Curso</button>
-      </div>
-    </div>
-  </div>
-</div>

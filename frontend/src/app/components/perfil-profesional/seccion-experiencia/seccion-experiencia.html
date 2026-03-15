@@ -1,0 +1,153 @@
+<div class="custom-card form-card mt-4">
+  <div class="card-header" style="justify-content: space-between; margin-bottom: 16px;">
+    <div style="display: flex; gap: 16px; align-items: center;">
+      <div class="icon-box"><span class="material-icons">work</span></div>
+      <div>
+        <h1>Experiencia Laboral</h1>
+        <p>Tu trayectoria profesional y cargos anteriores</p>
+      </div>
+    </div>
+    <button (click)="abrirModal()" class="btn-add-section" type="button">
+      <span class="material-icons">add</span> Añadir Experiencia
+    </button>
+  </div>
+
+  <div class="registered-items" *ngIf="experiencias && experiencias.length > 0">
+    <div *ngFor="let item of experiencias; let i = index" class="document-item-card">
+      <div class="card-left-icon status-valid"><span class="material-icons">badge</span></div>
+
+      <div class="card-content">
+        <h3>
+          <span *ngFor="let c of item.cargos; let isLast = last">
+            {{ c.nombre_cargo }}{{ !isLast ? ', ' : '' }}
+          </span>
+          - {{ item.nombre_empresa }}
+        </h3>
+        <p>{{ item.fecha_inicio | date: 'MM/yyyy' }} - {{ item.fecha_fin ? (item.fecha_fin | date: 'MM/yyyy') : 'Actualidad' }} | {{ item.nombre_ciudad }}, {{ item.nombre_provincia }}</p>
+      </div>
+
+      <div class="card-actions">
+        <button class="btn-ver-pdf" (click)="onVerPdf.emit(item.nombreArchivo)" *ngIf="item.nombreArchivo">
+          <span class="material-icons">description</span> Ver PDF
+        </button>
+        <button class="btn-eliminar" (click)="editar(item)" title="Editar">
+          <span class="material-icons" style="color: #3b82f6;">edit</span>
+        </button>
+        <button class="btn-eliminar" (click)="onEliminar.emit({index: i, id: item.id_exp_laboral})" title="Eliminar">
+          <span class="material-icons">delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!experiencias || experiencias.length === 0" style="text-align: center; padding: 20px; color: #64748b;">
+    <span class="material-icons" style="font-size: 40px; opacity: 0.5;">work_outline</span>
+    <p>No tienes experiencias laborales registradas.</p>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="modalExperiencia">
+  <div class="modal-content" style="max-width: 700px; width: 90%;">
+    <div class="modal-header">
+      <h2>{{ idEdicionExperiencia ? 'Editar' : 'Añadir' }} Experiencia Laboral</h2>
+      <button class="btn-close" (click)="cerrarModal()"><span class="material-icons">close</span></button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-group full-width" style="background: #f8fafc; padding: 15px; border-radius: 8px;">
+        <label>Cargos Desempeñados *</label>
+        <div style="display: flex; gap: 10px;" *ngIf="!mostrarNuevoCargo">
+          <div style="position: relative; flex: 1;">
+            <input type="text" placeholder="Buscar un cargo..." [(ngModel)]="busquedaCargoTexto" (input)="buscarCargoLocal($event)" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px;">
+            <div *ngIf="cargosDisponibles.length > 0" style="position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 50; max-height: 200px; overflow-y: auto; margin-top: 4px;">
+              <div *ngFor="let cargo of cargosDisponibles" (click)="seleccionarCargoPred(cargo)" style="padding: 10px; cursor: pointer; border-bottom: 1px solid #f1f5f9; transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                {{ cargo.nombreCargo }}
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn-add-cargo" (click)="agregarCargoTemporal()"><span class="material-icons">add</span></button>
+          <button type="button" class="btn-add-section" (click)="mostrarNuevoCargo = true" style="padding: 0 15px;">Crear Nuevo</button>
+        </div>
+
+        <div style="display: flex; gap: 10px;" *ngIf="mostrarNuevoCargo">
+          <input type="text" [(ngModel)]="nuevoNombreCargo" placeholder="Escriba el nombre del nuevo cargo" style="flex: 1;">
+          <button type="button" class="btn-save-item" (click)="guardarNuevoCargoLocal()">Guardar y Usar</button>
+          <button type="button" class="btn-cancel" (click)="mostrarNuevoCargo = false">Cancelar</button>
+        </div>
+
+        <div class="chips-container mt-2">
+          <span class="chip" *ngFor="let cargo of cargosTemporales; let i = index">
+            {{ cargo.nombre_cargo }} <span class="material-icons" (click)="eliminarCargoTemporal(i)">cancel</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="form-group full-width mt-4" style="background: #f8fafc; padding: 15px; border-radius: 8px;">
+        <label>Empresa *</label>
+        <div style="display: flex; gap: 10px;" *ngIf="!mostrarNuevaEmpresa">
+          <div style="position: relative; flex: 1;">
+            <input type="text" placeholder="Buscar empresa..." [(ngModel)]="busquedaEmpresaTexto" (input)="buscarEmpresaLocal($event)" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px;">
+            <div *ngIf="empresasDisponibles.length > 0" style="position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 50; max-height: 200px; overflow-y: auto; margin-top: 4px;">
+              <div *ngFor="let empresa of empresasDisponibles" (click)="seleccionarEmpresaPred(empresa)" style="padding: 10px; cursor: pointer; border-bottom: 1px solid #f1f5f9;">
+                <strong>{{ empresa.nombreEmpresa }}</strong> <br>
+                <small style="color: #64748b;">RUC: {{ empresa.ruc }}</small>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn-add-section" (click)="mostrarNuevaEmpresa = true" style="padding: 0 15px;">
+            <span class="material-icons">add_business</span> Crear Nueva
+          </button>
+        </div>
+
+        <div class="form-grid" *ngIf="mostrarNuevaEmpresa">
+          <div class="form-group full-width">
+            <input type="text" [(ngModel)]="nuevaEmpresaObj.nombre_empresa" placeholder="Nombre de la empresa *">
+          </div>
+          <div class="form-group">
+            <input type="text" [(ngModel)]="nuevaEmpresaObj.ruc" placeholder="RUC">
+          </div>
+          <div class="form-group">
+            <select [(ngModel)]="nuevaEmpresaObj.id_categoria">
+              <option [ngValue]="null" disabled>Seleccionar Sector...</option>
+              <option *ngFor="let cat of categorias" [value]="cat.idCategoria">{{ cat.nombreCategoria }}</option>
+            </select>
+          </div>
+          <div class="form-group full-width" style="display: flex; gap: 10px;">
+            <button type="button" class="btn-save-item" (click)="guardarNuevaEmpresaLocal()">Guardar Empresa</button>
+            <button type="button" class="btn-cancel" (click)="mostrarNuevaEmpresa = false">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-grid mt-4">
+        <div class="form-group">
+          <label>Provincia</label>
+          <select [(ngModel)]="nuevaExperiencia.id_provincia" (change)="provinciaCambio()">
+            <option [ngValue]="null" disabled>Seleccionar Provincia...</option>
+            <option *ngFor="let p of provincias" [value]="p.idProvincia">{{ p.nombreProvincia }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Ciudad</label>
+          <select [(ngModel)]="nuevaExperiencia.id_ciudad" [disabled]="!nuevaExperiencia.id_provincia">
+            <option [ngValue]="null" disabled>Seleccionar Ciudad...</option>
+            <option *ngFor="let c of ciudadesExp" [value]="c.idCiudad">{{ c.nombreCiudad }}</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Fecha de Inicio *</label><input type="date" [(ngModel)]="nuevaExperiencia.fecha_inicio"></div>
+        <div class="form-group"><label>Fecha de Fin </label><input type="date" [(ngModel)]="nuevaExperiencia.fecha_fin"></div>
+        <div class="form-group full-width"><label>Descripción de Funciones *</label><textarea [(ngModel)]="nuevaExperiencia.descripcion" rows="3"></textarea></div>
+      </div>
+
+      <div class="actions-row mt-4">
+        <button type="button" class="btn-attach" (click)="fileInputExp.click()"><span class="material-icons">attach_file</span> {{ nuevaExperiencia.nombreArchivo || 'Adjuntar Certificado (PDF)' }}</button>
+        <input #fileInputExp type="file" (change)="onFileSelected($event)" hidden accept=".pdf">
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cerrarModal()">Cancelar</button>
+      <button class="btn-save-item" (click)="prepararGuardado()"><span class="material-icons">cloud_upload</span> {{ idEdicionExperiencia ? 'Actualizar' : 'Guardar' }} Experiencia</button>
+    </div>
+  </div>
+</div>

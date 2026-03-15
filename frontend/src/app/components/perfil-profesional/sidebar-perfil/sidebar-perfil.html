@@ -1,0 +1,32 @@
+<div class="custom-card summary-card sticky-card">
+  <div class="logo-circle" (click)="triggerFileInput()" title="Clic para subir foto" style="position: relative; border-style: solid;">
+
+    <input type="file" id="fotoInput" accept="image/*" style="display: none" (change)="onFileChange($event)">
+
+    <img *ngIf="fotoUrl" [src]="fotoUrl" alt="Foto del Postulante">
+
+    <div *ngIf="!fotoUrl" class="empty-photo">
+      <span class="material-icons">add_a_photo</span>
+      <small>Subir Foto</small>
+    </div>
+
+    <div class="edit-overlay-icon">
+      <span class="material-icons">photo_camera</span>
+    </div>
+  </div>
+
+  <h2>{{ perfil.nombreCompleto || 'Tu Nombre Completo' }}</h2>
+  <p class="role-text">{{ rol || 'Postulante' }}</p>
+
+  <div class="divider"></div>
+
+  <div class="progress-section">
+    <div class="progress-label">
+      <span>Completitud del Perfil</span>
+      <span class="percentage">{{ completitudPerfil || 0 }}%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" [style.width.%]="completitudPerfil"></div>
+    </div>
+  </div>
+</div>

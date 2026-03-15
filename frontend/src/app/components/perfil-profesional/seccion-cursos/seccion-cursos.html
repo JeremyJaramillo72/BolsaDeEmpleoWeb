@@ -1,0 +1,75 @@
+<div class="custom-card form-card mt-4">
+  <div class="card-header" style="justify-content: space-between; margin-bottom: 16px;">
+    <div style="display: flex; gap: 16px; align-items: center;">
+      <div class="icon-box"><span class="material-icons">workspace_premium</span></div>
+      <div>
+        <h1>Cursos y Certificaciones</h1>
+        <p>Formación adicional, talleres y certificaciones obtenidas</p>
+      </div>
+    </div>
+    <button (click)="abrirModal()" class="btn-add-section" type="button">
+      <span class="material-icons">add</span> Añadir Curso
+    </button>
+  </div>
+
+  <div class="registered-items" *ngIf="cursos && cursos.length > 0">
+    <div *ngFor="let item of cursos; let i = index" class="document-item-card">
+      <div class="card-left-icon status-valid"><span class="material-icons">military_tech</span></div>
+      <div class="card-content">
+        <h3>{{ item.nombre_curso }}</h3>
+        <p>{{ item.institucion }} | Duración: {{ item.horas_duracion }} horas</p>
+      </div>
+      <div class="card-actions">
+        <button class="btn-ver-pdf" (click)="onVerPdf.emit(item.nombreArchivo)" *ngIf="item.nombreArchivo">
+          <span class="material-icons">description</span> Ver PDF
+        </button>
+        <button class="btn-eliminar" (click)="editar(item)" title="Editar">
+          <span class="material-icons" style="color: #3b82f6;">edit</span>
+        </button>
+        <button class="btn-eliminar" (click)="onEliminar.emit({index: i, id: item.id_curso})" title="Eliminar">
+          <span class="material-icons">delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!cursos || cursos.length === 0" style="text-align: center; padding: 20px; color: #64748b;">
+    <span class="material-icons" style="font-size: 40px; opacity: 0.5;">emoji_events</span>
+    <p>No tienes cursos o certificaciones registradas.</p>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="modalCurso">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>{{ idEdicionCurso ? 'Editar' : 'Añadir' }} Curso o Certificación</h2>
+      <button class="btn-close" (click)="cerrarModal()"><span class="material-icons">close</span></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label>Nombre del Curso/Certificación *</label>
+          <input type="text" [(ngModel)]="nuevoCurso.nombre_curso" name="nombre_curso" placeholder="Ej: AWS Certified Cloud Practitioner">
+        </div>
+        <div class="form-group">
+          <label>Institución *</label>
+          <input type="text" [(ngModel)]="nuevoCurso.institucion" name="institucion" placeholder="Ej: Udemy, Coursera">
+        </div>
+        <div class="form-group">
+          <label>Duración (Horas)</label>
+          <input type="number" [(ngModel)]="nuevoCurso.horas_duracion" name="horas_duracion" placeholder="Ej: 40">
+        </div>
+      </div>
+      <div class="actions-row mt-4">
+        <button type="button" class="btn-attach" (click)="fileInputCurso.click()">
+          <span class="material-icons">attach_file</span> {{ nuevoCurso.nombreArchivo || 'Adjuntar Certificado (PDF)' }}
+        </button>
+        <input #fileInputCurso type="file" (change)="onFileSelected($event)" hidden accept=".pdf">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cerrarModal()">Cancelar</button>
+      <button class="btn-save-item" (click)="prepararGuardado()"><span class="material-icons">cloud_upload</span> {{ idEdicionCurso ? 'Actualizar' : 'Guardar' }} Curso</button>
+    </div>
+  </div>
+</div>

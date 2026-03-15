@@ -62,7 +62,7 @@ public class BackupAutomatizacionService {
         historialRepo.save(historial);
     }
 
-    @Scheduled(cron = "0 * * * * ?") // Ejecuta en el segundo 0 de CADA MINUTO
+    @Scheduled(cron = "0 * * * * ?")
     public void revisarYEjecutarBackupAutomatico() {
         ConfiguracionBackup config = obtenerConfiguracion();
 
