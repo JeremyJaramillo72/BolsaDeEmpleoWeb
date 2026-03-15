@@ -30,7 +30,7 @@
         <thead>
         <tr>
           <th>Usuario y Contacto</th>
-          <th>Rol de Base de Datos</th>
+          <th>Rol de Aplicativo</th>
           <th>Fecha Creación</th>
           <th>Permisos de Interfaz</th>
           <th class="text-center">Estado</th>
@@ -71,7 +71,7 @@
                   {{ p }}
                 </span>
               <span class="text-muted text-sm" *ngIf="!admin.permisosUI || admin.permisosUI.length === 0">
-                  Sin permisos
+                  Depende del Rol
                 </span>
             </div>
           </td>
@@ -133,71 +133,56 @@
         </div>
       </div>
 
-      <div class="form-grid">
-        <div class="form-section">
-          <h4 class="section-subtitle"><span class="material-icons text-blue">badge</span> Datos del Usuario</h4>
+      <div class="form-section" style="max-width: 600px; margin: 0 auto; padding-top: 1.5rem;">
+        <h4 class="section-subtitle mb-4"><span class="material-icons text-blue">badge</span> Datos del Usuario</h4>
 
-          <div class="form-group mt-3">
-            <label>Correo Electrónico (Usuario) <span class="required">*</span></label>
-            <div class="input-wrapper">
-              <span class="material-icons">mail</span>
-              <input type="email" name="usuario" required [(ngModel)]="nuevoAdmin.usuario" #usuarioCtrl="ngModel" placeholder="ejemplo@correo.com">
-            </div>
-            <small class="error-text" *ngIf="usuarioCtrl.invalid && usuarioCtrl.touched">Ingresa un correo válido.</small>
+        <div class="form-group">
+          <label>Correo Electrónico (Usuario) <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <span class="material-icons">mail</span>
+            <input type="email" name="usuario" required [(ngModel)]="nuevoAdmin.usuario" #usuarioCtrl="ngModel" placeholder="ejemplo@correo.com">
           </div>
+          <small class="error-text" *ngIf="usuarioCtrl.invalid && usuarioCtrl.touched">Ingresa un correo válido.</small>
+        </div>
 
+        <div class="form-group mt-3">
+          <label>Contraseña Temporal <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <span class="material-icons">password</span>
+            <input type="password" [(ngModel)]="nuevoAdmin.contrasena" placeholder="********">
+          </div>
+        </div>
+
+        <div class="form-group-row mt-3">
           <div class="form-group">
-            <label>Contraseña Temporal <span class="required">*</span></label>
+            <label>Nombre</label>
             <div class="input-wrapper">
-              <span class="material-icons">password</span>
-              <input type="password" [(ngModel)]="nuevoAdmin.contrasena" placeholder="********">
+              <span class="material-icons">person</span>
+              <input type="text" [(ngModel)]="nuevoAdmin.nombre" placeholder="Ej: Juan">
             </div>
           </div>
-
-          <div class="form-group-row">
-            <div class="form-group">
-              <label>Nombre</label>
-              <div class="input-wrapper">
-                <span class="material-icons">person</span>
-                <input type="text" [(ngModel)]="nuevoAdmin.nombre" placeholder="Ej: Juan">
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Apellido</label>
-              <div class="input-wrapper">
-                <input type="text" [(ngModel)]="nuevoAdmin.apellido" placeholder="Ej: Pérez">
-              </div>
-            </div>
-          </div>
-
           <div class="form-group">
-            <label>Rol de Base de Datos <span class="required">*</span></label>
+            <label>Apellido</label>
             <div class="input-wrapper">
-              <span class="material-icons text-blue">shield</span>
-              <select [(ngModel)]="nuevoAdmin.rolId">
-                <option [ngValue]="null" disabled>Seleccione un rol...</option>
-                <option *ngFor="let rol of rolesDisponibles" [ngValue]="rol.id">{{ rol.etiqueta }}</option>
-              </select>
-              <span class="material-icons select-chevron">expand_more</span>
+              <input type="text" [(ngModel)]="nuevoAdmin.apellido" placeholder="Ej: Pérez">
             </div>
           </div>
         </div>
 
-        <div class="form-section">
-          <h4 class="section-subtitle"><span class="material-icons text-green">dashboard_customize</span> Permisos de Interfaz (UI)</h4>
-          <p class="text-muted text-sm mb-3">Seleccione las pantallas a las que tendrá acceso este usuario.</p>
-
-          <div class="checkbox-grid">
-            <label *ngFor="let seccion of seccionesDisponibles" class="checkbox-card" [class.checked]="seccion.seleccionada">
-              <input type="checkbox" [(ngModel)]="seccion.seleccionada">
-              <span class="material-icons card-icon">{{ seccion.seleccionada ? 'check_box' : 'check_box_outline_blank' }}</span>
-              <span>{{ seccion.nombre }}</span>
-            </label>
+        <div class="form-group mt-3">
+          <label>Rol de Aplicativo <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <span class="material-icons text-blue">shield</span>
+            <select [(ngModel)]="nuevoAdmin.rolId">
+              <option [ngValue]="null" disabled>Seleccione un rol...</option>
+              <option *ngFor="let rol of rolesDisponibles" [ngValue]="rol.id">{{ rol.etiqueta }}</option>
+            </select>
+            <span class="material-icons select-chevron">expand_more</span>
           </div>
         </div>
       </div>
 
-      <div class="form-actions-bottom">
+      <div class="form-actions-bottom mt-4" style="justify-content: center; padding-top: 2rem; border-top: 1px solid #e2e8f0;">
         <button class="btn-secondary" (click)="cancelarCreacion()">Cancelar</button>
         <button class="btn-primary" (click)="guardarAdmin()">
           <span class="material-icons">save</span> Guardar Usuario

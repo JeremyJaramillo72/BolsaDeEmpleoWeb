@@ -1,0 +1,59 @@
+<div class="alert alert-success" *ngIf="mensajeExito">
+  <span class="material-icons">check_circle</span> {{ mensajeExito }}
+</div>
+<div class="alert alert-error" *ngIf="mensajeError">
+  <span class="material-icons">error_outline</span> {{ mensajeError }}
+</div>
+
+<div class="section-card">
+  <div class="section-header">
+    <div class="icon-box-title text-indigo"><span class="material-icons">account_balance</span></div>
+    <h3>{{ idEditando ? 'Editando Facultad' : 'Facultades de la Universidad' }}</h3>
+  </div>
+
+  <div class="form-inline">
+    <div class="form-group flex-1">
+      <label>{{ idEditando ? 'Modificar Nombre' : 'Nueva Facultad' }}</label>
+      <div class="input-wrapper">
+        <span class="material-icons text-muted">edit</span>
+        <input type="text" [(ngModel)]="nuevaFacultad.nombre" class="form-control" placeholder="Ej: Facultad de Ciencias Agrarias" (keyup.enter)="guardarFacultad()">
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 10px;">
+      <button class="btn-primary" *ngIf="!idEditando" (click)="guardarFacultad()">
+        <span class="material-icons">add</span> Agregar
+      </button>
+
+      <button class="btn-primary" *ngIf="idEditando" (click)="guardarFacultad()" style="background-color: #10b981;">
+        <span class="material-icons">save</span> Actualizar
+      </button>
+
+      <button class="btn-secondary" *ngIf="idEditando" (click)="cancelarEdicion()" style="background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 0.7rem 1.5rem; border-radius: 10px; font-weight: 600; cursor: pointer;">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <div class="items-list">
+    <div class="item-card" *ngFor="let fac of facultades">
+      <div class="item-info">
+        <span class="material-icons item-icon text-indigo">domain</span>
+        <span class="item-name">{{ fac.nombreFacultad }}</span>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-action-icon edit" (click)="editarFacultad(fac)" title="Editar" style="color: #3b82f6;">
+          <span class="material-icons">edit</span>
+        </button>
+        <button class="btn-action-icon delete" (click)="eliminarFacultad(fac.idFacultad!)" title="Eliminar">
+          <span class="material-icons">delete_outline</span>
+        </button>
+      </div>
+
+    </div>
+    <div class="empty-state" *ngIf="facultades.length === 0">
+      <span class="material-icons">domain_disabled</span><p>No hay facultades registradas.</p>
+    </div>
+  </div>
+</div>

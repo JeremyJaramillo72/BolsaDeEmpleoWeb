@@ -39,16 +39,31 @@
 
 /* ===== TABS (NAVEGACIÓN) ===== */
 .tabs-container {
-  display: flex; gap: 8px; background: white; padding: 8px; border-radius: 12px;
-  border: 1px solid #e2e8f0; overflow-x: auto; margin-bottom: 2rem;
+  display: flex;
+  gap: 8px;
+  background: white;
+  padding: 8px;
+  padding-bottom: 12px; /* Un poco de aire abajo para la barrita de scroll */
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow-x: auto;
+  margin-bottom: 2rem;
+  /* Scrollbar moderno para Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
 }
-/* Ocultar barra de scroll en los tabs */
-.tabs-container::-webkit-scrollbar { height: 0px; background: transparent; }
+
+/* Scrollbar moderno para Chrome, Edge y Safari */
+.tabs-container::-webkit-scrollbar { height: 6px; }
+.tabs-container::-webkit-scrollbar-track { background: transparent; }
+.tabs-container::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
 
 .tab-button {
   background: transparent; border: none; color: #64748b; padding: 0.8rem 1.2rem;
   border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer;
-  display: flex; align-items: center; gap: 8px; transition: all 0.2s; white-space: nowrap;
+  display: flex; align-items: center; gap: 8px; transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0; /* Evita que el botón se aplaste */
 }
 .tab-button:hover { background: #f8fafc; color: #0f172a; }
 .tab-button.active { background: #eff6ff; color: #2563eb; font-weight: 700; }
@@ -101,9 +116,34 @@
 }
 .btn-action-icon.delete:hover { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
 
-/* ===== LISTA DE ITEMS ===== */
-.items-list { display: flex; flex-direction: column; gap: 10px; }
+/* ===== LISTA DE ITEMS (CON SCROLL VERTICAL) ===== */
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* Altura máxima calculada para unos ~5 items (aprox 400px) */
+  max-height: 420px;
+  overflow-y: auto; /* Activa el scroll vertical si se pasa del alto máximo */
+  padding-right: 8px; /* Un poquito de espacio para que el scroll no choque con el borde de la tarjeta */
 
+  /* Scrollbar moderno para Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+/* Scrollbar moderno para Chrome, Edge y Safari */
+.items-list::-webkit-scrollbar {
+  width: 6px;
+}
+.items-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.items-list::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 10px;
+}
+
+/* Resto de los estilos de item-card que ya tenías */
 .item-card {
   background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem 1.5rem;
   display: flex; justify-content: space-between; align-items: center; transition: all 0.2s ease;
@@ -115,7 +155,6 @@
 .item-details { display: flex; flex-direction: column; gap: 2px; }
 .item-name { color: #1e293b; font-weight: 700; font-size: 1rem; }
 .item-subtitle { color: #64748b; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 4px;}
-
 /* ===== ESTADOS VACÍOS ===== */
 .empty-state { text-align: center; padding: 3rem 1rem; color: #94a3b8; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1; }
 .empty-state .material-icons { font-size: 3rem; color: #cbd5e1; margin-bottom: 0.5rem; }

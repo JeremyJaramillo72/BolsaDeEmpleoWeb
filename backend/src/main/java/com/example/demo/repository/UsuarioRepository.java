@@ -52,8 +52,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
             @Param("p_genero") String genero,
             @Param("p_telefono") String telf,
             @Param("p_id_ciudad") Integer idCiudad,
-            @Param("p_id_rol") Integer idRol,
-            @Param("p_permisos_ui") String permisosUi
+            @Param("p_id_rol") Integer idRol
     );
 
     @Modifying

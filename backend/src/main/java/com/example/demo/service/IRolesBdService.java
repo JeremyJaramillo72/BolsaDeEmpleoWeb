@@ -12,4 +12,7 @@ public interface IRolesBdService {
     void crearYAsignarPermisos(Map<String, Object> datos);
     Map<String, Object> consultarPermisosDeRol(String roleName);
     void eliminarRol(String roleName);
+    void actualizarYAsignarPermisos(String idRolViejo, Map<String, Object> datos);
+
+    List<Map<String, Object>> consultarUsuariosDeRol(String roleName);
 }

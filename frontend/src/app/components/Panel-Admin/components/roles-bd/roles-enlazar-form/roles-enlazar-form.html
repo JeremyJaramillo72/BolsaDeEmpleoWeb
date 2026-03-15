@@ -1,0 +1,80 @@
+<div class="form-container fade-in" *ngIf="rolAEnlazar">
+
+  <div class="form-header">
+    <div class="header-title">
+      <div class="icon-box-header">
+        <span class="material-icons">link</span>
+      </div>
+      <div>
+        <h2>Enlazar Permisos a: <span class="highlight-role">{{ rolAEnlazar.nombre }}</span></h2>
+        <p>Conecta este rol de base de datos con un rol del sistema y define sus accesos a la interfaz.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-body">
+    <div class="section-card">
+      <div class="section-header">
+        <span class="material-icons">badge</span>
+        <h3>Rol de Aplicativo (Sistema)</h3>
+      </div>
+      <p class="section-desc">Selecciona el rol lógico de la aplicación que se vinculará con este rol de BD.</p>
+
+      <div class="form-group">
+        <label>Rol del Sistema *</label>
+        <div class="select-wrapper">
+          <select [(ngModel)]="rolAplicativoSeleccionado" class="form-control elegant-select">
+            <option [ngValue]="null" disabled selected>-- Seleccione un Rol de Aplicativo --</option>
+            <option *ngFor="let rolApp of rolesAplicativo" [value]="rolApp.id">
+              {{ rolApp.nombre }}
+            </option>
+          </select>
+          <span class="material-icons select-icon">expand_more</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card mt-4">
+      <div class="section-header">
+        <span class="material-icons" style="color: #10b981;">widgets</span>
+        <h3>Permisos de Interfaz (UI)</h3>
+      </div>
+      <p class="section-desc">Seleccione las pantallas a las que tendrá acceso este rol.</p>
+
+      <div class="permisos-contenedor">
+
+        <div class="grupo-permisos" *ngFor="let grupo of gruposModulosUI">
+
+          <h4 class="titulo-grupo">{{ grupo.categoria }}</h4>
+
+          <div class="modulos-list">
+            <div
+              class="modulo-item"
+              *ngFor="let modulo of grupo.modulos"
+              [class.selected]="modulo.seleccionado"
+              (click)="toggleModulo(modulo)">
+
+              <div class="checkbox-custom" [class.checked]="modulo.seleccionado">
+                <span class="material-icons" *ngIf="modulo.seleccionado">check</span>
+              </div>
+              <span class="modulo-name">{{ modulo.nombre }}</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="button" class="btn-cancelar" (click)="cancelar()" [disabled]="guardando">
+      Cancelar
+    </button>
+    <button type="button" class="btn-guardar" (click)="guardar()" [disabled]="guardando">
+      <span class="material-icons" *ngIf="!guardando">save</span>
+      <div class="spinner-small" *ngIf="guardando"></div>
+      {{ guardando ? 'Guardando...' : 'Guardar Enlace' }}
+    </button>
+  </div>
+</div>

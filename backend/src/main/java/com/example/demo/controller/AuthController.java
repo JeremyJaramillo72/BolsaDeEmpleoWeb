@@ -160,7 +160,7 @@ public class AuthController {
                         response.put("idUsuario", usuario.getIdUsuario());
                         response.put("rol", usuario.getRol());
                         response.put("nombre", usuario.getNombre());
-                        response.put("permisosUi", usuario.getPermisosUi());
+                        //response.put("permisosUi", usuario.getPermisosUi());
                         if ("Administrador".equalsIgnoreCase(nombreRol)) {
                             try {
                                 String ip = obtenerIp(httpRequest);

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AdminService } from '../../services/admin.service';
 import { ConfirmService } from '../../../../services/confirm.service';
 import { RolesBdFormComponent } from './roles-bd-form/roles-bd-form';
+import { RolesEnlazarFormComponent } from './roles-enlazar-form/roles-enlazar-form';
 
 // Exportamos las interfaces para usarlas en el hijo
 export interface Permiso {
@@ -52,12 +53,12 @@ export interface RolCreado {
 @Component({
   selector: 'app-roles-bd',
   standalone: true,
-  imports: [CommonModule, RolesBdFormComponent], // Importamos el componente hijo
+  imports: [CommonModule, RolesBdFormComponent , RolesEnlazarFormComponent],
   templateUrl: './roles-bd.html',
   styleUrls: ['./roles-bd.css']
 })
 export class RolesBdComponent implements OnInit {
-  vistaActual: 'LISTA' | 'CREAR' | 'EDITAR' = 'LISTA';
+  vistaActual: 'LISTA' | 'CREAR' | 'EDITAR' | 'ENLAZAR' = 'LISTA';
   rolesCreados: RolCreado[] = [];
   cargando = false;
   mensajeExito = '';
@@ -72,6 +73,11 @@ export class RolesBdComponent implements OnInit {
 
   ngOnInit() {
     this.cargarRolesCreados();
+  }
+
+  irAEnlazar(rol: RolCreado): void {
+    this.rolEnEdicion = rol; // Reutilizamos esta variable para pasarle los datos al hijo
+    this.vistaActual = 'ENLAZAR';
   }
 
   cargarRolesCreados(): void {

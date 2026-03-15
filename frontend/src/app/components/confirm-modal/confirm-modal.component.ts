@@ -15,12 +15,15 @@ export class ConfirmModalComponent implements OnInit, OnDestroy {
   visible  = false;
   titulo   = '';
   mensaje  = '';
+  tipo: 'confirmacion' | 'advertencia' = 'confirmacion'; // <-- NUEVA VARIABLE
 
   private resolver: ((valor: boolean) => void) | null = null;
   private sub!: Subscription;
 
-  constructor(private confirmService: ConfirmService,
-  private cdr: ChangeDetectorRef) {}
+  constructor(
+    private confirmService: ConfirmService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.sub = this.confirmService.peticion$.subscribe((peticion: ConfirmPeticion | null) => {
@@ -28,6 +31,7 @@ export class ConfirmModalComponent implements OnInit, OnDestroy {
         Promise.resolve().then(() => {
           this.titulo = peticion.titulo;
           this.mensaje = peticion.mensaje;
+          this.tipo = peticion.tipo; // <-- CAPTURAMOS EL TIPO AQUÍ
           this.resolver = peticion.resolver;
           this.visible = true;
           this.cdr.detectChanges();

@@ -64,6 +64,14 @@
             </div>
           </div>
         </div>
+
+        <div class="rol-footer">
+          <button class="btn-enlazar" (click)="irAEnlazar(rol)">
+            <span class="material-icons">link</span>
+            Enlazar Permisos UI
+          </button>
+        </div>
+
       </div>
 
       <div class="empty-state" *ngIf="rolesCreados.length === 0">
@@ -87,5 +95,13 @@
     (guardado)="onRolGuardado($event)"
     (error)="mostrarError($event)">
   </app-roles-bd-form>
+
+  <app-roles-enlazar-form
+    *ngIf="vistaActual === 'ENLAZAR'"
+    [rolAEnlazar]="rolEnEdicion"
+    (cancelado)="irALista()"
+    (guardado)="onRolGuardado($event)"
+    (error)="mostrarError($event)">
+  </app-roles-enlazar-form>
 
 </div>

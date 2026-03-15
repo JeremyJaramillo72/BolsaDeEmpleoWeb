@@ -1,0 +1,57 @@
+<div class="alert alert-success" *ngIf="mensajeExito">
+  <span class="material-icons">check_circle</span> {{ mensajeExito }}
+</div>
+<div class="alert alert-error" *ngIf="mensajeError">
+  <span class="material-icons">error_outline</span> {{ mensajeError }}
+</div>
+
+<div class="section-card">
+  <div class="section-header">
+    <div class="icon-box-title text-blue"><span class="material-icons">folder_copy</span></div>
+    <h3>{{ idEditando ? 'Editando Categoría' : 'Categorías de Ofertas' }}</h3>
+  </div>
+
+  <div class="form-inline">
+    <div class="form-group flex-1">
+      <label>{{ idEditando ? 'Modificar Nombre' : 'Nueva Categoría' }}</label>
+      <div class="input-wrapper">
+        <span class="material-icons text-muted">edit</span>
+        <input type="text" [(ngModel)]="nuevaCategoria.nombre" class="form-control" placeholder="Ej: Tecnología y Sistemas" (keyup.enter)="guardarCategoria()">
+      </div>
+    </div>
+
+    <button class="btn-primary" *ngIf="!idEditando" (click)="guardarCategoria()">
+      <span class="material-icons">add</span> Agregar
+    </button>
+
+    <button class="btn-primary" *ngIf="idEditando" (click)="guardarCategoria()" style="background-color: #10b981;">
+      <span class="material-icons">save</span> Actualizar
+    </button>
+
+    <button class="btn-secondary" *ngIf="idEditando" (click)="cancelarEdicion()" style="background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 0.7rem 1.5rem; border-radius: 10px; font-weight: 600; cursor: pointer;">
+      Cancelar
+    </button>
+  </div>
+
+  <div class="items-list">
+    <div class="item-card" *ngFor="let cat of categorias">
+      <div class="item-info">
+        <span class="material-icons item-icon text-blue">folder</span>
+        <span class="item-name">{{ cat.nombreCategoria }}</span>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-action-icon edit" (click)="editarCategoria(cat)" title="Editar" style="color: #3b82f6;">
+          <span class="material-icons">edit</span>
+        </button>
+        <button class="btn-action-icon delete" (click)="eliminarCategoria(cat.idCategoria!)" title="Eliminar">
+          <span class="material-icons">delete_outline</span>
+        </button>
+      </div>
+
+    </div>
+    <div class="empty-state" *ngIf="categorias.length === 0">
+      <span class="material-icons">inbox</span><p>No hay categorías registradas.</p>
+    </div>
+  </div>
+</div>

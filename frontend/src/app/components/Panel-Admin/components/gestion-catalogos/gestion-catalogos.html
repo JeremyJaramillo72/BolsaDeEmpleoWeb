@@ -10,16 +10,6 @@
     </div>
   </div>
 
-  <div class="alert alert-success" *ngIf="mensajeExito">
-    <span class="material-icons">check_circle</span>
-    {{ mensajeExito }}
-  </div>
-
-  <div class="alert alert-error" *ngIf="mensajeError">
-    <span class="material-icons">error_outline</span>
-    {{ mensajeError }}
-  </div>
-
   <div class="tabs-container">
     <button class="tab-button" [class.active]="tabActiva === 'categorias'" (click)="cambiarTab('categorias')">
       <span class="material-icons">category</span> Categorías
@@ -42,252 +32,28 @@
     <button class="tab-button" [class.active]="tabActiva === 'roles'" (click)="cambiarTab('roles')">
       <span class="material-icons">shield</span> Roles
     </button>
+
+    <button class="tab-button" [class.active]="tabActiva === 'provincias'" (click)="cambiarTab('provincias')">
+      <span class="material-icons">map</span> Provincias
+    </button>
+    <button class="tab-button" [class.active]="tabActiva === 'ciudades'" (click)="cambiarTab('ciudades')">
+      <span class="material-icons">location_city</span> Ciudades
+    </button>
+
   </div>
 
   <div class="tab-content fade-in">
+    <app-categorias *ngIf="tabActiva === 'categorias'"></app-categorias>
+    <app-carreras *ngIf="tabActiva === 'carreras'"></app-carreras>
+    <app-facultades *ngIf="tabActiva === 'facultades'"></app-facultades>
+    <app-idiomas *ngIf="tabActiva === 'idiomas'"></app-idiomas>
+    <app-jornadas *ngIf="tabActiva === 'jornadas'"></app-jornadas>
+    <app-modalidades *ngIf="tabActiva === 'modalidades'"></app-modalidades>
+    <app-roles *ngIf="tabActiva === 'roles'"></app-roles>
 
-    <div class="section-card" *ngIf="tabActiva === 'categorias'">
-      <div class="section-header">
-        <div class="icon-box-title text-blue"><span class="material-icons">folder_copy</span></div>
-        <h3>Categorías de Ofertas</h3>
-      </div>
+    <app-provincias *ngIf="tabActiva === 'provincias'"></app-provincias>
+    <app-ciudades *ngIf="tabActiva === 'ciudades'"></app-ciudades>
 
-      <div class="form-inline">
-        <div class="form-group flex-1">
-          <label>Nueva Categoría</label>
-          <div class="input-wrapper">
-            <span class="material-icons text-muted">edit</span>
-            <input type="text" [(ngModel)]="nuevaCategoria.nombre" class="form-control" placeholder="Ej: Tecnología y Sistemas" (keyup.enter)="agregarCategoria()">
-          </div>
-        </div>
-        <button class="btn-primary" (click)="agregarCategoria()"><span class="material-icons">add</span> Agregar</button>
-      </div>
-
-      <div class="items-list">
-        <div class="item-card" *ngFor="let cat of categorias">
-          <div class="item-info">
-            <span class="material-icons item-icon text-blue">folder</span>
-            <span class="item-name">{{ cat.nombreCategoria }}</span>
-          </div>
-          <button class="btn-action-icon delete" (click)="eliminarCategoria(cat.idCategoria!)" title="Eliminar"><span class="material-icons">delete_outline</span></button>
-        </div>
-        <div class="empty-state" *ngIf="categorias.length === 0">
-          <span class="material-icons">inbox</span><p>No hay categorías registradas.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="section-card" *ngIf="tabActiva === 'carreras'">
-      <div class="section-header">
-        <div class="icon-box-title text-purple"><span class="material-icons">school</span></div>
-        <h3>Carreras Universitarias</h3>
-      </div>
-
-      <div class="filter-box">
-        <label class="filter-label"><span class="material-icons text-muted">filter_list</span> Filtrar por Facultad:</label>
-        <div class="input-wrapper select-wrapper">
-          <select class="form-control select-box" (change)="onFacultadChange(+$any($event.target).value)">
-            <option value="">Todas las carreras</option>
-            <option *ngFor="let fac of facultadesDisponibles" [value]="fac.idFacultad">{{ fac.nombreFacultad }}</option>
-          </select>
-          <span class="material-icons chevron">expand_more</span>
-        </div>
-      </div>
-
-      <div class="form-add-box">
-        <h4 class="box-title">Agregar Nueva Carrera</h4>
-        <div class="form-grid-2">
-          <div class="form-group">
-            <label>Nombre de la Carrera</label>
-            <input type="text" [(ngModel)]="nuevaCarrera.nombreCarrera" class="form-control" placeholder="Ej: Ingeniería en Software">
-          </div>
-          <div class="form-group">
-            <label>Facultad a la que pertenece</label>
-            <div class="input-wrapper select-wrapper">
-              <select [(ngModel)]="nuevaCarrera.idFacultad" class="form-control select-box">
-                <option [value]="null">Seleccione una facultad...</option>
-                <option *ngFor="let fac of facultadesDisponibles" [value]="fac.idFacultad">{{ fac.nombreFacultad }}</option>
-              </select>
-              <span class="material-icons chevron">expand_more</span>
-            </div>
-          </div>
-        </div>
-        <div class="action-right mt-3">
-          <button class="btn-primary" (click)="agregarCarrera()"><span class="material-icons">add</span> Guardar Carrera</button>
-        </div>
-      </div>
-
-      <div class="items-list">
-        <div class="item-card" *ngFor="let car of carrerasFiltradas">
-          <div class="item-info">
-            <span class="material-icons item-icon text-purple">history_edu</span>
-            <div class="item-details">
-              <strong class="item-name">{{ car.nombreCarrera }}</strong>
-              <span class="item-subtitle"><span class="material-icons text-sm">account_balance</span> {{ obtenerNombreFacultad(car.idFacultad) }}</span>
-            </div>
-          </div>
-          <button class="btn-action-icon delete" (click)="eliminarCarrera(car.idCarrera!)" title="Eliminar"><span class="material-icons">delete_outline</span></button>
-        </div>
-        <div class="empty-state" *ngIf="carrerasFiltradas.length === 0">
-          <span class="material-icons">search_off</span><p>No se encontraron carreras con los criterios actuales.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="section-card" *ngIf="tabActiva === 'facultades'">
-      <div class="section-header">
-        <div class="icon-box-title text-indigo"><span class="material-icons">account_balance</span></div>
-        <h3>Facultades de la Universidad</h3>
-      </div>
-
-      <div class="form-inline">
-        <div class="form-group flex-1">
-          <label>Nueva Facultad</label>
-          <div class="input-wrapper">
-            <span class="material-icons text-muted">edit</span>
-            <input type="text" [(ngModel)]="nuevaFacultad.nombre" class="form-control" placeholder="Ej: Facultad de Ciencias Agrarias" (keyup.enter)="agregarFacultad()">
-          </div>
-        </div>
-        <button class="btn-primary" (click)="agregarFacultad()"><span class="material-icons">add</span> Agregar</button>
-      </div>
-
-      <div class="items-list">
-        <div class="item-card" *ngFor="let fac of facultades">
-          <div class="item-info">
-            <span class="material-icons item-icon text-indigo">domain</span>
-            <span class="item-name">{{ fac.nombreFacultad }}</span>
-          </div>
-          <button class="btn-action-icon delete" (click)="eliminarFacultad(fac.idFacultad!)" title="Eliminar"><span class="material-icons">delete_outline</span></button>
-        </div>
-        <div class="empty-state" *ngIf="facultades.length === 0">
-          <span class="material-icons">domain_disabled</span><p>No hay facultades registradas.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="section-card" *ngIf="tabActiva === 'idiomas'">
-      <div class="section-header">
-        <div class="icon-box-title text-green"><span class="material-icons">language</span></div>
-        <h3>Idiomas del Sistema</h3>
-      </div>
-
-      <div class="form-inline">
-        <div class="form-group flex-1">
-          <label>Nuevo Idioma</label>
-          <div class="input-wrapper">
-            <span class="material-icons text-muted">edit</span>
-            <input type="text" [(ngModel)]="nuevoIdioma.nombre" class="form-control" placeholder="Ej: Francés" (keyup.enter)="agregarIdioma()">
-          </div>
-        </div>
-        <button class="btn-primary" (click)="agregarIdioma()"><span class="material-icons">add</span> Agregar</button>
-      </div>
-
-      <div class="items-list">
-        <div class="item-card" *ngFor="let idm of idiomas">
-          <div class="item-info">
-            <span class="material-icons item-icon text-green">translate</span>
-            <span class="item-name">{{ idm.nombreIdioma }}</span>
-          </div>
-          <button class="btn-action-icon delete" (click)="eliminarIdioma(idm.idIdioma!)" title="Eliminar"><span class="material-icons">delete_outline</span></button>
-        </div>
-        <div class="empty-state" *ngIf="idiomas.length === 0">
-          <span class="material-icons">speaker_notes_off</span><p>No hay idiomas registrados.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="section-card" *ngIf="tabActiva === 'jornadas'">
-      <div class="section-header">
-        <div class="icon-box-title text-orange"><span class="material-icons">schedule</span></div>
-        <h3>Jornadas Laborales</h3>
-      </div>
-
-      <div class="form-inline">
-        <div class="form-group flex-1">
-          <label>Nueva Jornada</label>
-          <div class="input-wrapper">
-            <span class="material-icons text-muted">edit</span>
-            <input type="text" [(ngModel)]="nuevaJornada.nombre" class="form-control" placeholder="Ej: Medio Tiempo" (keyup.enter)="agregarJornada()">
-          </div>
-        </div>
-        <button class="btn-primary" (click)="agregarJornada()"><span class="material-icons">add</span> Agregar</button>
-      </div>
-
-      <div class="items-list">
-        <div class="item-card" *ngFor="let jor of jornadas">
-          <div class="item-info">
-            <span class="material-icons item-icon text-orange">more_time</span>
-            <span class="item-name">{{ jor.nombreJornada }}</span>
-          </div>
-          <button class="btn-action-icon delete" (click)="eliminarJornada(jor.idJornada!)" title="Eliminar"><span class="material-icons">delete_outline</span></button>
-        </div>
-        <div class="empty-state" *ngIf="jornadas.length === 0">
-          <span class="material-icons">timer_off</span><p>No hay jornadas registradas.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="section-card" *ngIf="tabActiva === 'modalidades'">
-      <div class="section-header">
-        <div class="icon-box-title text-teal"><span class="material-icons">devices</span></div>
-        <h3>Modalidades de Trabajo</h3>
-      </div>
-
-      <div class="form-inline">
-        <div class="form-group flex-1">
-          <label>Nueva Modalidad</label>
-          <div class="input-wrapper">
-            <span class="material-icons text-muted">edit</span>
-            <input type="text" [(ngModel)]="nuevaModalidad.nombre" class="form-control" placeholder="Ej: Remoto, Presencial..." (keyup.enter)="agregarModalidad()">
-          </div>
-        </div>
-        <button class="btn-primary" (click)="agregarModalidad()"><span class="material-icons">add</span> Agregar</button>
-      </div>
-
-      <div class="items-list">
-        <div class="item-card" *ngFor="let mod of modalidades">
-          <div class="item-info">
-            <span class="material-icons item-icon text-teal">computer</span>
-            <span class="item-name">{{ mod.nombreModalidad }}</span>
-          </div>
-          <button class="btn-action-icon delete" (click)="eliminarModalidad(mod.idModalidad!)" title="Eliminar"><span class="material-icons">delete_outline</span></button>
-        </div>
-        <div class="empty-state" *ngIf="modalidades.length === 0">
-          <span class="material-icons">desktop_access_disabled</span><p>No hay modalidades registradas.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="section-card" *ngIf="tabActiva === 'roles'">
-      <div class="section-header">
-        <div class="icon-box-title text-rose"><span class="material-icons">shield</span></div>
-        <h3>Roles del Sistema</h3>
-      </div>
-
-      <div class="form-inline">
-        <div class="form-group flex-1">
-          <label>Nuevo Rol</label>
-          <div class="input-wrapper">
-            <span class="material-icons text-muted">edit</span>
-            <input type="text" [(ngModel)]="nuevoRol.nombreRol" class="form-control" placeholder="Ej: EMPRESA_PREMIUM" (keyup.enter)="agregarRol()">
-          </div>
-        </div>
-        <button class="btn-primary" (click)="agregarRol()"><span class="material-icons">add</span> Agregar</button>
-      </div>
-
-      <div class="items-list">
-        <div class="item-card" *ngFor="let rol of roles">
-          <div class="item-info">
-            <span class="material-icons item-icon text-rose">admin_panel_settings</span>
-            <span class="item-name">{{ rol.nombreRol }}</span>
-          </div>
-          <button class="btn-action-icon delete" (click)="eliminarRol(rol.idRol!)" title="Eliminar"><span class="material-icons">delete_outline</span></button>
-        </div>
-        <div class="empty-state" *ngIf="roles.length === 0">
-          <span class="material-icons">security</span><p>No hay roles registrados.</p>
-        </div>
-      </div>
-    </div>
 
   </div>
 </div>

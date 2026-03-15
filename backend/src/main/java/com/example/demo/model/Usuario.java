@@ -51,6 +51,6 @@ public class Usuario {
     @Column(name = "fecha_registro", insertable = false, updatable = false)
     private LocalDateTime fechaRegistro;
 
-    @Column(name = "permisos_ui", length = 500) // mi gente un dato adicional para admins nomas
-    private String permisosUi;
+    //@Column(name = "permisos_ui", length = 500) // mi gente un dato adicional para admins nomas
+    // private String permisosUi;
 }

@@ -1,0 +1,83 @@
+<div class="alert alert-success" *ngIf="mensajeExito">
+  <span class="material-icons">check_circle</span> {{ mensajeExito }}
+</div>
+<div class="alert alert-error" *ngIf="mensajeError">
+  <span class="material-icons">error_outline</span> {{ mensajeError }}
+</div>
+
+<div class="section-card">
+  <div class="section-header">
+    <div class="icon-box-title text-purple"><span class="material-icons">location_city</span></div>
+    <h3>Ciudades Registradas</h3>
+  </div>
+
+  <div class="filter-box">
+    <label class="filter-label"><span class="material-icons text-muted">filter_list</span> Filtrar por Provincia:</label>
+    <div class="input-wrapper select-wrapper">
+      <select class="form-control select-box" (change)="onProvinciaChange(+$any($event.target).value)">
+        <option value="">Todas las ciudades</option>
+        <option *ngFor="let prov of provinciasDisponibles" [value]="prov.idProvincia">{{ prov.nombreProvincia }}</option>
+      </select>
+      <span class="material-icons chevron">expand_more</span>
+    </div>
+  </div>
+
+  <div class="form-add-box">
+    <h4 class="box-title">{{ idEditando ? 'Editando Ciudad' : 'Agregar Nueva Ciudad' }}</h4>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label>Nombre de la Ciudad</label>
+        <input type="text" [(ngModel)]="nuevaCiudad.nombreCiudad" class="form-control" placeholder="Ej: Guayaquil, Quito...">
+      </div>
+      <div class="form-group">
+        <label>Provincia a la que pertenece</label>
+        <div class="input-wrapper select-wrapper">
+          <select [(ngModel)]="nuevaCiudad.idProvincia" class="form-control select-box">
+            <option [ngValue]="null">Seleccione una provincia...</option>
+            <option *ngFor="let prov of provinciasDisponibles" [ngValue]="prov.idProvincia">{{ prov.nombreProvincia }}</option>
+          </select>
+          <span class="material-icons chevron">expand_more</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-right mt-3" style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button class="btn-primary" *ngIf="!idEditando" (click)="guardarCiudad()">
+        <span class="material-icons">add</span> Guardar Ciudad
+      </button>
+
+      <button class="btn-primary" *ngIf="idEditando" (click)="guardarCiudad()" style="background-color: #10b981;">
+        <span class="material-icons">save</span> Actualizar Ciudad
+      </button>
+
+      <button class="btn-secondary" *ngIf="idEditando" (click)="cancelarEdicion()" style="background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 0.7rem 1.5rem; border-radius: 10px; font-weight: 600; cursor: pointer;">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <div class="items-list">
+    <div class="item-card" *ngFor="let ciu of ciudadesFiltradas">
+      <div class="item-info">
+        <span class="material-icons item-icon text-purple">pin_drop</span>
+        <div class="item-details">
+          <strong class="item-name">{{ ciu.nombreCiudad }}</strong>
+          <span class="item-subtitle"><span class="material-icons text-sm">map</span> {{ obtenerNombreProvincia(ciu) }}</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-action-icon edit" (click)="editarCiudad(ciu)" title="Editar" style="color: #3b82f6;">
+          <span class="material-icons">edit</span>
+        </button>
+        <button class="btn-action-icon delete" (click)="eliminarCiudad(ciu.idCiudad!)" title="Eliminar">
+          <span class="material-icons">delete_outline</span>
+        </button>
+      </div>
+    </div>
+    <div class="empty-state" *ngIf="ciudadesFiltradas.length === 0">
+      <span class="material-icons">search_off</span><p>No se encontraron ciudades con los criterios actuales.</p>
+    </div>
+  </div>
+</div>

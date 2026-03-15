@@ -134,7 +134,8 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#2563EB', bgHex: '#EFF6FF',
         roles: ['EMPRESA'],
         path: '/empresa/perfil',
-        route: '/menu-principal/empresa/perfil'
+        route: '/menu-principal/empresa/perfil',
+        permiso: 'PERFIL_EMP'
       },
       {
         icon: 'work',
@@ -143,7 +144,8 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#0891b2', bgHex: '#ecfeff',
         roles: ['EMPRESA'],
         path: '/gestion-ofertas',
-        route: '/menu-principal/gestion-ofertas'
+        route: '/menu-principal/gestion-ofertas',
+        permiso: 'OFERTAS_EMP'
       },
       {
         icon: 'groups',
@@ -152,7 +154,8 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#10b981', bgHex: '#ecfdf5',
         roles: ['EMPRESA'],
         path: '/revision-postulantes',
-        route: '/menu-principal/revision-postulantes'
+        route: '/menu-principal/revision-postulantes',
+        permiso: 'POSTULANTES_EMP'
       },
       {
         icon: 'work',
@@ -161,7 +164,8 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#059669', bgHex: '#ecfdf5',
         roles: ['EMPRESA'],
         path: 'Reportes-Empresa',
-        route: '/menu-principal/Reporte-Empresa'
+        route: '/menu-principal/Reporte-Empresa',
+        permiso: 'REPORTES_EMP'
       },
 
 
@@ -173,16 +177,18 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#2563EB', bgHex: '#EFF6FF',
         roles: ['POSTULANTE'],
         path: '/perfil-profesional',
-        route: '/menu-principal/perfil-profesional'
+        route: '/menu-principal/perfil-profesional',
+        permiso: 'PERFIL_POS'
       },
       {
         icon: 'search',
         title: 'Búsqueda de Empleos',
         description: 'Encuentra vacantes disponibles',
         colorHex: '#0891b2', bgHex: '#ecfeff',
-        roles: ['POSTULANTE'],
+        roles: ['POSTULANTE', 'SUPERVISOR'],
         path: '/Busqueda/empleo',
-        route: '/menu-principal/busqueda-empleo'
+        route: '/menu-principal/busqueda-empleo',
+        permiso: 'BUSQUEDA_POS'
       },
       {
         icon: 'assignment',
@@ -191,7 +197,8 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#10b981', bgHex: '#ecfdf5',
         roles: ['POSTULANTE'],
         path: '/postulacion/empleo',
-        route: '/menu-principal/mis-postulaciones'
+        route: '/menu-principal/mis-postulaciones',
+        permiso: 'POSTULACIONES_POS'
       },
 
       // --- COMPARTIDO ---
@@ -202,7 +209,8 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#8b5cf6', bgHex: '#f5f3ff',
         roles: ['EMPRESA', 'POSTULANTE'],
         path: '/notificaciones',
-        route: '/menu-principal/notificaciones'
+        route: '/menu-principal/notificaciones',
+        permiso: 'NOTIFICACIONES'
       },
 
       // --- MÓDULOS DE ADMINISTRADOR ---
@@ -234,7 +242,7 @@ export class MenuprincipalComponent implements OnInit {
         roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
         path: '/PanelAdmi/RegistroOfertas',
         route: '/menu-principal/PanelAdmi/RegistroOfertas',
-        permiso: 'VALIDACION_O'
+        permiso: 'REGISTRO_OFERTAS'
       },
       {
         icon: 'fact_check',
@@ -253,7 +261,8 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#7c3aed', bgHex: '#f5f3ff',
         roles: ['ADMINISTRADOR'],
         path: '/PanelAdmi/admin-MiniAdmi',
-        route: '/menu-principal/PanelAdmi/admin-MiniAdmi'
+        route: '/menu-principal/PanelAdmi/admin-MiniAdmi',
+        permiso: 'GESTION_ADMINS'
       },
       {
         icon: 'bar_chart',
@@ -282,7 +291,8 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#0f172a', bgHex: '#f1f5f9',
         roles: ['ADMINISTRADOR'],
         path: '/GestionRolesbd',
-        route: '/menu-principal/GestionRolesbd'
+        route: '/menu-principal/GestionRolesbd',
+        permiso: 'ROLES_BD'
       },
       {
         icon: 'settings_backup_restore',
@@ -291,16 +301,30 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#7c3aed', bgHex: '#f5f3ff',
         roles: ['ADMINISTRADOR'],
         path: '/configuracion-sistema',
-        route: '/menu-principal/configuracion-sistema'
+        route: '/menu-principal/configuracion-sistema',
+        permiso: 'CONFIG_SISTEMA'
       }
     ];
 
     this.menuItems = todasLasOpciones.filter(item => {
-      const rolCoincide = item.roles?.includes(this.rolUsuario);
-      if (rolCoincide && item.permiso) {
+
+      // 1. Usuarios Base (No usan permisos dinámicos, entran por su rol puro)
+      if (this.rolUsuario === 'EMPRESA' || this.rolUsuario === 'POSTULANTE') {
+        return item.roles?.includes(this.rolUsuario);
+      }
+
+      // 2. Administrador Maestro (Entra a todo lo que sea de Admin, sin restricciones)
+      if (this.rolUsuario === 'ADMINISTRADOR') {
+        return item.roles?.includes(this.rolUsuario);
+      }
+
+      // 3. ROLES DINÁMICOS (Supervisor, Gerente, Nuevo Rol... ¡AQUÍ MANDA EL PERMISO!)
+      if (item.permiso) {
         return this.authService.tienePermiso(item.permiso);
       }
-      return rolCoincide;
+
+      // 4. Si es un módulo compartido sin permiso específico (Ej: Notificaciones)
+      return item.roles?.includes(this.rolUsuario);
 
     });
     this.cdr.detectChanges();

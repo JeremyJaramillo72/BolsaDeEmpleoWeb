@@ -421,4 +421,281 @@ public class llenarCmbs {
                     .body(Map.of("error", "No se puede eliminar la carrera porque tiene registros vinculados (estudiantes u ofertas)"));
         }
     }
+
+    //Put
+    @PutMapping("/categorias/{id}")
+    public ResponseEntity<?> actualizarCategoria(@PathVariable Integer id, @RequestBody CategoriaOferta categoriaActualizada) {
+        try {
+            // Ejecutamos el UPDATE directo llamando a tu CategoriaOfertaRepository
+            int filasAfectadas = categoriaRepository.actualizarNombreCategoria(id, categoriaActualizada.getNombreCategoria());
+
+            if (filasAfectadas > 0) {
+                // Si afectó al menos 1 fila, todo fue un éxito
+                return ResponseEntity.ok(Map.of("mensaje", "Categoría actualizada correctamente"));
+            } else {
+                // Si afectó 0 filas, significa que ese ID no existía en la base de datos
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "La categoría con ID " + id + " no existe"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se pudo actualizar la categoría: " + e.getMessage()));
+        }
+    }
+
+    @PutMapping("/carreras/{id}")
+    public ResponseEntity<?> actualizarCarrera(@PathVariable Integer id, @RequestBody Map<String, Object> datosActualizados) {
+        try {
+            // Extraemos los datos del JSON que manda Angular
+            String nombreCarrera = datosActualizados.get("nombreCarrera").toString();
+            Integer idFacultad = Integer.parseInt(datosActualizados.get("idFacultad").toString());
+
+            // Ejecutamos el UPDATE directo en el repositorio
+            int filasAfectadas = carreraRepository.actualizarCarreraDirecto(id, nombreCarrera, idFacultad);
+
+            if (filasAfectadas > 0) {
+                return ResponseEntity.ok(Map.of("mensaje", "Carrera actualizada correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "La carrera con ID " + id + " no existe"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se pudo actualizar la carrera: " + e.getMessage()));
+        }
+    }
+
+    @PutMapping("/facultades/{id}")
+    public ResponseEntity<?> actualizarFacultad(@PathVariable Integer id, @RequestBody Facultad facultadActualizada) {
+        try {
+            // Ejecutamos el UPDATE directo llamando a tu FacultadRepository
+            int filasAfectadas = facultadRepository.actualizarNombreFacultad(id, facultadActualizada.getNombreFacultad());
+
+            if (filasAfectadas > 0) {
+                return ResponseEntity.ok(Map.of("mensaje", "Facultad actualizada correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "La facultad con ID " + id + " no existe"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se pudo actualizar la facultad: " + e.getMessage()));
+        }
+    }
+
+    @PutMapping("/idiomas/{id}")
+    public ResponseEntity<?> actualizarIdioma(@PathVariable Integer id, @RequestBody Idioma idiomaActualizado) {
+        try {
+            // Ejecutamos el UPDATE directo llamando a tu IdiomaRepository
+            int filasAfectadas = idiomaRepository.actualizarNombreIdioma(id, idiomaActualizado.getNombreIdioma());
+
+            if (filasAfectadas > 0) {
+                return ResponseEntity.ok(Map.of("mensaje", "Idioma actualizado correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "El idioma con ID " + id + " no existe"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se pudo actualizar el idioma: " + e.getMessage()));
+        }
+    }
+
+
+    @PutMapping("/jornadas/{id}")
+    public ResponseEntity<?> actualizarJornada(@PathVariable Integer id, @RequestBody JornadaOferta jornadaActualizada) {
+        try {
+            int filasAfectadas = jornadaRepository.actualizarNombreJornada(id, jornadaActualizada.getNombreJornada());
+            if (filasAfectadas > 0) {
+                return ResponseEntity.ok(Map.of("mensaje", "Jornada actualizada correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "La jornada con ID " + id + " no existe"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se pudo actualizar la jornada: " + e.getMessage()));
+        }
+    }
+
+    @PutMapping("/modalidades/{id}")
+    public ResponseEntity<?> actualizarModalidad(@PathVariable Integer id, @RequestBody ModalidadOferta modalidadActualizada) {
+        try {
+            int filasAfectadas = modalidadRepository.actualizarNombreModalidad(id, modalidadActualizada.getNombreModalidad());
+            if (filasAfectadas > 0) {
+                return ResponseEntity.ok(Map.of("mensaje", "Modalidad actualizada correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "La modalidad con ID " + id + " no existe"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se pudo actualizar la modalidad: " + e.getMessage()));
+        }
+    }
+
+    @PutMapping("/roles/{id}")
+    public ResponseEntity<?> actualizarRol(@PathVariable Integer id, @RequestBody Roles rolActualizado) {
+        try {
+            // Ejecutamos el UPDATE directo llamando a tu RolesRepository
+            int filasAfectadas = rolesRepository.actualizarNombreRol(id, rolActualizado.getNombreRol());
+
+            if (filasAfectadas > 0) {
+                return ResponseEntity.ok(Map.of("mensaje", "Rol actualizado correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "El rol con ID " + id + " no existe"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se pudo actualizar el rol: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/aggProvincias")
+    public ResponseEntity<?> agregarProvincia(@RequestBody Provincia provincia) {
+        try {
+            if (provincia.getNombreProvincia() == null || provincia.getNombreProvincia().trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "El nombre de la provincia es obligatorio"));
+            }
+
+            provincia.setNombreProvincia(provincia.getNombreProvincia().trim());
+            provinciaRepository.save(provincia);
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("mensaje", "Provincia creada correctamente"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al crear provincia: " + e.getMessage()));
+        }
+    }
+
+    @PutMapping("/provincias/{id}")
+    public ResponseEntity<?> actualizarProvincia(@PathVariable Integer id, @RequestBody Provincia provinciaActualizada) {
+        try {
+            int filasAfectadas = provinciaRepository.actualizarNombreProvincia(id, provinciaActualizada.getNombreProvincia());
+
+            if (filasAfectadas > 0) {
+                return ResponseEntity.ok(Map.of("mensaje", "Provincia actualizada correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "La provincia con ID " + id + " no existe"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se pudo actualizar la provincia: " + e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/provincias/{id}")
+    public ResponseEntity<?> eliminarProvincia(@PathVariable Integer id) {
+        try {
+            if (provinciaRepository.existsById(id)) {
+                provinciaRepository.deleteById(id);
+                return ResponseEntity.ok(Map.of("mensaje", "Provincia eliminada correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "La provincia con ID " + id + " no existe"));
+            }
+        } catch (Exception e) {
+            // Este catch atrapará si intentas borrar una provincia que ya tiene ciudades asociadas (Constraint Violation)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se pudo eliminar la provincia porque está en uso o no existe."));
+        }
+    }
+
+
+    // ==========================================
+    //      1. OBTENER TODAS LAS CIUDADES
+    // ==========================================
+    @GetMapping("/ciudades")
+    public ResponseEntity<List<Ciudad>> obtenerCiudades() {
+        return ResponseEntity.ok(ciudadRepository.findAll());
+    }
+
+    // ==========================================
+    //      2. OBTENER CIUDADES POR PROVINCIA
+    // ==========================================
+    @GetMapping("/ciudades/provincia/{idProvincia}")
+    public ResponseEntity<List<Ciudad>> obtenerCiudadesPorProvincia(@PathVariable Integer idProvincia) {
+        return ResponseEntity.ok(ciudadRepository.findByProvincia_IdProvincia(idProvincia));
+    }
+
+    // ==========================================
+    //      3. AGREGAR CIUDAD (POST)
+    // ==========================================
+    @PostMapping("/aggCiudades")
+    public ResponseEntity<?> agregarCiudad(@RequestBody Map<String, Object> payload) {
+        try {
+            String nombreCiudad = (String) payload.get("nombreCiudad");
+            Integer idProvincia = Integer.valueOf(payload.get("idProvincia").toString());
+
+            if (nombreCiudad == null || nombreCiudad.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "El nombre de la ciudad es obligatorio"));
+            }
+
+            // Buscamos la provincia para establecer la relación
+            Provincia provincia = provinciaRepository.findById(idProvincia)
+                    .orElseThrow(() -> new RuntimeException("La provincia seleccionada no existe"));
+
+            Ciudad ciudad = new Ciudad();
+            ciudad.setNombreCiudad(nombreCiudad.trim());
+            ciudad.setProvincia(provincia);
+
+            ciudadRepository.save(ciudad);
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("mensaje", "Ciudad agregada correctamente"));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al crear la ciudad: " + e.getMessage()));
+        }
+    }
+
+    // ==========================================
+    //      4. ACTUALIZAR CIUDAD (PUT)
+    // ==========================================
+    @PutMapping("/ciudades/{id}")
+    public ResponseEntity<?> actualizarCiudad(@PathVariable Integer id, @RequestBody Map<String, Object> payload) {
+        try {
+            String nombreCiudad = payload.get("nombreCiudad").toString().trim();
+            Integer idProvincia = Integer.valueOf(payload.get("idProvincia").toString());
+
+            // Ejecutamos el UPDATE directo llamando a tu CiudadRepository
+            int filasAfectadas = ciudadRepository.actualizarCiudadDirecto(id, nombreCiudad, idProvincia);
+
+            if (filasAfectadas > 0) {
+                return ResponseEntity.ok(Map.of("mensaje", "Ciudad actualizada correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "La ciudad con ID " + id + " no existe"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se pudo actualizar la ciudad: " + e.getMessage()));
+        }
+    }
+
+    // ==========================================
+    //      5. ELIMINAR CIUDAD (DELETE)
+    // ==========================================
+    @DeleteMapping("/ciudades/{id}")
+    public ResponseEntity<?> eliminarCiudad(@PathVariable Integer id) {
+        try {
+            if (ciudadRepository.existsById(id)) {
+                ciudadRepository.deleteById(id);
+                return ResponseEntity.ok(Map.of("mensaje", "Ciudad eliminada correctamente"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "La ciudad con ID " + id + " no existe"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se pudo eliminar la ciudad porque está en uso o no existe."));
+        }
+    }
+
 }

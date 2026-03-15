@@ -104,4 +104,39 @@ public class RolesBdController {
                     .body(Map.of("error", "Error al eliminar el rol: " + e.getMessage()));
         }
     }
+
+    /**
+     * 7. Consulta los usuarios asignados a un rol específico.
+     * Endpoint: GET /api/rolesbd/roles-bd/{idRol}/usuarios
+     */
+    @GetMapping("/roles-bd/{idRol}/usuarios")
+    public ResponseEntity<?> obtenerUsuariosDelRol(@PathVariable String idRol) {
+        try {
+            // Llamamos al servicio para obtener la lista de usuarios
+            return ResponseEntity.ok(rolesBdService.consultarUsuariosDeRol(idRol));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "Error al consultar usuarios del rol: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * 8. Actualiza un rol existente (elimina el anterior y recrea con nuevos permisos)
+     * Endpoint: PUT /api/rolesbd/roles-bd/{idRol}
+     */
+    @PutMapping("/roles-bd/{idRol}")
+    public ResponseEntity<?> actualizarRolBD(@PathVariable String idRol, @RequestBody Map<String, Object> datos) {
+        try {
+            System.out.println("🔥 CONTROLLER HIT - Actualizando rol: " + idRol);
+            rolesBdService.actualizarYAsignarPermisos(idRol, datos);
+            return ResponseEntity.ok(Map.of("mensaje", "Rol " + idRol + " actualizado correctamente"));
+        } catch (Exception e) {
+            System.out.println("❌ ERROR AL ACTUALIZAR: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Error al actualizar el rol: " + e.getMessage()));
+        }
+    }
+
+
 }

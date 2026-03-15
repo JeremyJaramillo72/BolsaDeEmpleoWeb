@@ -9,8 +9,11 @@
     <p class="modal-mensaje">{{ mensaje }}</p>
 
     <div class="modal-botones">
-      <button class="btn-cancelar" (click)="responder(false)">Cancelar</button>
-      <button class="btn-confirmar" (click)="responder(true)">Confirmar</button>
+      <button class="btn-cancelar" *ngIf="tipo === 'confirmacion'" (click)="responder(false)">Cancelar</button>
+
+      <button class="btn-confirmar" (click)="responder(true)">
+        {{ tipo === 'advertencia' ? 'Aceptar' : 'Confirmar' }}
+      </button>
     </div>
 
   </div>

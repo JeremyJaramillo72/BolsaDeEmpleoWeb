@@ -72,9 +72,12 @@ export class LoginComponent implements OnInit {
           console.log('respuesta completa del backend:', res);
 
           localStorage.setItem('idUsuario', res.idUsuario);
-          localStorage.setItem('idRol', res.rol.idRol || res.idRol);
+          localStorage.setItem('idRol', res.rol?.idRol || res.idRol);
           localStorage.setItem('nombre', res.nombre);
-          localStorage.setItem('permisosUi', res.permisosUi || '');
+
+          // ¡AQUÍ ESTÁ LA MAGIA! 👇 Buscamos en el Rol
+          const permisosDelRol = res.rol?.permisosUi || '';
+          localStorage.setItem('permisosUi', permisosDelRol);
 
           if (res.empresa && res.empresa.idEmpresa) {
             localStorage.setItem('idEmpresa', res.empresa.idEmpresa.toString());

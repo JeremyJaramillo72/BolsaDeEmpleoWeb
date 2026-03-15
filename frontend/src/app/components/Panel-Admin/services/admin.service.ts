@@ -93,6 +93,34 @@ export class AdminService {
     return this.http.delete(`${this.apiAcademicoUrl}/categorias/${id}`); // CORREGIDO
   }
 
+  actualizarCategoria(categoria: { idCategoria: number, nombreCategoria: string }): Observable<any> {
+    return this.http.put(`${this.apiAcademicoUrl}/categorias/${categoria.idCategoria}`, categoria);
+  }
+
+  actualizarCarrera(carrera: { idCarrera: number, nombreCarrera: string, idFacultad: number }): Observable<any> {
+    return this.http.put(`${this.apiAcademicoUrl}/carreras/${carrera.idCarrera}`, carrera);
+  }
+
+  actualizarFacultad(facultad: { idFacultad: number, nombreFacultad: string }): Observable<any> {
+    return this.http.put(`${this.apiAcademicoUrl}/facultades/${facultad.idFacultad}`, facultad);
+  }
+
+  actualizarIdioma(idioma: { idIdioma: number, nombreIdioma: string }): Observable<any> {
+    return this.http.put(`${this.apiAcademicoUrl}/idiomas/${idioma.idIdioma}`, idioma);
+  }
+
+  actualizarJornada(jornada: { idJornada: number, nombreJornada: string }): Observable<any> {
+    return this.http.put(`${this.apiAcademicoUrl}/jornadas/${jornada.idJornada}`, jornada);
+  }
+
+  actualizarModalidad(modalidad: { idModalidad: number, nombreModalidad: string }): Observable<any> {
+    return this.http.put(`${this.apiAcademicoUrl}/modalidades/${modalidad.idModalidad}`, modalidad);
+  }
+
+  actualizarRol(rol: { idRol: number, nombreRol: string }): Observable<any> {
+    return this.http.put(`${this.apiAcademicoUrl}/roles/${rol.idRol}`, rol);
+  }
+
   // --- CARRERAS ---
 // Agregar este método en tu admin.service.ts
 
@@ -190,6 +218,48 @@ export class AdminService {
     return this.http.delete<any>(`${this.apiRolesAplicativo}/eliminar/${id}`);
   }
   //http://localhost:8080/api/academico/roles/eliminar/5
+
+  // ==========================================
+  //      PROVINCIAS
+  // ==========================================
+  getProvinciasCatalogo(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiAcademicoUrl}/provincias`);
+  }
+
+  agregarProvincia(provincia: { nombreProvincia: string }): Observable<any> {
+    return this.http.post(`${this.apiAcademicoUrl}/aggProvincias`, provincia);
+  }
+
+  actualizarProvincia(provincia: { idProvincia: number, nombreProvincia: string }): Observable<any> {
+    return this.http.put(`${this.apiAcademicoUrl}/provincias/${provincia.idProvincia}`, provincia);
+  }
+
+  eliminarProvincia(id: number): Observable<any> {
+    return this.http.delete(`${this.apiAcademicoUrl}/provincias/${id}`);
+  }
+
+  // ==========================================
+  //      CIUDADES
+  // ==========================================
+  getCiudadesCatalogo(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiAcademicoUrl}/ciudades`);
+  }
+
+  getCiudadesPorProvincia(idProvincia: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiAcademicoUrl}/ciudades/provincia/${idProvincia}`);
+  }
+
+  agregarCiudad(ciudad: { nombreCiudad: string, idProvincia: number }): Observable<any> {
+    return this.http.post(`${this.apiAcademicoUrl}/aggCiudades`, ciudad);
+  }
+
+  actualizarCiudad(ciudad: { idCiudad: number, nombreCiudad: string, idProvincia: number }): Observable<any> {
+    return this.http.put(`${this.apiAcademicoUrl}/ciudades/${ciudad.idCiudad}`, ciudad);
+  }
+
+  eliminarCiudad(id: number): Observable<any> {
+    return this.http.delete(`${this.apiAcademicoUrl}/ciudades/${id}`);
+  }
 
   // ==========================================
   // 📊 REPORTES (Corregido para usar apiAdminUrl)
@@ -341,14 +411,32 @@ export class AdminService {
     return this.http.delete(`${this.apiRolesbd}/roles-bd/${idRol}`);
   }
 
+  // En tu admin.service.ts (o roles.service.ts)
+
+  enlazarPermisosRol(idRolBd: string, idRolAplicativo: number, permisosUi: string) {
+    const payload = {
+      idRolBd: idRolBd,
+      idRolAplicativo: idRolAplicativo,
+      permisosUi: permisosUi
+    };
+
+    // Asegúrate de que la ruta coincida con tu apiUrl y el Controller de Spring Boot
+    return this.http.put(`${this.apiAcademicoUrl}/roles/enlazar-permisos`, payload, { responseType: 'text' });
+  }
+
+  obtenerPermisosRolAplicativo(idRolBd: string): Observable<any> {
+    return this.http.get(`${this.apiAcademicoUrl}/roles/permisos-enlazados/${idRolBd}`);
+  }
+ //http://localhost:8080/api/academico/roles/permisos-enlazados/Miniadmin
+
   //Nuevos metodos para roles de base datos
   actualizarRolBD(idRol: string, datos: any): Observable<any> {
-    return this.http.put(`${this.apiRolesbd}/admin/roles-bd/${idRol}`, datos);
+    return this.http.put(`${this.apiRolesbd}/roles-bd/${idRol}`, datos);
   }
 
   obtenerUsuariosDelRol(idRol: string): Observable<any> {
     // Retorna lista de usuarios que tienen asignado este rol
-    return this.http.get(`${this.apiRolesbd}/admin/roles-bd/${idRol}/usuarios`);
+    return this.http.get(`${this.apiRolesbd}/roles-bd/${idRol}/usuarios`);
   }
 
   // VALIDAR OFERTASSS

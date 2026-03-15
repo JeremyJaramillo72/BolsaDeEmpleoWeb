@@ -1,0 +1,202 @@
+.fade-in { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.form-container {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+/* Header */
+.form-header {
+  padding: 2rem;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.icon-box-header {
+  width: 48px;
+  height: 48px;
+  background: #e0e7ff;
+  color: #4f46e5;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-box-header .material-icons { font-size: 1.8rem; }
+.header-title h2 { margin: 0; font-size: 1.5rem; color: #0f172a; }
+.highlight-role { color: #4f46e5; font-weight: 800; }
+.header-title p { margin: 0.3rem 0 0 0; color: #64748b; font-size: 0.95rem; }
+
+/* Body y Cards */
+.form-body { padding: 2rem; }
+.mt-4 { margin-top: 1.5rem; }
+
+.section-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  background: #ffffff;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0.5rem;
+}
+.section-header .material-icons { color: #4f46e5; }
+.section-header h3 { margin: 0; font-size: 1.1rem; color: #0f172a; }
+.section-desc { color: #64748b; font-size: 0.9rem; margin-bottom: 1.5rem; }
+
+/* Select Personalizado */
+.form-group label { display: block; font-weight: 600; color: #334155; margin-bottom: 0.5rem; font-size: 0.9rem; }
+.select-wrapper { position: relative; }
+.elegant-select {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #0f172a;
+  appearance: none;
+  background: #f8fafc;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+}
+.elegant-select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); background: white; }
+.select-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  pointer-events: none;
+}
+
+/* Lista de Módulos (Diseño de la Imagen 3) */
+.modulos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.modulo-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 1rem 1.2rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.modulo-item:hover { background: #f8fafc; border-color: #cbd5e1; }
+.modulo-item.selected {
+  background: #f0fdf4;
+  border-color: #10b981;
+}
+
+.checkbox-custom {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #cbd5e1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  background: white;
+}
+.checkbox-custom.checked {
+  background: #10b981;
+  border-color: #10b981;
+}
+.checkbox-custom .material-icons {
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+}
+.modulo-name { font-weight: 500; color: #334155; font-size: 1rem; }
+.modulo-item.selected .modulo-name { color: #065f46; }
+
+/* Botones de Acción */
+.form-actions {
+  padding: 1.5rem 2rem;
+  background: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.btn-cancelar {
+  background: white; border: 1px solid #cbd5e1; color: #475569;
+  padding: 0.7rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+}
+.btn-cancelar:hover { background: #f1f5f9; color: #0f172a; }
+
+.btn-guardar {
+  background: #4f46e5; border: none; color: white;
+  padding: 0.7rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; gap: 8px; transition: all 0.2s;
+}
+.btn-guardar:hover:not(:disabled) { background: #4338ca; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); }
+.btn-guardar:disabled { opacity: 0.7; cursor: not-allowed; }
+
+.spinner-small {
+  width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+
+/* =========================================
+   ESTRUCTURA HORIZONTAL DE PERMISOS (GRID)
+   ========================================= */
+
+/* 1. El contenedor principal se vuelve un Grid (columnas horizontales) */
+.permisos-contenedor {
+  display: grid;
+  /* Crea columnas automáticas de mínimo 260px. Si la pantalla es grande, se ponen lado a lado */
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  align-items: start; /* Evita que las cajas se estiren si una tiene menos opciones */
+  margin-top: 1.5rem;
+}
+
+/* 2. Cada grupo ahora es una "Cajita" o Tarjeta como dibujaste */
+.grupo-permisos {
+  background: #f8fafc; /* Un fondo gris super suave para diferenciar las cajas */
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem 1.2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+/* 3. Títulos de cada cajita */
+.titulo-grupo {
+  font-size: 0.85rem;
+  color: #0f172a;
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin-top: 0;
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 2px solid #e2e8f0;
+  text-align: center; /* Centrado se ve más elegante en este formato */
+}
+
+/* 4. Lista de opciones dentro de la cajita */
+.grupo-permisos .modulos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Espacio entre cada checkbox */
+}

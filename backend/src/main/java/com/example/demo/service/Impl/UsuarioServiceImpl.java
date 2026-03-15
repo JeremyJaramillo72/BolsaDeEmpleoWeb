@@ -117,13 +117,17 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Transactional
     public void registrarUsuarioConAccesoBD(Usuario usuario) {
 
-
         String contrasenaEncriptada = passwordEncoder.encode(usuario.getContrasena());
 
+        // Obtenemos el ID del rol para la validación
+        Integer idRol = usuario.getRol().getIdRol();
+
         try {
-            if (usuario.getPermisosUi() != null && !usuario.getPermisosUi().isEmpty()) {
+            // Asumiendo que 3 es Postulante y 2 es Empresa.
+            // Si no es 3 ni 2, entonces es un Admin Interno.
+            if (idRol != 3 && idRol != 2) {
 
-
+                // ¡ACTUALIZADO! Ya no enviamos usuario.getPermisosUi() al final
                 usuarioRepository.registrarAdminInternoPro(
                         usuario.getNombre(),
                         usuario.getApellido(),
@@ -133,8 +137,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
                         usuario.getGenero(),
                         usuario.getTelefono(),
                         usuario.getCiudad() != null ? usuario.getCiudad().getIdCiudad() : null,
-                        usuario.getRol().getIdRol(),
-                        usuario.getPermisosUi()
+                        idRol
                 );
 
             } else {
@@ -148,7 +151,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
                         usuario.getGenero(),
                         usuario.getTelefono(),
                         usuario.getCiudad() != null ? usuario.getCiudad().getIdCiudad() : null,
-                        usuario.getRol().getIdRol()
+                        idRol
                 );
             }
         } catch (DataIntegrityViolationException e) {
@@ -163,7 +166,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
             usuarioRepository.crearCredencialesBD(
                     usuarioGuardado.getCorreo(),
                     usuarioGuardado.getIdUsuario().intValue(),
-                    usuario.getRol().getIdRol()
+                    idRol
             );
             System.out.println("✅ Credenciales de BD creadas para: " + usuarioGuardado.getCorreo());
 

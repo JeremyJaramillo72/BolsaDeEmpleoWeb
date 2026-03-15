@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../services/admin.service';
 import { Esquema, RolBase, RolCreado, Tabla, Usuario } from '../roles-bd';
 import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
+
 
 @Component({
   selector: 'app-roles-bd-form',
@@ -41,13 +43,85 @@ export class RolesBdFormComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.cargarRolesBase();
-    this.cargarEsquemas();
-    this.cargarUsuarios();
-
     if (this.vistaActual === 'EDITAR' && this.rolEnEdicion) {
-      this.cargarPermisosRol(this.rolEnEdicion.id);
-      this.cargarUsuariosDelRol(this.rolEnEdicion.id);
+      // Esperamos que TODOS los datos base carguen primero, luego aplicamos los del rol
+      forkJoin({
+        rolesBase: this.adminService.obtenerRolesBase(),
+        esquemas: this.adminService.obtenerEsquemasYTablas(),
+        usuarios: this.adminService.obtenerTodosUsuarios(),
+        permisosRol: this.adminService.obtenerPermisosRol(this.rolEnEdicion.id),
+        usuariosRol: this.adminService.obtenerUsuariosDelRol(this.rolEnEdicion.id)
+      }).subscribe({
+        next: ({ rolesBase, esquemas, usuarios, permisosRol, usuariosRol }) => {
+          // 1. Poblar roles base
+          this.rolesBase = rolesBase.map((rol: any) => ({
+            id: String(rol.idRol),
+            nombre: rol.nombreRol,
+            descripcion: rol.descripcion || 'Rol de grupo en PostgreSQL'
+          }));
+
+          // 2. Poblar esquemas en blanco
+          this.esquemas = esquemas.map((esquema: any) => ({
+            nombre: esquema.nombreEsquema,
+            usage: false,
+            permisoGlobal: false,
+            mostrarTablas: false,
+            tablas: esquema.tablas.map((tabla: string) => ({
+              nombre: tabla,
+              permisos: { select: false, insert: false, update: false, delete: false },
+              mostrarPermisos: false
+            }))
+          }));
+
+          // 3. Poblar usuarios en blanco
+          this.usuariosDisponibles = usuarios.map((usuario: any) => ({
+            id: usuario.idUsuario,
+            nombreCompleto: `${usuario.nombre} ${usuario.apellido}`,
+            email: usuario.correo,
+            rolActual: usuario.rol ? usuario.rol.nombreRol : 'Sin Rol',
+            seleccionado: false
+          }));
+
+          // 4. Aplicar nombre y rolBase
+          this.nuevoRol.nombre = permisosRol.nombreRol || this.rolEnEdicion!.nombre;
+          this.nuevoRol.rolBaseId = permisosRol.rolBaseId ? String(permisosRol.rolBaseId) : null;
+
+          // 🛡️ 5. MAGIA A PRUEBA DE BALAS PARA PERMISOS
+          let permisosObj = permisosRol.permisos ? permisosRol.permisos : permisosRol;
+          if (typeof permisosObj === 'string') {
+            try {
+              permisosObj = JSON.parse(permisosObj);
+            } catch (e) {
+              console.error('Error parseando JSON:', e);
+            }
+          }
+          this.aplicarPermisosAEsquemas(permisosObj);
+
+          // 🛡️ 6. MAGIA A PRUEBA DE BALAS PARA USUARIOS
+          const idsUsuariosDelRol = usuariosRol.map((u: any) => {
+            return typeof u === 'object' ? Number(u.idUsuario || u.id) : Number(u);
+          });
+
+          this.usuariosDisponibles.forEach(usuario => {
+            usuario.seleccionado = idsUsuariosDelRol.includes(Number(usuario.id));
+          });
+
+          this.usuariosFiltrados = [...this.usuariosDisponibles];
+
+          // Renderizar los cambios finales
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error al cargar datos para edición:', err);
+          this.error.emit('Error al cargar los datos del rol para editar');
+          this.cdr.detectChanges();
+        }
+      });
+    } else {
+      // Modo CREAR: carga normal independiente
+      this.cargarRolesBase();
+      this.cargarEsquemas();
+      this.cargarUsuarios();
     }
   }
 
