@@ -1,4 +1,7 @@
 package com.example.demo.controller;
+import com.example.demo.model.ConfiguracionBackup;
+import com.example.demo.model.HistorialBackup;
+import com.example.demo.service.BackupAutomatizacionService;
 import com.example.demo.service.DatabaseBackupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 @RequiredArgsConstructor
 @RestController
@@ -18,11 +22,16 @@ import java.util.Map;
 public class BackupController {
 
     private final DatabaseBackupService backupService;
+    private final BackupAutomatizacionService backupAutomatizacionService;
 
     @PostMapping("/backup/descargar")
     public ResponseEntity<Resource> descargarRespaldo() {
         try {
             File backupFile = backupService.generarBackupYSubirAzure();
+
+
+            backupAutomatizacionService.registrarAuditoria("MANUAL", "EXITO", backupFile.length(), null);
+
             FileSystemResource resource = new FileSystemResource(backupFile);
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + backupFile.getName());
@@ -38,7 +47,42 @@ public class BackupController {
 
         } catch (Exception e) {
             e.printStackTrace();
+            backupAutomatizacionService.registrarAuditoria("MANUAL", "ERROR", 0L, e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
+    }
+    @GetMapping("/backup/descargar-nube")
+    public ResponseEntity<Resource> descargarDesdeNube(@RequestParam String fileName) {
+        try {
+            Resource resource = backupService.descargarDeAzure(fileName);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName);
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentLength(resource.contentLength())
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(resource);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/backup/configuracion")
+    public ResponseEntity<ConfiguracionBackup> obtenerConfig() {
+        return ResponseEntity.ok(backupAutomatizacionService.obtenerConfiguracion());
+    }
+
+    @PostMapping("/backup/configuracion")
+    public ResponseEntity<ConfiguracionBackup> guardarConfig(@RequestBody ConfiguracionBackup config) {
+        return ResponseEntity.ok(backupAutomatizacionService.guardarConfiguracion(config));
+    }
+
+    @GetMapping("/backup/historial")
+    public ResponseEntity<List<HistorialBackup>> obtenerHistorial() {
+        return ResponseEntity.ok(backupAutomatizacionService.obtenerHistorial());
     }
 }

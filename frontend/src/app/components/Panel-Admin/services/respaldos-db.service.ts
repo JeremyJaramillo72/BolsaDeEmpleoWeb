@@ -6,10 +6,28 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class RespaldosDbService {
-  private apiUrl = 'http://localhost:8080/api/seguridad/backup/descargar';
+  private apiUrl = 'http://localhost:8080/api/seguridad/backup';
   constructor(private http: HttpClient) {}
 
   generarYDescargarBackup(): Observable<Blob> {
-    return this.http.post(this.apiUrl, {}, { responseType: 'blob' });
+    return this.http.post(`${this.apiUrl}/descargar`, {}, { responseType: 'blob' });
+  }
+  obtenerConfiguracion(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/configuracion`);
+  }
+
+  guardarConfiguracion(config: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/configuracion`, config);
+  }
+
+  obtenerHistorial(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/historial`);
+  }
+
+  descargarDeAzure(fileName: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/descargar-nube`, {
+      params: { fileName: fileName },
+      responseType: 'blob'
+    });
   }
 }

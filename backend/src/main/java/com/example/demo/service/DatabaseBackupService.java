@@ -5,12 +5,19 @@ import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 public class DatabaseBackupService {
@@ -32,18 +39,22 @@ public class DatabaseBackupService {
 
     public File generarBackupYSubirAzure() throws Exception {
 
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String fileName = "bolsa_uteq_" + timeStamp + ".backup";
+        // 1. Nombres de Archivos
+        String timeStamp = new SimpleDateFormat("dd-MMM-yyyy_hh-mm-a").format(new Date());
+        String dbFileName = "Bolsa_Uteq_" + timeStamp + ".backup";
+        String zipFileName = "Backup_Bolsa_" + timeStamp + ".zip";
 
-        String tempPath = Paths.get(System.getProperty("java.io.tmpdir"), fileName).toString();
+        String tempDbPath = Paths.get(System.getProperty("java.io.tmpdir"), dbFileName).toString();
+        String tempZipPath = Paths.get(System.getProperty("java.io.tmpdir"), zipFileName).toString();
 
+        // 2. Ejecutar pg_dump
         ProcessBuilder pb = new ProcessBuilder(
                 pgDumpPath,
                 "-U", dbUser,
                 "-h", "bolsa-empleo-dbpg.postgres.database.azure.com",
                 "-p", "5432",
                 "-F", "c",
-                "-f", tempPath,
+                "-f", tempDbPath,
                 "Bolsa-Empleo-Azure"
         );
 
@@ -67,25 +78,75 @@ public class DatabaseBackupService {
             throw new RuntimeException("Fallo pg_dump. Código: " + exitCode + ". Detalle:\n" + outputMessage.toString());
         }
 
-        subirAAzure(tempPath, fileName);
-        return new File(tempPath);
+        // 🟢 3. MAGIA: EMPAQUETAR EL .BACKUP DENTRO DE UN .ZIP 🟢
+        empaquetarEnZip(tempDbPath, tempZipPath, dbFileName);
+
+        // 4. Subimos el .ZIP a Azure (en vez del .backup suelto)
+        subirAAzure(tempZipPath, zipFileName);
+
+        // 5. Limpieza: Borramos el .backup original para no dejar basura en el servidor
+        Files.deleteIfExists(Paths.get(tempDbPath));
+
+
+        return new File(tempZipPath);
     }
 
-    private void subirAAzure(String filePath, String fileName) {
+    private void empaquetarEnZip(String sourceFilePath, String zipFilePath, String fileNameInsideZip) throws Exception {
+        try (FileOutputStream fos = new FileOutputStream(zipFilePath);
+             ZipOutputStream zos = new ZipOutputStream(fos);
+             FileInputStream fis = new FileInputStream(sourceFilePath)) {
+
+            ZipEntry zipEntry = new ZipEntry(fileNameInsideZip);
+            zos.putNextEntry(zipEntry);
+
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = fis.read(buffer)) >= 0) {
+                zos.write(buffer, 0, length);
+            }
+            zos.closeEntry();
+        }
+    }
+
+    public ByteArrayResource descargarDeAzure(String fileName) {
         try {
             BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
                     .connectionString(azureConnectionString)
                     .buildClient();
 
             BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerNameBackups);
-            if (!containerClient.exists()) {
-                containerClient.create();
+            BlobClient blobClient = containerClient.getBlobClient(fileName);
+
+            if (!blobClient.exists()) {
+                throw new RuntimeException("El archivo no existe en Azure: " + fileName);
             }
 
-            BlobClient blobClient = containerClient.getBlobClient(fileName);
-            blobClient.uploadFromFile(filePath);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            blobClient.downloadStream(outputStream);
+
+            return new ByteArrayResource(outputStream.toByteArray());
+
         } catch (Exception e) {
-            throw new RuntimeException("Error subiendo el archivo a Azure: " + e.getMessage());
+            throw new RuntimeException("Error descargando desde Azure: " + e.getMessage());
         }
     }
+
+        private void subirAAzure (String filePath, String fileName){
+            try {
+                BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
+                        .connectionString(azureConnectionString)
+                        .buildClient();
+
+                BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerNameBackups);
+                if (!containerClient.exists()) {
+                    containerClient.create();
+                }
+
+                BlobClient blobClient = containerClient.getBlobClient(fileName);
+                blobClient.uploadFromFile(filePath);
+            } catch (Exception e) {
+                throw new RuntimeException("Error subiendo a Azure: " + e.getMessage());
+            }
+        }
+
 }

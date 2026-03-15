@@ -1,55 +1,221 @@
 <div class="backup-module fade-in">
 
-
-  <div class="execution-card mt-4">
-    <div class="card-header-flex border-bottom mb-3 pb-3">
+  <div class="pro-card card-auto mt-4">
+    <div class="card-header-flex border-bottom mb-4 pb-3">
       <div class="title-group">
-        <span class="material-icons text-green icon-large">security</span>
-        <h2>Ejecutar Respaldo Maestro</h2>
+        <div class="icon-container bg-indigo-light text-indigo">
+          <span class="material-icons icon-large">schedule</span>
+        </div>
+        <div>
+          <h2 class="text-indigo-dark">Automatización de Respaldos</h2>
+          <p class="subtitle-text">Programa copias silenciosas hacia Azure y olvídate del trabajo manual.</p>
+        </div>
+      </div>
+      <label class="toggle-switch shadow-sm">
+        <input type="checkbox" [(ngModel)]="autoBackupHabilitado">
+        <span class="slider round"></span>
+      </label>
+    </div>
+
+    <div class="schedule-layout" [class.disabled-section]="!autoBackupHabilitado">
+
+      <div class="form-group mb-3" style="grid-column: 1 / -1;">
+        <label>Modo de Automatización:</label>
+        <div class="input-wrapper">
+          <span class="material-icons input-icon text-indigo">tune</span>
+          <select class="form-control" [(ngModel)]="tipoFrecuencia" (change)="cdr.detectChanges()" [disabled]="!autoBackupHabilitado">
+            <option value="SEMANAL">Días específicos de la semana</option>
+            <option value="HORAS">Repetir cada cierto número de Horas</option>
+            <option value="DIAS">Repetir cada cierto número de Días</option>
+            <option value="MINUTOS" class="text-danger font-weight-bold">Repetir cada X Minutos</option>
+          </select>
+        </div>
+      </div>
+
+      <ng-container *ngIf="tipoFrecuencia === 'SEMANAL'">
+        <div class="form-group time-picker-group">
+          <label>Hora de ejecución:</label>
+          <div class="input-wrapper">
+            <span class="material-icons input-icon text-indigo">schedule</span>
+            <input type="time" class="form-control time-input" [(ngModel)]="horaRespaldo" [disabled]="!autoBackupHabilitado">
+          </div>
+        </div>
+        <div class="form-group days-picker-group">
+          <label>Días activos de la semana:</label>
+          <div class="days-pills">
+            <button *ngFor="let dia of diasSemana; let i = index" class="day-pill" [class.active]="dia.seleccionado" (click)="toggleDia(i)" [disabled]="!autoBackupHabilitado">
+              {{ dia.inicial }}
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="tipoFrecuencia === 'HORAS'">
+        <div class="form-group">
+          <label>Ejecutar copia cada (Horas):</label>
+          <div class="input-wrapper">
+            <span class="material-icons input-icon text-indigo">hourglass_top</span>
+            <input type="number" min="1" max="24" class="form-control" [(ngModel)]="intervaloValor" [disabled]="!autoBackupHabilitado">
+          </div>
+          <small class="text-muted mt-1" style="display: block;">Hará un backup cada 4 horas a partir del último.</small>
+        </div>
+      </ng-container>
+      <ng-container *ngIf="tipoFrecuencia === 'MINUTOS'">
+        <div class="form-group">
+          <label class="text-danger" style="display: flex; align-items: center; gap: 5px;">
+            <span class="material-icons text-sm">warning</span> Ejecutar copia cada (Minutos):
+          </label>
+          <div class="input-wrapper">
+            <span class="material-icons input-icon text-danger">timer</span>
+            <input type="number" min="1" max="59" class="form-control" style="border-color: #ef4444; background-color: #fef2f2;" [(ngModel)]="intervaloValor" [disabled]="!autoBackupHabilitado">
+          </div>
+          <small class="text-danger mt-1" style="display: block; font-weight: 700;">
+            ¡Atención! Consumo extremo de recursos. Usar solo para la presentación.
+          </small>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="tipoFrecuencia === 'DIAS'">
+        <div class="form-group">
+          <label>Ejecutar copia cada (Días):</label>
+          <div class="input-wrapper">
+            <span class="material-icons input-icon text-indigo">today</span>
+            <input type="number" min="1" max="30" class="form-control" [(ngModel)]="intervaloValor" [disabled]="!autoBackupHabilitado">
+          </div>
+        </div>
+        <div class="form-group time-picker-group">
+          <label>A esta hora exacta:</label>
+          <div class="input-wrapper">
+            <span class="material-icons input-icon text-indigo">schedule</span>
+            <input type="time" class="form-control time-input" [(ngModel)]="horaRespaldo" [disabled]="!autoBackupHabilitado">
+          </div>
+        </div>
+      </ng-container>
+
+      <div class="action-save-group mt-3" style="grid-column: 1 / -1; display: flex; justify-content: flex-end;">
+        <button class="btn-save-schedule" [disabled]="!autoBackupHabilitado" (click)="guardarConfiguracionAutomatica()">
+          <span class="material-icons">save</span> Guardar Rutina
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pro-card card-manual mt-4">
+    <div class="card-header-flex border-bottom mb-4 pb-3">
+      <div class="title-group">
+        <div class="icon-container bg-green-light text-green">
+          <span class="material-icons icon-large">security</span>
+        </div>
+        <div>
+          <h2 class="text-green-dark">Ejecutar Respaldo Maestro</h2>
+          <p class="subtitle-text">Genera una copia física en formato ZIP y asegúrala en la nube al instante.</p>
+        </div>
       </div>
     </div>
 
     <div class="execution-layout">
       <div class="destinations-panel">
-        <h4 class="panel-subtitle">Destinos de la copia:</h4>
-
         <div class="dest-item">
           <div class="dest-icon bg-indigo-light text-indigo">
-            <span class="material-icons">hard_drive</span>
+            <span class="material-icons">cloud_done</span>
           </div>
           <div class="dest-info">
-            <strong>Almacenamiento Físico</strong>
-            <span>Se guardará en la ruta configurada arriba.</span>
+            <strong class="text-indigo-dark">Nube (Azure Blob Storage)</strong>
+            <span>Copia de seguridad externa encriptada.</span>
           </div>
         </div>
-
         <div class="dest-item">
           <div class="dest-icon bg-cyan-light text-cyan">
-            <span class="material-icons">cloud_upload</span>
+            <span class="material-icons">download</span>
           </div>
           <div class="dest-info">
-            <strong>Nube (Azure Blob Storage)</strong>
-            <span>Sincronización automática de seguridad.</span>
+            <strong class="text-cyan-dark">Descarga Local (.ZIP)</strong>
+            <span>Archivo portátil comprimido en tu PC.</span>
           </div>
         </div>
       </div>
 
       <div class="action-panel">
-        <button
-          class="btn-generate"
-          [class.loading]="isBackingUp"
-          (click)="ejecutarBackup()"
-          [disabled]="isBackingUp || !rutaLocal">
+        <button class="btn-generate" [class.loading]="isBackingUp" (click)="ejecutarBackup()" [disabled]="isBackingUp">
           <span class="material-icons icon-spin" *ngIf="isBackingUp">sync</span>
           <span class="material-icons" *ngIf="!isBackingUp">backup</span>
-          {{ isBackingUp ? 'Creando respaldo seguro...' : 'Generar Copia Ahora' }}
+          {{ isBackingUp ? 'Procesando respaldo...' : 'Generar Copia Ahora' }}
         </button>
+      </div>
+    </div>
+  </div>
 
-        <div class="last-backup-info mt-3">
-          <span class="material-icons text-muted text-sm">history</span>
-          <span>Último respaldo: <strong>12/03/2026 - 14:30 PM</strong></span>
+  <div class="pro-card card-history mt-4 mb-4">
+    <div class="card-header-flex border-bottom mb-4 pb-3">
+      <div class="title-group">
+        <div class="icon-container bg-cyan-light text-cyan">
+          <span class="material-icons icon-large">history</span>
+        </div>
+        <div>
+          <h2 class="text-cyan-dark">Historial de Respaldos</h2>
+          <p class="subtitle-text">Registro de auditoría de las últimas copias generadas.</p>
         </div>
       </div>
+      <button class="btn-refresh hover-effect" (click)="cargarHistorial()">
+        <span class="material-icons" [class.icon-spin]="cargandoHistorial">refresh</span>
+      </button>
+    </div>
+
+    <div class="table-responsive shadow-sm">
+      <table class="table-custom">
+        <thead>
+        <tr>
+          <th>Fecha y Hora</th>
+          <th>Tipo</th>
+          <th>Estado</th>
+          <th>Tamaño</th>
+          <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let item of historialBackups">
+          <td>
+            <strong>{{ item.fechaEjecucion | date:'dd MMM yyyy' }}</strong><br>
+            <span class="text-muted text-sm">{{ item.fechaEjecucion | date:'hh:mm a' }}</span>
+          </td>
+
+          <td>
+              <span class="badge" [ngClass]="item.tipo === 'AUTOMATICO' ? 'badge-auto' : 'badge-manual'">
+                {{ item.tipo === 'AUTOMATICO' ? 'Automático' : 'Manual' }}
+              </span>
+          </td>
+
+          <td>
+              <span [ngClass]="item.estado === 'EXITO' ? 'status-success' : 'status-error'">
+                <span class="material-icons">{{ item.estado === 'EXITO' ? 'check_circle' : 'error' }}</span>
+                {{ item.estado === 'EXITO' ? 'Éxito en Azure' : 'Falló' }}
+              </span>
+            <div *ngIf="item.estado === 'ERROR'" class="text-muted text-sm" style="font-size: 0.75rem; margin-top: 4px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="item.mensajeError">
+              {{ item.mensajeError }}
+            </div>
+          </td>
+
+          <td><strong>{{ formatearTamano(item.tamanoBytes) }}</strong></td>
+
+          <td>
+            <button class="btn-action hover-effect"
+                    title="Descargar desde Azure"
+                    [disabled]="item.estado === 'ERROR' || descargandoArchivo === item.idBackup"
+                    (click)="descargarRespaldoHistorial(item)">
+              <span class="material-icons" [class.icon-spin]="descargandoArchivo === item.idBackup">
+                {{ descargandoArchivo === item.idBackup ? 'sync' : 'cloud_download' }}
+              </span>
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="historialBackups.length === 0">
+          <td colspan="5" style="text-align: center; padding: 2rem; color: #64748b;">
+            No hay respaldos registrados en el historial todavía.
+          </td>
+        </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
