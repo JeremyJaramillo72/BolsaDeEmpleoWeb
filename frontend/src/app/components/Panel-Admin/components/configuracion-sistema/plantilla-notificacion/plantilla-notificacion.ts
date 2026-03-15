@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PlantillaNotificacionService } from '../../services/plantilla-notificacion.service';
+import { PlantillaNotificacionService } from '../../../services/plantilla-notificacion.service';
 
 export interface PlantillaDTO {
   idPlantilla: number;

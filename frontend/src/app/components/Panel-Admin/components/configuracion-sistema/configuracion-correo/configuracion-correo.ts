@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ConfiguracionCorreoService } from '../../services/configuracion-correo.service';
+import { ConfiguracionCorreoService } from '../../../services/configuracion-correo.service';
 import { Router } from '@angular/router';
 
 export interface ConfiguracionCorreoDTO {

@@ -152,7 +152,7 @@ public class ConfiguracionCorreoService {
             log.info("✅ Configuración actualizada por: " + usuario.getNombre());
 
             // Notificar a admins
-            enviarNotificacionCambio(usuario, configGuardada.getValor());
+            enviarNotificacionCambio(usuario, config.getValor(), configGuardada.getValor());
 
         } catch (Exception e) {
             log.error("❌ Error actualizando configuración: " + e.getMessage());
@@ -228,10 +228,11 @@ public class ConfiguracionCorreoService {
     /**
      * Enviar notificación a todos los admins
      */
-    private void enviarNotificacionCambio(Usuario adminQueHizoCambio, String correoNuevo) {
+    private void enviarNotificacionCambio(Usuario adminQueHizoCambio, String correoAnterior, String correoNuevo) {
         try {
             Map<String, String> variables = new HashMap<>();
             variables.put("adminNombre", adminQueHizoCambio.getNombre());
+            variables.put("correoAnterior", correoAnterior != null ? correoAnterior : "No configurado");
             variables.put("correoNuevo", correoNuevo);
             variables.put("fecha", LocalDateTime.now().toString());
 
@@ -243,7 +244,7 @@ public class ConfiguracionCorreoService {
                     "configuracion_correo_actualizada",
                     variables,
                     datos,
-                    "/menu-principal/configuracion-correo",
+                    "/menu-principal/configuracion-sistema",
                     "settings_backup_restore"
             );
         } catch (Exception e) {
