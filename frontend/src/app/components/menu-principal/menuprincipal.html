@@ -13,7 +13,9 @@
     </div>
 
     <div class="sidebar-profile" *ngIf="isSidebarOpen">
-      <div class="sp-avatar">{{ nombreUsuario.charAt(0) | uppercase }}</div>
+      <img *ngIf="fotoMenu" [src]="fotoMenu" class="sp-avatar-img">
+      <div *ngIf="!fotoMenu" class="sp-avatar">{{ nombreUsuario.charAt(0) | uppercase }}</div>
+
       <div class="sp-info">
         <span class="sp-name">{{ nombreUsuario }}</span>
         <span class="sp-role">{{ rolUsuario | titlecase }}</span>
@@ -76,10 +78,10 @@
         <app-notification-bell></app-notification-bell>
 
         <div class="user-profile">
+          <img *ngIf="fotoMenu" [src]="fotoMenu" class="avatar-img" alt="Logo">
           <div class="avatar" *ngIf="!fotoMenu">
             {{ nombreUsuario.charAt(0) | uppercase }}
           </div>
-          <img *ngIf="fotoMenu" [src]="fotoMenu" class="avatar-img" alt="Logo">
 
           <div class="user-info">
             <span class="user-name">{{ nombreUsuario }}</span>

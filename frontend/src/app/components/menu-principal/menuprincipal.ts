@@ -44,6 +44,7 @@ export class MenuprincipalComponent implements OnInit {
   rolUsuario: string = '';
   fotoMenu: string = '';
 
+
  // dashboardHomeVisible: boolean = true;
   isDarkMode: boolean = false;
 
@@ -67,11 +68,20 @@ export class MenuprincipalComponent implements OnInit {
   ngOnInit(): void {
     this.nombreUsuario = localStorage.getItem('nombre') || 'Usuario';
     this.rolUsuario = localStorage.getItem('rol') || '';
+    const idUsuario = localStorage.getItem('idUsuario');
 
-    if (!localStorage.getItem('idUsuario')) {
+    if (!idUsuario) {
       this.cerrarSesion();
       return;
     }
+    this.authService.obtenerFotoPerfil(idUsuario).subscribe({
+      next: (res) => {
+        if (res.url) {
+          this.fotoMenu = res.url;
+          this.cdr.detectChanges();
+        }
+      }
+    })
 
     this.usuarioEmpresaService.logoActual$.subscribe(nuevaUrl => {
       if (nuevaUrl) {

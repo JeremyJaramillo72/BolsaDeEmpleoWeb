@@ -62,4 +62,9 @@ public class PerfilProfesionalRepository {
         String sql = "select empresas.fn_crear_empresa(?, ?, ?)";
         return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> rs.getInt(1), nombreEmpresa, ruc, idCategoria);
     }
+
+    public String obtenerUrlFoto(Long idUsuario) {
+        return jdbcTemplate.queryForObject("SELECT usuarios.fn_obtener_url_imagen(?)", String.class, idUsuario);
+    }
+
 }

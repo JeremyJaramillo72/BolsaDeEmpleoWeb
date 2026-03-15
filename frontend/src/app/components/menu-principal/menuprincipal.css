@@ -409,6 +409,13 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+.sp-avatar-img, .avatar-img {
+  width: 40px; /* Ajusta según el tamaño de tu círculo actual */
+  height: 40px;
+  border-radius: 50%; /* Círculo perfecto */
+  object-fit: cover;  /* Evita que la imagen se estire */
+  border: 2px solid #e2e8f0;
+}
 
 /* El número grande */
 .stat-value {
