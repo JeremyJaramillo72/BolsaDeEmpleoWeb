@@ -21,6 +21,7 @@ public interface IOfertaLaboralService {
     List<IOfertaDetallada> listarOfertasCompleto(Long idUsuario);
     String toggleFavorita(Integer idOferta, Long idUsuario);
     OfertaExtraInfoDTO obtenerExtraInfo(Integer idOferta);
+    JSearchResponseDTO buscarOfertasExternas(String query, Integer page, String country, String datePosted, String language, Boolean workFromHome);
     Map<Integer, Long> contarPostulantesPorOfertas(List<Integer> ids);
     OfertaLaboral guardarOfertaFisica(OfertaLaboralDTO dto, MultipartFile archivoOficio, Long idUsuarioAdmin);
     List<IOfertaFisicaAdminDTO> listarOfertasFisicasAdmin();

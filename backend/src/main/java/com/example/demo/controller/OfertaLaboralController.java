@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.IOfertaResumen;
+import com.example.demo.dto.JSearchResponseDTO;
 import com.example.demo.dto.OfertaExtraInfoDTO;
 import com.example.demo.dto.OfertaLaboralDTO;
 import com.example.demo.model.OfertaLaboral;
@@ -80,6 +81,25 @@ public class OfertaLaboralController {
         try {
             OfertaExtraInfoDTO extra = ofertaService.obtenerExtraInfo(idOferta);
             return ResponseEntity.ok(extra);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/externas/jsearch")
+    public ResponseEntity<?> buscarOfertasExternas(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "us") String country,
+            @RequestParam(defaultValue = "all", name = "date_posted") String datePosted,
+            @RequestParam(required = false) String language,
+            @RequestParam(defaultValue = "false", name = "work_from_home") Boolean workFromHome
+    ) {
+        try {
+            JSearchResponseDTO resultado = ofertaService.buscarOfertasExternas(
+                    query, page, country, datePosted, language, workFromHome
+            );
+            return ResponseEntity.ok(resultado);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error: " + e.getMessage());
         }

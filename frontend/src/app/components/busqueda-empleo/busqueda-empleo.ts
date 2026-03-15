@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { OfertaService, OfertaDetalladaDTO } from '../../services/oferta.service';
+import { OfertaService, OfertaDetalladaDTO, JSearchOfertaDTO } from '../../services/oferta.service';
 import { UiNotificationService } from '../../services/ui-notification.service';
 @Component({
   selector: 'app-busqueda-empleo',
@@ -15,9 +15,19 @@ import { UiNotificationService } from '../../services/ui-notification.service';
 export class BusquedaEmpleoComponent implements OnInit {
 
   ofertas: OfertaDetalladaDTO[] = [];
+  ofertasExternas: OfertaDetalladaDTO[] = [];
   modalidades: string[] = [];
   jornadas: string[] = [];
   categorias: string[] = [];
+
+  modoBusqueda: 'internas' | 'externas' = 'internas';
+  paginaExternaActual: number = 1;
+  readonly totalPaginasExternas: number = 3;
+  queryExterna: string = 'developer jobs in chicago';
+  countryExterna: string = 'us';
+  datePostedExterna: string = 'all';
+  languageExterna: string = '';
+  workFromHomeExterna: boolean = false;
 
   filtroTitulo: string = '';
   filtroModalidad: string = '';
@@ -34,6 +44,7 @@ export class BusquedaEmpleoComponent implements OnInit {
   cargando: boolean = false;
   soloFavoritas: boolean = false;
   errorPostulacion: string | null = null;
+  errorBusquedaExterna: string | null = null;
   private idUsuario: number = 0;
 
   constructor(
@@ -114,6 +125,111 @@ export class BusquedaEmpleoComponent implements OnInit {
     });
   }
 
+  cambiarModo(modo: 'internas' | 'externas'): void {
+    if (this.modoBusqueda === modo) return;
+    this.modoBusqueda = modo;
+    this.errorConexion = false;
+
+    if (modo === 'externas' && this.ofertasExternas.length === 0) {
+      this.buscarOfertasExternas(1);
+    }
+  }
+
+  buscarOfertasExternas(page: number = 1): void {
+    const query = this.queryExterna.trim();
+    if (!query) {
+      this.errorBusquedaExterna = 'Debe ingresar un criterio de busqueda para JSearch.';
+      this.ofertasExternas = [];
+      return;
+    }
+
+    this.cargando = true;
+    this.errorConexion = false;
+    this.errorBusquedaExterna = null;
+
+    this.ofertaService.buscarOfertasExternas(
+      query,
+      page,
+      this.countryExterna,
+      this.datePostedExterna,
+      this.languageExterna,
+      this.workFromHomeExterna
+    ).subscribe({
+      next: (res) => {
+        this.cargando = false;
+        this.paginaExternaActual = page;
+        this.ofertasExternas = (res.data ?? []).map((job, idx) => this.mapearOfertaExterna(job, idx, page));
+        this.cdr.detectChanges();
+      },
+      error: (e: any) => {
+        this.cargando = false;
+        this.errorConexion = true;
+        this.errorBusquedaExterna = e?.error || 'No se pudo consultar JSearch en este momento.';
+        this.ofertasExternas = [];
+      }
+    });
+  }
+
+  private mapearOfertaExterna(job: JSearchOfertaDTO, index: number, page: number): OfertaDetalladaDTO {
+    const fecha = job.jobPostedAt && job.jobPostedAt.trim() ? job.jobPostedAt : new Date().toISOString();
+    const ciudad = [job.jobCity, job.jobState, job.jobCountry].filter(Boolean).join(', ');
+    const idTemporal = (page * 100 + index + 1) * -1;
+
+    return {
+      idOferta: idTemporal,
+      titulo: job.jobTitle || 'Oferta externa',
+      descripcion: job.jobDescription || 'Sin descripcion disponible',
+      cantidadVacantes: 0,
+      experienciaMinima: 0,
+      fechaInicio: fecha,
+      fechaCierre: fecha,
+      nombreModalidad: job.jobIsRemote ? 'Remoto' : 'No especificado',
+      nombreJornada: job.jobEmploymentType || 'No especificado',
+      nombreCategoria: 'Externa',
+      salarioMin: 0,
+      salarioMax: 0,
+      estadoOferta: 'externa',
+      idFavoritas: null,
+      estadoFav: null,
+      idPostulacion: null,
+      estadoValidacion: null,
+      habilidades: [],
+      requisitos_manuales: [],
+      esFavorito: false,
+      mostrarDetalles: false,
+      nombreCiudad: ciudad,
+      nombreEmpresa: job.employerName || '',
+      esExterna: true,
+      urlOfertaExterna: job.jobApplyLink || job.jobGoogleLink || ''
+    };
+  }
+
+  irPaginaExterna(page: number): void {
+    if (page < 1 || page > this.totalPaginasExternas || page === this.paginaExternaActual) return;
+    this.buscarOfertasExternas(page);
+  }
+
+  paginaExternaAnterior(): void {
+    this.irPaginaExterna(this.paginaExternaActual - 1);
+  }
+
+  paginaExternaSiguiente(): void {
+    this.irPaginaExterna(this.paginaExternaActual + 1);
+  }
+
+  abrirOfertaExterna(oferta: OfertaDetalladaDTO): void {
+    if (!oferta.urlOfertaExterna) return;
+    window.open(oferta.urlOfertaExterna, '_blank');
+  }
+
+  get paginasExternas(): number[] {
+    return [1, 2, 3];
+  }
+
+  get ofertasVisibles(): OfertaDetalladaDTO[] {
+    return this.modoBusqueda === 'internas' ? this.ofertasFiltradas : this.ofertasExternas;
+  }
+
   cargarInfoExtra(): void {
     if (this.ofertas.length === 0) return;
 
@@ -180,6 +296,7 @@ export class BusquedaEmpleoComponent implements OnInit {
   }
 
   toggleVerFavoritas(): void {
+    if (this.modoBusqueda !== 'internas') return;
     this.soloFavoritas = !this.soloFavoritas;
   }
 
@@ -188,15 +305,28 @@ export class BusquedaEmpleoComponent implements OnInit {
   }
 
   limpiarFiltros(): void {
-    this.filtroTitulo = '';
-    this.filtroModalidad = '';
-    this.filtroJornada = '';
-    this.filtroCategoria = '';
-    this.filtroFecha = 'reciente';
-    this.soloFavoritas = false;
+    if (this.modoBusqueda === 'internas') {
+      this.filtroTitulo = '';
+      this.filtroModalidad = '';
+      this.filtroJornada = '';
+      this.filtroCategoria = '';
+      this.filtroFecha = 'reciente';
+      this.soloFavoritas = false;
+      return;
+    }
+
+    this.queryExterna = '';
+    this.countryExterna = 'us';
+    this.datePostedExterna = 'all';
+    this.languageExterna = '';
+    this.workFromHomeExterna = false;
+    this.paginaExternaActual = 1;
+    this.ofertasExternas = [];
+    this.errorBusquedaExterna = null;
   }
 
   toggleFavorito(oferta: OfertaDetalladaDTO): void {
+    if (oferta.esExterna) return;
     if (!oferta.idOferta) return;
 
     this.ofertaService.toggleFavorita(oferta.idOferta, this.idUsuario).subscribe({

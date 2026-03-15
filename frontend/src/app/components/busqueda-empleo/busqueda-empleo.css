@@ -92,6 +92,27 @@
 
 .filter-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem; color: #1e293b; }
 .filter-header h3 { margin: 0; font-size: 1.2rem; font-weight: 700; }
+.source-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+.btn-source {
+  flex: 1;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+  border-radius: 8px;
+  padding: 0.55rem 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-source.active {
+  border-color: #6366f1;
+  background: #eef2ff;
+  color: #3730a3;
+}
 .filter-group { margin-bottom: 1.2rem; display: flex; flex-direction: column; gap: 8px; }
 .filter-group label { font-size: 0.9rem; font-weight: 600; color: #475569; }
 
@@ -116,6 +137,37 @@
   cursor: pointer;
 }
 .search-input-wrapper input:focus, .filter-group select:focus { border-color: #6366f1; }
+.filter-group input {
+  width: 100%;
+  padding: 0.7rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+.remote-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #475569;
+  margin-bottom: 0.8rem;
+}
+.btn-search-external {
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.btn-search-external:hover { background: #1d4ed8; }
 
 .btn-clear-filters {
   width: 100%;
@@ -134,6 +186,34 @@
 .main-offers-content { flex: 1; display: flex; flex-direction: column; }
 .action-bar { margin-bottom: 1.5rem; color: #64748b; font-size: 1rem; }
 .offers-grid { display: flex; flex-direction: column; gap: 1.2rem; }
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+}
+.pager-btn {
+  min-width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #334155;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pager-btn.active {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+}
+.pager-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 /* TARJETAS */
 .modern-card {
@@ -374,6 +454,11 @@
 /* NO DATA */
 .no-data { text-align: center; padding: 4rem 2rem; background: white; border-radius: 16px; border: 2px dashed #e2e8f0; color: #94a3b8; }
 .no-data .material-icons { font-size: 3rem; margin-bottom: 1rem; display: block; }
+.error-jsearch {
+  margin-top: 0.5rem;
+  color: #b91c1c;
+  font-size: 0.9rem;
+}
 
 /* MODAL */
 .modal-overlay {

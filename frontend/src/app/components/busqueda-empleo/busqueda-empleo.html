@@ -16,14 +16,23 @@
         <h3>Filtros</h3>
       </div>
 
+      <div class="source-toggle">
+        <button class="btn-source" [class.active]="modoBusqueda === 'internas'" (click)="cambiarModo('internas')">
+          Internas
+        </button>
+        <button class="btn-source" [class.active]="modoBusqueda === 'externas'" (click)="cambiarModo('externas')">
+          Externas (JSearch)
+        </button>
+      </div>
+
       <!-- BOTÓN MIS FAVORITAS -->
-      <button class="btn-favoritas" (click)="toggleVerFavoritas()" [class.activo]="soloFavoritas">
+      <button class="btn-favoritas" *ngIf="modoBusqueda === 'internas'" (click)="toggleVerFavoritas()" [class.activo]="soloFavoritas">
         <span class="material-icons">{{ soloFavoritas ? 'bookmark' : 'bookmark_border' }}</span>
         Mis Favoritas
         <span class="badge-count" *ngIf="totalFavoritas > 0">{{ totalFavoritas }}</span>
       </button>
 
-      <div class="filter-group">
+      <div class="filter-group" *ngIf="modoBusqueda === 'internas'">
         <label>Buscar por título</label>
         <div class="search-input-wrapper">
           <span class="material-icons icon-search">search</span>
@@ -31,7 +40,7 @@
         </div>
       </div>
 
-      <div class="filter-group">
+      <div class="filter-group" *ngIf="modoBusqueda === 'internas'">
         <label>Modalidad</label>
         <select [(ngModel)]="filtroModalidad">
           <option value="">Todas las modalidades</option>
@@ -39,7 +48,7 @@
         </select>
       </div>
 
-      <div class="filter-group">
+      <div class="filter-group" *ngIf="modoBusqueda === 'internas'">
         <label>Jornada</label>
         <select [(ngModel)]="filtroJornada">
           <option value="">Todas las jornadas</option>
@@ -47,7 +56,7 @@
         </select>
       </div>
 
-      <div class="filter-group">
+      <div class="filter-group" *ngIf="modoBusqueda === 'internas'">
         <label>Categoría</label>
         <select [(ngModel)]="filtroCategoria">
           <option value="">Todas las categorías</option>
@@ -55,13 +64,52 @@
         </select>
       </div>
 
-      <div class="filter-group">
+      <div class="filter-group" *ngIf="modoBusqueda === 'internas'">
         <label>Ordenar por fecha</label>
         <select [(ngModel)]="filtroFecha">
           <option value="reciente">Más reciente primero</option>
           <option value="antiguo">Más antiguo primero</option>
         </select>
       </div>
+
+      <div class="filter-group" *ngIf="modoBusqueda === 'externas'">
+        <label>Busqueda JSearch</label>
+        <div class="search-input-wrapper">
+          <span class="material-icons icon-search">search</span>
+          <input type="text" [(ngModel)]="queryExterna" placeholder="Ej: developer jobs in chicago">
+        </div>
+      </div>
+
+      <div class="filter-group" *ngIf="modoBusqueda === 'externas'">
+        <label>País (ISO-2)</label>
+        <input type="text" maxlength="2" [(ngModel)]="countryExterna" placeholder="us">
+      </div>
+
+      <div class="filter-group" *ngIf="modoBusqueda === 'externas'">
+        <label>Fecha publicación</label>
+        <select [(ngModel)]="datePostedExterna">
+          <option value="all">all</option>
+          <option value="today">today</option>
+          <option value="3days">3days</option>
+          <option value="week">week</option>
+          <option value="month">month</option>
+        </select>
+      </div>
+
+      <div class="filter-group" *ngIf="modoBusqueda === 'externas'">
+        <label>Idioma (opcional)</label>
+        <input type="text" maxlength="5" [(ngModel)]="languageExterna" placeholder="en">
+      </div>
+
+      <label class="remote-check" *ngIf="modoBusqueda === 'externas'">
+        <input type="checkbox" [(ngModel)]="workFromHomeExterna">
+        Solo remoto
+      </label>
+
+      <button class="btn-search-external" *ngIf="modoBusqueda === 'externas'" (click)="buscarOfertasExternas(1)">
+        <span class="material-icons">search</span>
+        Buscar en JSearch
+      </button>
 
       <button class="btn-clear-filters" (click)="limpiarFiltros()">Limpiar Filtros</button>
     </aside>
@@ -71,9 +119,22 @@
 
       <div class="action-bar">
         <div class="stats-text">
-          <span *ngIf="!soloFavoritas">Mostrando <strong>{{ ofertasFiltradas.length }}</strong> ofertas disponibles</span>
-          <span *ngIf="soloFavoritas">Mostrando <strong>{{ ofertasFiltradas.length }}</strong> ofertas guardadas</span>
+          <span *ngIf="modoBusqueda === 'internas' && !soloFavoritas">Mostrando <strong>{{ ofertasVisibles.length }}</strong> ofertas disponibles</span>
+          <span *ngIf="modoBusqueda === 'internas' && soloFavoritas">Mostrando <strong>{{ ofertasVisibles.length }}</strong> ofertas guardadas</span>
+          <span *ngIf="modoBusqueda === 'externas'">Mostrando <strong>{{ ofertasVisibles.length }}</strong> ofertas externas (página {{ paginaExternaActual }} de 3)</span>
         </div>
+      </div>
+
+      <div class="pager" *ngIf="modoBusqueda === 'externas'">
+        <button class="pager-btn" (click)="paginaExternaAnterior()" [disabled]="paginaExternaActual === 1">
+          <span class="material-icons">chevron_left</span>
+        </button>
+        <button class="pager-btn" *ngFor="let p of paginasExternas" [class.active]="p === paginaExternaActual" (click)="irPaginaExterna(p)">
+          {{ p }}
+        </button>
+        <button class="pager-btn" (click)="paginaExternaSiguiente()" [disabled]="paginaExternaActual === totalPaginasExternas">
+          <span class="material-icons">chevron_right</span>
+        </button>
       </div>
 
       <div class="offers-grid">
@@ -89,31 +150,33 @@
           <span class="material-icons">cloud_off</span>
           <p>No se pudo conectar con el servidor.</p>
           <p style="font-size:0.85rem; color:#94a3b8;">Verifica que el backend esté corriendo en <strong>localhost:8080</strong></p>
-          <button class="btn-clear-filters" style="margin-top:1rem" (click)="cargarOfertas()">
+          <button class="btn-clear-filters" style="margin-top:1rem" (click)="modoBusqueda === 'internas' ? cargarOfertas() : buscarOfertasExternas(paginaExternaActual)">
             Reintentar
           </button>
         </div>
 
         <!-- SIN RESULTADOS -->
-        <div *ngIf="!cargando && !errorConexion && ofertasFiltradas.length === 0" class="no-data">
-          <span class="material-icons">{{ soloFavoritas ? 'bookmark_border' : 'inbox' }}</span>
-          <p *ngIf="!soloFavoritas">No se encontraron ofertas con estos filtros.</p>
-          <p *ngIf="soloFavoritas">No tienes ofertas guardadas aún.</p>
+        <div *ngIf="!cargando && !errorConexion && ofertasVisibles.length === 0" class="no-data">
+          <span class="material-icons">{{ modoBusqueda === 'internas' && soloFavoritas ? 'bookmark_border' : 'inbox' }}</span>
+          <p *ngIf="modoBusqueda === 'internas' && !soloFavoritas">No se encontraron ofertas con estos filtros.</p>
+          <p *ngIf="modoBusqueda === 'internas' && soloFavoritas">No tienes ofertas guardadas aún.</p>
+          <p *ngIf="modoBusqueda === 'externas'">No se encontraron ofertas externas con los filtros actuales.</p>
+          <p *ngIf="modoBusqueda === 'externas' && errorBusquedaExterna" class="error-jsearch">{{ errorBusquedaExterna }}</p>
         </div>
 
-        <div class="modern-card" *ngFor="let oferta of ofertasFiltradas">
+        <div class="modern-card" *ngFor="let oferta of ofertasVisibles">
 
           <div class="header-row">
             <h3>{{ oferta.titulo }}</h3>
             <div class="badges-group">
               <!-- Badge si ya postuló -->
-              <span class="status-badge badge-postulado" *ngIf="yaPostulo(oferta)">
+              <span class="status-badge badge-postulado" *ngIf="!oferta.esExterna && yaPostulo(oferta)">
                 <span class="material-icons" style="font-size:0.85rem">check_circle</span>
                 {{ oferta.estadoValidacion ?? 'Postulado' }}
               </span>
             </div>
             <!-- Botón guardar en esquina superior derecha -->
-            <button class="btn-favorito btn-favorito-corner" (click)="toggleFavorito(oferta)" [class.activo]="oferta.esFavorito" [title]="oferta.esFavorito ? 'Guardado' : 'Guardar'">
+            <button class="btn-favorito btn-favorito-corner" *ngIf="!oferta.esExterna" (click)="toggleFavorito(oferta)" [class.activo]="oferta.esFavorito" [title]="oferta.esFavorito ? 'Guardado' : 'Guardar'">
               <span class="material-icons">{{ oferta.esFavorito ? 'bookmark' : 'bookmark_border' }}</span>
             </button>
           </div>
@@ -171,26 +234,29 @@
 
           <!-- ACCIONES -->
           <div class="card-actions">
+            <button class="btn-postular" *ngIf="oferta.esExterna" (click)="abrirOfertaExterna(oferta)" [disabled]="!oferta.urlOfertaExterna">
+              <span class="material-icons">open_in_new</span> Ver oferta externa
+            </button>
             <!-- Ya postuló (pendiente o aceptado) -->
-            <button class="btn-postular btn-ya-postulado" *ngIf="yaPostulo(oferta)" disabled>
+            <button class="btn-postular btn-ya-postulado" *ngIf="!oferta.esExterna && yaPostulo(oferta)" disabled>
               <span class="material-icons">how_to_reg</span> Ya postulaste
             </button>
             <!-- Fuera del rango de fechas -->
-            <button class="btn-postular btn-fecha-cerrada" *ngIf="!yaPostulo(oferta) && !puedePostular(oferta)" disabled>
+            <button class="btn-postular btn-fecha-cerrada" *ngIf="!oferta.esExterna && !yaPostulo(oferta) && !puedePostular(oferta)" disabled>
               <span class="material-icons">event_busy</span> {{ mensajeFecha(oferta) }}
             </button>
             <!-- Puede postular -->
-            <button class="btn-postular" *ngIf="!yaPostulo(oferta) && puedePostular(oferta)" (click)="abrirModalPostulacion(oferta)">
+            <button class="btn-postular" *ngIf="!oferta.esExterna && !yaPostulo(oferta) && puedePostular(oferta)" (click)="abrirModalPostulacion(oferta)">
               <span class="material-icons">send</span> Postular
             </button>
-            <button class="btn-ver-mas" (click)="oferta.mostrarDetalles = !oferta.mostrarDetalles">
+            <button class="btn-ver-mas" *ngIf="!oferta.esExterna" (click)="oferta.mostrarDetalles = !oferta.mostrarDetalles">
               <span class="material-icons">{{ oferta.mostrarDetalles ? 'expand_less' : 'expand_more' }}</span>
               {{ oferta.mostrarDetalles ? 'Ver menos' : 'Ver más' }}
             </button>
           </div>
 
           <!-- DETALLES EXPANDIBLES -->
-          <div class="card-details" *ngIf="oferta.mostrarDetalles">
+          <div class="card-details" *ngIf="!oferta.esExterna && oferta.mostrarDetalles">
 
             <!-- HABILIDADES -->
             <div class="details-section" *ngIf="oferta.habilidades && oferta.habilidades.length > 0">
@@ -229,6 +295,18 @@
           </div>
 
         </div>
+      </div>
+
+      <div class="pager" *ngIf="modoBusqueda === 'externas'">
+        <button class="pager-btn" (click)="paginaExternaAnterior()" [disabled]="paginaExternaActual === 1">
+          <span class="material-icons">chevron_left</span>
+        </button>
+        <button class="pager-btn" *ngFor="let p of paginasExternas" [class.active]="p === paginaExternaActual" (click)="irPaginaExterna(p)">
+          {{ p }}
+        </button>
+        <button class="pager-btn" (click)="paginaExternaSiguiente()" [disabled]="paginaExternaActual === totalPaginasExternas">
+          <span class="material-icons">chevron_right</span>
+        </button>
       </div>
     </section>
   </div>

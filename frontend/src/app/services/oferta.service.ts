@@ -70,6 +70,35 @@ export interface OfertaDetalladaDTO {
   mostrarDetalles?: boolean;
   nombreCiudad?: string;
   nombreEmpresa?: string;
+  esExterna?: boolean;
+  urlOfertaExterna?: string;
+}
+
+export interface JSearchOfertaDTO {
+  jobId: string;
+  jobTitle: string;
+  employerName: string;
+  jobEmploymentType: string;
+  jobCity: string;
+  jobState: string;
+  jobCountry: string;
+  jobDescription: string;
+  jobPostedAt: string;
+  jobApplyLink: string;
+  jobGoogleLink: string;
+  jobIsRemote: boolean;
+}
+
+export interface JSearchResponseDTO {
+  status: string;
+  requestId: string;
+  page: number;
+  numPages: number;
+  query: string;
+  country: string;
+  datePosted: string;
+  language: string;
+  data: JSearchOfertaDTO[];
 }
 
 @Injectable({
@@ -124,6 +153,28 @@ export class OfertaService {
   }
   listarOfertasCompleto(idUsuario: number): Observable<OfertaDetalladaDTO[]> {
     return this.http.get<OfertaDetalladaDTO[]>(`${this.apiUrl}/completo/${idUsuario}`);
+  }
+
+  buscarOfertasExternas(
+    query: string,
+    page: number,
+    country: string,
+    datePosted: string,
+    language: string,
+    workFromHome: boolean
+  ): Observable<JSearchResponseDTO> {
+    let params = new HttpParams()
+      .set('query', query)
+      .set('page', page.toString())
+      .set('country', country)
+      .set('date_posted', datePosted)
+      .set('work_from_home', workFromHome.toString());
+
+    if (language?.trim()) {
+      params = params.set('language', language.trim().toLowerCase());
+    }
+
+    return this.http.get<JSearchResponseDTO>(`${this.apiUrl}/externas/jsearch`, { params });
   }
 
   listarMisPostulaciones(idUsuario: number): Observable<any[]> {

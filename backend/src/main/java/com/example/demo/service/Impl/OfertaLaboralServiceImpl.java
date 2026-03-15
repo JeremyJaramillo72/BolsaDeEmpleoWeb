@@ -1,6 +1,7 @@
 package com.example.demo.service.Impl;
 
 import com.example.demo.dto.IOfertaResumen;
+import com.example.demo.dto.JSearchResponseDTO;
 import com.example.demo.dto.NuevaEmpresaAdminDTO;
 import com.example.demo.dto.OfertaExtraInfoDTO;
 import com.example.demo.dto.OfertaLaboralDTO;
@@ -12,6 +13,7 @@ import com.example.demo.repository.Views.IOfertaFisicaAdminDTO;
 import com.example.demo.repository.Views.IPostulanteOfertaDTO;
 import com.example.demo.service.AzureStorageConfig;
 import com.example.demo.service.IOfertaLaboralService;
+import com.example.demo.service.JSearchRapidApiService;
 import com.example.demo.service.NotificacionService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,6 +41,7 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
     private final JdbcTemplate jdbcTemplate;
     private final AzureStorageConfig azureStorageConfig;
     private final   PasswordEncoder passwordEncoder;
+    private final JSearchRapidApiService jSearchRapidApiService;
 
     @Override
     @Transactional
@@ -332,6 +335,19 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error al parsear info extra de oferta: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public JSearchResponseDTO buscarOfertasExternas(
+            String query,
+            Integer page,
+            String country,
+            String datePosted,
+            String language,
+            Boolean workFromHome
+    ) {
+        return jSearchRapidApiService.buscarOfertas(query, page, country, datePosted, language, workFromHome);
     }
 
     @Transactional
