@@ -50,7 +50,7 @@ export class PlantillaNotificacionComponent implements OnInit {
   mensajeExito: string = '';
   mensajeError: string = '';
   expandidoHistorial: { [key: number]: boolean } = {};
-
+  filaExpandidaIndex: number | null = null;
   mostrarSeccionPlantillas: boolean = true; // Inicia abierta
   mostrarSeccionEditar: boolean = false;    // Inicia cerrada
   mostrarSeccionHistorial: boolean = false; // Inicia cerrada
@@ -201,6 +201,7 @@ export class PlantillaNotificacionComponent implements OnInit {
       return;
     }
 
+
     this.guardando = true;
 
     this.plantillaService.actualizarPlantilla(
@@ -231,7 +232,10 @@ export class PlantillaNotificacionComponent implements OnInit {
       }
     });
   }
-
+  toggleFilaHistorial(index: number) {
+    // Si das clic en la misma, se cierra. Si no, se abre la nueva.
+    this.filaExpandidaIndex = this.filaExpandidaIndex === index ? null : index;
+  }
   cancelarCambios(): void {
     if (!this.plantillaSeleccionada) return;
     this.tituloEditado = this.plantillaSeleccionada.titulo;

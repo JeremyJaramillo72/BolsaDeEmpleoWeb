@@ -1,4 +1,6 @@
 /* ============================================================
+  plantilla.css  —  Versión Profesional con Tabla y Acordeones
+  Paleta: Indigo (#4f46e5) + Cyan (#0891b2) + Slate base
   ============================================================ */
 
 :host {
@@ -678,3 +680,87 @@
   color: #818cf8;
   border-color: #4f46e5;
 }
+/* --- ESTILOS DE TABLA EXPANDIDA E HISTORIAL --- */
+.expanded-row > td {
+  background: #f8fafc; /* Fondo gris súper suave para diferenciarlo */
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.diff-wrapper {
+  padding: 20px;
+}
+
+.diff-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.mt-3 { margin-top: 16px; }
+
+.diff-title {
+  margin: 0 0 12px 0;
+  font-size: 0.95rem;
+  color: #334155;
+}
+
+.diff-grid {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+}
+
+.diff-icon {
+  display: flex;
+  align-items: center;
+  color: #94a3b8;
+}
+
+.diff-box {
+  flex: 1;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid;
+  font-size: 0.9rem;
+  overflow-wrap: break-word;
+}
+
+.diff-box p { margin: 0; }
+.diff-content { max-height: 300px; overflow-y: auto; }
+
+/* Colores estilo GitHub/GitLab para diferencias */
+.diff-box.anterior {
+  background-color: #fef2f2; /* Rojo súper claro */
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.diff-box.nuevo {
+  background-color: #f0fdf4; /* Verde súper claro */
+  border-color: #86efac;
+  color: #166534;
+}
+
+.diff-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.anterior .diff-badge { background: #fee2e2; color: #b91c1c; }
+.nuevo .diff-badge { background: #dcfce7; color: #15803d; }
+
+/* Modo oscuro (Opcional, si lo tienes implementado) */
+:host-context(.dark-mode) .expanded-row > td { background: #0f172a; border-bottom-color: #334155; }
+:host-context(.dark-mode) .diff-section { background: #1e293b; border-color: #334155; }
+:host-context(.dark-mode) .diff-title { color: #cbd5e1; }
+:host-context(.dark-mode) .diff-box.anterior { background: rgba(239,68,68,0.05); border-color: rgba(239,68,68,0.2); color: #fca5a5; }
+:host-context(.dark-mode) .diff-box.nuevo { background: rgba(34,197,94,0.05); border-color: rgba(34,197,94,0.2); color: #86efac; }
+:host-context(.dark-mode) .anterior .diff-badge { background: rgba(239,68,68,0.2); color: #fca5a5; }
+:host-context(.dark-mode) .nuevo .diff-badge { background: rgba(34,197,94,0.2); color: #86efac; }

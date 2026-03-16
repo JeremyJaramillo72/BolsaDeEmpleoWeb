@@ -120,42 +120,79 @@
         <span class="material-icons text-muted">{{ mostrarSeccionHistorial ? 'expand_less' : 'expand_more' }}</span>
       </button>
 
-      <div class="card-body" *ngIf="mostrarSeccionHistorial">
-        <p class="section-desc">Línea de tiempo de todos los cambios realizados a esta plantilla:</p>
+      <p class="section-desc">Selecciona un registro para ver el comparativo de los cambios:</p>
 
-        <div *ngIf="historial.length === 0" class="empty-state">
-          <span class="material-icons" style="font-size: 3rem; opacity: 0.5;">history_toggle_off</span>
-          <p>Sin cambios registrados aún</p>
-        </div>
+      <div *ngIf="historial.length === 0" class="empty-state">
+        <span class="material-icons" style="font-size: 3rem; opacity: 0.5;">history_toggle_off</span>
+        <p>Sin cambios registrados aún</p>
+      </div>
 
-        <div *ngIf="historial.length > 0" class="timeline">
-          <div *ngFor="let item of historial; let i = index" class="timeline-item">
-            <div class="timeline-marker">
-              <div class="marker-dot"></div>
-            </div>
-            <div class="timeline-content">
-              <div class="timeline-header">
-                <div class="status-badge">✅ {{ item.accion }}</div>
-                <span class="fecha-pequeña">{{ formatearFecha(item.fechaCreacion) }}</span>
-              </div>
-              <div class="timeline-body">
-                <p class="admin-info">
-                  <strong>Admin:</strong> {{ item.adminNombre }} <span class="email-small">({{ item.adminEmail }})</span>
-                </p>
-                <div *ngIf="item.tituloAnterior || item.contenidoAnterior" class="cambios-list">
-                  <div *ngIf="item.tituloAnterior && item.tituloNuevo" class="cambio-item">
-                    <strong>Título:</strong>
-                    <div class="cambio-valores">
-                      <div class="valor-anterior"><code>{{ item.tituloAnterior }}</code></div>
-                      <div class="flecha">→</div>
-                      <div class="valor-nuevo"><code>{{ item.tituloNuevo }}</code></div>
+      <div class="table-responsive" *ngIf="historial.length > 0">
+        <table class="pro-table">
+          <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Acción</th>
+            <th>Administrador</th>
+            <th style="text-align: right;">Detalles</th>
+          </tr>
+          </thead>
+          <tbody>
+          <ng-container *ngFor="let item of historial; let i = index">
+
+            <tr (click)="toggleFilaHistorial(i)" style="cursor: pointer;" [class.active-row]="filaExpandidaIndex === i">
+              <td class="td-fecha">{{ formatearFecha(item.fechaCreacion) }}</td>
+              <td>
+            <span class="status-badge" style="background: #e0f2fe; color: #0369a1; border-radius: 4px; padding: 2px 6px;">
+              {{ item.accion }}
+            </span>
+              </td>
+              <td>{{ item.adminNombre }} <span class="text-muted" style="font-size: 0.8rem;">({{ item.adminEmail }})</span></td>
+              <td style="text-align: right; color: var(--primary);">
+                <span class="material-icons">{{ filaExpandidaIndex === i ? 'expand_less' : 'visibility' }}</span>
+              </td>
+            </tr>
+
+            <tr *ngIf="filaExpandidaIndex === i" class="expanded-row">
+              <td colspan="4" class="p-0">
+                <div class="diff-wrapper">
+
+                  <div class="diff-section" *ngIf="item.tituloAnterior !== item.tituloNuevo">
+                    <h4 class="diff-title">✏️ Cambio en el Asunto/Título</h4>
+                    <div class="diff-grid">
+                      <div class="diff-box anterior">
+                        <span class="diff-badge">Anterior</span>
+                        <p>{{ item.tituloAnterior || '(Vacío)' }}</p>
+                      </div>
+                      <div class="diff-icon"><span class="material-icons">arrow_forward</span></div>
+                      <div class="diff-box nuevo">
+                        <span class="diff-badge">Nuevo</span>
+                        <p>{{ item.tituloNuevo || '(Vacío)' }}</p>
+                      </div>
                     </div>
                   </div>
+
+                  <div class="diff-section mt-3" *ngIf="item.contenidoAnterior !== item.contenidoNuevo">
+                    <h4 class="diff-title">📝 Cambio en el Cuerpo del Correo</h4>
+                    <div class="diff-grid">
+                      <div class="diff-box anterior">
+                        <span class="diff-badge">Anterior</span>
+                        <div class="diff-content" [innerHTML]="item.contenidoAnterior || '(Vacío)'"></div>
+                      </div>
+                      <div class="diff-icon"><span class="material-icons">arrow_forward</span></div>
+                      <div class="diff-box nuevo">
+                        <span class="diff-badge">Nuevo</span>
+                        <div class="diff-content" [innerHTML]="item.contenidoNuevo || '(Vacío)'"></div>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
+              </td>
+            </tr>
+          </ng-container>
+          </tbody>
+        </table>
       </div>
     </div>
 
