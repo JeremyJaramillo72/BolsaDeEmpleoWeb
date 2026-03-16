@@ -1,4 +1,4 @@
-<div class="pro-card">
+<div class="pro-card shadow-sm border-0">
   <div class="filters-bar border-bottom pb-3 mb-3">
     <div class="search-wrapper" style="max-width: 400px;">
       <span class="material-icons search-icon">search</span>
@@ -22,20 +22,29 @@
       <tbody>
       <tr *ngFor="let auditoria of ofertasPaginadas" class="hover-row">
         <td>
-          <div class="font-medium text-dark">#{{ auditoria.idOferta }} - {{ auditoria.tituloOferta }}</div>
-          <div class="text-muted text-sm"><span class="material-icons text-sm">schedule</span> {{ formatearFechaHora(auditoria.fechaHora) }}</div>
+          <div class="font-medium text-dark">#{{ auditoria?.idOferta }} - {{ auditoria?.tituloOferta }}</div>
+          <div class="text-muted text-sm d-flex align-items-center">
+            <span class="material-icons text-sm me-1">schedule</span>
+            {{ formatearFechaHora(auditoria?.fechaHora) }}
+          </div>
         </td>
         <td>
-          <span class="badge-company"><span class="material-icons text-sm">business</span> {{ auditoria.empresa }}</span>
+          <span class="badge-company">
+            <span class="material-icons text-sm">business</span> {{ auditoria?.empresa || 'Empresa N/A' }}
+          </span>
         </td>
         <td>
-          <span class="badge-db-user"><span class="material-icons text-sm">terminal</span> {{ auditoria.usuarioBd }}</span>
+          <span class="badge-db-user">
+            <span class="material-icons text-sm">terminal</span> {{ auditoria?.usuarioBd || 'Sistema' }}
+          </span>
         </td>
         <td class="text-center">
-          <span class="badge badge-indigo">{{ formatAccionOferta(auditoria.accion) }}</span>
+          <span class="badge badge-indigo shadow-none">{{ formatAccionOferta(auditoria?.accion) }}</span>
         </td>
         <td class="text-center">
-          <span class="badge" [ngClass]="getEstadoClass(auditoria.estadoActual)">{{ auditoria.estadoActual }}</span>
+          <span class="badge" [ngClass]="getEstadoClass(auditoria?.estadoActual)">
+            {{ auditoria?.estadoActual || 'PENDIENTE' }}
+          </span>
         </td>
         <td class="text-center">
           <button class="btn-action-pill btn-indigo-outline" (click)="verHistorialOferta(auditoria)">
@@ -46,25 +55,36 @@
       </tbody>
     </table>
 
-    <div class="empty-state-pro" *ngIf="ofertasPaginadas.length === 0">
-      <div class="empty-icon bg-gray-100 text-gray-400"><span class="material-icons">work_off</span></div>
-      <h4>Sin movimientos</h4>
-      <p>No hay registros de auditoría para mostrar.</p>
+    <div class="empty-state-pro py-5" *ngIf="ofertasFiltradas.length === 0">
+      <div class="empty-icon bg-gray-100 text-gray-400">
+        <span class="material-icons">work_off</span>
+      </div>
+      <h4 class="mt-3">Sin movimientos encontrados</h4>
+      <p class="text-muted">No hay registros de auditoría que coincidan con tu búsqueda.</p>
     </div>
+  </div>
+
+  <div class="loading-state-pro py-5" *ngIf="cargandoOfertas">
+    <span class="material-icons icon-spin text-indigo">sync</span>
+    <p class="mt-2">Sincronizando línea de tiempo de ofertas...</p>
   </div>
 </div>
 
 <div class="modal-overlay fade-in" *ngIf="mostrarModalHistorialOferta" (click)="cerrarModalHistorialOferta()">
   <div class="modal-pro large" (click)="$event.stopPropagation()">
-    <div class="modal-header-pro">
+    <div class="modal-header-pro border-bottom">
       <div>
-        <h2 class="text-indigo-dark">Trazabilidad de la Oferta</h2>
-        <p class="text-muted mt-1">#{{ ofertaSeleccionada?.idOferta }} - {{ ofertaSeleccionada?.tituloOferta }}</p>
+        <h2 class="text-indigo-dark mb-0">Trazabilidad de la Oferta</h2>
+        <p class="text-muted mt-1 mb-0">
+          <strong>#{{ ofertaSeleccionada?.idOferta }}</strong> - {{ ofertaSeleccionada?.tituloOferta }}
+        </p>
       </div>
-      <button class="btn-close-pro" (click)="cerrarModalHistorialOferta()"><span class="material-icons">close</span></button>
+      <button class="btn-close-pro" (click)="cerrarModalHistorialOferta()">
+        <span class="material-icons">close</span>
+      </button>
     </div>
 
-    <div class="modal-body-pro bg-gray-50" *ngIf="!cargandoHistorialOferta">
+    <div class="modal-body-pro bg-gray-50 p-4" *ngIf="!cargandoHistorialOferta">
       <div class="modern-timeline">
         <div class="timeline-item" *ngFor="let historial of listaHistorialOferta">
           <div class="timeline-icon shadow-sm" [ngClass]="getAccionOfertaClass(historial.accion)">
@@ -74,17 +94,30 @@
                 historial.accion === 'NUEVA_POSTULACION' ? 'person_add' : 'info' }}
             </span>
           </div>
+
           <div class="timeline-content pro-card shadow-sm border-0">
             <div class="flex-between mb-2">
-              <h4 class="font-bold text-gray-800">{{ formatAccionOferta(historial.accion) }}</h4>
-              <span class="text-sm text-muted bg-gray-100 px-2 py-1 rounded">{{ formatearFechaHora(historial.fechaHora) }}</span>
+              <h4 class="font-bold text-gray-800 mb-0">{{ formatAccionOferta(historial.accion) }}</h4>
+              <span class="text-xs text-muted bg-gray-100 px-2 py-1 rounded">
+                {{ formatearFechaHora(historial.fechaHora) }}
+              </span>
             </div>
-            <p class="text-sm text-gray-600 mb-3" *ngIf="historial.campoModificado">
-              <strong class="text-gray-800">Campos alterados:</strong> {{ historial.campoModificado }}
+
+            <p class="text-sm text-gray-600 mb-2" *ngIf="historial.campoModificado">
+              <span class="badge badge-light text-dark shadow-none border">
+                <strong>Campos:</strong> {{ historial.campoModificado }}
+              </span>
             </p>
-            <div class="flex-between align-center border-top pt-2 mt-2">
-              <span class="badge-db-user text-xs"><span class="material-icons text-xs">admin_panel_settings</span> User DB: {{ historial.usuarioBd || historial.idSeguridad }}</span>
-              <button class="btn-link text-indigo" *ngIf="historial.accion === 'OFERTA_ACTUALIZADA' || historial.accion === 'NUEVA_POSTULACION' || historial.accion === 'OFERTA_CREADA'" (click)="abrirModalDetallesOferta(historial)">
+
+            <div class="flex-between align-center border-top pt-2 mt-3">
+              <span class="badge-db-user text-xs">
+                <span class="material-icons text-xs">admin_panel_settings</span>
+                Ejecutor: {{ historial.usuarioBd || 'Desconocido' }}
+              </span>
+
+              <button class="btn-link text-indigo text-decoration-none fw-bold"
+                      *ngIf="historial.accion === 'OFERTA_ACTUALIZADA' || historial.accion === 'NUEVA_POSTULACION' || historial.accion === 'OFERTA_CREADA'"
+                      (click)="abrirModalDetallesOferta(historial)">
                 {{ historial.accion === 'OFERTA_ACTUALIZADA' ? 'Comparar Cambios →' : 'Ver Detalles →' }}
               </button>
             </div>
@@ -92,37 +125,46 @@
         </div>
       </div>
     </div>
+
+    <div class="modal-body-pro text-center p-5" *ngIf="cargandoHistorialOferta">
+      <span class="material-icons icon-spin text-indigo text-xl">sync</span>
+      <p class="mt-2">Cargando detalles históricos...</p>
+    </div>
   </div>
 </div>
 
 <div class="modal-overlay fade-in" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
   <div class="modal-pro medium" (click)="$event.stopPropagation()">
-    <div class="modal-header-pro border-bottom pb-3">
-      <h2 class="text-dark">{{ !auditoriaDetalleSeleccionada?.esResumen ? 'Comparación de Datos (Diff)' : 'Resumen de Acción' }}</h2>
-      <button class="btn-close-pro" (click)="cerrarModalDetalles()"><span class="material-icons">close</span></button>
+    <div class="modal-header-pro border-bottom">
+      <h2 class="text-dark mb-0">
+        {{ !auditoriaDetalleSeleccionada?.esResumen ? 'Comparación de Datos (Diff)' : 'Resumen de Acción' }}
+      </h2>
+      <button class="btn-close-pro" (click)="cerrarModalDetalles()">
+        <span class="material-icons">close</span>
+      </button>
     </div>
 
     <div class="modal-body-pro p-4">
       <ng-container *ngIf="!auditoriaDetalleSeleccionada?.esResumen">
-        <div class="diff-metadata bg-gray-50 rounded p-3 mb-4 flex-between text-sm">
-          <span><strong>Tabla:</strong> <code class="text-indigo">{{ auditoriaDetalleSeleccionada?.tablaAfectada }}</code></span>
+        <div class="diff-metadata bg-gray-50 rounded p-3 mb-4 d-flex justify-content-between text-sm border">
+          <span><strong>Registro:</strong> <code class="text-indigo">ofertas.oferta_laboral</code></span>
           <span><strong>Autor:</strong> {{ auditoriaDetalleSeleccionada?.usuarioBd || 'N/A' }}</span>
         </div>
 
-        <div class="table-responsive rounded border">
+        <div class="table-responsive rounded border shadow-sm">
           <table class="table-custom m-0">
-            <thead class="bg-gray-50">
+            <thead class="bg-light">
             <tr>
-              <th>Campo</th>
-              <th class="text-red-600 bg-red-50"><span class="material-icons text-sm align-middle">remove</span> Valor Anterior</th>
-              <th class="text-green-600 bg-green-50"><span class="material-icons text-sm align-middle">add</span> Valor Nuevo</th>
+              <th style="width: 30%">Campo</th>
+              <th class="text-red-600 bg-red-50" style="width: 35%"><span class="material-icons text-sm">remove</span> Anterior</th>
+              <th class="text-green-600 bg-green-50" style="width: 35%"><span class="material-icons text-sm">add</span> Nuevo</th>
             </tr>
             </thead>
             <tbody>
             <tr *ngFor="let campo of getCamposModificadosList(auditoriaDetalleSeleccionada)">
               <td class="font-medium text-gray-700">{{ campo.nombre }}</td>
-              <td class="bg-red-50 text-red-800 deletion-text">{{ campo.anterior !== null ? campo.anterior : 'N/A' }}</td>
-              <td class="bg-green-50 text-green-800 addition-text">{{ campo.nuevo !== null ? campo.nuevo : 'N/A' }}</td>
+              <td class="bg-red-50 text-red-800 deletion-text" style="white-space: pre-wrap;">{{ campo.anterior }}</td>
+              <td class="bg-green-50 text-green-800 addition-text" style="white-space: pre-wrap;">{{ campo.nuevo }}</td>
             </tr>
             </tbody>
           </table>
@@ -130,25 +172,42 @@
       </ng-container>
 
       <ng-container *ngIf="auditoriaDetalleSeleccionada?.esResumen">
-        <div class="action-summary-card" [ngClass]="auditoriaDetalleSeleccionada.tipoResumen === 'CREACION' ? 'border-blue' : 'border-green'">
-          <div class="summary-icon" [ngClass]="auditoriaDetalleSeleccionada.tipoResumen === 'CREACION' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'">
-            <span class="material-icons">{{ auditoriaDetalleSeleccionada.tipoResumen === 'CREACION' ? 'campaign' : 'check_circle' }}</span>
-          </div>
-          <div class="summary-text">
-            <p class="text-gray-700 text-lg mb-3">
-              {{ auditoriaDetalleSeleccionada.tipoResumen === 'POSTULACION' ?
-              'El usuario se postuló a la oferta ' : 'La oferta laboral ' }}
-              <strong>"{{ auditoriaDetalleSeleccionada.tituloOferta }}"</strong>
-              {{ auditoriaDetalleSeleccionada.tipoResumen === 'POSTULACION' ? 'de la empresa' : 'fue creada para' }}
-              <strong>{{ auditoriaDetalleSeleccionada.empresa }}</strong>.
-            </p>
-            <span class="badge badge-gray mr-2"><span class="material-icons text-sm">event</span> {{ formatearFechaHora(auditoriaDetalleSeleccionada.fecha) }}</span>
-            <span class="badge badge-indigo" *ngIf="auditoriaDetalleSeleccionada.tipoResumen === 'POSTULACION'">
-              <span class="material-icons text-sm">auto_awesome</span> Match: {{ auditoriaDetalleSeleccionada.match }}%
-            </span>
+        <div class="action-summary-card p-4 rounded border-start border-4"
+             [ngClass]="auditoriaDetalleSeleccionada.tipoResumen === 'CREACION' ? 'border-primary bg-blue-50' : 'border-success bg-green-50'">
+
+          <div class="d-flex align-items-start">
+            <div class="summary-icon me-3 p-3 rounded-circle"
+                 [ngClass]="auditoriaDetalleSeleccionada.tipoResumen === 'CREACION' ? 'bg-primary text-white' : 'bg-success text-white'">
+              <span class="material-icons">{{ auditoriaDetalleSeleccionada.tipoResumen === 'CREACION' ? 'campaign' : 'check_circle' }}</span>
+            </div>
+
+            <div class="summary-text">
+              <p class="text-dark fs-5 mb-3 lh-sm">
+                {{ auditoriaDetalleSeleccionada.tipoResumen === 'POSTULACION' ? 'El usuario se postuló a la oferta ' : 'La oferta laboral ' }}
+                <strong class="text-indigo">"{{ auditoriaDetalleSeleccionada.tituloOferta }}"</strong>
+                {{ auditoriaDetalleSeleccionada.tipoResumen === 'POSTULACION' ? ' de la empresa ' : ' fue creada exitosamente para ' }}
+                <strong class="text-indigo">{{ auditoriaDetalleSeleccionada.empresa }}</strong>.
+              </p>
+
+              <div class="d-flex gap-2">
+                <span class="badge bg-white text-dark border shadow-sm px-3 py-2 d-flex align-items-center">
+                  <span class="material-icons text-sm me-1">event</span>
+                  {{ formatearFechaHora(auditoriaDetalleSeleccionada.fecha) }}
+                </span>
+                <span class="badge bg-white text-indigo border border-indigo shadow-sm px-3 py-2 d-flex align-items-center"
+                      *ngIf="auditoriaDetalleSeleccionada.tipoResumen === 'POSTULACION'">
+                  <span class="material-icons text-sm me-1 text-warning">auto_awesome</span>
+                  Compatibilidad Match: {{ auditoriaDetalleSeleccionada.match }}%
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </ng-container>
+    </div>
+
+    <div class="modal-footer border-top p-3 text-end bg-gray-50">
+      <button class="btn btn-secondary px-4" (click)="cerrarModalDetalles()">Cerrar</button>
     </div>
   </div>
 </div>

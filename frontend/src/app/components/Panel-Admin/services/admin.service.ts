@@ -376,12 +376,9 @@ export class AdminService {
 // ==============================================================
   // 🔥 NUEVO: BLOQUEAR/REACTIVAR CUENTA Y SESIÓN AL MISMO TIEMPO
   // ==============================================================
+// CORRECCIÓN DE LA RUTA EN ANGULAR
   cambiarEstadoCuentaYSesion(idSesion: number, estadoCuenta: string) {
-    // Le mandamos el estado deseado ('Inactivo' o 'Activo')
-    // Le quitamos el /auditorias repetido de la ruta
-    return this.http.put(`${this.apiauditoriasUrl}/sesiones/${idSesion}/estado-cuenta`, {
-      estado: estadoCuenta
-    });
+    return this.http.put(`${this.apiauditoriasUrl}/sesiones/${idSesion}/cerrar-forzado`, {});
   }
 
   // FUNCIONES PARA LOS ROLES DE BASE DE DATOS

@@ -22,14 +22,18 @@ public class SesionServiceImpl implements ISesionService {
 
     @Override
     @Transactional
-    public void registrarLogin(Integer idSeguridad, String ip, String navegador, String dispositivo) {
-        entityManager.createNativeQuery(
+    public Long registrarLogin(Integer idSeguridad, String ip, String navegador, String dispositivo) {
+        // Ejecutamos la función y capturamos el resultado (el ID generado)
+        // Nota: Usamos una consulta que retorne el valor, por ejemplo llamando a la función con SELECT
+        Object result = entityManager.createNativeQuery(
                         "SELECT seguridad.fn_registrar_sesion(:idSeg, :ip, :nav, :disp, 'ACTIVA')")
                 .setParameter("idSeg", idSeguridad)
                 .setParameter("ip",    ip)
                 .setParameter("nav",   navegador)
                 .setParameter("disp",  dispositivo)
                 .getSingleResult();
+
+        return ((Number) result).longValue();
     }
 
     @Override
@@ -45,25 +49,16 @@ public class SesionServiceImpl implements ISesionService {
     @Override
     @Transactional
     public void actualizarEstadoCuentaYSesion(Long idSesion, String estadoCuenta) {
-        // 1. Buscamos la sesión actual usando JPA
+        // 1. Buscamos la sesión específica por su ID
         Sesion sesion = sesionRepository.findById(idSesion)
                 .orElseThrow(() -> new RuntimeException("Sesión no encontrada con ID: " + idSesion));
 
-        // 2. Si el admin mandó a "Inactivo" (Dar de baja), pateamos la sesión
-        if ("Inactivo".equalsIgnoreCase(estadoCuenta)) {
-            sesion.setAccion("CERRADA");
-            sesion.setFechaCierre(LocalDateTime.now());
-            sesionRepository.save(sesion);
-        }
+        // 2. Solo actualizamos la tabla seguridad.sesiones
+        // Cambiamos el estado a CERRADA y marcamos la hora exacta del cierre forzado
+        sesion.setAccion("CERRADA");
+        sesion.setFechaCierre(LocalDateTime.now());
 
-        // 3. ¡EL GOLPE FINAL! Actualizamos la cuenta del usuario
-        // Usamos una subconsulta para llegar desde seguridad.sesiones hasta usuarios.usuario
-        String sqlUpdateUser = "UPDATE usuarios.usuario SET estado_validacion = :estado " +
-                "WHERE id_usuario = (SELECT id_usuario FROM seguridad.seguridad WHERE id_seguridad = :idSeg)";
-
-        entityManager.createNativeQuery(sqlUpdateUser)
-                .setParameter("estado", estadoCuenta)
-                .setParameter("idSeg", sesion.getIdSeguridad())
-                .executeUpdate();
+        sesionRepository.save(sesion);
+        // Al no haber código de update a usuarios.usuario, la cuenta permanece intacta.
     }
 }

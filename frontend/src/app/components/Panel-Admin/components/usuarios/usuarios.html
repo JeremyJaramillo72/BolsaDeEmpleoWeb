@@ -1,0 +1,91 @@
+<div class="alert alert-success" *ngIf="mensajeExito">
+  <span class="material-icons">check_circle</span> {{ mensajeExito }}
+</div>
+<div class="alert alert-error" *ngIf="mensajeError">
+  <span class="material-icons">error_outline</span> {{ mensajeError }}
+</div>
+
+<div class="section-card fade-in">
+  <div class="section-header">
+    <div class="header-title-wrapper">
+      <div class="icon-box-title text-blue"><span class="material-icons">people_alt</span></div>
+      <div>
+        <h3>Directorio de Usuarios</h3>
+        <p class="text-muted text-sm" style="margin: 0;">Administra los accesos, roles y estados de las cuentas.</p>
+      </div>
+    </div>
+
+    <div class="search-box">
+      <span class="material-icons text-muted">search</span>
+      <input type="text" [(ngModel)]="terminoBusqueda" (keyup)="filtrarUsuarios()" placeholder="Buscar por nombre, correo o rol..." class="form-control search-input">
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="custom-table">
+      <thead>
+      <tr>
+        <th>Usuario</th>
+        <th>Ubicación</th>
+        <th>Rol</th>
+        <th>Estado</th>
+        <th class="text-center">Acciones</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let usr of usuariosFiltrados">
+
+        <td>
+          <div class="user-profile-cell">
+            <img *ngIf="usr.url_imagen" [src]="usr.url_imagen" alt="Avatar" class="avatar-img">
+
+            <div *ngIf="!usr.url_imagen" class="avatar-initial">
+              {{ obtenerInicial(usr.nombre) }}
+            </div>
+
+            <div class="user-info">
+              <strong class="user-name">{{ usr.nombre }}</strong>
+              <span class="text-xs text-muted"><span class="material-icons text-xs">mail</span> {{ usr.correo }}</span>
+              <span class="text-xs text-muted" *ngIf="usr.telefono"><span class="material-icons text-xs">call</span> {{ usr.telefono }}</span>
+            </div>
+          </div>
+        </td>
+
+        <td>
+            <span class="location-badge">
+              <span class="material-icons text-xs text-muted">pin_drop</span>
+              {{ usr.nombre_ciudad || 'Sin ciudad' }}
+            </span>
+        </td>
+
+        <td>
+            <span class="badge badge-role">
+              <span class="material-icons text-xs">shield</span> {{ usr.nombre_rol || 'Sin Rol' }}
+            </span>
+        </td>
+
+        <td>
+             <span class="badge" [ngClass]="{'badge-active': usr.estado_validacion === 'Aprobado', 'badge-inactive': usr.estado_validacion !== 'Aprobado'}">
+               {{ usr.estado_validacion === 'Aprobado' ? 'ACTIVO' : 'INACTIVO' }}
+             </span>
+        </td>
+
+        <td class="text-center">
+          <div class="action-buttons">
+            <button class="btn-action-icon" [ngClass]="usr.estado_validacion === 'Aprobado' ? 'text-rose' : 'text-green'" (click)="bloquearUsuario(usr)" [title]="usr.estado_validacion === 'Aprobado' ? 'Inactivar Usuario' : 'Activar Usuario'">
+              <span class="material-icons">{{ usr.estado_validacion === 'Aprobado' ? 'block' : 'check_circle' }}</span>
+            </button>
+          </div>
+        </td>
+      </tr>
+
+      <tr *ngIf="usuariosFiltrados.length === 0">
+        <td colspan="5" class="empty-state-table">
+          <span class="material-icons">person_search</span>
+          <p>No se encontraron usuarios con esos criterios.</p>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -313,6 +313,16 @@ export class MenuprincipalComponent implements OnInit {
         route: '/menu-principal/PanelAdmi/admin-MiniAdmi'
       },
       {
+        icon: 'manage_accounts',
+        title: 'Gestión de Usuarios',
+        description: 'Administra los Usuarios de tu Aplicativo',
+        colorHex: '#7c3aed', bgHex: '#f5f3ff',
+        roles: ['ADMINISTRADOR'],
+        path: '/menu-principal/gestion/users', // <-- ¡Papá + Hijo!
+        route: '/menu-principal/gestion/users', // <-- ¡Papá + Hijo!
+        permiso: 'GESTION_USERS'
+      },
+      {
         icon: 'bar_chart',
         title: 'Reportes y Estadísticas',
         description: 'Métricas y análisis del sistema',

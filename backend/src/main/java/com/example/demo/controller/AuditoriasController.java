@@ -123,26 +123,15 @@ public class AuditoriasController {
 
 
     // ✅ PUT /api/auditorias/sesiones/{idSesion}/estado-cuenta
-    @PutMapping("/sesiones/{idSesion}/estado-cuenta")
-    public ResponseEntity<?> cambiarEstadoCuentaYSesion(
-            @PathVariable Long idSesion,
-            @RequestBody Map<String, String> request) {
-
+    @PutMapping("/sesiones/{idSesion}/cerrar-forzado")
+    public ResponseEntity<?> cerrarSesionForzada(@PathVariable Long idSesion) {
         try {
-            String nuevoEstado = request.get("estado"); // Recibe "Activo" o "Inactivo"
-
-            if (nuevoEstado == null || nuevoEstado.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "El estado de la cuenta es requerido"));
-            }
-
-            // Llamamos a nuestro nuevo método 2x1
-            sesionService.actualizarEstadoCuentaYSesion(idSesion, nuevoEstado);
-
-            return ResponseEntity.ok(Map.of("mensaje", "La cuenta ha sido cambiada a " + nuevoEstado));
-
+            // Pasamos un string cualquiera o refactorizamos el service para no recibir el estado
+            sesionService.actualizarEstadoCuentaYSesion(idSesion, "CERRADA");
+            return ResponseEntity.ok(Map.of("mensaje", "La sesión ha sido finalizada correctamente."));
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
-                    .body(Map.of("error", "Error al cambiar estado de cuenta: " + e.getMessage()));
+                    .body(Map.of("error", "Error al cerrar sesión: " + e.getMessage()));
         }
     }
 }

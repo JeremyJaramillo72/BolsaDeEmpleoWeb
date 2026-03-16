@@ -30,6 +30,8 @@ import { DashboardPostulanteComponent } from './components/menu-principal/dashbo
 import { NotificacionesComponent } from './components/notificaciones/notificaciones.component';
 import { ConfiguracionSistemaComponent } from './components/Panel-Admin/components/configuracion-sistema/configuracion-sistema';
 
+import {UsuariosComponent} from './components/Panel-Admin/components/usuarios/usuarios';
+
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'registro-candidato', component: RegistroCandidatoComponent },
@@ -82,7 +84,8 @@ export const routes: Routes = [
       {   path: 'Busqueda/empleo', component: BusquedaEmpleoComponent },
       {   path: 'postulacion/empleo', component: MisPostulacionesComponent },
       {   path: 'notificaciones', component: NotificacionesComponent },
-      {   path: 'configuracion-sistema', component: ConfiguracionSistemaComponent }
+      {   path: 'configuracion-sistema', component: ConfiguracionSistemaComponent },
+      {   path: 'gestion/users', component: UsuariosComponent }
     ]
   },
   { path: '', redirectTo: '/login', pathMatch: 'full' },

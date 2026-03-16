@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.dto.UsuarioTablaDTO;
+
 import java.sql.Date;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +69,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
         jdbcTemplate.update("CALL seguridad.registroUsuarioLogin(?, ?, ?)",
                 usuarioGuardado.getCorreo(),
                 usuarioGuardado.getIdUsuario().intValue(),
-                idRolParaGuardar
+                idRolParaGuardar// ID del rol Postulante
         );
         try {
             // 1. Notificación en Campanita (In-App)
@@ -76,7 +78,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
                     "in_app_registro_completado",
                     Map.of("usuarioNombre", usuarioGuardado.getNombre()),
                     Map.of(),
-                    "/menu-principal/perfil",
+                    "/menu-principal/perfil", // de una al cv
                     "waving_hand"
             );
 
@@ -118,10 +120,13 @@ public class UsuarioServiceImpl implements IUsuarioService {
     public void registrarUsuarioConAccesoBD(Usuario usuario) {
 
         String contrasenaEncriptada = passwordEncoder.encode(usuario.getContrasena());
+
+        // Obtenemos el ID del rol para la validación
         Integer idRol = usuario.getRol().getIdRol();
 
         try {
-
+            // Asumiendo que 3 es Postulante y 2 es Empresa.
+            // Si no es 3 ni 2, entonces es un Admin Interno.
             if (idRol != 3 && idRol != 2) {
 
                 // ¡ACTUALIZADO! Ya no enviamos usuario.getPermisosUi() al final
@@ -155,7 +160,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
             throw new RuntimeException("El correo " + usuario.getCorreo() + " ya está registrado.");
         }
 
-
+        // 3. RECUPERAR ID Y CREAR LOGIN
         Usuario usuarioGuardado = usuarioRepository.findByCorreo(usuario.getCorreo())
                 .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado tras registro."));
 
@@ -235,5 +240,13 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 e.printStackTrace();
             }
         }
+
+
+    }
+
+    @Override
+    public List<UsuarioTablaDTO> obtenerUsuariosGenerales() {
+        // Le pasamos un JSON vacío a la función de PostgreSQL para que traiga TODOS los usuarios
+        return usuarioRepository.obtenerUsuariosTablaNativa("{}");
     }
 }

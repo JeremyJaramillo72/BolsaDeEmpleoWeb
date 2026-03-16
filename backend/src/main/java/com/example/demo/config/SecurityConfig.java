@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; // IMPORTANTE
 import org.springframework.security.crypto.password.PasswordEncoder;     // IMPORTANTE
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -52,7 +53,9 @@ public class SecurityConfig {
                                 "/api/auditoria/ofertas/**",
                                 "/api/auth/Email",
                                 "/api/configuracion/correo/**",
-                                "/api/plantilla-notificacion/**"
+                                "/api/plantilla-notificacion/**",
+                                "/api/GestionUser"
+
                         ).permitAll()
                         .anyRequest().authenticated()
                 );

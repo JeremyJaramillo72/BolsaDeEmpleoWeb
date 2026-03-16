@@ -10,10 +10,9 @@
       <div class="select-wrapper">
         <span class="material-icons select-icon">filter_list</span>
         <select [(ngModel)]="filtroAccionSesion" (ngModelChange)="aplicarFiltrosSesiones()" class="form-control pro-select">
-          <option value="">Todas las acciones</option>
+          <option value="">Todos los estados</option>
           <option value="ACTIVA">Sesión Activa</option>
           <option value="CERRADA">Sesión Cerrada</option>
-          <option value="INACTIVA">Inactiva</option>
         </select>
       </div>
 
@@ -31,11 +30,10 @@
       <thead>
       <tr>
         <th>Usuario</th>
-        <th>Conexión</th>
+        <th>Conexión / Cierre</th>
         <th>IP Address</th>
-        <th>Navegador</th>
+        <th>Navegador / Dispositivo</th>
         <th class="text-center">Estado Sesión</th>
-        <th class="text-center">Cuenta</th>
         <th class="text-center">Acciones</th>
       </tr>
       </thead>
@@ -46,51 +44,70 @@
             <div class="avatar-circle bg-indigo-light text-indigo">
               {{ sesion.loginName?.charAt(0)?.toUpperCase() || '?' }}
             </div>
-            <span class="font-medium">{{ sesion.loginName }}</span>
+            <div>
+              <span class="font-medium d-block">{{ sesion.loginName }}</span>
+              <small class="text-muted">ID: {{ sesion.idSesion }}</small>
+            </div>
           </div>
         </td>
         <td>
           <div class="date-block">
-            <span class="text-dark"><span class="material-icons text-sm text-green">login</span> {{ formatearFechaHora(sesion.fechaInicio) }}</span>
-            <span class="text-muted text-sm" *ngIf="sesion.fechaCierre"><span class="material-icons text-sm text-red">logout</span> {{ formatearFechaHora(sesion.fechaCierre) }}</span>
+            <span class="text-dark d-flex align-items-center mb-1">
+              <span class="material-icons text-sm text-green me-1">login</span>
+              {{ formatearFechaHora(sesion.fechaInicio) }}
+            </span>
+            <span class="text-muted text-sm d-flex align-items-center" *ngIf="sesion.fechaCierre">
+              <span class="material-icons text-sm text-red me-1">logout</span>
+              {{ formatearFechaHora(sesion.fechaCierre) }}
+            </span>
           </div>
         </td>
         <td>
-          <span class="badge-ip"><span class="material-icons text-sm">wifi</span> {{ sesion.ipAddress || 'N/A' }}</span>
+          <span class="badge-ip">
+            <span class="material-icons text-sm">wifi</span>
+            {{ sesion.ipAddress || 'N/A' }}
+          </span>
         </td>
-        <td><span class="text-muted text-sm truncate-text" [title]="sesion.navegador">{{ sesion.navegador || 'N/A' }}</span></td>
+        <td>
+          <div class="device-info">
+            <span class="text-dark d-block text-sm truncate-text" [title]="sesion.navegador">
+              {{ sesion.navegador || 'N/A' }}
+            </span>
+            <small class="text-muted">{{ sesion.dispositivo || 'Desktop' }}</small>
+          </div>
+        </td>
 
         <td class="text-center">
           <span class="badge" [ngClass]="sesion.accion === 'ACTIVA' ? 'badge-success' : 'badge-gray'">
             {{ sesion.accion }}
           </span>
         </td>
+
         <td class="text-center">
-          <span class="badge" [ngClass]="(sesion.estadoValidacion | lowercase) === 'inactivo' ? 'badge-error' : 'badge-success'">
-            {{ sesion.estadoValidacion || 'Activo' }}
+          <button class="btn-action-pill btn-danger-outline"
+                  *ngIf="sesion.accion === 'ACTIVA'"
+                  (click)="expulsarUsuario(sesion)"
+                  title="Finalizar esta sesión">
+            <span class="material-icons">power_settings_new</span> Cerrar Sesión
+          </button>
+
+          <span class="text-muted text-sm d-flex align-items-center justify-content-center" *ngIf="sesion.accion === 'CERRADA'">
+            <span class="material-icons text-sm me-1">check_circle</span> Finalizada
           </span>
-        </td>
-        <td class="text-center">
-          <button class="btn-action-pill btn-danger-outline" *ngIf="(sesion.estadoValidacion | lowercase) !== 'inactivo'" (click)="bloquearUsuario(sesion)">
-            <span class="material-icons">block</span> Bloquear
-          </button>
-          <button class="btn-action-pill btn-success-outline" *ngIf="(sesion.estadoValidacion | lowercase) === 'inactivo'" (click)="reactivarUsuario(sesion)">
-            <span class="material-icons">verified_user</span> Reactivar
-          </button>
         </td>
       </tr>
       </tbody>
     </table>
 
     <div class="empty-state-pro" *ngIf="sesionesFiltradas.length === 0">
-      <div class="empty-icon bg-gray-100 text-gray-400"><span class="material-icons">search_off</span></div>
-      <h4>No se encontraron sesiones</h4>
-      <p>Intenta ajustar tus filtros de búsqueda.</p>
+      <div class="empty-icon bg-gray-100 text-gray-400"><span class="material-icons">history</span></div>
+      <h4>No hay registros de sesiones</h4>
+      <p>No se encontraron conexiones que coincidan con los filtros.</p>
     </div>
   </div>
 
   <div class="loading-state-pro" *ngIf="cargandoSesiones">
     <span class="material-icons icon-spin text-indigo">sync</span>
-    <p>Cargando registros...</p>
+    <p>Sincronizando registros de seguridad...</p>
   </div>
 </div>

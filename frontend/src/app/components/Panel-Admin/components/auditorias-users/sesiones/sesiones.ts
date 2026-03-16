@@ -123,45 +123,28 @@ export class SesionesComponent implements OnInit {
     });
   }
 
-  bloquearUsuario(sesion: any): void {
+  // Cambiamos el nombre del método para que sea coherente con lo que hace
+  expulsarUsuario(sesion: any): void {
     const idReal = sesion.idSesion || sesion.id_sesion || sesion.id;
-    if (!idReal) {
-      this.mensajeError = 'Error: ID de sesión no encontrado.';
-      return;
-    }
-    if (window.confirm(`⚠️ ¿Está seguro de DAR DE BAJA al usuario ${sesion.loginName} y cerrarle la sesión?`)) {
-      this.adminService.cambiarEstadoCuentaYSesion(idReal, 'Inactivo').subscribe({
+    if (!idReal) return;
+
+    if (window.confirm(`⚠️ ¿Desea cerrar la sesión activa de ${sesion.loginName}? El usuario no será bloqueado, solo se cerrará su conexión actual.`)) {
+      // Mandamos la petición al backend
+      this.adminService.cambiarEstadoCuentaYSesion(idReal, 'CERRADA').subscribe({
         next: () => {
-          sesion.estadoValidacion = 'Inactivo';
+          // Actualizamos solo el estado de la sesión en la tabla de Angular
           sesion.accion = 'CERRADA';
           sesion.fechaCierre = new Date().toISOString();
+         // this.mostrarExito('Sesión finalizada correctamente.');
         },
         error: (err) => {
-          console.error('Error al dar de baja:', err);
-          this.mensajeError = 'Error al comunicar con el servidor para bloquear la cuenta.';
+          this.mensajeError = 'No se pudo finalizar la sesión.';
         }
       });
     }
   }
 
-  reactivarUsuario(sesion: any): void {
-    const idReal = sesion.idSesion || sesion.id_sesion || sesion.id;
-    if (!idReal) {
-      this.mensajeError = 'Error: ID de sesión no encontrado.';
-      return;
-    }
-    if (window.confirm(`✅ ¿Desea REACTIVAR el acceso para el usuario ${sesion.loginName}?`)) {
-      this.adminService.cambiarEstadoCuentaYSesion(idReal, 'Activo').subscribe({
-        next: () => {
-          sesion.estadoValidacion = 'Activo';
-        },
-        error: (err) => {
-          console.error('Error al reactivar:', err);
-          this.mensajeError = 'Error al comunicar con el servidor para reactivar la cuenta.';
-        }
-      });
-    }
-  }
+
 
   exportarSesionesExcel(): void {
     this.adminService.exportarSesionesExcel(this.sesionesFiltradas).subscribe({

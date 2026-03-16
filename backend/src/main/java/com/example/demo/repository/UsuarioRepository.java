@@ -1,5 +1,6 @@
 package com.example.demo.repository;
 
+import com.example.demo.dto.UsuarioTablaDTO; // <-- NUEVO IMPORT PARA TU PROYECCIÓN
 import com.example.demo.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.query.Procedure;
@@ -110,4 +111,18 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     @Query("SELECT COUNT(u) FROM Usuario u WHERE u.estadoValidacion = :estado")
     long countByEstadoValidacion(@Param("estado") String estado);
+
+    // ==========================================
+    // 🔥 NUEVOS MÉTODOS: GESTIÓN DE USUARIOS
+    // ==========================================
+
+    // 1. Llamar a tu función de PostgreSQL mandando el JSON
+    @Query(value = "SELECT * FROM usuarios.fn_obtener_usuarios_tabla(CAST(:jsonData AS JSON))", nativeQuery = true)
+    List<UsuarioTablaDTO> obtenerUsuariosTablaNativa(@Param("jsonData") String jsonData);
+
+    // 2. Método optimizado para actualizar solo el estado de validación
+    @Modifying
+    @Transactional
+    @Query("UPDATE Usuario u SET u.estadoValidacion = :estado WHERE u.idUsuario = :id")
+    int actualizarEstadoUsuario(@Param("id") Long id, @Param("estado") String estado);
 }

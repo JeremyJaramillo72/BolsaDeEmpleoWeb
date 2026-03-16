@@ -43,13 +43,12 @@ export class OfertasComponent implements OnInit {
   mostrarModalDetalles: boolean = false;
   auditoriaDetalleSeleccionada: any = null;
   listaDeUsuarios: any[] = [];
+
   constructor(private adminService: AdminService) {}
 
   ngOnInit() {
     this.cargarOfertas();
   }
-
-
 
   cargarOfertas(): void {
     this.cargandoOfertas = true;
@@ -128,20 +127,20 @@ export class OfertasComponent implements OnInit {
   }
 
   abrirModalDetallesOferta(historial: AuditoriaOferta): void {
-    // 🔥 Ahora atrapamos tanto Postulaciones como Creaciones
     if (historial.accion === 'NUEVA_POSTULACION' || historial.accion === 'OFERTA_CREADA') {
       let datosParseados: any = {};
       try {
         datosParseados = typeof historial.valoresNuevos === 'string'
           ? JSON.parse(historial.valoresNuevos)
           : historial.valoresNuevos;
-      } catch (e) {}
+      } catch (e) {
+        datosParseados = {};
+      }
 
       const correoUsuario = historial.usuarioBd || this.ofertaSeleccionada?.usuarioBd || 'Correo Desconocido';
 
       this.auditoriaDetalleSeleccionada = {
         esResumen: true,
-        // Guardamos si es Creación o Postulación para saber qué texto mostrar en el HTML
         tipoResumen: historial.accion === 'NUEVA_POSTULACION' ? 'POSTULACION' : 'CREACION',
         tituloOferta: historial.tituloOferta || this.ofertaSeleccionada?.tituloOferta || 'Oferta sin título',
         empresa: historial.empresa || this.ofertaSeleccionada?.empresa || 'Empresa sin nombre',
@@ -195,7 +194,6 @@ export class OfertasComponent implements OnInit {
       if (Object.prototype.hasOwnProperty.call(campos, key)) {
         lista.push({
           nombre: key.replace(/_/g, ' ').toUpperCase(),
-          // Usamos la nueva función para que se vea hermoso
           anterior: this.formatearJSON(campos[key].anterior),
           nuevo: this.formatearJSON(campos[key].nuevo)
         });
@@ -206,27 +204,22 @@ export class OfertasComponent implements OnInit {
 
   formatearJSON(valor: any): any {
     if (valor === null || valor === undefined) return 'N/A';
-
-    // Si ya es un objeto, lo hacemos string con formato (2 espacios)
     if (typeof valor === 'object') {
       return JSON.stringify(valor, null, 2);
     }
-
-    // Si es un texto que parece JSON, intentamos formatearlo
-    if (typeof valor === 'string' && (valor.startsWith('{') || valor.startsWith('['))) {
+    if (typeof valor === 'string' && (valor.trim().startsWith('{') || valor.trim().startsWith('['))) {
       try {
         const parsed = JSON.parse(valor);
         return JSON.stringify(parsed, null, 2);
       } catch (e) {
-        return valor; // Si falla, devolvemos el texto normal
+        return valor;
       }
     }
-
     return valor;
   }
 
   getAccionOfertaClass(accion: string): string {
-    if (!accion) return '';
+    if (!accion) return 'accion-otro';
     const acc = accion.toUpperCase();
     if (acc.includes('CREADA') || acc.includes('NUEVA') || acc.includes('APROBADA')) return 'accion-crear';
     if (acc.includes('ACTUALIZADA')) return 'accion-editar';
@@ -234,19 +227,23 @@ export class OfertasComponent implements OnInit {
     return 'accion-otro';
   }
 
-  formatAccionOferta(accion: string): string {
+  // ✅ CORREGIDO: Acepta string | undefined | null para evitar el error TS2345
+  formatAccionOferta(accion: string | undefined | null): string {
     if (!accion) return 'Desconocida';
     return accion.split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
   }
 
-  getEstadoClass(estado: string): string {
+  getEstadoClass(estado: string | null | undefined): string {
+    if (!estado) return 'estado-pendiente';
     switch(estado.toLowerCase()) {
       case 'activo': return 'estado-activo';
       case 'inactivo': return 'estado-inactivo';
       case 'bloqueado': return 'estado-bloqueado';
-      default: return '';
+      case 'aprobado': return 'estado-activo';
+      case 'pendiente': return 'estado-pendiente';
+      default: return 'estado-pendiente';
     }
   }
 
