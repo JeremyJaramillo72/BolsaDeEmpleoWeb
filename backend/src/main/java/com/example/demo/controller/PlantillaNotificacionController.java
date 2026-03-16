@@ -119,7 +119,10 @@ public class PlantillaNotificacionController {
                 );
             }
 
-            plantillaService.actualizarPlantilla(id, titulo, contenido);
+            // Obtener ID del usuario admin desde la sesión
+            Long idUsuario = (Long) session.getAttribute("idUsuario");
+
+            plantillaService.actualizarPlantilla(id, titulo, contenido, idUsuario);
 
             return ResponseEntity.ok(Map.of(
                     "exito", true,

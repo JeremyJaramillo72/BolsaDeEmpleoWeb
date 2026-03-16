@@ -34,6 +34,7 @@ public class ConfiguracionCorreoService {
     private final UsuarioRepository usuarioRepo;
     private final DynamicMailConfig dynamicMailConfig;
     private final NotificacionService notificacionService;
+    private final EmailService emailService;
     private final ObjectMapper objectMapper;
 
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
@@ -126,6 +127,7 @@ public class ConfiguracionCorreoService {
             config.setValor(configDTO.getValor());
             config.setPassword(configDTO.getPassword());
             config.setActivo(true);
+            config.setUsuarioModificado(usuario); // ← NUEVO: Amarre directo a usuario
 
             ConfiguracionCorreo configGuardada = configuracionRepo.save(config);
 
@@ -247,6 +249,24 @@ public class ConfiguracionCorreoService {
                     "/menu-principal/configuracion-sistema",
                     "settings_backup_restore"
             );
+
+            // Email directo a todos los admins
+            try {
+                List<Usuario> admins = usuarioRepo.findByRol_NombreRol("Administrador");
+                for (Usuario admin : admins) {
+                    if (admin.getCorreo() != null && !admin.getCorreo().isEmpty()) {
+                        String asuntoEmail = "Notificación: Correo del Sistema Actualizado";
+                        String cuerpoEmail = "Se ha actualizado la configuración del correo del sistema.\n\n" +
+                                           "Administrador: " + adminQueHizoCambio.getNombre() + "\n" +
+                                           "Correo anterior: " + (correoAnterior != null ? correoAnterior : "No configurado") + "\n" +
+                                           "Correo nuevo: " + correoNuevo + "\n" +
+                                           "Fecha: " + LocalDateTime.now();
+                        emailService.sendSimpleEmail(admin.getCorreo(), asuntoEmail, cuerpoEmail);
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("⚠️ Error enviando email a admins sobre cambio de correo: " + e.getMessage());
+            }
         } catch (Exception e) {
             log.warn("⚠️ Error notificando cambio de correo: " + e.getMessage());
         }

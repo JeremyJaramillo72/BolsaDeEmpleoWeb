@@ -32,6 +32,7 @@ public class PostulacionServiceImpl implements IPostulacionService {
     private final PerfilProfesionalRepository perfilProfesionalRepository;
     private final UsuarioRepository usuarioRepository;
     private final UsuarioEmpresaRepository usuarioEmpresaRepository;
+    private final EmailService emailService;
 
 
     @Override
@@ -119,6 +120,23 @@ public class PostulacionServiceImpl implements IPostulacionService {
                         "/menu-principal/gestion-ofertas",
                         "person_add"
                 );
+
+                // Email directo a la empresa sobre la nueva postulación
+                try {
+                    String emailEmpresa = usuarioEmpresaRepository.findById(idUsuarioEmpresa)
+                            .map(e -> e.getUsuario().getCorreo())
+                            .orElse(null);
+
+                    if (emailEmpresa != null && !emailEmpresa.isEmpty()) {
+                        String asuntoEmail = "Nueva Postulación Recibida - " + tituloOferta;
+                        String cuerpoEmail = "Has recibido una nueva postulación para la oferta: " + tituloOferta +
+                                           "\n\nCandidato: " + nombreCandidato +
+                                           "\n\nRevisa la postulación en tu panel de control.";
+                        emailService.sendSimpleEmail(emailEmpresa, asuntoEmail, cuerpoEmail);
+                    }
+                } catch (Exception e) {
+                    System.err.println("⚠️ Error enviando email a empresa sobre nueva postulación: " + e.getMessage());
+                }
 
                 // Notificación al candidato
                 notificacionService.crearYEnviarNotificacion(

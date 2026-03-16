@@ -78,6 +78,7 @@ export class NotificationService {
 
           // Mostramos el Toastr (pop-up inferior derecho)
           this.mostrarToastr(nuevaNotif);
+          console.log('✅ Notificación recibida por WebSocket:', nuevaNotif.tipo);
         }
       });
     };
@@ -100,6 +101,15 @@ export class NotificationService {
     this.notificacionesSubject.next([]); // Limpiamos al salir
   }
 
+  // Suscribirse a cambios de notificaciones activas
+  suscribirseANotificacionesActivas(): Observable<NotificacionDTO[]> {
+    return this.notificacionesSubject.asObservable();
+  }
+
+  actualizarNotificacionesActivas(notificaciones: NotificacionDTO[]): void {
+    this.notificacionesSubject.next(notificaciones);
+  }
+
   // 3. MARCAR COMO LEÍDA
   marcarComoLeida(idNotificacion: number): Observable<any> {
     // Actualizamos el backend
@@ -112,14 +122,18 @@ export class NotificationService {
       actuales[index].leida = true;
       this.notificacionesSubject.next([...actuales]);
     }
+
     return req;
   }
 
-  marcarTodasComoLeidas(idUsuario: number): void {
-    this.http.patch(`${this.apiUrl}/usuario/${idUsuario}/marcar-todas`, {}).subscribe(() => {
-      const actualizadas = this.notificacionesSubject.value.map(n => ({...n, leida: true}));
-      this.notificacionesSubject.next(actualizadas);
-    });
+  marcarTodasComoLeidas(idUsuario: number): Observable<any> {
+    const req = this.http.patch(`${this.apiUrl}/usuario/${idUsuario}/marcar-todas`, {});
+
+    // Actualizar todas las notificaciones a leída en el frontend
+    const actualizadas = this.notificacionesSubject.value.map(n => ({...n, leida: true}));
+    this.notificacionesSubject.next(actualizadas);
+
+    return req;
   }
 
   private mostrarToastr(notif: NotificacionDTO) {

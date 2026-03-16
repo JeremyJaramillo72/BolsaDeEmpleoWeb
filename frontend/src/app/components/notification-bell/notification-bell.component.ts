@@ -17,6 +17,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   dropdownOpen: boolean = false;
   isLoading: boolean = true;
   private sub?: Subscription;
+  private webSocketSub?: Subscription;
   idUsuario: number = 0;
 
   constructor(
@@ -32,6 +33,11 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     if (this.idUsuario) {
       this.notificationService.conectarWebSocket(this.idUsuario);
       this.cargarNotificacionesActivas();
+
+      this.webSocketSub = this.notificationService.suscribirseANotificacionesActivas().subscribe((notifs) => {
+        this.notificacionesActivas = notifs.filter(n => !n.leida);
+        this.cdr.detectChanges();
+      });
     }
   }
 
@@ -54,6 +60,7 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
+    this.webSocketSub?.unsubscribe();
   }
 
   @HostListener('document:click', ['$event'])
@@ -66,6 +73,10 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   toggleDropdown(event: Event) {
     event.stopPropagation();
     this.dropdownOpen = !this.dropdownOpen;
+
+    if (this.dropdownOpen) {
+      this.cargarNotificacionesActivas();
+    }
   }
 
   cerrarDropdown() {
@@ -74,7 +85,15 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
 
   clickNotificacion(notif: any) {
     if (!notif.leida) {
-      this.notificationService.marcarComoLeida(notif.idNotificacion).subscribe();
+      this.notificationService.marcarComoLeida(notif.idNotificacion).subscribe({
+        next: () => {
+          // Recargar notificaciones después de marcar como leída
+          this.cargarNotificacionesActivas();
+        },
+        error: (err) => {
+          console.error('Error marcando notificación como leída:', err);
+        }
+      });
     }
     this.cerrarDropdown();
     if (notif.enlace) {
@@ -85,7 +104,15 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
 
   marcarTodas() {
     if (this.idUsuario) {
-      this.notificationService.marcarTodasComoLeidas(this.idUsuario);
+      this.notificationService.marcarTodasComoLeidas(this.idUsuario).subscribe({
+        next: () => {
+          // Recargar después de marcar todas
+          this.cargarNotificacionesActivas();
+        },
+        error: (err) => {
+          console.error('Error marcando todas como leídas:', err);
+        }
+      });
     }
   }
 

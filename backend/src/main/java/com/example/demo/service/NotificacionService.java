@@ -17,6 +17,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.service.EmailService;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -250,8 +253,86 @@ public class NotificacionService {
 
     @Transactional(readOnly = true)
     public List<NotificacionDTO> obtenerNotificacionesActivas(Long idUsuario) {
-        return notificacionRepo.findNotificacionesActivas(idUsuario)
-                .stream().map(this::mapearADTO).collect(Collectors.toList());
+        // PANEL (Bell icon): SOLO notificaciones NO LEÍDAS de los últimos 5 días
+        List<NotificacionDTO> notificacionesDB = notificacionRepo.findNotificacionesActivas(idUsuario)
+                .stream()
+                .filter(n -> !n.getLeida()) // ← SOLO NO LEÍDAS
+                .map(this::mapearADTO)
+                .collect(Collectors.toList());
+
+        // Agregar notificaciones virtuales de "última oportunidad" (también no leídas)
+        try {
+            List<NotificacionDTO> notificacionesVirtuales = generarNotificacionesUltimaOportunidad(idUsuario);
+            notificacionesDB.addAll(notificacionesVirtuales);
+        } catch (Exception e) {
+            System.err.println("⚠️ Error generando notificaciones de última oportunidad: " + e.getMessage());
+        }
+
+        return notificacionesDB;
+    }
+
+    @Transactional(readOnly = true)
+    private List<NotificacionDTO> generarNotificacionesUltimaOportunidad(Long idUsuario) {
+        List<NotificacionDTO> notificacionesVirtuales = new java.util.ArrayList<>();
+
+        try {
+            Usuario usuario = usuarioRepo.findById(idUsuario).orElse(null);
+            if (usuario == null) return notificacionesVirtuales;
+
+            // Solo para postulantes
+            if (usuario.getRol() == null || !usuario.getRol().getNombreRol().equals("Postulante")) {
+                return notificacionesVirtuales;
+            }
+
+            // Obtener ofertas aprobadas que cierran en máximo 24 horas
+            LocalDate hoy = LocalDate.now();
+            LocalDate mañana = hoy.plusDays(1);
+            LocalDateTime ahora = LocalDateTime.now();
+
+            List<IOfertaResumen> ofertasAprobadas = ofertaRepo.listarPorEstadoSP("aprobado");
+
+            for (IOfertaResumen oferta : ofertasAprobadas) {
+                if (oferta.getFechaCierre() == null) continue;
+
+                LocalDate fechaCierre = oferta.getFechaCierre();
+                LocalDateTime fechaCierreDT = fechaCierre.atTime(23, 59, 59);
+
+                // Solo si cierra en máximo 24 horas y aún no ha pasado
+                if ((fechaCierre.isEqual(hoy) || fechaCierre.isEqual(mañana)) &&
+                    fechaCierreDT.isAfter(ahora)) {
+
+                    long horasRestantes = ChronoUnit.HOURS.between(ahora, fechaCierreDT);
+                    String tiempoRestante;
+                    if (horasRestantes > 24) {
+                        tiempoRestante = "1 día";
+                    } else if (horasRestantes > 1) {
+                        tiempoRestante = horasRestantes + " horas";
+                    } else if (horasRestantes == 1) {
+                        tiempoRestante = "1 hora";
+                    } else {
+                        long minutosRestantes = ChronoUnit.MINUTES.between(ahora, fechaCierreDT);
+                        tiempoRestante = minutosRestantes + " minutos";
+                    }
+
+                    NotificacionDTO notifVirtual = new NotificacionDTO();
+                    notifVirtual.setIdNotificacion(-1 * oferta.getIdOferta().intValue());
+                    notifVirtual.setTitulo("Última oportunidad: " + oferta.getTitulo());
+                    notifVirtual.setMensaje("La oferta cierra en " + tiempoRestante + ". ¡No te la pierdas!");
+                    notifVirtual.setTipo("ultima_oportunidad");
+                    notifVirtual.setIcono("alarm_on");
+                    notifVirtual.setEnlace("/menu-principal/Busqueda/empleo");
+                    notifVirtual.setLeida(false);
+                    notifVirtual.setFechaCreacion(ahora);
+                    notifVirtual.setDatos(Map.of("idOferta", oferta.getIdOferta(), "tiempoRestante", tiempoRestante));
+
+                    notificacionesVirtuales.add(notifVirtual);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ Error en generarNotificacionesUltimaOportunidad: " + e.getMessage());
+        }
+
+        return notificacionesVirtuales;
     }
 
     @Transactional

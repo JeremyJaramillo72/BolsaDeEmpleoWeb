@@ -202,6 +202,33 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
     private void enviarNotificacionesRegistro(Usuario usuario, String nombreEmp) {
         try {
+            // 1. Email de bienvenida a la empresa
+            try {
+                String asuntoEmail = "Bienvenida a Bolsa de Empleo - " + nombreEmp;
+                String cuerpoEmail = "¡Bienvenida a Bolsa de Empleo UTEQ!\n\n" +
+                                   "Hemos recibido tu solicitud de registro para la empresa: " + nombreEmp + "\n\n" +
+                                   "Tu cuenta ha sido creada y está actualmente en estado de revisión.\n" +
+                                   "Nuestros administradores evaluarán tu información y te notificarán cuando sea aprobada.\n\n" +
+                                   "Mientras tanto, puedes explorar la plataforma y preparar tus ofertas de empleo.\n\n" +
+                                   "¿Preguntas? Contacta nuestro equipo de soporte.";
+                emailService.sendSimpleEmail(usuario.getCorreo(), asuntoEmail, cuerpoEmail);
+            } catch (Exception e) {
+                System.err.println("⚠️ Error enviando email de bienvenida a empresa: " + e.getMessage());
+            }
+
+            // 2. Notificación en App
+            try {
+                notificacionService.crearYEnviarNotificacion(
+                        usuario.getIdUsuario(),
+                        "in_app_registro_completado",
+                        Map.of("empresaNombre", nombreEmp),
+                        Map.of(),
+                        "/menu-principal/perfil",
+                        "business"
+                );
+            } catch (Exception e) {
+                System.err.println("⚠️ Error enviando notificación en app de registro de empresa: " + e.getMessage());
+            }
 
         } catch (Exception e) {
             System.err.println("⚠️ Error en notificaciones: " + e.getMessage());
@@ -235,6 +262,17 @@ public class UsuarioServiceImpl implements IUsuarioService {
                         enlace,
                         "check_circle"
                 );
+
+                // Email de aprobación a la empresa
+                try {
+                    emailService.notificarAprobacionEmpresa(
+                            usuarioActualizado.getCorreo(),
+                            usuarioActualizado.getNombre()
+                    );
+                } catch (Exception e) {
+                    System.err.println("⚠️ Error enviando email de aprobación a empresa: " + e.getMessage());
+                }
+
             } catch (Exception e) {
                 System.err.println("❌ Error al crear notificación de empresa aprobada: " + e.getMessage());
                 e.printStackTrace();

@@ -31,6 +31,10 @@ public class ConfiguracionCorreo {
     @Column(nullable = false)
     private Boolean activo = true;
 
+    @ManyToOne
+    @JoinColumn(name = "id_usuario_modificado", nullable = true)
+    private Usuario usuarioModificado; // Usuario admin que hizo el ÚLTIMO cambio
+
     @CreationTimestamp
     @Column(name = "fecha_creacion", updatable = false)
     private LocalDateTime fechaCreacion;

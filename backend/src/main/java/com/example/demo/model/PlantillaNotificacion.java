@@ -33,6 +33,10 @@ public class PlantillaNotificacion {
     @Column(name = "activo", nullable = false)
     private Boolean activo = true;
 
+    @ManyToOne
+    @JoinColumn(name = "id_usuario_modificado", nullable = true)
+    private Usuario usuarioModificado; // Usuario admin que hizo el ÚLTIMO cambio
+
     @CreationTimestamp
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;

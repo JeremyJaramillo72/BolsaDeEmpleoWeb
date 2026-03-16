@@ -60,7 +60,7 @@ public class PlantillaNotificacionService {
      * Actualizar plantilla (La auditoría la maneja el Trigger en la BD)
      */
     @Transactional
-    public void actualizarPlantilla(Integer idPlantilla, String titulo, String contenido) {
+    public void actualizarPlantilla(Integer idPlantilla, String titulo, String contenido, Long idUsuario) {
         PlantillaNotificacion plantilla = plantillaRepo
                 .findById(idPlantilla)
                 .orElseThrow(() -> new RuntimeException("Plantilla no encontrada: " + idPlantilla));
@@ -68,8 +68,13 @@ public class PlantillaNotificacionService {
         plantilla.setTitulo(titulo);
         plantilla.setContenido(contenido);
 
-        // Al guardar, el Trigger AFTER UPDATE saltará en tu base de datos
-        // y registrará el cambio en la tabla de auditoría con el usuario de BD actual.
+        // Asignar usuario que hizo el cambio
+        if (idUsuario != null) {
+            Usuario usuario = usuarioRepo.findById(idUsuario)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + idUsuario));
+            plantilla.setUsuarioModificado(usuario);
+        }
+
         plantillaRepo.save(plantilla);
 
         log.info("✅ Plantilla actualizada: " + plantilla.getTipo());
