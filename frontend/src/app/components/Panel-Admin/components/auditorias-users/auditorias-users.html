@@ -26,11 +26,18 @@
     <button class="nav-pill" [class.active]="tabPrincipal === 'ofertas'" (click)="tabPrincipal = 'ofertas'">
       <span class="material-icons">work_history</span> Histórico Ofertas
     </button>
+
+    <button class="nav-pill"
+            [class.active]="tabPrincipal === 'postulantes'"
+            (click)="cambiarTabPrincipal('postulantes')">
+      <span class="material-icons text-sm">badge</span> Histórico Postulantes
+    </button>
   </div>
 
   <div class="tab-content">
     <app-usuarios *ngIf="tabPrincipal === 'usuarios'"></app-usuarios>
     <app-sesiones *ngIf="tabPrincipal === 'sesiones'"></app-sesiones>
     <app-ofertas *ngIf="tabPrincipal === 'ofertas'"></app-ofertas>
+    <app-postulantes *ngIf="tabPrincipal === 'postulantes'"></app-postulantes>
   </div>
 </div>

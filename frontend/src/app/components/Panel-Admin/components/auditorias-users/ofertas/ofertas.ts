@@ -181,15 +181,17 @@ export class OfertasComponent implements OnInit {
     this.trazabilidadSeleccionada = null;
   }
 
-  // ✅ PARSEADORES DE JSON PARA LOS MODALES PREMIUM
+  // ✅ PARSEADORES DE JSON PARA LOS MODALES PREMIUM (OCULTANDO IDs)
   getInsertDataList(audit: TrazabilidadOferta | null): Array<{campo: string, valor: any}> {
     if (!audit || !audit.valoresNuevos) return [];
     try {
       const parsed = JSON.parse(audit.valoresNuevos);
-      return Object.keys(parsed).map(k => ({
-        campo: k.replace(/_/g, ' ').toUpperCase(),
-        valor: typeof parsed[k] === 'object' ? JSON.stringify(parsed[k], null, 2) : parsed[k]
-      }));
+      return Object.keys(parsed)
+        .filter(k => !k.toLowerCase().startsWith('id_')) // 👈 Adiós IDs
+        .map(k => ({
+          campo: k.replace(/_/g, ' ').toUpperCase(),
+          valor: typeof parsed[k] === 'object' ? JSON.stringify(parsed[k], null, 2) : parsed[k]
+        }));
     } catch { return []; }
   }
 
@@ -197,10 +199,12 @@ export class OfertasComponent implements OnInit {
     if (!audit || !audit.valoresAnteriores) return [];
     try {
       const parsed = JSON.parse(audit.valoresAnteriores);
-      return Object.keys(parsed).map(k => ({
-        campo: k.replace(/_/g, ' ').toUpperCase(),
-        valor: typeof parsed[k] === 'object' ? JSON.stringify(parsed[k], null, 2) : parsed[k]
-      }));
+      return Object.keys(parsed)
+        .filter(k => !k.toLowerCase().startsWith('id_')) // 👈 Adiós IDs
+        .map(k => ({
+          campo: k.replace(/_/g, ' ').toUpperCase(),
+          valor: typeof parsed[k] === 'object' ? JSON.stringify(parsed[k], null, 2) : parsed[k]
+        }));
     } catch { return []; }
   }
 
@@ -211,11 +215,13 @@ export class OfertasComponent implements OnInit {
       const newParsed = audit.valoresNuevos ? JSON.parse(audit.valoresNuevos) : {};
       const allKeys = Array.from(new Set([...Object.keys(oldParsed), ...Object.keys(newParsed)]));
 
-      return allKeys.map(k => ({
-        nombre: k.replace(/_/g, ' ').toUpperCase(),
-        anterior: oldParsed[k] !== undefined ? (typeof oldParsed[k] === 'object' ? JSON.stringify(oldParsed[k]) : oldParsed[k]) : 'N/A',
-        nuevo: newParsed[k] !== undefined ? (typeof newParsed[k] === 'object' ? JSON.stringify(newParsed[k]) : newParsed[k]) : 'N/A'
-      }));
+      return allKeys
+        .filter(k => !k.toLowerCase().startsWith('id_')) // 👈 Adiós IDs en la comparación
+        .map(k => ({
+          nombre: k.replace(/_/g, ' ').toUpperCase(),
+          anterior: oldParsed[k] !== undefined ? (typeof oldParsed[k] === 'object' ? JSON.stringify(oldParsed[k]) : oldParsed[k]) : 'N/A',
+          nuevo: newParsed[k] !== undefined ? (typeof newParsed[k] === 'object' ? JSON.stringify(newParsed[k]) : newParsed[k]) : 'N/A'
+        }));
     } catch { return []; }
   }
 

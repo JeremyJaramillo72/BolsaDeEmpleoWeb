@@ -4,7 +4,6 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of, BehaviorSubject } from 'rxjs'; // Agregamos BehaviorSubject
 import { EmpresaResumen } from '../components/validar-empresa/validar-empresa';
 
-
 @Injectable({
   providedIn: 'root'
 })
@@ -25,8 +24,9 @@ export class AdminService {
   private apiauditoriasUrl = 'http://localhost:8080/api/auditorias';
 
   private apiHistorialOferta = 'http://localhost:8080/api/auditoria/ofertas';
-  constructor(private http: HttpClient) { }
 
+  private apiPostulanteAudi = 'http://localhost:8080/api/auditoria/postulantes';
+  constructor(private http: HttpClient) { }
 
   // ==========================================
   // 👤 GESTIÓN DE USUARIOS Y ROLES
@@ -486,11 +486,18 @@ export class AdminService {
     return this.http.get<any[]>(`${this.apiHistorialOferta}/${idOferta}/historial`);
   }
 
-// En tu admin.service.ts
 
+  getPostulantesAuditoria(): Observable<any[]> {
+    return this.http.get<any[]>(this.apiPostulanteAudi);
+  }
+
+  getHistorialByPerfil(idPerfilAcademico: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiPostulanteAudi}/${idPerfilAcademico}/historial`);
+  }
 
   descargarReportePdf(idParametro: number, tipo: string): Observable<Blob> {
     const url = `http://localhost:8080/api/auditorias/exportar/pdf/${idParametro}?tipo=${tipo}`;
     return this.http.get(url, { responseType: 'blob' });
   }
+
 }

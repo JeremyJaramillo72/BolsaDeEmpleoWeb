@@ -54,7 +54,8 @@ public class SecurityConfig {
                                 "/api/auth/Email",
                                 "/api/configuracion/correo/**",
                                 "/api/plantilla-notificacion/**",
-                                "/api/GestionUser"
+                                "/api/GestionUser",
+                                "/api/auditoria/postulantes"
 
                         ).permitAll()
                         .anyRequest().authenticated()
