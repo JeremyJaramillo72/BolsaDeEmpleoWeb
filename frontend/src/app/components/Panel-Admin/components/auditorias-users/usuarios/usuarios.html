@@ -64,21 +64,17 @@
           </div>
         </td>
         <td class="text-gray-600">{{ usuario.email }}</td>
-
         <td class="text-center">
           <span class="badge badge-indigo">{{ usuario.rol }}</span>
         </td>
-
         <td class="text-center">
-          <span class="badge" [ngClass]="usuario.estado.toLowerCase() === 'aprobado' || usuario.estado.toLowerCase() === 'activo' ? 'badge-success' : 'badge-error'">
+          <span class="badge"
+                [ngClass]="usuario.estado.toLowerCase() === 'aprobado' || usuario.estado.toLowerCase() === 'activo' ? 'badge-success' : 'badge-error'">
             {{ usuario.estado }}
           </span>
         </td>
-
         <td class="text-center text-gray-600">{{ formatearFechaHora(usuario.fechaRegistro) }}</td>
-
         <td class="text-center font-medium">{{ usuario.totalAuditorias || 0 }}</td>
-
         <td class="text-center">
           <button class="btn-action-pill btn-indigo-outline" (click)="verAuditorias(usuario)">
             <span class="material-icons">history</span> Ver Auditorías
@@ -111,6 +107,7 @@
   </div>
 </div>
 
+<!-- ===== MODAL AUDITORÍAS ===== -->
 <div class="modal-overlay fade-in" *ngIf="mostrarModalAuditorias" (click)="cerrarModalAuditorias()">
   <div class="modal-pro large" style="max-width: 900px;" (click)="$event.stopPropagation()">
 
@@ -125,7 +122,9 @@
         <button class="btn-icon-text btn-primary" (click)="exportarAuditorias()">
           <span class="material-icons">download</span> Exportar Todo
         </button>
-        <button class="btn-close-pro" (click)="cerrarModalAuditorias()"><span class="material-icons">close</span></button>
+        <button class="btn-close-pro" (click)="cerrarModalAuditorias()">
+          <span class="material-icons">close</span>
+        </button>
       </div>
     </div>
 
@@ -156,19 +155,26 @@
       <div class="flex-between mb-4 mt-2">
         <div class="action-chips" style="display: flex; gap: 0.5rem;">
           <button class="btn-action-pill" [ngClass]="tabActivo === 'INSERT' ? 'btn-primary' : 'btn-light'" (click)="cambiarTab('INSERT')">
-            <span class="material-icons text-sm">add_circle</span> Insert <span class="badge bg-white text-indigo ml-1" style="padding: 2px 6px;">{{ contarPorTipo('INSERT') }}</span>
+            <span class="material-icons text-sm">add_circle</span> Insert
+            <span class="badge bg-white text-indigo ml-1" style="padding: 2px 6px;">{{ contarPorTipo('INSERT') }}</span>
           </button>
           <button class="btn-action-pill" [ngClass]="tabActivo === 'DELETE' ? 'btn-danger-outline' : 'btn-light'" (click)="cambiarTab('DELETE')">
-            <span class="material-icons text-sm">delete</span> Delete <span class="badge bg-gray-200 text-gray-700 ml-1" style="padding: 2px 6px;">{{ contarPorTipo('DELETE') }}</span>
+            <span class="material-icons text-sm">delete</span> Delete
+            <span class="badge bg-gray-200 text-gray-700 ml-1" style="padding: 2px 6px;">{{ contarPorTipo('DELETE') }}</span>
           </button>
           <button class="btn-action-pill" [ngClass]="tabActivo === 'UPDATE' ? 'btn-success-outline' : 'btn-light'" (click)="cambiarTab('UPDATE')">
-            <span class="material-icons text-sm">edit</span> Update <span class="badge bg-gray-200 text-gray-700 ml-1" style="padding: 2px 6px;">{{ contarPorTipo('UPDATE') }}</span>
+            <span class="material-icons text-sm">edit</span> Update
+            <span class="badge bg-gray-200 text-gray-700 ml-1" style="padding: 2px 6px;">{{ contarPorTipo('UPDATE') }}</span>
           </button>
         </div>
 
         <div class="export-actions" style="display: flex; gap: 0.5rem;">
-          <button class="btn-action-pill btn-danger-outline" (click)="exportarTabPdf()"><span class="material-icons text-sm">picture_as_pdf</span> PDF</button>
-          <button class="btn-action-pill btn-success-outline" (click)="exportarTabExcel()"><span class="material-icons text-sm">table_view</span> Excel</button>
+          <button class="btn-action-pill btn-danger-outline" (click)="exportarTabPdf()">
+            <span class="material-icons text-sm">picture_as_pdf</span> PDF
+          </button>
+          <button class="btn-action-pill btn-success-outline" (click)="exportarTabExcel()">
+            <span class="material-icons text-sm">table_view</span> Excel
+          </button>
         </div>
       </div>
 
@@ -185,17 +191,41 @@
           <tbody>
           <tr *ngFor="let audit of auditoriasPaginadas">
             <td class="text-sm text-gray-600">{{ formatearFechaHora(audit.fechaHora) }}</td>
-            <td class="font-medium text-gray-800"><code class="text-indigo bg-indigo-light px-2 py-1 rounded">{{ audit.tablaAfectada }}</code></td>
+            <td class="font-medium text-gray-800">
+              <code class="text-indigo bg-indigo-light px-2 py-1 rounded">{{ audit.tablaAfectada }}</code>
+            </td>
             <td>
-              <span class="badge" [ngClass]="tabActivo === 'INSERT' ? 'badge-success' : (tabActivo === 'DELETE' ? 'badge-error' : 'badge-indigo')">
+              <span class="badge"
+                    [ngClass]="tabActivo === 'INSERT' ? 'badge-success' : (tabActivo === 'DELETE' ? 'badge-error' : 'badge-indigo')">
                 {{ audit.accion }}
               </span>
             </td>
             <td class="text-center">
-              <button class="btn-action-pill btn-light" *ngIf="audit.camposModificados" (click)="abrirModalDetalles(audit)">
+              <!-- ✅ UPDATE / DELETE: mostrar si hay camposModificados -->
+              <button class="btn-action-pill btn-light"
+                      *ngIf="tabActivo === 'UPDATE' && audit.camposModificados"
+                      (click)="abrirModalDetalles(audit)">
                 <span class="material-icons text-sm">visibility</span> Ver
               </button>
-              <span class="text-muted text-sm" *ngIf="!audit.camposModificados">—</span>
+
+              <button class="btn-action-pill btn-success-outline"
+                      *ngIf="tabActivo === 'INSERT' && insertTieneDetalles(audit)"
+                      (click)="abrirModalDetalles(audit)">
+                <span class="material-icons text-sm">visibility</span> Ver
+              </button>
+
+              <button class="btn-action-pill btn-danger-outline"
+                      *ngIf="tabActivo === 'DELETE' && deleteTieneDetalles(audit)"
+                      (click)="abrirModalDetalles(audit)">
+                <span class="material-icons text-sm">visibility</span> Ver
+              </button>
+
+              <span class="text-muted text-sm"
+                    *ngIf="(tabActivo === 'INSERT' && !insertTieneDetalles(audit)) ||
+                           (tabActivo === 'DELETE' && !deleteTieneDetalles(audit)) ||
+                           (tabActivo === 'UPDATE' && !audit.camposModificados)">
+                —
+              </span>
             </td>
           </tr>
           </tbody>
@@ -227,37 +257,232 @@
   </div>
 </div>
 
-<div class="modal-overlay fade-in" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
-  <div class="modal-pro medium" (click)="$event.stopPropagation()">
-    <div class="modal-header-pro border-bottom pb-3">
-      <h2 class="text-dark">Comparación de Datos</h2>
-      <button class="btn-close-pro" (click)="cerrarModalDetalles()"><span class="material-icons">close</span></button>
+<div class="modal-overlay fade-in" *ngIf="mostrarModalDetalles && tipoModalDetalle === 'UPDATE'" (click)="cerrarModalDetalles()">
+  <div class="modal-pro large" (click)="$event.stopPropagation()">
+
+    <div class="modal-header-pro border-bottom pb-3 mb-4" style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <h2 class="text-dark m-0" style="font-size: 1.4rem; font-weight: 700;">Comparación de Datos</h2>
+        <p class="text-muted mt-2 mb-0 text-sm">
+          Registro actualizado en la tabla
+          <span class="badge-tabla-azul">{{ auditoriaDetalleSeleccionada?.tablaAfectada }}</span>
+        </p>
+      </div>
+      <button class="btn-close-pro shadow-sm" (click)="cerrarModalDetalles()">
+        <span class="material-icons">close</span>
+      </button>
     </div>
 
-    <div class="modal-body-pro p-4">
-      <div class="diff-metadata bg-gray-50 rounded p-3 mb-4 flex-between text-sm">
-        <span><strong>Tabla:</strong> <code class="text-indigo">{{ auditoriaDetalleSeleccionada?.tablaAfectada }}</code></span>
-        <span><strong>ID Registro:</strong> {{ auditoriaDetalleSeleccionada?.id }}</span>
+    <div class="modal-body-pro">
+      <div class="update-banner flex-between align-center mb-4 shadow-sm">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="icon-circle bg-white text-blue-600 shadow-sm">
+            <span class="material-icons">edit_note</span>
+          </div>
+          <div>
+            <span style="display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #1e3a8a; font-weight: 700;">Registro Modificado</span>
+            <span style="font-size: 0.95rem; color: #1e40af;">
+              <strong>UPDATE</strong> ejecutado el {{ formatearFechaHora(auditoriaDetalleSeleccionada?.fechaHora) }}
+            </span>
+          </div>
+        </div>
       </div>
 
-      <div class="table-responsive rounded border">
-        <table class="table-custom m-0">
-          <thead class="bg-gray-50">
+      <div class="modern-table-container shadow-sm mb-2">
+        <table class="table-modern">
+          <thead>
           <tr>
-            <th>Campo</th>
-            <th class="text-red-600 bg-red-50"><span class="material-icons text-sm align-middle">remove</span> Anterior</th>
-            <th class="text-green-600 bg-green-50"><span class="material-icons text-sm align-middle">add</span> Nuevo</th>
+            <th style="width: 30%">
+              <span class="material-icons align-middle text-gray-500 mr-1" style="font-size: 1.1rem;">label</span>
+              CAMPO
+            </th>
+            <th style="width: 35%">
+              <span class="material-icons align-middle text-gray-400 mr-1" style="font-size: 1.1rem;">history</span>
+              VALOR ANTERIOR
+            </th>
+            <th style="width: 35%">
+              <span class="material-icons align-middle text-blue-600 mr-1" style="font-size: 1.1rem;">edit</span>
+              VALOR NUEVO
+            </th>
           </tr>
           </thead>
           <tbody>
           <tr *ngFor="let campo of getCamposModificadosList(auditoriaDetalleSeleccionada)">
-            <td class="font-medium text-gray-700">{{ campo.nombre }}</td>
-            <td class="bg-red-50 text-red-800 deletion-text">{{ campo.anterior }}</td>
-            <td class="bg-green-50 text-green-800 addition-text">{{ campo.nuevo }}</td>
+            <td class="field-name">
+              <span class="dot-indicator bg-blue-400"></span>
+              {{ campo.nombre }}
+            </td>
+            <td class="field-value">
+              <div class="value-box-old">{{ campo.anterior }}</div>
+            </td>
+            <td class="field-value">
+              <div class="value-box-new">{{ campo.nuevo }}</div>
+            </td>
+          </tr>
+          <tr *ngIf="getCamposModificadosList(auditoriaDetalleSeleccionada).length === 0">
+            <td colspan="3" class="text-center text-muted py-5">
+              <span class="material-icons text-gray-300 d-block mb-2" style="font-size:3rem;">history_toggle_off</span>
+              No hay detalles de campos modificados para este registro.
+            </td>
           </tr>
           </tbody>
         </table>
       </div>
+    </div>
+
+    <div class="modal-footer border-top mt-4 pt-3" style="display: flex; justify-content: flex-end;">
+      <button class="btn-modern-secondary" (click)="cerrarModalDetalles()">
+        Cerrar Comparación
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL DETALLES INSERT (Vista previa del registro insertado) ===== -->
+<div class="modal-overlay fade-in" *ngIf="mostrarModalDetalles && tipoModalDetalle === 'INSERT'" (click)="cerrarModalDetalles()">
+  <div class="modal-pro medium" (click)="$event.stopPropagation()">
+
+    <div class="modal-header-pro border-bottom pb-3 mb-4" style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <h2 class="text-dark m-0" style="font-size: 1.4rem; font-weight: 700;">Vista Previa del Registro</h2>
+        <p class="text-muted mt-2 mb-0 text-sm">
+          Datos insertados en la tabla
+          <span class="badge-tabla">{{ auditoriaDetalleSeleccionada?.tablaAfectada }}</span>
+        </p>
+      </div>
+      <button class="btn-close-pro shadow-sm" (click)="cerrarModalDetalles()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <div class="modal-body-pro">
+      <div class="insert-banner flex-between align-center mb-4 shadow-sm">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="icon-circle bg-white text-green-600 shadow-sm">
+            <span class="material-icons">add_task</span>
+          </div>
+          <div>
+            <span style="display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #065f46; font-weight: 700;">Operación Exitosa</span>
+            <span style="font-size: 0.95rem; color: #047857;">
+              <strong>INSERT</strong> registrado el {{ formatearFechaHora(auditoriaDetalleSeleccionada?.fechaHora) }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modern-table-container shadow-sm mb-2">
+        <table class="table-modern">
+          <thead>
+          <tr>
+            <th style="width: 40%">
+              <span class="material-icons align-middle text-gray-500 mr-1" style="font-size: 1.1rem;">label</span>
+              CAMPO
+            </th>
+            <th style="width: 60%">
+              <span class="material-icons align-middle text-green-600 mr-1" style="font-size: 1.1rem;">data_object</span>
+              VALOR INSERTADO
+            </th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let item of getInsertDataList(auditoriaDetalleSeleccionada)">
+            <td class="field-name">
+              <span class="dot-indicator"></span>
+              {{ item.campo }}
+            </td>
+            <td class="field-value">
+              <div class="value-box">{{ item.valor }}</div>
+            </td>
+          </tr>
+          <tr *ngIf="getInsertDataList(auditoriaDetalleSeleccionada).length === 0">
+            <td colspan="2" class="text-center text-muted py-5">
+              <span class="material-icons text-gray-300 d-block mb-2" style="font-size:3rem;">inventory_2</span>
+              No hay datos detallados disponibles para este registro.
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal-footer border-top mt-4 pt-3" style="display: flex; justify-content: flex-end;">
+      <button class="btn-modern-secondary" (click)="cerrarModalDetalles()">
+        Cerrar Vista Previa
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay fade-in" *ngIf="mostrarModalDetalles && tipoModalDetalle === 'DELETE'" (click)="cerrarModalDetalles()">
+  <div class="modal-pro medium" (click)="$event.stopPropagation()">
+
+    <div class="modal-header-pro border-bottom pb-3 mb-4" style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <h2 class="text-dark m-0" style="font-size: 1.4rem; font-weight: 700;">Datos Eliminados</h2>
+        <p class="text-muted mt-2 mb-0 text-sm">
+          Registro borrado en la tabla
+          <span class="badge-tabla-roja">{{ auditoriaDetalleSeleccionada?.tablaAfectada }}</span>
+        </p>
+      </div>
+      <button class="btn-close-pro shadow-sm" (click)="cerrarModalDetalles()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <div class="modal-body-pro">
+      <div class="delete-banner flex-between align-center mb-4 shadow-sm">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="icon-circle bg-white text-red-600 shadow-sm">
+            <span class="material-icons">delete_forever</span>
+          </div>
+          <div>
+            <span style="display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #991b1b; font-weight: 700;">Registro Eliminado</span>
+            <span style="font-size: 0.95rem; color: #7f1d1d;">
+              <strong>DELETE</strong> ejecutado el {{ formatearFechaHora(auditoriaDetalleSeleccionada?.fechaHora) }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modern-table-container shadow-sm mb-2">
+        <table class="table-modern">
+          <thead>
+          <tr>
+            <th style="width: 40%">
+              <span class="material-icons align-middle text-gray-500 mr-1" style="font-size: 1.1rem;">label</span>
+              CAMPO
+            </th>
+            <th style="width: 60%">
+              <span class="material-icons align-middle text-red-600 mr-1" style="font-size: 1.1rem;">data_object</span>
+              VALOR ANTERIOR
+            </th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let item of getDeleteDataList(auditoriaDetalleSeleccionada)">
+            <td class="field-name">
+              <span class="dot-indicator bg-red-300"></span>
+              {{ item.campo }}
+            </td>
+            <td class="field-value">
+              <div class="value-box-delete">{{ item.valor }}</div>
+            </td>
+          </tr>
+          <tr *ngIf="getDeleteDataList(auditoriaDetalleSeleccionada).length === 0">
+            <td colspan="2" class="text-center text-muted py-5">
+              <span class="material-icons text-gray-300 d-block mb-2" style="font-size:3rem;">inventory_2</span>
+              No hay datos detallados disponibles para esta eliminación.
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal-footer border-top mt-4 pt-3" style="display: flex; justify-content: flex-end;">
+      <button class="btn-modern-secondary" (click)="cerrarModalDetalles()">
+        Cerrar Detalles
+      </button>
     </div>
   </div>
 </div>

@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.AuditoriaOfertaDTO;
-import com.example.demo.model.HistorialOferta;
+import com.example.demo.dto.TrazabilidadOfertaDTO;
 import com.example.demo.service.HistorialOfertaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,10 +24,10 @@ public class HistorialOfertaController {
         return ResponseEntity.ok(listaAuditoria);
     }
 
-    // 2. Endpoint para el modal de la línea de tiempo de una oferta
+    // 2. Endpoint para el modal de la línea de tiempo de una oferta (Trazabilidad)
     @GetMapping("/{idOferta}/historial")
-    public ResponseEntity<List<HistorialOferta>> obtenerHistorialPorOferta(@PathVariable Long idOferta) {
-        List<HistorialOferta> historial = historialOfertaService.getHistorialByOferta(idOferta);
+    public ResponseEntity<List<TrazabilidadOfertaDTO>> obtenerHistorialPorOferta(@PathVariable Long idOferta) {
+        List<TrazabilidadOfertaDTO> historial = historialOfertaService.getHistorialByOferta(idOferta);
         return ResponseEntity.ok(historial);
     }
 }

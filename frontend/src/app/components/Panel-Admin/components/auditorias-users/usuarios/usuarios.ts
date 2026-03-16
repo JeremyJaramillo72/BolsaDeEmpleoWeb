@@ -1,7 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-// Ajusta esta ruta si es necesario para llegar a tu servicio
 import { AdminService } from '../../../services/admin.service';
 
 export interface Usuario {
@@ -53,7 +52,6 @@ export class UsuariosComponent implements OnInit {
   cargando = false;
   mensajeError = '';
 
-  // Variables para Modales de Auditoría
   usuarioSeleccionado: Usuario | null = null;
   auditorias: Auditoria[] = [];
   auditoriasFiltradas: Auditoria[] = [];
@@ -64,6 +62,7 @@ export class UsuariosComponent implements OnInit {
   itemsPorPaginaAuditorias = 8;
   mostrarModalDetalles = false;
   auditoriaDetalleSeleccionada: any = null;
+  tipoModalDetalle: 'INSERT' | 'UPDATE' | 'DELETE' = 'UPDATE';
 
   constructor(private adminService: AdminService, private cdr: ChangeDetectorRef) {}
 
@@ -71,7 +70,6 @@ export class UsuariosComponent implements OnInit {
     this.cargarUsuarios();
   }
 
-  // ========== CARGA Y FILTROS PRINCIPALES ==========
   cargarUsuarios(): void {
     this.cargando = true;
     this.adminService.obtenerTodosUsuarios().subscribe({
@@ -94,7 +92,7 @@ export class UsuariosComponent implements OnInit {
         this.cargando = false;
         this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: () => {
         this.mensajeError = 'Error al cargar usuarios';
         this.cargando = false;
       }
@@ -167,21 +165,16 @@ export class UsuariosComponent implements OnInit {
     return `${inicio}-${fin} de ${this.usuariosFiltrados.length}`;
   }
 
-  // ========== UTILIDADES DE UI ==========
   getRolClass(rol: string): string {
     const rolLower = rol.toLowerCase();
-    if (rolLower.includes('admin') || rolLower.includes('administrador')) {
-      return 'rol-admin';
-    } else if (rolLower.includes('empresa')) {
-      return 'rol-empresa';
-    } else if (rolLower.includes('moderador')) {
-      return 'rol-moderador';
-    }
+    if (rolLower.includes('admin') || rolLower.includes('administrador')) return 'rol-admin';
+    if (rolLower.includes('empresa')) return 'rol-empresa';
+    if (rolLower.includes('moderador')) return 'rol-moderador';
     return 'rol-usuario';
   }
 
   getEstadoClass(estado: string): string {
-    switch(estado.toLowerCase()) {
+    switch (estado.toLowerCase()) {
       case 'activo': return 'estado-activo';
       case 'inactivo': return 'estado-inactivo';
       case 'bloqueado': return 'estado-bloqueado';
@@ -191,36 +184,23 @@ export class UsuariosComponent implements OnInit {
 
   getAccionClass(accion: string): string {
     const accionLower = accion.toLowerCase();
-    if (accionLower.includes('crear') || accionLower.includes('registro')) {
-      return 'accion-crear';
-    } else if (accionLower.includes('actualizar') || accionLower.includes('editar')) {
-      return 'accion-editar';
-    } else if (accionLower.includes('eliminar') || accionLower.includes('borrar')) {
-      return 'accion-eliminar';
-    } else if (accionLower.includes('login') || accionLower.includes('acceso')) {
-      return 'accion-acceso';
-    }
+    if (accionLower.includes('crear') || accionLower.includes('registro')) return 'accion-crear';
+    if (accionLower.includes('actualizar') || accionLower.includes('editar')) return 'accion-editar';
+    if (accionLower.includes('eliminar') || accionLower.includes('borrar')) return 'accion-eliminar';
+    if (accionLower.includes('login') || accionLower.includes('acceso')) return 'accion-acceso';
     return 'accion-otro';
   }
 
   formatearFechaHora(fecha: string | null | undefined): string {
-    if (!fecha) {
-      return '—';
-    }
+    if (!fecha) return '—';
     const date = new Date(fecha);
-    if (isNaN(date.getTime())) {
-      return 'Fecha inválida';
-    }
+    if (isNaN(date.getTime())) return 'Fecha inválida';
     return date.toLocaleString('es-ES', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit'
     });
   }
 
-  // ========== MODAL DE AUDITORÍAS ==========
   verAuditorias(usuario: Usuario): void {
     this.usuarioSeleccionado = usuario;
     this.mostrarModalAuditorias = true;
@@ -233,18 +213,33 @@ export class UsuariosComponent implements OnInit {
     this.cargandoAuditorias = true;
     this.adminService.getAuditoriasUsuario(idUsuario).subscribe({
       next: (data) => {
-        this.auditorias = data.map((auditoria: any) => ({
-          id: auditoria.idAuditoria,
-          accion: auditoria.accion,
-          modulo: auditoria.tablaAfectada || 'Sin tabla',
-          tablaAfectada: auditoria.tablaAfectada || 'Sin tabla',
-          descripcion: auditoria.descripcion,
-          fechaHora: auditoria.fechaHora,
-          ipAddress: auditoria.ipAddress,
-          navegador: auditoria.navegador,
-          detalles: auditoria.detalles,
-          camposModificados: auditoria.camposModificados || auditoria.campos_modificados || null
-        }));
+        // Opcional: Esto te muestra todo el arreglo de golpe por si lo quieres ver
+        console.log('Toda la data del backend:', data);
+
+        this.auditorias = data.map((auditoria: any) => {
+
+          // ✅ Aquí está tu log para ver cada registro individualmente
+          if (auditoria.accion && auditoria.accion.toUpperCase().includes('INSERT')) {
+            console.log('👉 ESTE ES UN INSERT:', auditoria);
+          }
+
+          return {
+            id: auditoria.idAuditoria,
+            accion: auditoria.accion,
+            modulo: auditoria.tablaAfectada || 'Sin tabla',
+            tablaAfectada: auditoria.tablaAfectada || 'Sin tabla',
+            descripcion: auditoria.descripcion,
+            fechaHora: auditoria.fechaHora,
+            ipAddress: auditoria.ipAddress,
+            navegador: auditoria.navegador,
+            detalles: auditoria.detalles,
+            camposModificados: auditoria.camposModificados || auditoria.campos_modificados || null,
+            // ✅ AQUÍ ESTÁ EL FIX: Agregamos auditoria.datosNuevos al principio
+            valoresNuevos: auditoria.datosNuevos || auditoria.valoresNuevos || auditoria.detalles || null,
+            // ✅ AGREGAMOS ESTA LÍNEA PARA EL DELETE:
+            valoresAnteriores: auditoria.datosAnteriores || auditoria.valoresAnteriores || null
+          };
+        });
 
         this.filtrarAuditoriasPorTab();
         this.cargandoAuditorias = false;
@@ -278,15 +273,12 @@ export class UsuariosComponent implements OnInit {
   }
 
   contarPorTipo(tipo: string): number {
-    return this.auditorias.filter(a =>
-      a.accion.toUpperCase().includes(tipo)
-    ).length;
+    return this.auditorias.filter(a => a.accion.toUpperCase().includes(tipo)).length;
   }
 
   get auditoriasPaginadas(): Auditoria[] {
     const inicio = (this.paginaAuditorias - 1) * this.itemsPorPaginaAuditorias;
-    const fin = inicio + this.itemsPorPaginaAuditorias;
-    return this.auditoriasFiltradas.slice(inicio, fin);
+    return this.auditoriasFiltradas.slice(inicio, inicio + this.itemsPorPaginaAuditorias);
   }
 
   get totalPaginasAuditorias(): number {
@@ -294,12 +286,9 @@ export class UsuariosComponent implements OnInit {
   }
 
   cambiarPaginaAuditorias(pagina: number): void {
-    if (pagina >= 1 && pagina <= this.totalPaginasAuditorias) {
-      this.paginaAuditorias = pagina;
-    }
+    if (pagina >= 1 && pagina <= this.totalPaginasAuditorias) this.paginaAuditorias = pagina;
   }
 
-  // ========== EXPORTACIONES ==========
   exportarUsuarios(): void {
     this.adminService.exportarUsuariosExcel(this.usuariosFiltrados).subscribe({
       next: (blob) => {
@@ -309,37 +298,27 @@ export class UsuariosComponent implements OnInit {
         link.download = `usuarios_${new Date().getTime()}.xlsx`;
         link.click();
       },
-      error: (err) => {
-        console.error('Error al exportar:', err);
-        this.mensajeError = 'Error al exportar usuarios';
-      }
+      error: () => { this.mensajeError = 'Error al exportar usuarios'; }
     });
   }
 
   exportarAuditorias(): void {
-    if (this.usuarioSeleccionado) {
-      this.adminService.exportarAuditoriasExcel(this.usuarioSeleccionado.id).subscribe({
-        next: (blob) => {
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `auditorias_${this.usuarioSeleccionado?.nombreCompleto}_${new Date().getTime()}.xlsx`;
-          link.click();
-        },
-        error: (err) => {
-          console.error('Error al exportar:', err);
-          this.mensajeError = 'Error al exportar auditorías';
-        }
-      });
-    }
+    if (!this.usuarioSeleccionado) return;
+    this.adminService.exportarAuditoriasExcel(this.usuarioSeleccionado.id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `auditorias_${this.usuarioSeleccionado?.nombreCompleto}_${new Date().getTime()}.xlsx`;
+        link.click();
+      },
+      error: () => { this.mensajeError = 'Error al exportar auditorías'; }
+    });
   }
 
   exportarTabPdf(): void {
     if (!this.usuarioSeleccionado) return;
-    this.adminService.exportarAuditoriasPdf(
-      this.usuarioSeleccionado.id,
-      this.tabActivo
-    ).subscribe({
+    this.adminService.exportarAuditoriasPdf(this.usuarioSeleccionado.id, this.tabActivo).subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -348,19 +327,13 @@ export class UsuariosComponent implements OnInit {
         link.click();
         window.URL.revokeObjectURL(url);
       },
-      error: (err) => {
-        console.error('Error al exportar PDF:', err);
-        this.mensajeError = 'Error al exportar PDF';
-      }
+      error: () => { this.mensajeError = 'Error al exportar PDF'; }
     });
   }
 
   exportarTabExcel(): void {
     if (!this.usuarioSeleccionado) return;
-    this.adminService.exportarAuditoriasExcelPorTipo(
-      this.usuarioSeleccionado.id,
-      this.tabActivo
-    ).subscribe({
+    this.adminService.exportarAuditoriasExcelPorTipo(this.usuarioSeleccionado.id, this.tabActivo).subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -369,16 +342,17 @@ export class UsuariosComponent implements OnInit {
         link.click();
         window.URL.revokeObjectURL(url);
       },
-      error: (err) => {
-        console.error('Error al exportar Excel:', err);
-        this.mensajeError = 'Error al exportar Excel';
-      }
+      error: () => { this.mensajeError = 'Error al exportar Excel'; }
     });
   }
 
-  // ========== MODAL DE DETALLES ==========
+  // ========== MODAL DETALLES ==========
   abrirModalDetalles(auditoria: any): void {
     this.auditoriaDetalleSeleccionada = auditoria;
+    const accion = (auditoria.accion || '').toUpperCase();
+    if (accion.includes('INSERT')) this.tipoModalDetalle = 'INSERT';
+    else if (accion.includes('DELETE')) this.tipoModalDetalle = 'DELETE';
+    else this.tipoModalDetalle = 'UPDATE';
     this.mostrarModalDetalles = true;
   }
 
@@ -387,17 +361,13 @@ export class UsuariosComponent implements OnInit {
     this.auditoriaDetalleSeleccionada = null;
   }
 
+  // ✅ Para UPDATE/DELETE: lista de campos con anterior y nuevo
   getCamposModificadosList(auditoria: any): Array<{nombre: string, anterior: any, nuevo: any}> {
     if (!auditoria || !auditoria.camposModificados) return [];
     let campos = auditoria.camposModificados;
     if (typeof campos === 'string') {
-      try {
-        campos = JSON.parse(campos);
-      } catch (e) {
-        return [];
-      }
+      try { campos = JSON.parse(campos); } catch { return []; }
     }
-
     const lista = [];
     for (const key in campos) {
       if (Object.prototype.hasOwnProperty.call(campos, key)) {
@@ -410,4 +380,101 @@ export class UsuariosComponent implements OnInit {
     }
     return lista;
   }
+
+  // ✅ NUEVO: Para INSERT — lista de campos insertados (solo valores nuevos)
+  getInsertDataList(auditoria: any): Array<{campo: string, valor: any}> {
+    if (!auditoria) return [];
+
+    // Intentamos obtener los datos de distintas fuentes posibles del backend
+    let datos = auditoria.valoresNuevos || auditoria.camposModificados || auditoria.detalles;
+    if (!datos) return [];
+
+    if (typeof datos === 'string') {
+      try { datos = JSON.parse(datos); } catch { return []; }
+    }
+
+    // Si el objeto tiene estructura { campo: { nuevo: valor } } (como UPDATE)
+    const primeraKey = Object.keys(datos)[0];
+    const esEstructuraUpdate = primeraKey && datos[primeraKey] !== null
+      && typeof datos[primeraKey] === 'object'
+      && ('nuevo' in datos[primeraKey] || 'anterior' in datos[primeraKey]);
+
+    const lista: Array<{campo: string, valor: any}> = [];
+
+    if (esEstructuraUpdate) {
+      for (const key in datos) {
+        if (Object.prototype.hasOwnProperty.call(datos, key)) {
+          lista.push({
+            campo: key.replace(/_/g, ' ').toUpperCase(),
+            valor: datos[key].nuevo ?? datos[key].anterior ?? 'N/A'
+          });
+        }
+      }
+    } else {
+      // Estructura plana { campo: valor }
+      for (const key in datos) {
+        if (Object.prototype.hasOwnProperty.call(datos, key)) {
+          const val = datos[key];
+          lista.push({
+            campo: key.replace(/_/g, ' ').toUpperCase(),
+            valor: typeof val === 'object' && val !== null ? JSON.stringify(val, null, 2) : (val ?? 'N/A')
+          });
+        }
+      }
+    }
+    return lista;
+  }
+
+  // ✅ Helper para saber si un INSERT tiene datos para mostrar
+  insertTieneDetalles(audit: any): boolean {
+    return !!(audit.valoresNuevos || audit.camposModificados || audit.detalles);
+  }
+
+  // ✅ Helper para saber si un DELETE tiene datos para mostrar
+  deleteTieneDetalles(audit: any): boolean {
+    return !!(audit.valoresAnteriores || audit.camposModificados || audit.detalles);
+  }
+
+  // ✅ Para DELETE — lista de campos eliminados (solo valores anteriores)
+  getDeleteDataList(auditoria: any): Array<{campo: string, valor: any}> {
+    if (!auditoria) return [];
+
+    let datos = auditoria.valoresAnteriores || auditoria.camposModificados || auditoria.detalles;
+    if (!datos) return [];
+
+    if (typeof datos === 'string') {
+      try { datos = JSON.parse(datos); } catch { return []; }
+    }
+
+    const primeraKey = Object.keys(datos)[0];
+    const esEstructuraUpdate = primeraKey && datos[primeraKey] !== null
+      && typeof datos[primeraKey] === 'object'
+      && ('anterior' in datos[primeraKey] || 'nuevo' in datos[primeraKey]);
+
+    const lista: Array<{campo: string, valor: any}> = [];
+
+    if (esEstructuraUpdate) {
+      for (const key in datos) {
+        if (Object.prototype.hasOwnProperty.call(datos, key)) {
+          lista.push({
+            campo: key.replace(/_/g, ' ').toUpperCase(),
+            valor: datos[key].anterior ?? 'N/A'
+          });
+        }
+      }
+    } else {
+      for (const key in datos) {
+        if (Object.prototype.hasOwnProperty.call(datos, key)) {
+          const val = datos[key];
+          lista.push({
+            campo: key.replace(/_/g, ' ').toUpperCase(),
+            valor: typeof val === 'object' && val !== null ? JSON.stringify(val, null, 2) : (val ?? 'N/A')
+          });
+        }
+      }
+    }
+    return lista;
+  }
+
+
 }

@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../services/admin.service';
 
+// 1. Interfaz para la tabla principal
 export interface AuditoriaOferta {
-  idHistorial?: number;
+  idHistorial: number;
   idOferta: number;
   tituloOferta: string;
   empresa: string;
@@ -12,10 +13,17 @@ export interface AuditoriaOferta {
   accion: string;
   estadoActual: string;
   fechaHora: string;
-  campoModificado?: string;
-  valoresAnteriores?: any;
-  valoresNuevos?: any;
-  idSeguridad?: number;
+}
+
+// 2. Interfaz para la línea de tiempo y los modales
+export interface TrazabilidadOferta {
+  idHistorial: number;
+  accion: string;
+  fechaHora: string;
+  ejecutor: string;
+  campoModificado: string;
+  valoresAnteriores: string | null;
+  valoresNuevos: string | null;
 }
 
 @Component({
@@ -38,11 +46,13 @@ export class OfertasComponent implements OnInit {
   mostrarModalHistorialOferta = false;
   cargandoHistorialOferta = false;
   ofertaSeleccionada: AuditoriaOferta | null = null;
-  listaHistorialOferta: AuditoriaOferta[] = [];
 
+  listaHistorialOferta: TrazabilidadOferta[] = [];
+
+  // Variables para el modal premium
   mostrarModalDetalles: boolean = false;
-  auditoriaDetalleSeleccionada: any = null;
-  listaDeUsuarios: any[] = [];
+  trazabilidadSeleccionada: TrazabilidadOferta | null = null;
+  tipoModalDetalle: 'INSERT' | 'UPDATE' | 'DELETE' = 'UPDATE';
 
   constructor(private adminService: AdminService) {}
 
@@ -89,8 +99,7 @@ export class OfertasComponent implements OnInit {
 
   get ofertasPaginadas(): AuditoriaOferta[] {
     const inicio = (this.paginaOfertas - 1) * this.itemsPorPaginaOfertas;
-    const fin = inicio + this.itemsPorPaginaOfertas;
-    return this.ofertasFiltradas.slice(inicio, fin);
+    return this.ofertasFiltradas.slice(inicio, inicio + this.itemsPorPaginaOfertas);
   }
 
   get totalPaginasOfertas(): number {
@@ -98,9 +107,7 @@ export class OfertasComponent implements OnInit {
   }
 
   cambiarPaginaOfertas(pagina: number): void {
-    if (pagina >= 1 && pagina <= this.totalPaginasOfertas) {
-      this.paginaOfertas = pagina;
-    }
+    if (pagina >= 1 && pagina <= this.totalPaginasOfertas) this.paginaOfertas = pagina;
   }
 
   verHistorialOferta(auditoria: AuditoriaOferta): void {
@@ -108,7 +115,7 @@ export class OfertasComponent implements OnInit {
     this.mostrarModalHistorialOferta = true;
     this.cargandoHistorialOferta = true;
     this.adminService.getHistorialByOferta(auditoria.idOferta).subscribe({
-      next: (data: AuditoriaOferta[]) => {
+      next: (data: TrazabilidadOferta[]) => {
         this.listaHistorialOferta = data;
         this.cargandoHistorialOferta = false;
       },
@@ -126,98 +133,65 @@ export class OfertasComponent implements OnInit {
     this.listaHistorialOferta = [];
   }
 
-  abrirModalDetallesOferta(historial: AuditoriaOferta): void {
-    if (historial.accion === 'NUEVA_POSTULACION' || historial.accion === 'OFERTA_CREADA') {
-      let datosParseados: any = {};
-      try {
-        datosParseados = typeof historial.valoresNuevos === 'string'
-          ? JSON.parse(historial.valoresNuevos)
-          : historial.valoresNuevos;
-      } catch (e) {
-        datosParseados = {};
-      }
+  // ✅ LOGICA PARA ABRIR EL MODAL CON EL DISEÑO CORRECTO
+  abrirModalDetallesOferta(historial: TrazabilidadOferta): void {
+    this.trazabilidadSeleccionada = historial;
+    const accion = (historial.accion || '').toUpperCase();
 
-      const correoUsuario = historial.usuarioBd || this.ofertaSeleccionada?.usuarioBd || 'Correo Desconocido';
-
-      this.auditoriaDetalleSeleccionada = {
-        esResumen: true,
-        tipoResumen: historial.accion === 'NUEVA_POSTULACION' ? 'POSTULACION' : 'CREACION',
-        tituloOferta: historial.tituloOferta || this.ofertaSeleccionada?.tituloOferta || 'Oferta sin título',
-        empresa: historial.empresa || this.ofertaSeleccionada?.empresa || 'Empresa sin nombre',
-        fecha: historial.fechaHora,
-        usuarioBd: correoUsuario,
-        match: datosParseados?.porcentaje_match || 'N/A'
-      };
-      this.mostrarModalDetalles = true;
-
+    if (accion.includes('CREADA') || accion.includes('NUEVA') || accion.includes('APROBADA')) {
+      this.tipoModalDetalle = 'INSERT';
+    } else if (accion.includes('ELIMINADA') || accion.includes('RETIRADA') || accion.includes('RECHAZADA')) {
+      this.tipoModalDetalle = 'DELETE';
     } else {
-      const auditoriaMapeada = {
-        esResumen: false,
-        tablaAfectada: 'ofertas.oferta_laboral',
-        fechaHora: historial.fechaHora,
-        usuarioBd: historial.usuarioBd || this.ofertaSeleccionada?.usuarioBd,
-        camposModificados: {
-          [historial.campoModificado || 'datos']: {
-            anterior: historial.valoresAnteriores,
-            nuevo: historial.valoresNuevos
-          }
-        }
-      };
-      this.abrirModalDetalles(auditoriaMapeada);
+      this.tipoModalDetalle = 'UPDATE';
     }
-  }
-
-  abrirModalDetalles(auditoria: any): void {
-    this.auditoriaDetalleSeleccionada = auditoria;
     this.mostrarModalDetalles = true;
   }
 
   cerrarModalDetalles(): void {
     this.mostrarModalDetalles = false;
-    this.auditoriaDetalleSeleccionada = null;
+    this.trazabilidadSeleccionada = null;
   }
 
-  getCamposModificadosList(auditoria: any): Array<{nombre: string, anterior: any, nuevo: any}> {
-    if (!auditoria || !auditoria.camposModificados) return [];
-
-    let campos = auditoria.camposModificados;
-    if (typeof campos === 'string') {
-      try {
-        campos = JSON.parse(campos);
-      } catch (e) {
-        return [];
-      }
-    }
-
-    const lista = [];
-    for (const key in campos) {
-      if (Object.prototype.hasOwnProperty.call(campos, key)) {
-        lista.push({
-          nombre: key.replace(/_/g, ' ').toUpperCase(),
-          anterior: this.formatearJSON(campos[key].anterior),
-          nuevo: this.formatearJSON(campos[key].nuevo)
-        });
-      }
-    }
-    return lista;
+  // ✅ PARSEADORES DE JSON PARA LOS MODALES PREMIUM
+  getInsertDataList(audit: TrazabilidadOferta | null): Array<{campo: string, valor: any}> {
+    if (!audit || !audit.valoresNuevos) return [];
+    try {
+      const parsed = JSON.parse(audit.valoresNuevos);
+      return Object.keys(parsed).map(k => ({
+        campo: k.replace(/_/g, ' ').toUpperCase(),
+        valor: typeof parsed[k] === 'object' ? JSON.stringify(parsed[k], null, 2) : parsed[k]
+      }));
+    } catch { return []; }
   }
 
-  formatearJSON(valor: any): any {
-    if (valor === null || valor === undefined) return 'N/A';
-    if (typeof valor === 'object') {
-      return JSON.stringify(valor, null, 2);
-    }
-    if (typeof valor === 'string' && (valor.trim().startsWith('{') || valor.trim().startsWith('['))) {
-      try {
-        const parsed = JSON.parse(valor);
-        return JSON.stringify(parsed, null, 2);
-      } catch (e) {
-        return valor;
-      }
-    }
-    return valor;
+  getDeleteDataList(audit: TrazabilidadOferta | null): Array<{campo: string, valor: any}> {
+    if (!audit || !audit.valoresAnteriores) return [];
+    try {
+      const parsed = JSON.parse(audit.valoresAnteriores);
+      return Object.keys(parsed).map(k => ({
+        campo: k.replace(/_/g, ' ').toUpperCase(),
+        valor: typeof parsed[k] === 'object' ? JSON.stringify(parsed[k], null, 2) : parsed[k]
+      }));
+    } catch { return []; }
   }
 
+  getUpdateDataList(audit: TrazabilidadOferta | null): Array<{nombre: string, anterior: any, nuevo: any}> {
+    if (!audit) return [];
+    try {
+      const oldParsed = audit.valoresAnteriores ? JSON.parse(audit.valoresAnteriores) : {};
+      const newParsed = audit.valoresNuevos ? JSON.parse(audit.valoresNuevos) : {};
+      const allKeys = Array.from(new Set([...Object.keys(oldParsed), ...Object.keys(newParsed)]));
+
+      return allKeys.map(k => ({
+        nombre: k.replace(/_/g, ' ').toUpperCase(),
+        anterior: oldParsed[k] !== undefined ? (typeof oldParsed[k] === 'object' ? JSON.stringify(oldParsed[k]) : oldParsed[k]) : 'N/A',
+        nuevo: newParsed[k] !== undefined ? (typeof newParsed[k] === 'object' ? JSON.stringify(newParsed[k]) : newParsed[k]) : 'N/A'
+      }));
+    } catch { return []; }
+  }
+
+  // Utilidades de diseño
   getAccionOfertaClass(accion: string): string {
     if (!accion) return 'accion-otro';
     const acc = accion.toUpperCase();
@@ -227,7 +201,6 @@ export class OfertasComponent implements OnInit {
     return 'accion-otro';
   }
 
-  // ✅ CORREGIDO: Acepta string | undefined | null para evitar el error TS2345
   formatAccionOferta(accion: string | undefined | null): string {
     if (!accion) return 'Desconocida';
     return accion.split('_')

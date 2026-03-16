@@ -14,7 +14,7 @@
         <th>Oferta Laboral</th>
         <th>Empresa</th>
         <th>Ejecutor (Usuario BD)</th>
-        <th class="text-center">Acción</th>
+        <th class="text-center">Última Acción</th>
         <th class="text-center">Estado Oferta</th>
         <th class="text-center">Auditoría</th>
       </tr>
@@ -89,9 +89,10 @@
         <div class="timeline-item" *ngFor="let historial of listaHistorialOferta">
           <div class="timeline-icon shadow-sm" [ngClass]="getAccionOfertaClass(historial.accion)">
             <span class="material-icons">
-              {{ historial.accion === 'OFERTA_CREADA' ? 'campaign' :
-              historial.accion === 'OFERTA_ACTUALIZADA' ? 'edit' :
-                historial.accion === 'NUEVA_POSTULACION' ? 'person_add' : 'info' }}
+              {{ historial.accion.includes('CREADA') ? 'campaign' :
+              historial.accion.includes('ACTUALIZADA') ? 'edit' :
+                historial.accion.includes('ELIMINADA') ? 'delete' :
+                  historial.accion.includes('POSTULACION') ? 'person_add' : 'info' }}
             </span>
           </div>
 
@@ -112,13 +113,12 @@
             <div class="flex-between align-center border-top pt-2 mt-3">
               <span class="badge-db-user text-xs">
                 <span class="material-icons text-xs">admin_panel_settings</span>
-                Ejecutor: {{ historial.usuarioBd || 'Desconocido' }}
+                Ejecutor: {{ historial.ejecutor || 'Desconocido' }}
               </span>
 
               <button class="btn-link text-indigo text-decoration-none fw-bold"
-                      *ngIf="historial.accion === 'OFERTA_ACTUALIZADA' || historial.accion === 'NUEVA_POSTULACION' || historial.accion === 'OFERTA_CREADA'"
                       (click)="abrirModalDetallesOferta(historial)">
-                {{ historial.accion === 'OFERTA_ACTUALIZADA' ? 'Comparar Cambios →' : 'Ver Detalles →' }}
+                {{ historial.accion.includes('ACTUALIZADA') ? 'Comparar Cambios →' : 'Ver Detalles →' }}
               </button>
             </div>
           </div>
@@ -133,81 +133,127 @@
   </div>
 </div>
 
-<div class="modal-overlay fade-in" *ngIf="mostrarModalDetalles" (click)="cerrarModalDetalles()">
+<div class="modal-overlay fade-in" *ngIf="mostrarModalDetalles && tipoModalDetalle === 'INSERT'" (click)="cerrarModalDetalles()">
   <div class="modal-pro medium" (click)="$event.stopPropagation()">
-    <div class="modal-header-pro border-bottom">
-      <h2 class="text-dark mb-0">
-        {{ !auditoriaDetalleSeleccionada?.esResumen ? 'Comparación de Datos (Diff)' : 'Resumen de Acción' }}
-      </h2>
-      <button class="btn-close-pro" (click)="cerrarModalDetalles()">
-        <span class="material-icons">close</span>
-      </button>
+    <div class="modal-header-pro border-bottom pb-3 mb-4">
+      <div>
+        <h2 class="text-dark m-0" style="font-size: 1.4rem; font-weight: 700;">Datos Registrados</h2>
+        <p class="text-muted mt-2 mb-0 text-sm">Registro procesado por <span class="badge-tabla">{{ trazabilidadSeleccionada?.ejecutor }}</span></p>
+      </div>
+      <button class="btn-close-pro shadow-sm" (click)="cerrarModalDetalles()"><span class="material-icons">close</span></button>
     </div>
-
-    <div class="modal-body-pro p-4">
-      <ng-container *ngIf="!auditoriaDetalleSeleccionada?.esResumen">
-        <div class="diff-metadata bg-gray-50 rounded p-3 mb-4 d-flex justify-content-between text-sm border">
-          <span><strong>Registro:</strong> <code class="text-indigo">ofertas.oferta_laboral</code></span>
-          <span><strong>Autor:</strong> {{ auditoriaDetalleSeleccionada?.usuarioBd || 'N/A' }}</span>
-        </div>
-
-        <div class="table-responsive rounded border shadow-sm">
-          <table class="table-custom m-0">
-            <thead class="bg-light">
-            <tr>
-              <th style="width: 30%">Campo</th>
-              <th class="text-red-600 bg-red-50" style="width: 35%"><span class="material-icons text-sm">remove</span> Anterior</th>
-              <th class="text-green-600 bg-green-50" style="width: 35%"><span class="material-icons text-sm">add</span> Nuevo</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr *ngFor="let campo of getCamposModificadosList(auditoriaDetalleSeleccionada)">
-              <td class="font-medium text-gray-700">{{ campo.nombre }}</td>
-              <td class="bg-red-50 text-red-800 deletion-text" style="white-space: pre-wrap;">{{ campo.anterior }}</td>
-              <td class="bg-green-50 text-green-800 addition-text" style="white-space: pre-wrap;">{{ campo.nuevo }}</td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-      </ng-container>
-
-      <ng-container *ngIf="auditoriaDetalleSeleccionada?.esResumen">
-        <div class="action-summary-card p-4 rounded border-start border-4"
-             [ngClass]="auditoriaDetalleSeleccionada.tipoResumen === 'CREACION' ? 'border-primary bg-blue-50' : 'border-success bg-green-50'">
-
-          <div class="d-flex align-items-start">
-            <div class="summary-icon me-3 p-3 rounded-circle"
-                 [ngClass]="auditoriaDetalleSeleccionada.tipoResumen === 'CREACION' ? 'bg-primary text-white' : 'bg-success text-white'">
-              <span class="material-icons">{{ auditoriaDetalleSeleccionada.tipoResumen === 'CREACION' ? 'campaign' : 'check_circle' }}</span>
-            </div>
-
-            <div class="summary-text">
-              <p class="text-dark fs-5 mb-3 lh-sm">
-                {{ auditoriaDetalleSeleccionada.tipoResumen === 'POSTULACION' ? 'El usuario se postuló a la oferta ' : 'La oferta laboral ' }}
-                <strong class="text-indigo">"{{ auditoriaDetalleSeleccionada.tituloOferta }}"</strong>
-                {{ auditoriaDetalleSeleccionada.tipoResumen === 'POSTULACION' ? ' de la empresa ' : ' fue creada exitosamente para ' }}
-                <strong class="text-indigo">{{ auditoriaDetalleSeleccionada.empresa }}</strong>.
-              </p>
-
-              <div class="d-flex gap-2">
-                <span class="badge bg-white text-dark border shadow-sm px-3 py-2 d-flex align-items-center">
-                  <span class="material-icons text-sm me-1">event</span>
-                  {{ formatearFechaHora(auditoriaDetalleSeleccionada.fecha) }}
-                </span>
-                <span class="badge bg-white text-indigo border border-indigo shadow-sm px-3 py-2 d-flex align-items-center"
-                      *ngIf="auditoriaDetalleSeleccionada.tipoResumen === 'POSTULACION'">
-                  <span class="material-icons text-sm me-1 text-warning">auto_awesome</span>
-                  Compatibilidad Match: {{ auditoriaDetalleSeleccionada.match }}%
-                </span>
-              </div>
-            </div>
+    <div class="modal-body-pro">
+      <div class="insert-banner flex-between align-center mb-4 shadow-sm">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="icon-circle bg-white text-green-600 shadow-sm"><span class="material-icons">add_task</span></div>
+          <div>
+            <span style="display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #065f46; font-weight: 700;">{{ formatAccionOferta(trazabilidadSeleccionada?.accion) }}</span>
+            <span style="font-size: 0.95rem; color: #047857;">Registrado el {{ formatearFechaHora(trazabilidadSeleccionada?.fechaHora) }}</span>
           </div>
         </div>
-      </ng-container>
+      </div>
+      <div class="modern-table-container shadow-sm mb-2">
+        <table class="table-modern">
+          <thead>
+          <tr>
+            <th style="width: 40%"><span class="material-icons align-middle text-gray-500 mr-1" style="font-size: 1.1rem;">label</span> CAMPO</th>
+            <th style="width: 60%"><span class="material-icons align-middle text-green-600 mr-1" style="font-size: 1.1rem;">data_object</span> VALOR INGRESADO</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let item of getInsertDataList(trazabilidadSeleccionada)">
+            <td class="field-name"><span class="dot-indicator"></span> {{ item.campo }}</td>
+            <td class="field-value"><div class="value-box">{{ item.valor }}</div></td>
+          </tr>
+          <tr *ngIf="getInsertDataList(trazabilidadSeleccionada).length === 0">
+            <td colspan="2" class="text-center text-muted py-5">Sin datos detallados.</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
+    <div class="modal-footer border-top mt-4 pt-3 text-end"><button class="btn-modern-secondary" (click)="cerrarModalDetalles()">Cerrar</button></div>
+  </div>
+</div>
 
-    <div class="modal-footer border-top p-3 text-end bg-gray-50">
-      <button class="btn btn-secondary px-4" (click)="cerrarModalDetalles()">Cerrar</button>
+<div class="modal-overlay fade-in" *ngIf="mostrarModalDetalles && tipoModalDetalle === 'UPDATE'" (click)="cerrarModalDetalles()">
+  <div class="modal-pro large" (click)="$event.stopPropagation()">
+    <div class="modal-header-pro border-bottom pb-3 mb-4">
+      <div>
+        <h2 class="text-dark m-0" style="font-size: 1.4rem; font-weight: 700;">Comparación de Cambios</h2>
+        <p class="text-muted mt-2 mb-0 text-sm">Modificación realizada por <span class="badge-tabla-azul">{{ trazabilidadSeleccionada?.ejecutor }}</span></p>
+      </div>
+      <button class="btn-close-pro shadow-sm" (click)="cerrarModalDetalles()"><span class="material-icons">close</span></button>
     </div>
+    <div class="modal-body-pro">
+      <div class="update-banner flex-between align-center mb-4 shadow-sm">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="icon-circle bg-white text-blue-600 shadow-sm"><span class="material-icons">edit_note</span></div>
+          <div>
+            <span style="display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #1e3a8a; font-weight: 700;">{{ formatAccionOferta(trazabilidadSeleccionada?.accion) }}</span>
+            <span style="font-size: 0.95rem; color: #1e40af;">Actualizado el {{ formatearFechaHora(trazabilidadSeleccionada?.fechaHora) }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="modern-table-container shadow-sm mb-2">
+        <table class="table-modern">
+          <thead>
+          <tr>
+            <th style="width: 30%"><span class="material-icons align-middle text-gray-500 mr-1">label</span> CAMPO</th>
+            <th style="width: 35%"><span class="material-icons align-middle text-gray-400 mr-1">history</span> ANTERIOR</th>
+            <th style="width: 35%"><span class="material-icons align-middle text-blue-600 mr-1">edit</span> NUEVO</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let campo of getUpdateDataList(trazabilidadSeleccionada)">
+            <td class="field-name"><span class="dot-indicator bg-blue-400"></span> {{ campo.nombre }}</td>
+            <td class="field-value"><div class="value-box-old">{{ campo.anterior }}</div></td>
+            <td class="field-value"><div class="value-box-new">{{ campo.nuevo }}</div></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer border-top mt-4 pt-3 text-end"><button class="btn-modern-secondary" (click)="cerrarModalDetalles()">Cerrar</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay fade-in" *ngIf="mostrarModalDetalles && tipoModalDetalle === 'DELETE'" (click)="cerrarModalDetalles()">
+  <div class="modal-pro medium" (click)="$event.stopPropagation()">
+    <div class="modal-header-pro border-bottom pb-3 mb-4">
+      <div>
+        <h2 class="text-dark m-0" style="font-size: 1.4rem; font-weight: 700;">Datos Eliminados/Retirados</h2>
+        <p class="text-muted mt-2 mb-0 text-sm">Acción ejecutada por <span class="badge-tabla-roja">{{ trazabilidadSeleccionada?.ejecutor }}</span></p>
+      </div>
+      <button class="btn-close-pro shadow-sm" (click)="cerrarModalDetalles()"><span class="material-icons">close</span></button>
+    </div>
+    <div class="modal-body-pro">
+      <div class="delete-banner flex-between align-center mb-4 shadow-sm">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="icon-circle bg-white text-red-600 shadow-sm"><span class="material-icons">delete_forever</span></div>
+          <div>
+            <span style="display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #991b1b; font-weight: 700;">{{ formatAccionOferta(trazabilidadSeleccionada?.accion) }}</span>
+            <span style="font-size: 0.95rem; color: #7f1d1d;">Eliminado el {{ formatearFechaHora(trazabilidadSeleccionada?.fechaHora) }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="modern-table-container shadow-sm mb-2">
+        <table class="table-modern">
+          <thead>
+          <tr>
+            <th style="width: 40%"><span class="material-icons align-middle text-gray-500 mr-1">label</span> CAMPO</th>
+            <th style="width: 60%"><span class="material-icons align-middle text-red-600 mr-1">data_object</span> VALOR ANTERIOR</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let item of getDeleteDataList(trazabilidadSeleccionada)">
+            <td class="field-name"><span class="dot-indicator bg-red-300"></span> {{ item.campo }}</td>
+            <td class="field-value"><div class="value-box-delete">{{ item.valor }}</div></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer border-top mt-4 pt-3 text-end"><button class="btn-modern-secondary" (click)="cerrarModalDetalles()">Cerrar</button></div>
   </div>
 </div>
