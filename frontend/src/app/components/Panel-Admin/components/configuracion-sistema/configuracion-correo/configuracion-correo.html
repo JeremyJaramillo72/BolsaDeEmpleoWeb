@@ -1,240 +1,238 @@
-<div class="config-container">
-  <!-- Header -->
-  <div class="header-section">
-    <div class="header-content">
-      <h1>⚙️ Configuración de Correo</h1>
-      <p class="subtitle">Gestiona la configuración SMTP y audita los cambios realizados</p>
-    </div>
+<!-- configuracion-correo.html -->
+<div class="config-module fade-in">
+  <div style="margin-bottom: 2rem;">
+    <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">Configuración de Correo</h1>
+    <p style="color: var(--text-muted); margin: 0; font-size: 1rem;">Gestiona la configuración SMTP y audita los cambios del sistema.</p>
   </div>
 
-  <!-- Loading -->
   <div *ngIf="cargando" class="loading-state">
-    <div class="spinner"></div>
-    <p>Cargando configuración...</p>
+    <span class="material-icons text-indigo icon-spin" style="font-size: 3rem;">sync</span>
+    <p style="margin-top: 1rem; font-weight: 700; color: var(--text-muted);">Cargando configuración...</p>
   </div>
 
-  <!-- Contenido Principal -->
-  <div *ngIf="!cargando && configuracion" class="content-wrapper">
-
-    <!-- Sección 1: Información Actual -->
-    <div class="card-section">
-      <div class="card-header">
-        <h2>📧 Configuración Actual</h2>
+  <ng-container *ngIf="!cargando && configuracion">
+    <!-- Tarjeta 1: Configuración Actual -->
+    <div class="pro-card card-info">
+      <div class="card-header-flex card-header-clickable" (click)="toggleSection('config')">
+        <div class="title-group">
+          <div class="icon-container bg-cyan-light text-cyan">
+            <span class="material-icons icon-large">mark_email_read</span>
+          </div>
+          <div>
+            <h2 class="text-cyan-dark">Configuración Actual</h2>
+            <p class="subtitle-text">Datos activos en el sistema para el envío de notificaciones.</p>
+          </div>
+        </div>
+        <span class="material-icons text-muted">
+          {{ openSection === 'config' ? 'expand_less' : 'expand_more' }}
+        </span>
       </div>
-      <div class="card-body">
+
+      <div *ngIf="openSection === 'config'">
         <div class="info-row">
           <label>Correo Remitente (FROM):</label>
           <div class="info-value">{{ configuracion.valor }}</div>
         </div>
         <div class="info-row">
-          <label>Estado:</label>
-          <div class="badge-activo">{{ configuracion.activo ? '✅ Activo' : '❌ Inactivo' }}</div>
+          <label>Estado del Servicio:</label>
+          <div class="badge-activo">
+            <span class="material-icons" style="font-size: 16px;">{{ configuracion.activo ? 'check_circle' : 'cancel' }}</span>
+            {{ configuracion.activo ? 'Activo y Operativo' : 'Inactivo' }}
+          </div>
         </div>
         <div class="info-row">
           <label>Última Modificación:</label>
-          <div class="info-value">{{ formatearFecha(configuracion.fechaModificacion) }}</div>
-        </div>
-        <div class="info-note">
-          <strong>ℹ️ Nota:</strong> La configuración SMTP (host, puerto, usuario y contraseña) puede modificarse desde la sección "Configuración SMTP Avanzada" más abajo.
+          <div style="color: var(--text-muted); font-weight: 600;">{{ formatearFecha(configuracion.fechaModificacion) }}</div>
         </div>
       </div>
     </div>
 
-    <!-- Sección 2: Prueba de Correo -->
-    <div class="card-section">
-      <div class="card-header">
-        <h2>🧪 Probar Correo</h2>
-      </div>
-      <div class="card-body">
-        <p class="section-desc">Envía un correo de prueba antes de guardar cambios:</p>
-
-        <div class="form-group">
-          <label>Dirección a Probar:</label>
-          <div class="input-group">
-            <input
-              type="email"
-              [(ngModel)]="correoParaPrueba"
-              placeholder="correo@ejemplo.com"
-              [disabled]="enviandoPrueba"
-              class="input-field">
-            <button
-              (click)="probarCorreo()"
-              [disabled]="enviandoPrueba"
-              class="btn btn-prueba">
-              {{ enviandoPrueba ? 'Enviando...' : '📬 Enviar Prueba' }}
-            </button>
+    <!-- Tarjeta 2: Probar Conexión -->
+    <div class="pro-card card-success">
+      <div class="card-header-flex card-header-clickable" (click)="toggleSection('test')">
+        <div class="title-group">
+          <div class="icon-container bg-green-light text-green">
+            <span class="material-icons icon-large">science</span>
+          </div>
+          <div>
+            <h2 class="text-green-dark">Probar Conexión</h2>
+            <p class="subtitle-text">Verifica que las credenciales funcionen enviando un correo de prueba.</p>
           </div>
         </div>
+        <span class="material-icons text-muted">
+          {{ openSection === 'test' ? 'expand_less' : 'expand_more' }}
+        </span>
+      </div>
 
-        <!-- Mensaje de respuesta -->
-        <div *ngIf="mensajePrueba" [ngClass]="'message-' + tipoPrueba" class="message-box">
+      <div *ngIf="openSection === 'test'">
+        <div *ngIf="mensajePrueba" class="alert" [ngClass]="tipoPrueba === 'exito' ? 'alert-success' : 'alert-error'">
+          <span class="material-icons">{{ tipoPrueba === 'exito' ? 'check_circle' : 'error' }}</span>
           {{ mensajePrueba }}
         </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label>Dirección de destino para la prueba:</label>
+          <div class="input-wrapper" style="display: flex; gap: 1rem;">
+            <div style="position: relative; flex: 1;">
+              <span class="material-icons input-icon text-green" style="top: 12px;">forward_to_inbox</span>
+              <input type="email" [(ngModel)]="correoParaPrueba" placeholder="usuario@ejemplo.com" [disabled]="enviandoPrueba" class="form-control">
+            </div>
+            <button (click)="probarCorreo()" [disabled]="enviandoPrueba" class="btn-success">
+              <span class="material-icons" [class.icon-spin]="enviandoPrueba">{{ enviandoPrueba ? 'sync' : 'send' }}</span>
+              {{ enviandoPrueba ? 'Enviando...' : 'Enviar Prueba' }}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Sección 3: Configuración de Email y Credenciales -->
-    <div class="card-section">
-      <div class="card-header">
-        <h2>⚙️ Configuración de Email</h2>
+    <!-- Tarjeta 3: Actualizar Credenciales SMTP -->
+    <div class="pro-card card-primary">
+      <div class="card-header-flex card-header-clickable" (click)="toggleSection('update')">
+        <div class="title-group">
+          <div class="icon-container bg-indigo-light text-indigo">
+            <span class="material-icons icon-large">manage_accounts</span>
+          </div>
+          <div>
+            <h2 class="text-indigo-dark">Actualizar Credenciales SMTP</h2>
+            <p class="subtitle-text">Modifica el correo base y el token de aplicación de Google.</p>
+          </div>
+        </div>
+        <span class="material-icons text-muted">
+          {{ openSection === 'update' ? 'expand_less' : 'expand_more' }}
+        </span>
       </div>
-      <div class="card-body">
-        <p class="section-desc">Configura el email de la bolsa y su credencial de autenticación:</p>
 
-        <!-- Mensajes -->
-        <div *ngIf="mensajeExito" class="message-exito">
-          {{ mensajeExito }}
+      <div *ngIf="openSection === 'update'">
+        <div *ngIf="mensajeExito" class="alert alert-success">
+          <span class="material-icons">check_circle</span> {{ mensajeExito }}
         </div>
-        <div *ngIf="mensajeError" class="message-error">
-          {{ mensajeError }}
+        <div *ngIf="mensajeError" class="alert alert-error">
+          <span class="material-icons">error</span> {{ mensajeError }}
         </div>
 
-        <!-- Grid de formulario -->
         <div class="smtp-grid">
-          <!-- Email de la Bolsa -->
-          <div class="form-group form-group-full">
-            <label>📧 Email de la Bolsa (Educativo/Gmail) *</label>
-            <input
-              type="email"
-              [(ngModel)]="correoNuevo"
-              placeholder="bolsa@universida.edu.ec"
-              [disabled]="guardando"
-              class="input-field">
-            <div class="input-helper">
-              Email desde el que se enviarán las notificaciones
+          <div class="form-group">
+            <label>Email de la Bolsa (Remitente)</label>
+            <div class="input-wrapper">
+              <span class="material-icons input-icon text-indigo">alternate_email</span>
+              <input type="email" [(ngModel)]="correoNuevo" placeholder="bolsa@universidad.edu.ec" [disabled]="guardando" class="form-control">
             </div>
           </div>
 
-          <!-- Contraseña/Token -->
-          <div class="form-group form-group-full">
-            <label>🔐 Contraseña/Token de Aplicación *</label>
-            <div class="password-input-group">
-              <input
-                [type]="mostrarPassword ? 'text' : 'password'"
-                [(ngModel)]="smtpPassword"
-                placeholder="●●●●●●●●"
-                [disabled]="guardando"
-                class="input-field">
-              <button
-                type="button"
-                (click)="toggleMostrarPassword()"
-                [disabled]="guardando"
-                class="btn-toggle-password">
-                {{ mostrarPassword ? '👁️ Ocultar' : '👁️ Mostrar' }}
+          <div class="form-group">
+            <label>Token de Aplicación (App Password)</label>
+            <div class="input-wrapper" style="gap: 8px;">
+              <div style="position: relative; flex: 1;">
+                <span class="material-icons input-icon text-indigo" style="top: 12px;">key</span>
+                <input [type]="mostrarPassword ? 'text' : 'password'" [(ngModel)]="smtpPassword" placeholder="●●●●●●●●●●●●●●●●" [disabled]="guardando" class="form-control">
+              </div>
+              <button type="button" (click)="toggleMostrarPassword()" [disabled]="guardando" class="btn-outline" style="padding: 0 1rem; width: auto;" title="Mostrar/Ocultar">
+                <span class="material-icons">{{ mostrarPassword ? 'visibility_off' : 'visibility' }}</span>
               </button>
             </div>
-            <div class="input-helper">
-              Para Gmail: genera un "App Password" en tu cuenta
-            </div>
           </div>
         </div>
 
-        <!-- Información -->
-        <div class="info-section">
-          <!-- Info Box 1: Google App Password -->
-          <div class="info-box">
-            <button
-              type="button"
-              class="info-box-header"
-              (click)="toggleInfoBox('appPassword')">
-              <span class="info-icon">❓</span>
-              <span class="info-title">Cómo generar Google App Password</span>
-              <span class="info-toggle">{{ infoBoxes['appPassword'] ? '▼' : '▶' }}</span>
-            </button>
-            <div *ngIf="infoBoxes['appPassword']" class="info-box-content">
-              <ol class="steps-list">
-                <li>Ve a <a href="https://myaccount.google.com/apppasswords" target="_blank" class="link-btn">Google App Passwords →</a></li>
-                <li>Selecciona: <strong>Mail</strong> → <strong>Windows Computer</strong></li>
-                <li>Gmail generará 16 caracteres (sin espacios)</li>
-                <li>Cópialo y pégalo en el campo "Contraseña/Token" de arriba</li>
-              </ol>
-            </div>
-          </div>
-        </div>
-
-        <!-- Botones -->
-        <div class="action-buttons">
-          <button
-            (click)="guardarCambios()"
-            [disabled]="guardando || !validarCorreo(correoNuevo)"
-            class="btn btn-guardar">
-            {{ guardando ? '💾 Guardando...' : '💾 Guardar Cambios' }}
+        <div class="info-box">
+          <button type="button" class="info-box-header" (click)="toggleAyudaToken()">
+            <span style="display: flex; align-items: center; gap: 8px;">
+              <span class="material-icons text-indigo">help_outline</span> ¿Cómo generar el Token de Gmail?
+            </span>
+            <span class="material-icons text-muted">{{ mostrarAyudaToken ? 'expand_less' : 'expand_more' }}</span>
           </button>
-          <button
-            (click)="correoNuevo = configuracion!.valor; smtpPassword = ''"
-            [disabled]="guardando"
-            class="btn btn-cancelar">
-            ↺ Cancelar
+
+          <div *ngIf="mostrarAyudaToken" class="info-box-content">
+            <ol style="margin: 0; padding-left: 1.5rem; display: flex; flex-direction: column; gap: 10px;">
+              <li>Ve a <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color: var(--primary); font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; background: var(--primary-light); padding: 2px 8px; border-radius: 6px; transition: background 0.2s;">Google App Passwords <span class="material-icons" style="font-size: 14px;">open_in_new</span></a></li>
+              <li>Si te lo pide, inicia sesión en tu cuenta de Google.</li>
+              <li>En la lista desplegable, selecciona <strong>Mail</strong> y tu dispositivo.</li>
+              <li>Haz clic en "Generar". Copia las 16 letras (sin espacios) y pégalas en el campo de arriba.</li>
+            </ol>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+          <button (click)="guardarCambios()" [disabled]="guardando || !validarCorreo(correoNuevo)" class="btn-primary">
+            <span class="material-icons" [class.icon-spin]="guardando">{{ guardando ? 'sync' : 'save' }}</span>
+            {{ guardando ? 'Guardando...' : 'Guardar Cambios' }}
+          </button>
+          <button (click)="correoNuevo = configuracion.valor; smtpPassword = ''" [disabled]="guardando" class="btn-outline">
+            <span class="material-icons">undo</span> Cancelar
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Sección 4: Historial de Cambios (Timeline) -->
-    <div class="card-section">
-      <div class="card-header">
-        <h2>📊 Historial de Cambios</h2>
+    <!-- Tarjeta 4: Registro de Auditoría -->
+    <div class="pro-card card-info">
+      <div class="card-header-flex card-header-clickable" (click)="toggleSection('history')">
+        <div class="title-group">
+          <div class="icon-container bg-cyan-light text-cyan">
+            <span class="material-icons icon-large">history</span>
+          </div>
+          <div>
+            <h2 class="text-cyan-dark">Registro de Auditoría</h2>
+            <p class="subtitle-text">Historial de todas las modificaciones realizadas a la configuración.</p>
+          </div>
+        </div>
+        <span class="material-icons text-muted">
+          {{ openSection === 'history' ? 'expand_less' : 'expand_more' }}
+        </span>
       </div>
-      <div class="card-body">
-        <p class="section-desc">Línea de tiempo de todos los cambios de configuración realizados:</p>
 
-        <div *ngIf="historial.length === 0" class="empty-state">
-          <p>🔓 Sin cambios registrados aún</p>
+      <div *ngIf="openSection === 'history'">
+        <div *ngIf="historial.length === 0" style="text-align: center; padding: 3rem; color: var(--text-muted); font-weight: 600;">
+          <span class="material-icons" style="font-size: 3rem; opacity: 0.5;">history_toggle_off</span>
+          <p>Aún no hay registros de cambios en el sistema.</p>
         </div>
 
         <div *ngIf="historial.length > 0" class="timeline">
-          <div
-            *ngFor="let item of historial; let i = index"
-            class="timeline-item"
-            [ngClass]="{'item-exitoso': item.exitoso, 'item-error': !item.exitoso}">
-
-            <!-- Indicador visual -->
-            <div class="timeline-marker" [style.border-left-color]="getStatusColor(item.exitoso)">
-              <div class="marker-dot" [style.background-color]="getStatusColor(item.exitoso)"></div>
+          <div *ngFor="let item of historial" class="timeline-item">
+            <div class="timeline-icon-wrap">
+              <div class="timeline-dot" [ngClass]="item.exitoso ? 'dot-success' : 'dot-error'">
+                <span class="material-icons">{{ item.exitoso ? 'check' : 'close' }}</span>
+              </div>
             </div>
 
-            <!-- Contenido -->
             <div class="timeline-content">
               <div class="timeline-header">
-                <div class="status-badge" [style.background-color]="item.exitoso ? '#d1fae5' : '#fee2e2'">
-                  {{ getStatusIcon(item.exitoso) }} {{ item.accion }}
+                <div class="timeline-title">
+                  {{ item.accion }}
                 </div>
-                <span class="fecha-pequeña">{{ formatearFecha(item.fechaCreacion) }}</span>
+                <div class="timeline-date">{{ formatearFecha(item.fechaCreacion) }}</div>
               </div>
 
-              <div class="timeline-body">
-                <p class="admin-info">
-                  <strong>Admin:</strong> {{ item.adminNombre }}
-                  <span class="email-small">({{ item.adminEmail }})</span>
-                </p>
+              <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px;">
+                Modificado por: <strong style="color: var(--text-main);">{{ item.adminNombre }}</strong> ({{ item.adminEmail }})
+              </div>
 
-                <div class="cambio-valores">
-                  <div class="valor-anterior">
-                    <strong>Anterior:</strong>
-                    <code>{{ item.valorAnterior }}</code>
-                  </div>
-                  <div class="flecha">→</div>
-                  <div class="valor-nuevo">
-                    <strong>Nuevo:</strong>
-                    <code>{{ item.valorNuevo }}</code>
-                  </div>
+              <div class="cambio-valores">
+                <div class="valor-caja">
+                  <strong>Anterior:</strong>
+                  <code>{{ item.valorAnterior || 'N/A' }}</code>
                 </div>
+                <div class="flecha"><span class="material-icons">arrow_forward</span></div>
+                <div class="valor-caja">
+                  <strong>Nuevo:</strong>
+                  <code>{{ item.valorNuevo }}</code>
+                </div>
+              </div>
 
-                <!-- Detalles expandibles -->
-                <div *ngIf="item.ipAddress || item.detalleError" class="timeline-details">
-                  <button
-                    class="btn-expandir"
-                    (click)="toggleHistorial(item.idHistorial)">
-                    {{ expandidoHistorial[item.idHistorial] ? '▼' : '▶' }} Detalles
-                  </button>
+              <div *ngIf="item.ipAddress || item.detalleError">
+                <button class="btn-expandir" (click)="toggleHistorial(item.idHistorial)">
+                  {{ historialActivo === item.idHistorial ? 'Ocultar Detalles' : 'Ver Detalles Técnicos' }}
+                  <span class="material-icons" style="font-size: 18px;">
+                    {{ historialActivo === item.idHistorial ? 'expand_less' : 'expand_more' }}
+                  </span>
+                </button>
 
-                  <div *ngIf="expandidoHistorial[item.idHistorial]" class="details-expanded">
-                    <div *ngIf="item.ipAddress" class="detail-item">
-                      <strong>IP Address:</strong> {{ item.ipAddress }}
-                    </div>
-                    <div *ngIf="item.detalleError" class="detail-item error-detail">
-                      <strong>Error:</strong> {{ item.detalleError }}
-                    </div>
+                <div *ngIf="historialActivo === item.idHistorial" class="details-expanded">
+                  <div *ngIf="item.ipAddress" style="margin-bottom: 5px;">
+                    <strong>IP de Origen:</strong> {{ item.ipAddress }}
+                  </div>
+                  <div *ngIf="item.detalleError" style="color: var(--danger);">
+                    <strong>Motivo de Fallo:</strong> {{ item.detalleError }}
                   </div>
                 </div>
               </div>
@@ -243,6 +241,5 @@
         </div>
       </div>
     </div>
-
-  </div>
+  </ng-container>
 </div>

@@ -51,6 +51,11 @@ export class PlantillaNotificacionComponent implements OnInit {
   mensajeError: string = '';
   expandidoHistorial: { [key: number]: boolean } = {};
 
+  mostrarSeccionPlantillas: boolean = true; // Inicia abierta
+  mostrarSeccionEditar: boolean = false;    // Inicia cerrada
+  mostrarSeccionHistorial: boolean = false; // Inicia cerrada
+  currentPage: number = 1;
+  itemsPerPage: number = 5;
   constructor(
     private plantillaService: PlantillaNotificacionService,
     private cdr: ChangeDetectorRef
@@ -89,10 +94,13 @@ export class PlantillaNotificacionComponent implements OnInit {
 
     this.mensajeExito = '';
     this.mensajeError = '';
+    this.mostrarSeccionEditar = true;
+    this.mostrarSeccionHistorial = true;
     this.cargarHistorial();
 
     setTimeout(() => this.renderizarEditor(), 50);
   }
+
 
   // Convierte el texto plano con variables en HTML con spans de colores
   // Convierte el texto plano con variables en HTML con spans de colores y estilos
@@ -110,6 +118,29 @@ export class PlantillaNotificacionComponent implements OnInit {
 
   }
 
+
+  // --- LÓGICA DE PAGINACIÓN ---
+  get plantillasPaginadas() {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    return this.plantillas.slice(startIndex, startIndex + this.itemsPerPage);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.plantillas.length / this.itemsPerPage);
+  }
+
+  irPrimeraPagina() { this.currentPage = 1; }
+  irUltimaPagina() { this.currentPage = this.totalPages; }
+  paginaAnterior() { if (this.currentPage > 1) this.currentPage--; }
+  paginaSiguiente() { if (this.currentPage < this.totalPages) this.currentPage++; }
+
+
+
+  toggleSeccion(seccion: 'plantillas' | 'editar' | 'historial'): void {
+    if (seccion === 'plantillas') this.mostrarSeccionPlantillas = !this.mostrarSeccionPlantillas;
+    if (seccion === 'editar') this.mostrarSeccionEditar = !this.mostrarSeccionEditar;
+    if (seccion === 'historial') this.mostrarSeccionHistorial = !this.mostrarSeccionHistorial;
+  }
   renderizarEditor(): void {
     if (!this.editorRef) return;
     const el = this.editorRef.nativeElement;
@@ -239,4 +270,6 @@ export class PlantillaNotificacionComponent implements OnInit {
       return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
     }
   }
+
+
 }

@@ -1,70 +1,91 @@
 <div class="plantilla-container">
-  <!-- Loading -->
   <div *ngIf="cargando" class="loading-state">
     <div class="spinner"></div>
     <p>Cargando plantillas...</p>
   </div>
 
-  <!-- Contenido Principal -->
   <div *ngIf="!cargando && plantillas.length > 0" class="content-wrapper">
 
-    <!-- Sección 1: Selección de Plantilla -->
     <div class="card-section">
-      <div class="card-header">
-        <h2>📋 Plantillas Disponibles</h2>
-      </div>
-      <div class="card-body">
-        <div class="plantillas-grid">
-          <button
-            *ngFor="let plantilla of plantillas"
-            class="plantilla-card"
-            [class.active]="plantillaSeleccionada?.idPlantilla === plantilla.idPlantilla"
-            (click)="seleccionarPlantilla(plantilla)">
-            <div class="plantilla-tipo">{{ plantilla.tipo }}</div>
-            <div class="plantilla-titulo">{{ plantilla.titulo }}</div>
-            <div class="plantilla-fecha">{{ formatearFecha(plantilla.fechaModificacion) }}</div>
-          </button>
+      <button type="button" class="card-header-toggle" (click)="toggleSeccion('plantillas')">
+        <div class="header-title-group">
+          <h2>📋 Plantillas Disponibles</h2>
+        </div>
+        <span class="material-icons text-muted">{{ mostrarSeccionPlantillas ? 'expand_less' : 'expand_more' }}</span>
+      </button>
+
+      <div class="card-body" *ngIf="mostrarSeccionPlantillas">
+        <div class="table-responsive">
+          <table class="pro-table">
+            <thead>
+            <tr>
+              <th>Tipo de Correo</th>
+              <th>Título / Asunto</th>
+              <th>Última Modificación</th>
+              <th style="text-align: right;">Acción</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let plantilla of plantillasPaginadas"
+                [class.active-row]="plantillaSeleccionada?.idPlantilla === plantilla.idPlantilla"
+                (click)="seleccionarPlantilla(plantilla)">
+              <td>
+                <span class="badge-tipo">{{ plantilla.tipo }}</span>
+              </td>
+              <td class="td-titulo">{{ plantilla.titulo }}</td>
+              <td class="td-fecha">{{ formatearFecha(plantilla.fechaModificacion) }}</td>
+              <td style="text-align: right;">
+                <button class="btn-table-action" [class.btn-active]="plantillaSeleccionada?.idPlantilla === plantilla.idPlantilla">
+                  {{ plantillaSeleccionada?.idPlantilla === plantilla.idPlantilla ? 'Editando...' : 'Editar' }}
+                  <span class="material-icons" style="font-size: 16px;">
+                      {{ plantillaSeleccionada?.idPlantilla === plantilla.idPlantilla ? 'edit' : 'chevron_right' }}
+                    </span>
+                </button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+
+          <div class="pagination-container" *ngIf="plantillas.length > 0">
+            <div class="pagination-info">
+              Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} -
+              {{ (currentPage * itemsPerPage) > plantillas.length ? plantillas.length : (currentPage * itemsPerPage) }}
+              de {{ plantillas.length }}
+            </div>
+
+            <div class="pagination-controls">
+              <button class="btn-page" [disabled]="currentPage === 1" (click)="irPrimeraPagina()">|&lt;</button>
+              <button class="btn-page" [disabled]="currentPage === 1" (click)="paginaAnterior()">&lt;</button>
+
+              <button class="btn-page active">{{ currentPage }}</button>
+
+              <button class="btn-page" [disabled]="currentPage === totalPages" (click)="paginaSiguiente()">&gt;</button>
+              <button class="btn-page" [disabled]="currentPage === totalPages" (click)="irUltimaPagina()">&gt;|</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Sección 2: Editor de Plantilla -->
     <div *ngIf="plantillaSeleccionada" class="card-section">
-      <div class="card-header">
-        <h2>✏️ Editar Plantilla</h2>
-      </div>
-      <div class="card-body">
-
-        <!-- Mensajes -->
-        <div *ngIf="mensajeExito" class="message-exito">
-          {{ mensajeExito }}
+      <button type="button" class="card-header-toggle" (click)="toggleSeccion('editar')">
+        <div class="header-title-group">
+          <h2>✏️ Editar Plantilla: <span style="color: var(--primary); font-weight: 600;">{{ plantillaSeleccionada.tipo }}</span></h2>
         </div>
-        <div *ngIf="mensajeError" class="message-error">
-          {{ mensajeError }}
-        </div>
+        <span class="material-icons text-muted">{{ mostrarSeccionEditar ? 'expand_less' : 'expand_more' }}</span>
+      </button>
 
-        <!-- Tipo de plantilla (read-only) -->
+      <div class="card-body" *ngIf="mostrarSeccionEditar">
+        <div *ngIf="mensajeExito" class="message-exito">{{ mensajeExito }}</div>
+        <div *ngIf="mensajeError" class="message-error">{{ mensajeError }}</div>
+
         <div class="form-group">
-          <label>Tipo:</label>
-          <div class="info-value">{{ plantillaSeleccionada.tipo }}</div>
+          <label>Asunto del Correo (Título):</label>
+          <input type="text" [(ngModel)]="tituloEditado" [disabled]="guardando" class="input-field" placeholder="Título de la plantilla">
         </div>
 
-        <!-- Título -->
         <div class="form-group">
-          <label>Título:</label>
-          <input
-            type="text"
-            [(ngModel)]="tituloEditado"
-            [disabled]="guardando"
-            class="input-field"
-            placeholder="Título de la plantilla">
-        </div>
-
-        <!-- Contenido -->
-        <!-- Contenido -->
-        <div class="form-group">
-          <label>Contenido:</label>
-
+          <label>Cuerpo del Correo (Contenido):</label>
           <div class="variables-protegidas" *ngIf="variablesProtegidas.length > 0">
             <span class="variables-label">⚠️ Variables detectadas que NO debes borrar:</span>
             <div class="chips-container">
@@ -73,72 +94,54 @@
           </div>
 
           <div class="editor-wrapper">
-            <div
-              #editorRef
-              class="contenido-editor"
-              [class.disabled]="guardando"
-              [attr.contenteditable]="!guardando">
-            </div>
+            <div #editorRef class="contenido-editor" [class.disabled]="guardando" [attr.contenteditable]="!guardando"></div>
           </div>
-
           <div class="input-helper-restriccion">
             🔒 Las variables entre llaves son obligatorias. Solo edita el texto a su alrededor.
           </div>
         </div>
 
-        <!-- Botones de acción -->
         <div class="action-buttons">
-          <button
-            (click)="guardarCambios()"
-            [disabled]="guardando"
-            class="btn btn-guardar">
+          <button (click)="guardarCambios()" [disabled]="guardando" class="btn btn-guardar">
             {{ guardando ? '💾 Guardando...' : '💾 Guardar Cambios' }}
           </button>
-          <button
-            (click)="cancelarCambios()"
-            [disabled]="guardando"
-            class="btn btn-cancelar">
-            ↺ Cancelar
+          <button (click)="cancelarCambios()" [disabled]="guardando" class="btn btn-cancelar">
+            ↺ Deshacer Cambios
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Sección 3: Historial de Cambios -->
     <div *ngIf="plantillaSeleccionada" class="card-section">
-      <div class="card-header">
-        <h2>📊 Historial de Cambios</h2>
-      </div>
-      <div class="card-body">
+      <button type="button" class="card-header-toggle" (click)="toggleSeccion('historial')">
+        <div class="header-title-group">
+          <h2>📊 Historial de Cambios</h2>
+        </div>
+        <span class="material-icons text-muted">{{ mostrarSeccionHistorial ? 'expand_less' : 'expand_more' }}</span>
+      </button>
+
+      <div class="card-body" *ngIf="mostrarSeccionHistorial">
         <p class="section-desc">Línea de tiempo de todos los cambios realizados a esta plantilla:</p>
 
         <div *ngIf="historial.length === 0" class="empty-state">
-          <p>🔓 Sin cambios registrados aún</p>
+          <span class="material-icons" style="font-size: 3rem; opacity: 0.5;">history_toggle_off</span>
+          <p>Sin cambios registrados aún</p>
         </div>
 
         <div *ngIf="historial.length > 0" class="timeline">
-          <div
-            *ngFor="let item of historial; let i = index"
-            class="timeline-item">
-
+          <div *ngFor="let item of historial; let i = index" class="timeline-item">
             <div class="timeline-marker">
               <div class="marker-dot"></div>
             </div>
-
             <div class="timeline-content">
               <div class="timeline-header">
-                <div class="status-badge">
-                  ✅ {{ item.accion }}
-                </div>
+                <div class="status-badge">✅ {{ item.accion }}</div>
                 <span class="fecha-pequeña">{{ formatearFecha(item.fechaCreacion) }}</span>
               </div>
-
               <div class="timeline-body">
                 <p class="admin-info">
-                  <strong>Admin:</strong> {{ item.adminNombre }}
-                  <span class="email-small">({{ item.adminEmail }})</span>
+                  <strong>Admin:</strong> {{ item.adminNombre }} <span class="email-small">({{ item.adminEmail }})</span>
                 </p>
-
                 <div *ngIf="item.tituloAnterior || item.contenidoAnterior" class="cambios-list">
                   <div *ngIf="item.tituloAnterior && item.tituloNuevo" class="cambio-item">
                     <strong>Título:</strong>
@@ -148,28 +151,6 @@
                       <div class="valor-nuevo"><code>{{ item.tituloNuevo }}</code></div>
                     </div>
                   </div>
-
-                  <div *ngIf="item.contenidoAnterior && item.contenidoNuevo" class="cambio-item">
-                    <strong>Contenido:</strong>
-                    <div class="cambio-valores">
-                      <div class="valor-anterior"><code>{{ item.contenidoAnterior }}</code></div>
-                      <div class="flecha">→</div>
-                      <div class="valor-nuevo"><code>{{ item.contenidoNuevo }}</code></div>
-                    </div>
-                  </div>
-                </div>
-
-                <div *ngIf="item.ipAddress" class="timeline-details">
-                  <button
-                    class="btn-expandir"
-                    (click)="toggleHistorial(item.idHistorial)">
-                    {{ expandidoHistorial[item.idHistorial] ? '▼' : '▶' }} Detalles
-                  </button>
-                  <div *ngIf="expandidoHistorial[item.idHistorial]" class="details-expanded">
-                    <div class="detail-item">
-                      <strong>IP Address:</strong> {{ item.ipAddress }}
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -180,7 +161,6 @@
 
   </div>
 
-  <!-- Sin plantillas -->
   <div *ngIf="!cargando && plantillas.length === 0" class="empty-state">
     <p>No hay plantillas disponibles</p>
   </div>

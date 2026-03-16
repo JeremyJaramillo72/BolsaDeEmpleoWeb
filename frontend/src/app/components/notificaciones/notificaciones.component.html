@@ -1,80 +1,66 @@
 <div class="notificaciones-container">
-  <!-- Header -->
   <div class="notificaciones-header">
-    <div>
-      <h1>📬 Historial de Notificaciones</h1>
-      <p class="subtitle">Todas tus alertas y actividades (Sin límite de tiempo)</p>
+    <div class="header-text">
+      <h1>
+        <div class="header-icon-container">
+          <span class="material-icons">notifications_active</span>
+        </div>
+        Historial de Notificaciones
+      </h1>
+      <p class="subtitle">Gestiona todas tus alertas y novedades al instante.</p>
     </div>
     <button
       class="btn-marcar-todas"
       (click)="marcarTodasComoLeidas()"
       [disabled]="obtenerConteoBadge('noLeidas') === 0">
-      ✓ Marcar todas como leídas
+      <span class="material-icons">done_all</span> Marcar todas como leídas
     </button>
   </div>
 
-  <!-- Filtros por Estado -->
   <div class="filtros-section">
     <div class="filtro-group">
       <span class="filtro-label">Estado:</span>
-      <button
-        class="filtro-btn"
-        [class.activo]="filtroActivo === 'todas'"
-        (click)="filtroActivo = 'todas'">
+      <button class="filtro-btn" [class.activo]="filtroActivo === 'todas'" (click)="filtroActivo = 'todas'">
         Todas ({{ notificaciones.length }})
       </button>
-      <button
-        class="filtro-btn"
-        [class.activo]="filtroActivo === 'noLeidas'"
-        (click)="filtroActivo = 'noLeidas'">
-        No leídas <span class="badge-rojo">{{ obtenerConteoBadge('noLeidas') }}</span>
+      <button class="filtro-btn" [class.activo]="filtroActivo === 'noLeidas'" (click)="filtroActivo = 'noLeidas'">
+        No leídas <span class="badge-contador" *ngIf="obtenerConteoBadge('noLeidas') > 0">{{ obtenerConteoBadge('noLeidas') }}</span>
       </button>
-      <button
-        class="filtro-btn"
-        [class.activo]="filtroActivo === 'leidas'"
-        (click)="filtroActivo = 'leidas'">
+      <button class="filtro-btn" [class.activo]="filtroActivo === 'leidas'" (click)="filtroActivo = 'leidas'">
         Leídas ({{ obtenerConteoBadge('leidas') }})
       </button>
     </div>
 
-    <!-- Filtros por Tipo -->
     <div class="filtro-group" *ngIf="tiposDisponibles.length > 0">
       <span class="filtro-label">Tipo:</span>
-      <button
-        class="filtro-btn tipo-btn"
-        [class.activo]="filtroTipo === 'todas'"
-        (click)="filtroTipo = 'todas'">
+      <button class="filtro-btn tipo-btn" [class.activo]="filtroTipo === 'todas'" (click)="filtroTipo = 'todas'">
         Todos
       </button>
       <button
         *ngFor="let tipo of tiposDisponibles"
         class="filtro-btn tipo-btn"
         [class.activo]="filtroTipo === tipo"
-        (click)="filtroTipo = tipo"
-        [title]="tipo">
-        {{ tipo }}
-      </button>
+        (click)="filtroTipo = tipo">
+        {{ formatTipo(tipo) }} </button>
     </div>
   </div>
 
-  <!-- Contenido -->
   <div class="notificaciones-content">
-    <!-- Sin notificaciones en el resultado actual -->
-    <div *ngIf="notificaciones.length === 0" class="sin-notificaciones">
-      <div class="icono-vacio">📬</div>
-      <h3>Sin notificaciones</h3>
-      <p>No tienes notificaciones en este momento</p>
+
+    <div *ngIf="notificaciones.length === 0" class="estado-vacio">
+      <span class="material-icons icono-gigante">notifications_paused</span>
+      <h3>Bandeja impecable</h3>
+      <p>Aún no tienes notificaciones. Te avisaremos cuando haya novedades.</p>
     </div>
 
-    <!-- Sin notificaciones en el filtro actual -->
-    <div *ngIf="notificaciones.length > 0 && obtenerNotificacionesFiltradas().length === 0" class="sin-notificaciones">
-      <div class="icono-vacio">✅</div>
+    <div *ngIf="notificaciones.length > 0 && obtenerNotificacionesFiltradas().length === 0" class="estado-vacio">
+      <span class="material-icons icono-gigante">filter_list_off</span>
       <h3>¡Todo al día!</h3>
-      <p>No hay notificaciones con los filtros seleccionados</p>
+      <p>No se encontraron resultados para los filtros seleccionados.</p>
     </div>
 
-    <!-- Lista de notificaciones -->
     <div *ngIf="obtenerNotificacionesFiltradas().length > 0" class="notificaciones-list">
+
       <div
         *ngFor="let notif of obtenerNotificacionesFiltradas()"
         class="notificacion-card"
@@ -83,47 +69,41 @@
         (click)="navigarSiTieneEnlace(notif)"
         [class.clickeable]="notif.enlace">
 
-        <!-- Indicador de leída/no leída -->
-        <div class="indicador-leida" *ngIf="!notif.leida"></div>
-
-        <!-- Contenido -->
         <div class="notificacion-content">
-          <!-- Icono, Título y Tipo -->
           <div class="notificacion-header">
             <div class="icono-container">
               <span class="material-icons">{{ obtenerIconoMaterial(notif.icono) }}</span>
             </div>
-            <div class="titulo-container">
+            <div class="texto-container">
               <div class="titulo-row">
                 <h3 class="titulo">{{ notif.titulo }}</h3>
-                <span class="tipo-badge" [ngClass]="'tipo-' + notif.tipo">{{ notif.tipo }}</span>
               </div>
+              <p class="mensaje">{{ notif.mensaje }}</p>
             </div>
           </div>
 
-          <!-- Mensaje -->
-          <p class="mensaje">{{ notif.mensaje }}</p>
-
-          <!-- Footer con fecha y estado -->
           <div class="notificacion-footer">
-            <span class="fecha">{{ formatearFecha(notif.fechaCreacion) }}</span>
-            <span class="estado-badge" [class.no-leida]="!notif.leida">
-              {{ notif.leida ? 'Leída' : 'Nueva' }}
-            </span>
-            <span class="enlace-indicador" *ngIf="notif.enlace">→ Ir</span>
+            <div class="footer-izq">
+              <span class="fecha">
+                <span class="material-icons icon-small">schedule</span>
+                {{ formatearFecha(notif.fechaCreacion) }}
+              </span>
+              <span class="estado-badge" *ngIf="!notif.leida">Nueva</span>
+            </div>
+
+            <div class="footer-der">
+              <span class="enlace-indicador" *ngIf="notif.enlace">Ver detalle →</span>
+
+              <div class="check-wrapper" (click)="$event.stopPropagation(); marcarComoLeida(notif)" title="Marcar como leída">
+                <div class="custom-check" [class.checked]="notif.leida">
+                  <span class="material-icons" *ngIf="notif.leida">check</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-
-        <!-- Checkbox para marcar como leída -->
-        <div class="check-container" (click)="$event.stopPropagation()">
-          <input
-            type="checkbox"
-            class="checkbox-leida"
-            [checked]="notif.leida"
-            (change)="marcarComoLeida(notif)"
-            [disabled]="notif.leida">
-        </div>
       </div>
+
     </div>
   </div>
 </div>

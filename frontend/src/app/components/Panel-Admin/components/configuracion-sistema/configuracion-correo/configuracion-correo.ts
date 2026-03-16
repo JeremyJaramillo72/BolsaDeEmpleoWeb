@@ -54,16 +54,16 @@ export class ConfiguracionCorreoComponent implements OnInit {
   mensajePrueba: string = '';
   tipoPrueba: 'exito' | 'error' | '' = '';
 
-  expandidoHistorial: { [key: number]: boolean } = {};
-  infoBoxes: { [key: string]: boolean } = {
-    appPassword: true
-  };
+  mostrarAyudaToken: boolean = false;
+  historialActivo: number | null = null;
+  openSection: string = 'config'; // 'config', 'test', 'update', 'history'
 
   constructor(
     private configuracionService: ConfiguracionCorreoService,
     private router: Router,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+  }
 
   ngOnInit(): void {
     this.cargarDatos();
@@ -194,9 +194,6 @@ export class ConfiguracionCorreoComponent implements OnInit {
     return regex.test(correo);
   }
 
-  toggleHistorial(idHistorial: number): void {
-    this.expandidoHistorial[idHistorial] = !this.expandidoHistorial[idHistorial];
-  }
 
   formatearFecha(fecha: string): string {
     const date = new Date(fecha);
@@ -205,11 +202,11 @@ export class ConfiguracionCorreoComponent implements OnInit {
     ayer.setDate(ayer.getDate() - 1);
 
     if (date.toDateString() === hoy.toDateString()) {
-      return 'Hoy ' + date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+      return 'Hoy ' + date.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
     } else if (date.toDateString() === ayer.toDateString()) {
-      return 'Ayer ' + date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+      return 'Ayer ' + date.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
     } else {
-      return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+      return date.toLocaleDateString('es-ES', {year: 'numeric', month: 'long', day: 'numeric'});
     }
   }
 
@@ -225,7 +222,21 @@ export class ConfiguracionCorreoComponent implements OnInit {
     this.mostrarPassword = !this.mostrarPassword;
   }
 
-  toggleInfoBox(key: string): void {
-    this.infoBoxes[key] = !this.infoBoxes[key];
+  toggleAyudaToken(): void {
+    this.mostrarAyudaToken = !this.mostrarAyudaToken;
+  }
+  toggleHistorial(idHistorial: number): void {
+    if (this.historialActivo === idHistorial) {
+      this.historialActivo = null;
+    } else {
+      this.historialActivo = idHistorial;
+    }
+  }
+  toggleSection(section: string): void {
+    if (this.openSection === section) {
+      this.openSection = ''; // cierra si ya estaba abierta
+    } else {
+      this.openSection = section; // abre la nueva y cierra la anterior
+    }
   }
 }

@@ -1,54 +1,66 @@
 .notificaciones-container {
   max-width: 900px;
   margin: 0 auto;
-  padding: 20px;
-  background: #f8f9fa;
+  padding: 30px 20px;
+  background: #f8fafc;
   min-height: 100vh;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 /* Header */
 .notificaciones-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: 30px;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
-.notificaciones-header h1 {
-  font-size: 28px;
-  font-weight: 700;
-  color: #1a202c;
-  margin: 0 0 8px 0;
+.header-text h1 {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.notificaciones-header .subtitle {
+.subtitle {
   font-size: 14px;
-  color: #718096;
+  color: #64748b;
   margin: 0;
 }
 
 .btn-marcar-todas {
-  padding: 10px 20px;
-  background: #4f46e5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  background: #2563eb; /* 🔥 Nuevo Azul Moderno */
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 9999px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  transition: all 0.3s ease;
-  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+
+.btn-marcar-todas .material-icons {
+  font-size: 18px;
 }
 
 .btn-marcar-todas:hover:not(:disabled) {
-  background: #4338ca;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+  background: #1d4ed8; /* 🔥 Azul más oscuro al pasar el mouse */
+  transform: translateY(-1px);
 }
 
 .btn-marcar-todas:disabled {
   background: #cbd5e1;
+  box-shadow: none;
   cursor: not-allowed;
 }
 
@@ -57,494 +69,288 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-bottom: 25px;
+  margin-bottom: 32px;
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  border: 1px solid #f1f5f9;
 }
 
 .filtro-group {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.filtro-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #4b5563;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  min-width: 60px;
-}
-
-.filtro-btn {
-  padding: 10px 16px;
-  background: white;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  color: #4b5563;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.filtro-btn:hover {
-  border-color: #4f46e5;
-  color: #4f46e5;
-  background: #f5f3ff;
-}
-
-.filtro-btn.activo {
-  background: #4f46e5;
-  border-color: #4f46e5;
-  color: white;
-}
-
-.filtro-btn.tipo-btn {
-  font-size: 12px;
-  padding: 8px 12px;
-  text-transform: capitalize;
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.badge-rojo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  background: #ef4444;
-  color: white;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 700;
-  margin-left: 4px;
-}
-
-/* Contenido */
-.notificaciones-content {
-  min-height: 400px;
-}
-
-/* Loading Spinner */
-.loading-spinner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  gap: 20px;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #e2e8f0;
-  border-top: 4px solid #4f46e5;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Sin notificaciones */
-.sin-notificaciones {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  gap: 16px;
-  color: #718096;
-}
-
-.icono-vacio {
-  font-size: 60px;
-  opacity: 0.6;
-}
-
-.sin-notificaciones h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #2d3748;
-  margin: 0;
-}
-
-.sin-notificaciones p {
-  font-size: 14px;
-  margin: 0;
-}
-
-/* Lista de notificaciones */
-.notificaciones-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* Card de Notificación */
-.notificacion-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 16px 18px;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-/* NO LEÍDA - Más clara y destacada */
-.notificacion-card.no-leida {
-  background: #ffffff;
-  border-color: #cbd5e1;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.notificacion-card.no-leida:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  border-color: #94a3b8;
-}
-
-/* LEÍDA - Más apagada/oscura */
-.notificacion-card.leida {
-  background: #f8fafb;
-  border-color: #e2e8f0;
-  opacity: 0.75;
-}
-
-.notificacion-card.leida:hover {
-  background: #f1f5f9;
-  opacity: 0.85;
-}
-
-/* Efecto clickeable */
-.notificacion-card.clickeable {
-  cursor: pointer;
-}
-
-.notificacion-card.clickeable:not(.leida):hover {
-  background: #fafbfc;
-  border-color: #4f46e5;
-  transform: translateX(4px);
-}
-
-/* Indicador de no leída */
-.indicador-leida {
-  flex-shrink: 0;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #4f46e5;
-  margin-top: 8px;
-}
-
-.notificacion-card.leida .indicador-leida {
-  display: none;
-}
-
-/* Contenido */
-.notificacion-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0;
-}
-
-.notificacion-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 4px;
-}
-
-.icono-container {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 6px;
-  background: #f0f4ff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  font-weight: 600;
-  color: #4f46e5;
-}
-
-.notificacion-card.leida .icono-container {
-  background: #e2e8f0;
-  color: #94a3b8;
-}
-
-.material-icon {
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
-}
-
-.material-icons {
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.titulo-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.titulo-row {
   display: flex;
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
 }
 
-.titulo {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1a202c;
-  margin: 0;
-}
-
-.notificacion-card.leida .titulo {
-  color: #4b5563;
-}
-
-.tipo-badge {
-  display: inline-block;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 600;
+.filtro-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  white-space: nowrap;
+  min-width: 60px;
 }
 
-/* Colores por tipo */
-.tipo-badge.tipo-postulacion_aprobada {
-  background: #d1fae5;
-  color: #065f46;
+.filtro-btn {
+  padding: 8px 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.tipo-badge.tipo-oferta_aprobada {
-  background: #dbeafe;
-  color: #1e40af;
+.filtro-btn:hover {
+  border-color: #cbd5e1;
+  background: #f1f5f9;
+  color: #334155;
 }
 
-.tipo-badge.tipo-nueva_oferta {
-  background: #fef3c7;
-  color: #92400e;
+.filtro-btn.activo {
+  background: #2563eb; /* 🔥 Azul Moderno */
+  border-color: #2563eb;
+  color: white;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
 }
 
-.tipo-badge.tipo-nueva_postulacion {
-  background: #e0e7ff;
-  color: #3730a3;
+.badge-contador {
+  background: #ef4444;
+  color: white;
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 800;
 }
 
-.tipo-badge.tipo-feedback_postulacion {
-  background: #fce7f3;
-  color: #831843;
+/* Estado Vacío */
+.estado-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  background: white;
+  border-radius: 16px;
+  border: 2px dashed #e2e8f0;
 }
 
-.tipo-badge.tipo-oferta_pendiente {
-  background: #fed7aa;
-  color: #7c2d12;
+.icono-gigante {
+  font-size: 64px;
+  color: #cbd5e1;
+  margin-bottom: 16px;
 }
 
-.tipo-badge.tipo-nueva_oferta_zona {
-  background: #c7d2fe;
-  color: #312e81;
+.estado-vacio h3 {
+  font-size: 18px;
+  color: #334155;
+  margin: 0 0 8px 0;
 }
 
-.tipo-badge.tipo-empresa_pendiente_aprobacion {
-  background: #fbcfe8;
-  color: #831843;
+.estado-vacio p {
+  color: #64748b;
+  margin: 0;
+  font-size: 14px;
 }
 
-.tipo-badge.tipo-empresa_aprobada {
-  background: #a7f3d0;
-  color: #064e3b;
+/* Tarjetas de Notificación */
+.notificaciones-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-/* Mensaje */
+.notificacion-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #f1f5f9;
+  border-left: 5px solid transparent;
+}
+
+/* NO LEÍDA - El diseño resalta */
+.notificacion-card.no-leida {
+  border-left-color: #2563eb; /* 🔥 Raya lateral distintiva Azul */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.notificacion-card.no-leida:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+/* 🔥 LEÍDA - Diseño ajustado: Sin opacidad extrema, colores de texto más claros pero muy legibles */
+.notificacion-card.leida {
+  background: #f8fafc; /* Fondo un pelín gris para diferenciar */
+  border-left-color: #cbd5e1;
+  /* Eliminamos el opacity: 0.8; que ensuciaba la lectura */
+}
+
+.notificacion-card.clickeable {
+  cursor: pointer;
+}
+
+.notificacion-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.notificacion-header {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.icono-container {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #eff6ff; /* 🔥 Fondo azul súper claro */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563eb; /* 🔥 Azul del ícono */
+}
+
+.notificacion-card.leida .icono-container {
+  background: #f1f5f9;
+  color: #64748b; /* Ícono gris cuando está leída */
+}
+
+.texto-container {
+  flex: 1;
+  min-width: 0;
+}
+
+.titulo {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+}
+
+/* 🔥 Título de leída un poco menos negro, pero sin desaparecer */
+.notificacion-card.leida .titulo {
+  color: #334155;
+  font-weight: 600;
+}
+
 .mensaje {
   font-size: 14px;
-  color: #4b5563;
+  color: #334155;
   margin: 0;
-  line-height: 1.5;
-  word-break: break-word;
+  line-height: 1.6;
 }
 
+/* 🔥 Mensaje de leída perfectamente legible */
 .notificacion-card.leida .mensaje {
-  color: #718096;
+  color: #475569;
 }
 
-/* Footer */
+/* Footer de la tarjeta */
 .notificacion-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 8px;
-  font-size: 12px;
+  padding-top: 12px;
+  margin-top: 4px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.footer-izq, .footer-der {
+  display: flex;
+  align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
 }
 
 .fecha {
-  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
 }
 
-.notificacion-card.leida .fecha {
-  color: #cbd5e1;
+.icon-small {
+  font-size: 14px;
 }
 
 .estado-badge {
-  display: inline-block;
-  padding: 3px 8px;
-  border-radius: 4px;
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 2px 8px;
+  border-radius: 6px;
   font-size: 11px;
-  font-weight: 600;
-  background: #e0e7ff;
-  color: #3730a3;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.estado-badge.no-leida {
-  background: #fecaca;
-  color: #7c2d12;
+  letter-spacing: 0.5px;
 }
 
 .enlace-indicador {
-  color: #4f46e5;
+  color: #2563eb; /* 🔥 Azul */
+  font-size: 13px;
   font-weight: 600;
 }
 
-.notificacion-card.leida .enlace-indicador {
-  color: #94a3b8;
+/* Checkbox Moderno */
+.check-wrapper {
+  padding: 4px;
+  border-radius: 50%;
+  cursor: pointer;
 }
 
-/* Checkbox */
-.check-container {
-  flex-shrink: 0;
+.check-wrapper:hover .custom-check:not(.checked) {
+  border-color: #2563eb; /* 🔥 Borde azul al pasar el mouse */
+}
+
+.custom-check {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #cbd5e1;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  transition: all 0.2s;
+  background: white;
 }
 
-.checkbox-leida {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: #4f46e5;
+.custom-check.checked {
+  background: #2563eb; /* 🔥 Fondo azul al marcar */
+  border-color: #2563eb;
+  color: white;
 }
 
-.checkbox-leida:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
+.custom-check .material-icons {
+  font-size: 16px;
+  font-weight: bold;
+}
+.header-icon-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #eff6ff; /* Fondo azul clarito */
+  color: #2563eb; /* Azul moderno */
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1); /* Sombra sutil */
 }
 
-/* Responsive */
-@media (max-width: 640px) {
-  .notificaciones-container {
-    padding: 12px;
-  }
-
-  .notificaciones-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .header-content h1 {
-    font-size: 24px;
-  }
-
-  .btn-marcar-todas {
-    width: 100%;
-  }
-
-  .filtros-section {
-    justify-content: flex-start;
-    overflow-x: auto;
-    padding-bottom: 8px;
-  }
-
-  .notificacion-card {
-    padding: 14px;
-    gap: 12px;
-  }
-
-  .titulo {
-    font-size: 14px;
-  }
-
-  .mensaje {
-    font-size: 13px;
-  }
-}
-
-/* Dark mode support */
-:host-context(.dark-mode) .notificaciones-container {
-  background: #1a202c;
-}
-
-:host-context(.dark-mode) .notificaciones-header h1 {
-  color: #f7fafc;
-}
-
-:host-context(.dark-mode) .header-content .subtitle {
-  color: #a0aec0;
-}
-
-:host-context(.dark-mode) .filtro-btn {
-  background: #2d3748;
-  border-color: #4a5568;
-  color: #cbd5e0;
-}
-
-:host-context(.dark-mode) .filtro-btn.activo {
-  background: #4f46e5;
-}
-
-:host-context(.dark-mode) .notificacion-card.no-leida {
-  background: #2d3748;
-  border-color: #4a5568;
-}
-
-:host-context(.dark-mode) .notificacion-card.leida {
-  background: #1a202c;
-  border-color: #2d3748;
-}
-
-:host-context(.dark-mode) .titulo {
-  color: #f7fafc;
-}
-
-:host-context(.dark-mode) .mensaje {
-  color: #cbd5e0;
-}
-
-:host-context(.dark-mode) .icono-container {
-  background: #2d3748;
+.header-icon-container .material-icons {
+  font-size: 24px;
 }

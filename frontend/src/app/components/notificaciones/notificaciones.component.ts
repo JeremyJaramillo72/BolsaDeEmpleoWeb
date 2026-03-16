@@ -30,7 +30,6 @@ export class NotificacionesComponent implements OnInit {
       return;
     }
 
-    // Cargar todas las notificaciones para el historial completo
     this.notificationService.cargarHistorial(Number(this.idUsuario));
 
     this.notificationService.notificaciones$.subscribe((data) => {
@@ -46,17 +45,25 @@ export class NotificacionesComponent implements OnInit {
     this.tiposDisponibles = Array.from(tipos).sort();
   }
 
+  // formatea texto crudo para que se vea limpio en los botones
+  formatTipo(tipo: string): string {
+    if (!tipo) return 'Desconocido';
+    return tipo
+      .toLowerCase()
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
   obtenerNotificacionesFiltradas(): NotificacionDTO[] {
     let filtradas = this.notificaciones;
 
-    // Filtro por estado (leída/no leída)
     if (this.filtroActivo === 'leidas') {
       filtradas = filtradas.filter(n => n.leida);
     } else if (this.filtroActivo === 'noLeidas') {
       filtradas = filtradas.filter(n => !n.leida);
     }
 
-    // Filtro por tipo
     if (this.filtroTipo !== 'todas') {
       filtradas = filtradas.filter(n => n.tipo === this.filtroTipo);
     }
@@ -65,37 +72,33 @@ export class NotificacionesComponent implements OnInit {
   }
 
   obtenerConteoBadge(filtro: 'leidas' | 'noLeidas'): number {
-    if (filtro === 'leidas') {
-      return this.notificaciones.filter(n => n.leida).length;
-    } else {
-      return this.notificaciones.filter(n => !n.leida).length;
-    }
+    return filtro === 'leidas'
+      ? this.notificaciones.filter(n => n.leida).length
+      : this.notificaciones.filter(n => !n.leida).length;
   }
 
   marcarComoLeida(notif: NotificacionDTO): void {
     if (notif.leida) return;
 
-    // Actualizar estado local inmediatamente para mejor UX
     const index = this.notificaciones.findIndex(n => n.idNotificacion === notif.idNotificacion);
     if (index !== -1) {
       this.notificaciones[index].leida = true;
-      this.notificaciones = [...this.notificaciones]; // Trigger change detection
-      this.cdr.detectChanges(); // Forza detección de cambios
+      this.notificaciones = [...this.notificaciones];
+      this.cdr.detectChanges();
     }
 
-    // Llamar al servicio para actualizar en el backend
     this.notificationService.marcarComoLeida(notif.idNotificacion).subscribe();
   }
 
   marcarTodasComoLeidas(): void {
     const idUsuario = parseInt(this.idUsuario, 10);
     this.notificationService.marcarTodasComoLeidas(idUsuario);
-    this.cdr.detectChanges(); // Forza detección de cambios
+    this.cdr.detectChanges();
   }
 
   navigarSiTieneEnlace(notif: NotificacionDTO): void {
     this.marcarComoLeida(notif);
-    this.cdr.detectChanges(); // Fuerza actualización de contadores
+    this.cdr.detectChanges();
     if (notif.enlace) {
       this.router.navigateByUrl(notif.enlace);
     }
@@ -118,18 +121,11 @@ export class NotificacionesComponent implements OnInit {
 
   obtenerIconoMaterial(icono: string): string {
     const mapeo: { [key: string]: string } = {
-      'bell': 'notifications',
-      'work': 'work',
-      'business': 'business',
-      'groups': 'groups',
-      'person': 'person',
-      'assignment': 'assignment',
-      'check': 'check_circle',
-      'error': 'error',
-      'info': 'info',
-      'warning': 'warning',
-      'domain': 'domain',
-      'assignment_late': 'assignment_late'
+      'bell': 'notifications', 'work': 'work', 'business': 'business',
+      'groups': 'groups', 'person': 'person', 'assignment': 'assignment',
+      'check': 'check_circle', 'error': 'error', 'info': 'info',
+      'warning': 'warning', 'domain': 'domain', 'assignment_late': 'assignment_late',
+      'send': 'send', 'cancel': 'cancel', 'location_on': 'location_on', 'person_add': 'person_add'
     };
     return mapeo[icono] || 'notifications';
   }
