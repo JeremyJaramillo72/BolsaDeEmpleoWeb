@@ -7,7 +7,7 @@
         <p>Tu formación universitaria, institutos y títulos</p>
       </div>
     </div>
-    <button *ngIf="titulos && titulos.length > 0" (click)="abrirModal()" class="btn-add-section" type="button">
+    <button (click)="abrirModal()" class="btn-add-section" type="button">
       <span class="material-icons">add</span> Añadir Formación
     </button>
   </div>
@@ -33,13 +33,9 @@
     </div>
   </div>
 
-  <div *ngIf="!titulos || titulos.length === 0" class="empty-state-container">
-    <span class="material-icons empty-icon">school</span>
-    <h3>No hay formación registrada</h3>
-    <p>Añade tus títulos académicos para que las empresas conozcan tu preparación.</p>
-    <button (click)="abrirModal()" class="btn-add-section">
-      <span class="material-icons">add</span> Registrar mi primer título
-    </button>
+  <div *ngIf="!titulos || titulos.length === 0" style="text-align: center; padding: 20px; color: #64748b;">
+    <span class="material-icons" style="font-size: 40px; opacity: 0.5;">school</span>
+    <p>No tienes formación académica registrada.</p>
   </div>
 </div>
 
