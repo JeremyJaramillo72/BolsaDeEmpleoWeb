@@ -43,6 +43,7 @@ export interface OfertaLaboralDTO {
 
 export interface OfertaDetalladaDTO {
   idOferta: number;
+  externalOfferId?: string;
   titulo: string;
   descripcion: string;
   cantidadVacantes: number;
@@ -72,6 +73,23 @@ export interface OfertaDetalladaDTO {
   nombreEmpresa?: string;
   esExterna?: boolean;
   urlOfertaExterna?: string;
+}
+
+export interface FavoritaGuardadaDTO {
+  idFavoritas: number;
+  idOferta: number;
+  origenOferta: string;
+  estadoFav: string;
+  titulo: string;
+  descripcion: string;
+  nombreEmpresa: string;
+  nombreCiudad: string;
+  fechaInicio?: string | null;
+  fechaCierre?: string | null;
+  salarioMin?: number | null;
+  salarioMax?: number | null;
+  urlAplicar?: string | null;
+  idOrigenExterna?: string | null;
 }
 
 export interface JSearchOfertaDTO {
@@ -205,6 +223,18 @@ export class OfertaService {
 
   toggleFavorita(idOferta: number, idUsuario: number): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/${idOferta}/favorita/${idUsuario}`, {});
+  }
+
+  toggleFavoritaExterna(ofertaExterna: JSearchOfertaDTO, idUsuario: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/externas/favorita/${idUsuario}`, ofertaExterna);
+  }
+
+  obtenerFavoritasExternas(idUsuario: number): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/externas/favoritas/${idUsuario}`);
+  }
+
+  obtenerFavoritasUsuario(idUsuario: number): Observable<FavoritaGuardadaDTO[]> {
+    return this.http.get<FavoritaGuardadaDTO[]>(`${this.apiUrl}/favoritas/${idUsuario}`);
   }
 
   // Métodos para postulaciones

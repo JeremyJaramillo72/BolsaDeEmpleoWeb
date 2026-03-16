@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { OfertaService, OfertaDetalladaDTO, JSearchOfertaDTO } from '../../services/oferta.service';
+import { OfertaService, OfertaDetalladaDTO, JSearchOfertaDTO, FavoritaGuardadaDTO } from '../../services/oferta.service';
 import { UiNotificationService } from '../../services/ui-notification.service';
 @Component({
   selector: 'app-busqueda-empleo',
@@ -43,9 +43,13 @@ export class BusquedaEmpleoComponent implements OnInit {
   errorConexion: boolean = false;
   cargando: boolean = false;
   soloFavoritas: boolean = false;
+  filtroTipoFavoritas: 'todas' | 'internas' | 'externas' = 'todas';
+  favoritasMixtas: OfertaDetalladaDTO[] = [];
+  cargandoFavoritas: boolean = false;
   errorPostulacion: string | null = null;
   errorBusquedaExterna: string | null = null;
   private idUsuario: number = 0;
+  private jsearchPorExternalId = new Map<string, JSearchOfertaDTO>();
 
   constructor(
     private ofertaService: OfertaService,
@@ -116,6 +120,7 @@ export class BusquedaEmpleoComponent implements OnInit {
 
         this.cdr.detectChanges();
         this.cargarInfoExtra();
+        if (this.soloFavoritas) this.cargarFavoritasMixtas();
       },
       error: (e: any) => {
         this.cargando = false;
@@ -158,8 +163,14 @@ export class BusquedaEmpleoComponent implements OnInit {
       next: (res) => {
         this.cargando = false;
         this.paginaExternaActual = page;
-        this.ofertasExternas = (res.data ?? []).map((job, idx) => this.mapearOfertaExterna(job, idx, page));
-        this.cdr.detectChanges();
+        this.jsearchPorExternalId.clear();
+        this.ofertasExternas = (res.data ?? []).map((job, idx) => {
+          if (job.jobId) {
+            this.jsearchPorExternalId.set(job.jobId, job);
+          }
+          return this.mapearOfertaExterna(job, idx, page);
+        });
+        this.marcarFavoritasExternas();
       },
       error: (e: any) => {
         this.cargando = false;
@@ -177,6 +188,7 @@ export class BusquedaEmpleoComponent implements OnInit {
 
     return {
       idOferta: idTemporal,
+      externalOfferId: job.jobId || '',
       titulo: job.jobTitle || 'Oferta externa',
       descripcion: job.jobDescription || 'Sin descripcion disponible',
       cantidadVacantes: 0,
@@ -227,7 +239,14 @@ export class BusquedaEmpleoComponent implements OnInit {
   }
 
   get ofertasVisibles(): OfertaDetalladaDTO[] {
+    if (this.soloFavoritas) return this.favoritasFiltradas;
     return this.modoBusqueda === 'internas' ? this.ofertasFiltradas : this.ofertasExternas;
+  }
+
+  get favoritasFiltradas(): OfertaDetalladaDTO[] {
+    if (this.filtroTipoFavoritas === 'internas') return this.favoritasMixtas.filter(o => !o.esExterna);
+    if (this.filtroTipoFavoritas === 'externas') return this.favoritasMixtas.filter(o => !!o.esExterna);
+    return this.favoritasMixtas;
   }
 
   cargarInfoExtra(): void {
@@ -256,6 +275,7 @@ export class BusquedaEmpleoComponent implements OnInit {
           }
         });
         this.cdr.detectChanges();
+        if (this.soloFavoritas) this.cargarFavoritasMixtas();
       },
       error: (e: any) => console.error('Error al cargar info extra:', e)
     });
@@ -296,15 +316,86 @@ export class BusquedaEmpleoComponent implements OnInit {
   }
 
   toggleVerFavoritas(): void {
-    if (this.modoBusqueda !== 'internas') return;
     this.soloFavoritas = !this.soloFavoritas;
+    if (this.soloFavoritas) this.cargarFavoritasMixtas();
   }
 
   get totalFavoritas(): number {
-    return this.ofertas.filter(o => o.esFavorito).length;
+    if (this.favoritasMixtas.length > 0) return this.favoritasMixtas.length;
+    return this.ofertas.filter(o => o.esFavorito).length + this.ofertasExternas.filter(o => o.esFavorito).length;
+  }
+
+  cambiarFiltroFavoritas(tipo: 'todas' | 'internas' | 'externas'): void {
+    this.filtroTipoFavoritas = tipo;
+  }
+
+  private cargarFavoritasMixtas(): void {
+    this.cargandoFavoritas = true;
+    this.ofertaService.obtenerFavoritasUsuario(this.idUsuario).subscribe({
+      next: (lista: FavoritaGuardadaDTO[]) => {
+        this.favoritasMixtas = (lista ?? []).map(f => {
+          const esExterna = (f.origenOferta ?? '').toLowerCase() === 'externa';
+          if (!esExterna) {
+            const ofertaInterna = this.ofertas.find(o => o.idOferta === f.idOferta);
+            if (ofertaInterna) {
+              return {
+                ...ofertaInterna,
+                idFavoritas: f.idFavoritas,
+                estadoFav: f.estadoFav,
+                esFavorito: true,
+                mostrarDetalles: false,
+                esExterna: false
+              } as OfertaDetalladaDTO;
+            }
+          }
+
+          const fecha = new Date().toISOString();
+          return {
+            idOferta: f.idOferta,
+            externalOfferId: f.idOrigenExterna ?? '',
+            titulo: f.titulo ?? 'Oferta guardada',
+            descripcion: f.descripcion ?? '',
+            cantidadVacantes: 0,
+            experienciaMinima: 0,
+            fechaInicio: (f.fechaInicio as string) ?? fecha,
+            fechaCierre: (f.fechaCierre as string) ?? fecha,
+            nombreModalidad: esExterna ? 'Externa' : 'No especificado',
+            nombreJornada: esExterna ? 'No especificado' : '',
+            nombreCategoria: esExterna ? 'Externa' : 'Interna',
+            salarioMin: (f.salarioMin as number) ?? 0,
+            salarioMax: (f.salarioMax as number) ?? 0,
+            estadoOferta: esExterna ? 'externa' : 'aprobado',
+            idFavoritas: f.idFavoritas,
+            estadoFav: f.estadoFav,
+            idPostulacion: null,
+            estadoValidacion: null,
+            habilidades: [],
+            requisitos_manuales: [],
+            esFavorito: true,
+            mostrarDetalles: false,
+            nombreCiudad: f.nombreCiudad ?? '',
+            nombreEmpresa: f.nombreEmpresa ?? '',
+            esExterna,
+            urlOfertaExterna: f.urlAplicar ?? ''
+          } as OfertaDetalladaDTO;
+        });
+        this.cargandoFavoritas = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.cargandoFavoritas = false;
+        this.favoritasMixtas = [];
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   limpiarFiltros(): void {
+    if (this.soloFavoritas) {
+      this.filtroTipoFavoritas = 'todas';
+      return;
+    }
+
     if (this.modoBusqueda === 'internas') {
       this.filtroTitulo = '';
       this.filtroModalidad = '';
@@ -326,7 +417,39 @@ export class BusquedaEmpleoComponent implements OnInit {
   }
 
   toggleFavorito(oferta: OfertaDetalladaDTO): void {
-    if (oferta.esExterna) return;
+    if (oferta.esExterna) {
+      const job = oferta.externalOfferId ? this.jsearchPorExternalId.get(oferta.externalOfferId) : undefined;
+      const payload: JSearchOfertaDTO = job ?? {
+        jobId: oferta.externalOfferId ?? '',
+        jobTitle: oferta.titulo ?? '',
+        employerName: oferta.nombreEmpresa ?? '',
+        jobEmploymentType: oferta.nombreJornada ?? '',
+        jobCity: oferta.nombreCiudad ?? '',
+        jobState: '',
+        jobCountry: '',
+        jobDescription: oferta.descripcion ?? '',
+        jobPostedAt: oferta.fechaInicio ?? '',
+        jobApplyLink: oferta.urlOfertaExterna ?? '',
+        jobGoogleLink: '',
+        jobIsRemote: (oferta.nombreModalidad ?? '').toLowerCase().includes('remoto')
+      };
+      if (!payload.jobId) return;
+
+      this.ofertaService.toggleFavoritaExterna(payload, this.idUsuario).subscribe({
+        next: () => {
+          oferta.esFavorito = !oferta.esFavorito;
+          if (this.soloFavoritas) {
+            this.cargarFavoritasMixtas();
+          } else {
+            this.marcarFavoritasExternas();
+          }
+          this.cdr.detectChanges();
+        },
+        error: (e: any) => console.error('Error toggle favorita externa:', e)
+      });
+      return;
+    }
+
     if (!oferta.idOferta) return;
 
     this.ofertaService.toggleFavorita(oferta.idOferta, this.idUsuario).subscribe({
@@ -335,6 +458,7 @@ export class BusquedaEmpleoComponent implements OnInit {
           const json = typeof res === 'string' ? JSON.parse(res) : res;
           if (json.success) {
             oferta.esFavorito = !oferta.esFavorito;
+            if (this.soloFavoritas) this.cargarFavoritasMixtas();
             this.cdr.detectChanges();
 
           } else {
@@ -348,6 +472,27 @@ export class BusquedaEmpleoComponent implements OnInit {
       error: (e: any) => console.error('Error toggle favorita:', e)
     });
 
+  }
+
+  private marcarFavoritasExternas(): void {
+    if (this.ofertasExternas.length === 0) {
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.ofertaService.obtenerFavoritasExternas(this.idUsuario).subscribe({
+      next: (ids: string[]) => {
+        const favoritas = new Set((ids ?? []).filter(Boolean));
+        this.ofertasExternas.forEach(oferta => {
+          oferta.esFavorito = !!oferta.externalOfferId && favoritas.has(oferta.externalOfferId);
+        });
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.ofertasExternas.forEach(oferta => oferta.esFavorito = false);
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   yaPostulo(oferta: OfertaDetalladaDTO): boolean {

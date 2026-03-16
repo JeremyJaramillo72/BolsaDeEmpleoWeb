@@ -20,6 +20,9 @@ public interface IOfertaLaboralService {
     void cambiarEstadoOferta(Long idOferta, String nuevoEstadoOferta);
     List<IOfertaDetallada> listarOfertasCompleto(Long idUsuario);
     String toggleFavorita(Integer idOferta, Long idUsuario);
+    String toggleFavoritaExterna(JSearchOfertaDTO ofertaExterna, Long idUsuario);
+    List<String> obtenerIdsFavoritasExternas(Long idUsuario);
+    List<Map<String, Object>> obtenerFavoritasUsuario(Long idUsuario);
     OfertaExtraInfoDTO obtenerExtraInfo(Integer idOferta);
     JSearchResponseDTO buscarOfertasExternas(String query, Integer page, String country, String datePosted, String language, Boolean workFromHome);
     Map<Integer, Long> contarPostulantesPorOfertas(List<Integer> ids);

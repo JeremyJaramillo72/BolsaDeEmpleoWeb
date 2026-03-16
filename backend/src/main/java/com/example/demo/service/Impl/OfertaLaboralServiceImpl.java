@@ -1,6 +1,7 @@
 package com.example.demo.service.Impl;
 
 import com.example.demo.dto.IOfertaResumen;
+import com.example.demo.dto.JSearchOfertaDTO;
 import com.example.demo.dto.JSearchResponseDTO;
 import com.example.demo.dto.NuevaEmpresaAdminDTO;
 import com.example.demo.dto.OfertaExtraInfoDTO;
@@ -10,6 +11,7 @@ import com.example.demo.repository.*;
 import com.example.demo.repository.Views.IOfertaDetallada;
 import com.example.demo.repository.Views.IOfertaEmpresaDTO;
 import com.example.demo.repository.Views.IOfertaFisicaAdminDTO;
+import com.example.demo.repository.Views.IFavoritaMixtaDTO;
 import com.example.demo.repository.Views.IPostulanteOfertaDTO;
 import com.example.demo.service.AzureStorageConfig;
 import com.example.demo.service.IOfertaLaboralService;
@@ -325,6 +327,55 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
     @Transactional
     public String toggleFavorita(Integer idOferta, Long idUsuario) {
         return ofertaRepository.toggleFavorita(idOferta, idUsuario);
+    }
+
+    @Override
+    @Transactional
+    public String toggleFavoritaExterna(JSearchOfertaDTO ofertaExterna, Long idUsuario) {
+        if (ofertaExterna == null || ofertaExterna.getJobId() == null || ofertaExterna.getJobId().isBlank()) {
+            throw new IllegalArgumentException("La oferta externa no contiene jobId valido");
+        }
+
+        try {
+            String ofertaJson = objectMapper.writeValueAsString(ofertaExterna);
+            return ofertaRepository.toggleFavoritaExternaJson(idUsuario, ofertaJson);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("No se pudo serializar la oferta externa", e);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> obtenerIdsFavoritasExternas(Long idUsuario) {
+        return ofertaRepository.obtenerFavoritasUsuarioMixtas(idUsuario).stream()
+                .filter(f -> "externa".equalsIgnoreCase(f.getOrigenOferta()))
+                .map(IFavoritaMixtaDTO::getIdOrigenExterna)
+                .filter(id -> id != null && !id.isBlank())
+                .distinct()
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> obtenerFavoritasUsuario(Long idUsuario) {
+        return ofertaRepository.obtenerFavoritasUsuarioMixtas(idUsuario).stream().map(f -> {
+            Map<String, Object> row = new HashMap<>();
+            row.put("idFavoritas", f.getIdFavoritas());
+            row.put("idOferta", f.getIdOferta());
+            row.put("origenOferta", f.getOrigenOferta());
+            row.put("estadoFav", f.getEstadoFav());
+            row.put("titulo", f.getTitulo());
+            row.put("descripcion", f.getDescripcion());
+            row.put("nombreEmpresa", f.getNombreEmpresa());
+            row.put("nombreCiudad", f.getNombreCiudad());
+            row.put("fechaInicio", f.getFechaInicio());
+            row.put("fechaCierre", f.getFechaCierre());
+            row.put("salarioMin", f.getSalarioMin());
+            row.put("salarioMax", f.getSalarioMax());
+            row.put("urlAplicar", f.getUrlAplicar());
+            row.put("idOrigenExterna", f.getIdOrigenExterna());
+            return row;
+        }).toList();
     }
 
     @Override

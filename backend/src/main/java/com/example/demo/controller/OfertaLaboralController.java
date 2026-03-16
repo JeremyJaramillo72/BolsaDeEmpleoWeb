@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.IOfertaResumen;
+import com.example.demo.dto.JSearchOfertaDTO;
 import com.example.demo.dto.JSearchResponseDTO;
 import com.example.demo.dto.OfertaExtraInfoDTO;
 import com.example.demo.dto.OfertaLaboralDTO;
@@ -119,6 +120,36 @@ public class OfertaLaboralController {
         try {
             String resultado = ofertaService.toggleFavorita(idOferta, idUsuario);
             return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/externas/favorita/{idUsuario}")
+    public ResponseEntity<?> toggleFavoritaExterna(
+            @RequestBody JSearchOfertaDTO ofertaExterna,
+            @PathVariable Long idUsuario) {
+        try {
+            String resultado = ofertaService.toggleFavoritaExterna(ofertaExterna, idUsuario);
+            return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/externas/favoritas/{idUsuario}")
+    public ResponseEntity<?> obtenerFavoritasExternas(@PathVariable Long idUsuario) {
+        try {
+            return ResponseEntity.ok(ofertaService.obtenerIdsFavoritasExternas(idUsuario));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/favoritas/{idUsuario}")
+    public ResponseEntity<?> obtenerFavoritasUsuario(@PathVariable Long idUsuario) {
+        try {
+            return ResponseEntity.ok(ofertaService.obtenerFavoritasUsuario(idUsuario));
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error: " + e.getMessage());
         }

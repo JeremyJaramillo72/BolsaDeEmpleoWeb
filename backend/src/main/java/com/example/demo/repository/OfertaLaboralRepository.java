@@ -143,6 +143,12 @@ public interface OfertaLaboralRepository extends JpaRepository<OfertaLaboral, In
     @Query(value = "SELECT ofertas.sp_toggle_favorita_confirmacion(:idOferta, :idUsuario)", nativeQuery = true)
     String toggleFavorita(@Param("idOferta") Integer idOferta, @Param("idUsuario") Long idUsuario);
 
+    @Query(value = "SELECT ofertas.sp_toggle_favorita_externa_json(:idUsuario, CAST(:ofertaJson AS jsonb))", nativeQuery = true)
+    String toggleFavoritaExternaJson(@Param("idUsuario") Long idUsuario, @Param("ofertaJson") String ofertaJson);
+
+    @Query(value = "SELECT * FROM ofertas.fn_obtener_favoritas_usuario_mixtas(:idUsuario)", nativeQuery = true)
+    List<IFavoritaMixtaDTO> obtenerFavoritasUsuarioMixtas(@Param("idUsuario") Long idUsuario);
+
     @Query(value = "SELECT * FROM ofertas.fn_datos_ubicacion_oferta(:idOferta)", nativeQuery = true)
     List<Object[]> obtenerDatosUbicacionOferta(@Param("idOferta") Integer idOferta);
 

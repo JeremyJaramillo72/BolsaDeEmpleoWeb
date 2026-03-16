@@ -16,7 +16,7 @@
         <h3>Filtros</h3>
       </div>
 
-      <div class="source-toggle">
+      <div class="source-toggle" *ngIf="!soloFavoritas">
         <button class="btn-source" [class.active]="modoBusqueda === 'internas'" (click)="cambiarModo('internas')">
           Internas
         </button>
@@ -26,13 +26,22 @@
       </div>
 
       <!-- BOTÓN MIS FAVORITAS -->
-      <button class="btn-favoritas" *ngIf="modoBusqueda === 'internas'" (click)="toggleVerFavoritas()" [class.activo]="soloFavoritas">
+      <button class="btn-favoritas" (click)="toggleVerFavoritas()" [class.activo]="soloFavoritas">
         <span class="material-icons">{{ soloFavoritas ? 'bookmark' : 'bookmark_border' }}</span>
         Mis Favoritas
         <span class="badge-count" *ngIf="totalFavoritas > 0">{{ totalFavoritas }}</span>
       </button>
 
-      <div class="filter-group" *ngIf="modoBusqueda === 'internas'">
+      <div class="filter-group" *ngIf="soloFavoritas">
+        <label>Tipo de favoritas</label>
+        <div class="source-toggle">
+          <button class="btn-source" [class.active]="filtroTipoFavoritas === 'todas'" (click)="cambiarFiltroFavoritas('todas')">Todas</button>
+          <button class="btn-source" [class.active]="filtroTipoFavoritas === 'internas'" (click)="cambiarFiltroFavoritas('internas')">Internas</button>
+          <button class="btn-source" [class.active]="filtroTipoFavoritas === 'externas'" (click)="cambiarFiltroFavoritas('externas')">Externas</button>
+        </div>
+      </div>
+
+      <div class="filter-group" *ngIf="!soloFavoritas && modoBusqueda === 'internas'">
         <label>Buscar por título</label>
         <div class="search-input-wrapper">
           <span class="material-icons icon-search">search</span>
@@ -40,7 +49,7 @@
         </div>
       </div>
 
-      <div class="filter-group" *ngIf="modoBusqueda === 'internas'">
+      <div class="filter-group" *ngIf="!soloFavoritas && modoBusqueda === 'internas'">
         <label>Modalidad</label>
         <select [(ngModel)]="filtroModalidad">
           <option value="">Todas las modalidades</option>
@@ -48,7 +57,7 @@
         </select>
       </div>
 
-      <div class="filter-group" *ngIf="modoBusqueda === 'internas'">
+      <div class="filter-group" *ngIf="!soloFavoritas && modoBusqueda === 'internas'">
         <label>Jornada</label>
         <select [(ngModel)]="filtroJornada">
           <option value="">Todas las jornadas</option>
@@ -56,7 +65,7 @@
         </select>
       </div>
 
-      <div class="filter-group" *ngIf="modoBusqueda === 'internas'">
+      <div class="filter-group" *ngIf="!soloFavoritas && modoBusqueda === 'internas'">
         <label>Categoría</label>
         <select [(ngModel)]="filtroCategoria">
           <option value="">Todas las categorías</option>
@@ -64,7 +73,7 @@
         </select>
       </div>
 
-      <div class="filter-group" *ngIf="modoBusqueda === 'internas'">
+      <div class="filter-group" *ngIf="!soloFavoritas && modoBusqueda === 'internas'">
         <label>Ordenar por fecha</label>
         <select [(ngModel)]="filtroFecha">
           <option value="reciente">Más reciente primero</option>
@@ -72,7 +81,7 @@
         </select>
       </div>
 
-      <div class="filter-group" *ngIf="modoBusqueda === 'externas'">
+      <div class="filter-group" *ngIf="!soloFavoritas && modoBusqueda === 'externas'">
         <label>Busqueda JSearch</label>
         <div class="search-input-wrapper">
           <span class="material-icons icon-search">search</span>
@@ -80,12 +89,12 @@
         </div>
       </div>
 
-      <div class="filter-group" *ngIf="modoBusqueda === 'externas'">
+      <div class="filter-group" *ngIf="!soloFavoritas && modoBusqueda === 'externas'">
         <label>País (ISO-2)</label>
         <input type="text" maxlength="2" [(ngModel)]="countryExterna" placeholder="us">
       </div>
 
-      <div class="filter-group" *ngIf="modoBusqueda === 'externas'">
+      <div class="filter-group" *ngIf="!soloFavoritas && modoBusqueda === 'externas'">
         <label>Fecha publicación</label>
         <select [(ngModel)]="datePostedExterna">
           <option value="all">all</option>
@@ -96,22 +105,22 @@
         </select>
       </div>
 
-      <div class="filter-group" *ngIf="modoBusqueda === 'externas'">
+      <div class="filter-group" *ngIf="!soloFavoritas && modoBusqueda === 'externas'">
         <label>Idioma (opcional)</label>
         <input type="text" maxlength="5" [(ngModel)]="languageExterna" placeholder="en">
       </div>
 
-      <label class="remote-check" *ngIf="modoBusqueda === 'externas'">
+      <label class="remote-check" *ngIf="!soloFavoritas && modoBusqueda === 'externas'">
         <input type="checkbox" [(ngModel)]="workFromHomeExterna">
         Solo remoto
       </label>
 
-      <button class="btn-search-external" *ngIf="modoBusqueda === 'externas'" (click)="buscarOfertasExternas(1)">
+      <button class="btn-search-external" *ngIf="!soloFavoritas && modoBusqueda === 'externas'" (click)="buscarOfertasExternas(1)">
         <span class="material-icons">search</span>
         Buscar en JSearch
       </button>
 
-      <button class="btn-clear-filters" (click)="limpiarFiltros()">Limpiar Filtros</button>
+      <button class="btn-clear-filters" *ngIf="!soloFavoritas" (click)="limpiarFiltros()">Limpiar Filtros</button>
     </aside>
 
     <!-- CONTENIDO PRINCIPAL -->
@@ -119,13 +128,18 @@
 
       <div class="action-bar">
         <div class="stats-text">
-          <span *ngIf="modoBusqueda === 'internas' && !soloFavoritas">Mostrando <strong>{{ ofertasVisibles.length }}</strong> ofertas disponibles</span>
-          <span *ngIf="modoBusqueda === 'internas' && soloFavoritas">Mostrando <strong>{{ ofertasVisibles.length }}</strong> ofertas guardadas</span>
-          <span *ngIf="modoBusqueda === 'externas'">Mostrando <strong>{{ ofertasVisibles.length }}</strong> ofertas externas (página {{ paginaExternaActual }} de 3)</span>
+          <span *ngIf="soloFavoritas">Mostrando <strong>{{ ofertasVisibles.length }}</strong> ofertas guardadas</span>
+          <span *ngIf="!soloFavoritas && modoBusqueda === 'internas'">Mostrando <strong>{{ ofertasVisibles.length }}</strong> ofertas disponibles</span>
+          <span *ngIf="!soloFavoritas && modoBusqueda === 'externas'">Mostrando <strong>{{ ofertasVisibles.length }}</strong> ofertas externas (página {{ paginaExternaActual }} de 3)</span>
         </div>
       </div>
 
-      <div class="pager" *ngIf="modoBusqueda === 'externas'">
+      <div class="no-data" *ngIf="soloFavoritas && cargandoFavoritas">
+        <span class="material-icons spin">sync</span>
+        <p>Cargando favoritas...</p>
+      </div>
+
+      <div class="pager" *ngIf="!soloFavoritas && modoBusqueda === 'externas'">
         <button class="pager-btn" (click)="paginaExternaAnterior()" [disabled]="paginaExternaActual === 1">
           <span class="material-icons">chevron_left</span>
         </button>
@@ -158,9 +172,10 @@
         <!-- SIN RESULTADOS -->
         <div *ngIf="!cargando && !errorConexion && ofertasVisibles.length === 0" class="no-data">
           <span class="material-icons">{{ modoBusqueda === 'internas' && soloFavoritas ? 'bookmark_border' : 'inbox' }}</span>
+          <p *ngIf="soloFavoritas">No tienes ofertas guardadas en este filtro.</p>
           <p *ngIf="modoBusqueda === 'internas' && !soloFavoritas">No se encontraron ofertas con estos filtros.</p>
           <p *ngIf="modoBusqueda === 'internas' && soloFavoritas">No tienes ofertas guardadas aún.</p>
-          <p *ngIf="modoBusqueda === 'externas'">No se encontraron ofertas externas con los filtros actuales.</p>
+          <p *ngIf="modoBusqueda === 'externas' && !soloFavoritas">No se encontraron ofertas externas con los filtros actuales.</p>
           <p *ngIf="modoBusqueda === 'externas' && errorBusquedaExterna" class="error-jsearch">{{ errorBusquedaExterna }}</p>
         </div>
 
@@ -176,7 +191,7 @@
               </span>
             </div>
             <!-- Botón guardar en esquina superior derecha -->
-            <button class="btn-favorito btn-favorito-corner" *ngIf="!oferta.esExterna" (click)="toggleFavorito(oferta)" [class.activo]="oferta.esFavorito" [title]="oferta.esFavorito ? 'Guardado' : 'Guardar'">
+            <button class="btn-favorito btn-favorito-corner" (click)="toggleFavorito(oferta)" [class.activo]="oferta.esFavorito" [title]="oferta.esFavorito ? 'Guardado' : 'Guardar'">
               <span class="material-icons">{{ oferta.esFavorito ? 'bookmark' : 'bookmark_border' }}</span>
             </button>
           </div>
@@ -297,7 +312,7 @@
         </div>
       </div>
 
-      <div class="pager" *ngIf="modoBusqueda === 'externas'">
+      <div class="pager" *ngIf="!soloFavoritas && modoBusqueda === 'externas'">
         <button class="pager-btn" (click)="paginaExternaAnterior()" [disabled]="paginaExternaActual === 1">
           <span class="material-icons">chevron_left</span>
         </button>

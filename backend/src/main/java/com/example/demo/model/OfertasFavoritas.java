@@ -1,8 +1,6 @@
 package com.example.demo.model;
 import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalDateTime;
-
 @Data
 @Entity
 @Table(name = "ofertas_favoritas", schema = "ofertas")
@@ -17,9 +15,11 @@ public class OfertasFavoritas {
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    @ManyToOne
-    @JoinColumn(name = "id_oferta", nullable = false)
-    private OfertaLaboral oferta;
+    @Column(name = "id_oferta", nullable = false)
+    private Integer idOferta;
+
+    @Column(name = "origen_oferta", length = 20)
+    private String origenOferta;
 
     @Column(name = "estado_fav", length = 20)
     private String estadoFav;
@@ -32,6 +32,9 @@ public class OfertasFavoritas {
     public void prePersist() {
         if (this.estadoFav == null) {
             this.estadoFav = "Activo";
+        }
+        if (this.origenOferta == null) {
+            this.origenOferta = "Interna";
         }
         // if (this.fechaAgregado == null) this.fechaAgregado = LocalDateTime.now();
     }
