@@ -7,7 +7,7 @@
         <p>Tu formación universitaria, institutos y títulos</p>
       </div>
     </div>
-    <button (click)="abrirModal()" class="btn-add-section" type="button">
+    <button *ngIf="titulos && titulos.length > 0" (click)="abrirModal()" class="btn-add-section" type="button">
       <span class="material-icons">add</span> Añadir Formación
     </button>
   </div>
@@ -33,9 +33,13 @@
     </div>
   </div>
 
-  <div *ngIf="!titulos || titulos.length === 0" style="text-align: center; padding: 20px; color: #64748b;">
-    <span class="material-icons" style="font-size: 40px; opacity: 0.5;">school</span>
-    <p>No tienes formación académica registrada.</p>
+  <div *ngIf="!titulos || titulos.length === 0" class="empty-state-container">
+    <span class="material-icons empty-icon">school</span>
+    <h3>No hay formación registrada</h3>
+    <p>Añade tus títulos académicos para que las empresas conozcan tu preparación.</p>
+    <button (click)="abrirModal()" class="btn-add-section">
+      <span class="material-icons">add</span> Registrar mi primer título
+    </button>
   </div>
 </div>
 
@@ -45,15 +49,17 @@
       <h2>{{ idEdicionAcademica ? 'Editar' : 'Añadir' }} Formación Académica</h2>
       <button class="btn-close" (click)="cerrarModal()"><span class="material-icons">close</span></button>
     </div>
+
     <div class="modal-body">
       <div class="form-grid">
         <div class="form-group">
           <label>Facultad</label>
-          <select [(ngModel)]="nuevoTitulo.id_facultad" name="id_facultad" (change)="onFacultadSelect()">
+          <select [(ngModel)]="nuevoTitulo.id_facultad" name="id_facultad" (ngModelChange)="onFacultadSelect()">
             <option [ngValue]="null" disabled>Seleccionar Facultad...</option>
             <option *ngFor="let f of facultades" [value]="f.idFacultad">{{ f.nombreFacultad }}</option>
           </select>
         </div>
+
         <div class="form-group">
           <label>Carrera</label>
           <select [(ngModel)]="nuevoTitulo.id_carrera" name="id_carrera" [disabled]="!nuevoTitulo.id_facultad">
@@ -61,26 +67,32 @@
             <option *ngFor="let c of carrerasNuevoTitulo" [value]="c.idCarrera">{{ c.nombreCarrera }}</option>
           </select>
         </div>
+
         <div class="form-group">
           <label>Fecha de Graduación</label>
           <input type="date" [(ngModel)]="nuevoTitulo.fechaGraduacion" name="fechaGraduacion">
         </div>
+
         <div class="form-group">
           <label>Registro SENESCYT</label>
           <input type="text" [(ngModel)]="nuevoTitulo.registroSenescyt" name="registroSenescyt" placeholder="Ej: 1234-56-789012">
         </div>
       </div>
+
       <div class="actions-row mt-4">
         <button type="button" class="btn-attach" (click)="fileInputAcad.click()">
-          <span class="material-icons">attach_file</span> {{ nuevoTitulo.nombreArchivo || 'Adjuntar Título (PDF)' }}
+          <span class="material-icons">attach_file</span>
+          {{ nuevoTitulo.nombreArchivo || 'Adjuntar Título (PDF)' }}
         </button>
         <input #fileInputAcad type="file" (change)="onFileSelected($event)" hidden accept=".pdf">
       </div>
     </div>
+
     <div class="modal-footer">
       <button class="btn-cancel" (click)="cerrarModal()">Cancelar</button>
       <button class="btn-save-item" (click)="prepararGuardado()">
-        <span class="material-icons">cloud_upload</span> {{ idEdicionAcademica ? 'Actualizar' : 'Guardar' }} Título
+        <span class="material-icons">cloud_upload</span>
+        {{ idEdicionAcademica ? 'Actualizar' : 'Guardar' }} Título
       </button>
     </div>
   </div>
