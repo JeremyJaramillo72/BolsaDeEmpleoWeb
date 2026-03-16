@@ -279,48 +279,75 @@ export class GestionOfertasComponent implements OnInit {
     this.nuevaOferta.habilidades.splice(index, 1);
   }
 
+
   validarFormulario(): boolean {
     const o = this.nuevaOferta;
 
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
     if (!o.titulo || o.titulo.trim().length < 5) {
-      this.ui.advertencia('⚠️ El título del puesto es obligatorio y debe ser claro (mínimo 5 caracteres).');
+      this.ui.advertencia('⚠️ El título es demasiado corto (mínimo 5 caracteres).');
       return false;
     }
+
+    if (o.experienciaMinima === null || o.experienciaMinima < 0) {
+      this.ui.advertencia('⚠️ La experiencia mínima no puede ser negativa.');
+      return false;
+    }
+
     if (!o.cantidadVacantes || o.cantidadVacantes < 1) {
-      this.ui.advertencia('⚠️ Debe haber al menos 1 vacante disponible.');
+      this.ui.advertencia('⚠️ Debe haber al menos 1 vacante.');
+      return false;
+    }
+
+    if (!this.tempIdProvincia || !o.idCiudad) {
+      this.ui.advertencia('⚠️ Debe seleccionar la ubicación (Provincia y Ciudad).');
       return false;
     }
 
     if (o.salarioMin != null && o.salarioMax != null) {
-      if (o.salarioMin > o.salarioMax) {
-        this.ui.advertencia('⚠️ El salario mínimo no puede ser mayor al salario máximo.');
+      if (Number(o.salarioMin) > Number(o.salarioMax)) {
+        this.ui.advertencia('⚠️ El salario mínimo no puede ser mayor al máximo.');
         return false;
       }
     }
 
-    if (!o.fechaCierre) {
-      this.ui.advertencia('⚠️ La fecha de cierre de la oferta es obligatoria.');
-      return false;
-    }
-
-    const hoy = new Date().toISOString().split('T')[0];
-    if (o.fechaCierre < hoy) {
-      this.ui.advertencia('⚠️ La fecha de cierre no puede ser una fecha que ya pasó.');
-      return false;
-    }
-
     if (!o.descripcion || o.descripcion.trim().length < 15) {
-      this.ui.advertencia('⚠️ La descripción de la oferta es muy corta. Detalla mejor el rol (mínimo 15 caracteres).');
+      this.ui.advertencia('⚠️ La descripción de la oferta es muy corta (mínimo 15 caracteres).');
       return false;
     }
+
+    if (!o.fechaCierre) {
+      this.ui.advertencia('⚠️ La fecha de cierre es obligatoria.');
+      return false;
+    }
+
+    const partesFecha = o.fechaCierre.split('-'); // ["2026", "03", "15"]
+    const fechaC = new Date(Number(partesFecha[0]), Number(partesFecha[1]) - 1, Number(partesFecha[2]));
+    fechaC.setHours(0, 0, 0, 0); // Forzar hora local
+
+    if (fechaC.getTime() < hoy.getTime()) {
+      this.ui.advertencia('⚠️ La fecha de cierre no puede ser anterior a hoy.');
+      return false;
+    }
+
+    const limiteFuturo = new Date();
+    limiteFuturo.setFullYear(hoy.getFullYear() + 1);
+    if (fechaC.getTime() > limiteFuturo.getTime()) {
+      this.ui.advertencia('⚠️ La fecha de cierre no puede exceder 1 año desde hoy.');
+      return false;
+    }
+
 
     if (!o.habilidades || o.habilidades.length === 0) {
-      this.ui.advertencia('⚠️ Te recomendamos agregar al menos 1 habilidad técnica requerida para el puesto.');
+      this.ui.advertencia('⚠️ Debe agregar al menos 1 habilidad técnica requerida para el puesto.');
       return false;
     }
 
     return true;
   }
+
   agregarRequisitoManual() {
     if (this.tempRequisitoManual.trim().length > 0) {
       this.nuevaOferta.requisitos_manuales.push({ descripcion: this.tempRequisitoManual.trim() });
@@ -331,7 +358,6 @@ export class GestionOfertasComponent implements OnInit {
   removerRequisitoManual(index: number) {
     this.nuevaOferta.requisitos_manuales.splice(index, 1);
   }
-
 
   guardar() {
     if (!this.validarFormulario()) {
@@ -344,14 +370,14 @@ export class GestionOfertasComponent implements OnInit {
         this.cargarOfertas();
       },
       error: (err) => {
-
         if (err.status === 200 || err.status === 201) {
           this.ui.exito('¡Oferta guardada con éxito!');
           this.cerrarFormulario();
           this.cargarOfertas();
         } else {
           console.error("Detalle del error al guardar:", err);
-          this.ui.error('Error al guardar. Revisa la consola.');
+          const mensajeReal = err.error?.error || err.error?.message || 'Error al guardar la oferta. Revisa la consola.';
+          this.ui.error(`⚠️ ${mensajeReal}`);
         }
       }
     });

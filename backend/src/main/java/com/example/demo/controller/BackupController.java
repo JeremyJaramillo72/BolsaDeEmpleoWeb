@@ -28,10 +28,14 @@ public class BackupController {
     @PostMapping("/backup/descargar")
     public ResponseEntity<Resource> descargarRespaldo() {
         try {
-            File backupFile = backupService.generarBackupYSubirAzure();
+
+            DatabaseBackupService.BackupResult resultado = backupService.generarBackupYSubirAzure();
 
 
-            backupAutomatizacionService.registrarAuditoria("MANUAL", "EXITO", backupFile.length(), null);
+            File backupFile = resultado.getArchivoLocal();
+            String urlAzure = resultado.getUrlAzure();
+
+            backupAutomatizacionService.registrarAuditoria("MANUAL", "EXITO", backupFile.length(), null, urlAzure);
 
             FileSystemResource resource = new FileSystemResource(backupFile);
             HttpHeaders headers = new HttpHeaders();
@@ -48,7 +52,8 @@ public class BackupController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            backupAutomatizacionService.registrarAuditoria("MANUAL", "ERROR", 0L, e.getMessage());
+
+            backupAutomatizacionService.registrarAuditoria("MANUAL", "ERROR", 0L, e.getMessage(), null);
             return ResponseEntity.internalServerError().build();
         }
     }

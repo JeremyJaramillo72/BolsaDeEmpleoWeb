@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
+import { UiNotificationService } from '../../../services/ui-notification.service';
 @Component({
   selector: 'app-seccion-idiomas',
   standalone: true,
@@ -11,7 +11,6 @@ import { FormsModule } from '@angular/forms';
 })
 export class SeccionIdiomasComponent {
   @Input() idiomas: any[] = [];
-
   @Input() idiomasDisponibles: any[] = [];
   @Input() niveles: string[] = [];
 
@@ -24,6 +23,9 @@ export class SeccionIdiomasComponent {
   modalIdioma: boolean = false;
   idEdicionIdioma: number | null = null;
   nuevoIdioma: any = {id_idioma: null, nivel: null, archivo: null, nombreArchivo: ''};
+
+
+  constructor(private ui: UiNotificationService) {}
 
   abrirModal() {
     this.modalIdioma = true;
@@ -49,13 +51,32 @@ export class SeccionIdiomasComponent {
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (!file) return;
+
+    const maxSize = 20 * 1024 * 1024;
+    if (file.size > maxSize) {
+
+      this.ui.error('El archivo es muy pesado. El límite máximo permitido es de 20 MB.');
+
+      event.target.value = '';
+      this.nuevoIdioma.archivo = null;
+      this.nuevoIdioma.nombreArchivo = '';
+      return;
+    }
+
+    if (file.type !== 'application/pdf') {
+
+      this.ui.advertencia('Por favor, sube únicamente archivos en formato PDF.');
+      event.target.value = '';
+      return;
+    }
+
     this.nuevoIdioma.archivo = file;
     this.nuevoIdioma.nombreArchivo = file.name;
   }
 
   prepararGuardado(): void {
     if (!this.nuevoIdioma.id_idioma || !this.nuevoIdioma.nivel) {
-      alert('Selecciona un idioma y nivel primero.');
+      this.ui.advertencia('⚠️ Selecciona un idioma y nivel primero.');
       return;
     }
 

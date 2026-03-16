@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { UiNotificationService } from '../../../services/ui-notification.service';
 
 @Component({
   selector: 'app-seccion-academica',
@@ -33,6 +34,8 @@ export class SeccionAcademicaComponent {
     archivoReferencia: null,
     nombreArchivo: ''
   };
+
+  constructor(private ui: UiNotificationService) {}
 
   abrirModal() {
     this.modalAcademica = true;
@@ -72,21 +75,59 @@ export class SeccionAcademicaComponent {
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (!file) return;
+
+    const maxSize = 20 * 1024 * 1024;
+    if (file.size > maxSize) {
+      this.ui.error('⚠️ El archivo es muy pesado. El límite máximo permitido es de 20 MB.');
+      event.target.value = '';
+      this.nuevoTitulo.archivoReferencia = null;
+      this.nuevoTitulo.nombreArchivo = '';
+      return;
+    }
+
+    if (file.type !== 'application/pdf') {
+      this.ui.advertencia('⚠️ Por favor, sube el documento únicamente en formato PDF.');
+      event.target.value = '';
+      return;
+    }
+
     this.nuevoTitulo.archivoReferencia = file;
     this.nuevoTitulo.nombreArchivo = file.name;
   }
 
   prepararGuardado(): void {
-    if (!this.nuevoTitulo.id_carrera || !this.nuevoTitulo.fechaGraduacion) {
-      alert('Llena la carrera y fecha de graduación para guardar este título.');
+    if (!this.nuevoTitulo.id_facultad || !this.nuevoTitulo.id_carrera) {
+      this.ui.advertencia('⚠️ Debes seleccionar la facultad y la carrera.');
+      return;
+    }
+
+    if (!this.nuevoTitulo.fechaGraduacion) {
+      this.ui.advertencia('⚠️ La fecha de graduación es obligatoria.');
+      return;
+    }
+
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const partesFecha = this.nuevoTitulo.fechaGraduacion.split('-');
+    const fechaG = new Date(Number(partesFecha[0]), Number(partesFecha[1]) - 1, Number(partesFecha[2]));
+    fechaG.setHours(0, 0, 0, 0);
+
+    if (fechaG.getTime() > hoy.getTime()) {
+      this.ui.advertencia('⚠️ La fecha de graduación no puede ser en el futuro.');
       return;
     }
 
     const formData = new FormData();
     formData.append('idCarrera', this.nuevoTitulo.id_carrera.toString());
     formData.append('fechaGraduacion', this.nuevoTitulo.fechaGraduacion);
-    formData.append('numeroSenescyt', this.nuevoTitulo.registroSenescyt);
-    if (this.nuevoTitulo.archivoReferencia) formData.append('archivo', this.nuevoTitulo.archivoReferencia);
+
+    if (this.nuevoTitulo.registroSenescyt) {
+      formData.append('numeroSenescyt', this.nuevoTitulo.registroSenescyt);
+    }
+    if (this.nuevoTitulo.archivoReferencia) {
+      formData.append('archivo', this.nuevoTitulo.archivoReferencia);
+    }
 
     this.onGuardarAcademica.emit({ formData: formData, idEdicion: this.idEdicionAcademica });
     this.cerrarModal();

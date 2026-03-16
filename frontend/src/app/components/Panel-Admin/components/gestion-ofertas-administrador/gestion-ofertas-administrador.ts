@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { OfertaService, OfertaLaboralDTO, OfertaHabilidadDTO } from '../../../../services/oferta.service';
+import { OfertaService } from '../../../../services/oferta.service';
 import { UiNotificationService } from '../../../../services/ui-notification.service';
 
 @Component({
@@ -13,7 +13,6 @@ import { UiNotificationService } from '../../../../services/ui-notification.serv
   styleUrls: ['./gestion-ofertas-administrador.css']
 })
 export class RegistroOfertasAdministradorComponent implements OnInit {
-
 
   mostrarFormulario: boolean = false;
   ofertasFisicas: any[] = [];
@@ -40,9 +39,6 @@ export class RegistroOfertasAdministradorComponent implements OnInit {
   empresaSeleccionada: any = null;
   nuevaOferta: any;
 
-
-
-
   listaEmpresas: any[] = [];
   listaCiudadesEmpresa: any[] = [];
   mostrarFormularioEmpresa: boolean = false;
@@ -58,7 +54,6 @@ export class RegistroOfertasAdministradorComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarCatalogosDinamicos();
-    this.cargarEmpresasRegistradas();
     this.cargarOfertasFisicas();
   }
 
@@ -138,8 +133,6 @@ export class RegistroOfertasAdministradorComponent implements OnInit {
       nombreArchivo: oferta.nombreArchivo || 'Oficio adjunto previamente'
     };
 
-    // ... (el resto del código de la provincia y ciudad se queda igual) ...
-
     this.tempIdProvincia = this.nuevaOferta.idProvincia;
     if (this.tempIdProvincia > 0) {
       this.ofertaService.obtenerProvinciasPorCiudad(this.tempIdProvincia).subscribe(res => {
@@ -156,9 +149,8 @@ export class RegistroOfertasAdministradorComponent implements OnInit {
     this.mostrarFormulario = true;
   }
 
-
   cargarEmpresasRegistradas(): void {
-    // this.ofertaService.obtenerEmpresas().subscribe(...)
+    // Lógica futura si decides cargar todas de golpe
   }
 
   onProvinciaEmpresaChange() {
@@ -173,15 +165,28 @@ export class RegistroOfertasAdministradorComponent implements OnInit {
 
   guardarYSeleccionarEmpresa(): void {
     const ne = this.nuevaEmpresaObj;
-    if (!ne.nombre_empresa || !ne.ruc || !ne.correo || !ne.contrasenia || !ne.id_provincia || !ne.id_ciudad || !ne.id_categoria) {
-      this.ui.advertencia('Por favor completa todos los campos obligatorios de la empresa.');
+
+    // VALIDACIONES EXTRAS DE LA NUEVA EMPRESA
+    if (!ne.nombre_empresa || ne.nombre_empresa.length < 3) {
+      this.ui.advertencia('Nombre de empresa inválido.');
+      return;
+    }
+    if (!/^\d{13}$/.test(ne.ruc)) {
+      this.ui.advertencia('El RUC debe tener exactamente 13 dígitos numéricos.');
+      return;
+    }
+    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(ne.correo)) {
+      this.ui.advertencia('El formato del correo electrónico no es válido.');
       return;
     }
     if (ne.contrasenia.length < 8) {
-      this.ui.advertencia('La contraseña debe tener al menos 8 caracteres.');
+      this.ui.advertencia('La contraseña debe tener al menos 8 caracteres por seguridad.');
       return;
     }
-
+    if (!ne.id_provincia || !ne.id_ciudad || !ne.id_categoria) {
+      this.ui.advertencia('Complete la ubicación y categoría de la empresa.');
+      return;
+    }
 
     this.ofertaService.crearCuentaEmpresaAdmin(this.nuevaEmpresaObj).subscribe({
       next: (res: any) => {
@@ -209,7 +214,6 @@ export class RegistroOfertasAdministradorComponent implements OnInit {
     this.listaCiudadesEmpresa = [];
     this.nuevaEmpresaObj = { nombre_empresa: '', ruc: '', sitio_web: '', id_provincia: 0, id_ciudad: null, id_categoria: null, correo: '', contrasenia: '' };
   }
-
 
   inicializarOferta() {
     return {
@@ -258,7 +262,6 @@ export class RegistroOfertasAdministradorComponent implements OnInit {
     }
   }
 
-
   buscarEmpresaDinamica(event: any): void {
     const termino = event.target?.value || '';
 
@@ -277,23 +280,20 @@ export class RegistroOfertasAdministradorComponent implements OnInit {
       this.cdr.detectChanges();
     }
   }
-  seleccionarEmpresaPred(empresa: any): void {
 
+  seleccionarEmpresaPred(empresa: any): void {
     this.empresaSeleccionada = {
       id: empresa.idUsuario || empresa.idEmpresa,
       nombre: empresa.nombreEmpresa || empresa.razonSocial,
       ruc: empresa.ruc
     };
 
-
     this.nuevaOferta.idEmpresa = this.empresaSeleccionada.id;
     this.busquedaEmpresaTexto = this.empresaSeleccionada.nombre;
-
     this.resultadosEmpresas = [];
   }
 
   quitarEmpresa(): void {
-
     this.empresaSeleccionada = null;
     this.nuevaOferta.idEmpresa = null;
     this.busquedaEmpresaTexto = '';
@@ -331,6 +331,10 @@ export class RegistroOfertasAdministradorComponent implements OnInit {
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        this.ui.advertencia('El archivo es muy pesado (Máx 5MB)');
+        return;
+      }
       console.log('Tamaño del archivo:', file.size / (1024 * 1024), 'MB');
       this.nuevaOferta.archivo_fisico = file;
       this.nuevaOferta.nombreArchivo = file.name;
@@ -339,18 +343,69 @@ export class RegistroOfertasAdministradorComponent implements OnInit {
 
   validarFormulario(): boolean {
     const o = this.nuevaOferta;
+
+
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
     if (!o.idEmpresa && !this.mostrarFormularioEmpresa) {
       this.ui.advertencia('⚠️ Selecciona o crea la empresa solicitante.');
       return false;
     }
     if (!o.titulo || o.titulo.trim().length < 5) {
-      this.ui.advertencia('⚠️ El título del puesto es obligatorio.');
+      this.ui.advertencia('⚠️ El título es demasiado corto (mínimo 5 caracteres).');
       return false;
     }
+
+
+    if (o.experienciaMinima === null || o.experienciaMinima < 0) {
+      this.ui.advertencia('⚠️ La experiencia mínima no puede ser negativa.');
+      return false;
+    }
+
+    if (!o.cantidadVacantes || o.cantidadVacantes < 1) {
+      this.ui.advertencia('⚠️ Debe haber al menos 1 vacante.');
+      return false;
+    }
+
+    if (!this.tempIdProvincia || !o.idCiudad) {
+      this.ui.advertencia('⚠️ Debe seleccionar la ubicación (Provincia y Ciudad).');
+      return false;
+    }
+
+    if (o.salarioMin && o.salarioMax && Number(o.salarioMin) > Number(o.salarioMax)) {
+      this.ui.advertencia('⚠️ El salario mínimo no puede ser mayor al máximo.');
+      return false;
+    }
+
+
     if (!o.fechaCierre) {
       this.ui.advertencia('⚠️ La fecha de cierre es obligatoria.');
       return false;
     }
+
+
+    const partesFecha = o.fechaCierre.split('-');
+    const fechaC = new Date(Number(partesFecha[0]), Number(partesFecha[1]) - 1, Number(partesFecha[2]));
+    fechaC.setHours(0, 0, 0, 0); // Forzar a las 00:00:00 local
+
+    if (fechaC.getTime() < hoy.getTime()) {
+      this.ui.advertencia('⚠️ La fecha de cierre no puede ser anterior a hoy.');
+      return false;
+    }
+
+    const limiteFuturo = new Date();
+    limiteFuturo.setFullYear(hoy.getFullYear() + 1);
+    if (fechaC.getTime() > limiteFuturo.getTime()) {
+      this.ui.advertencia('⚠️ La fecha de cierre no puede exceder 1 año desde hoy.');
+      return false;
+    }
+
+    if (o.habilidades.length === 0) {
+      this.ui.advertencia('⚠️ Debe agregar al menos una habilidad técnica requerida.');
+      return false;
+    }
+
     return true;
   }
 
@@ -361,7 +416,7 @@ export class RegistroOfertasAdministradorComponent implements OnInit {
     const idAdminLogueado = localStorage.getItem('idUsuario') || '0';
 
     formData.append('idUsuarioAdmin', idAdminLogueado);
-    if (this.nuevaOferta.idOferta) formData.append('idOferta', this.nuevaOferta.idOferta.toString()); // Enviar ID si es edición
+    if (this.nuevaOferta.idOferta) formData.append('idOferta', this.nuevaOferta.idOferta.toString());
     formData.append('idEmpresa', this.nuevaOferta.idEmpresa ? this.nuevaOferta.idEmpresa.toString() : '');
     formData.append('titulo', this.nuevaOferta.titulo);
     formData.append('descripcion', this.nuevaOferta.descripcion);
@@ -381,7 +436,6 @@ export class RegistroOfertasAdministradorComponent implements OnInit {
       formData.append('archivoOficio', this.nuevaOferta.archivo_fisico);
     }
 
-
     this.ofertaService.registrarOfertaFisica(formData).subscribe({
       next: (res: any) => {
         this.ui.exito(this.nuevaOferta.idOferta ? '¡Oferta actualizada!' : '¡Oferta física registrada correctamente!');
@@ -389,11 +443,13 @@ export class RegistroOfertasAdministradorComponent implements OnInit {
         this.cargarOfertasFisicas();
       },
       error: (err: any) => {
-        this.ui.error('Error al guardar la oferta física.');
-        console.error(err);
+        const mensajeReal = err.error?.error || err.error?.message || 'Error al procesar la solicitud en el servidor.';
+        this.ui.error(`⚠️ ${mensajeReal}`);
+        console.error('Detalle del servidor:', err);
       }
     });
   }
+
   limpiarFormulario() {
     this.nuevaOferta = this.inicializarOferta();
     this.tempIdProvincia = 0;

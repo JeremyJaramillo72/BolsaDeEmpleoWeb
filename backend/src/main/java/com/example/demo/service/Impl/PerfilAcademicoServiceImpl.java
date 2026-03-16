@@ -28,8 +28,6 @@ public class PerfilAcademicoServiceImpl implements IPerfilAcademicoService {
                 urlArchivo = azureStorageConfig.subirDocumento(dto.getArchivo());
             }
 
-
-
             perfilAcademicoRepository.actualizarFormacionAcademica(
                     dto.getIdAcademico(),
                     dto.getIdCarrera(),

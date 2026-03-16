@@ -23,29 +23,34 @@ public class SesionServiceImpl implements ISesionService {
     @Override
     @Transactional
     public Long registrarLogin(Integer idSeguridad, String ip, String navegador, String dispositivo) {
-        // Ejecutamos la función y capturamos el resultado (el ID generado)
-        // Nota: Usamos una consulta que retorne el valor, por ejemplo llamando a la función con SELECT
+
+        // 1. Usamos CAST(... AS BIGINT) porque actualizamos la BD para que retorne bigint
         Object result = entityManager.createNativeQuery(
-                        "SELECT seguridad.fn_registrar_sesion(:idSeg, :ip, :nav, :disp, 'ACTIVA')")
+                        "SELECT CAST(seguridad.fn_registrar_sesion(:idSeg, :ip, :nav, :disp, 'ACTIVA') AS BIGINT)")
                 .setParameter("idSeg", idSeguridad)
                 .setParameter("ip",    ip)
                 .setParameter("nav",   navegador)
                 .setParameter("disp",  dispositivo)
-                .getSingleResult();
+                .getSingleResult(); // <-- Volvemos a usar getSingleResult()
 
-        return ((Number) result).longValue();
+        // 2. Convertimos el resultado de forma segura
+        if (result != null) {
+            return Long.valueOf(result.toString());
+        }
+
+        return null;
     }
 
     @Override
     @Transactional
     public void registrarLogout(Integer idSeguridad) {
+
+        // Cambiamos el AS INTEGER por AS BIGINT para que coincida con la nueva función
         entityManager.createNativeQuery(
-                        "SELECT seguridad.fn_registrar_sesion(:idSeg, NULL, NULL, NULL, 'CERRADA')")
+                        "SELECT CAST(seguridad.fn_registrar_sesion(:idSeg, NULL, NULL, NULL, 'CERRADA') AS BIGINT)")
                 .setParameter("idSeg", idSeguridad)
                 .getSingleResult();
     }
-
-    // 🔥 EL NUEVO MÉTODO DE LA MUERTE
     @Override
     @Transactional
     public void actualizarEstadoCuentaYSesion(Long idSesion, String estadoCuenta) {

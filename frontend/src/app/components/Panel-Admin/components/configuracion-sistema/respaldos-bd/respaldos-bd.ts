@@ -2,6 +2,7 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RespaldosDbService } from '../../../services/respaldos-db.service';
+import { UiNotificationService } from '../../../../../services/ui-notification.service';
 
 @Component({
   selector: 'app-respaldos-bd',
@@ -13,12 +14,15 @@ import { RespaldosDbService } from '../../../services/respaldos-db.service';
 export class RespaldosBd implements OnInit {
   private respaldosService = inject(RespaldosDbService);
   public cdr = inject(ChangeDetectorRef);
+
+  // 🔥 2. Inyectamos el servicio al estilo moderno de Angular
+  private ui = inject(UiNotificationService);
+
   restaurandoArchivo: number | null = null;
   tipoFrecuencia: string = 'SEMANAL';
   intervaloValor: number = 1;
   isBackingUp: boolean = false;
   descargandoArchivo: string | null = null;
-
 
   autoBackupHabilitado: boolean = false;
   horaRespaldo: string = '03:00';
@@ -32,7 +36,6 @@ export class RespaldosBd implements OnInit {
     {inicial: 'Do', nombre: 'Do', seleccionado: false}
   ];
 
-
   historialBackups: any[] = [];
   cargandoHistorial: boolean = false;
 
@@ -40,7 +43,6 @@ export class RespaldosBd implements OnInit {
     this.cargarConfiguracion();
     this.cargarHistorial();
   }
-
 
   ejecutarBackup() {
     this.isBackingUp = true;
@@ -59,19 +61,19 @@ export class RespaldosBd implements OnInit {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
 
-        alert('¡Respaldo completado y guardado en la Nube!');
+        this.ui.exito('¡Respaldo completado y guardado en la Nube!');
         this.cargarHistorial();
       },
       error: (err) => {
         this.isBackingUp = false;
         this.cdr.detectChanges();
         console.error('Error del servidor:', err);
-        alert('Falló la generación de la copia de seguridad.');
+
+        this.ui.error('Falló la generación de la copia de seguridad.');
         this.cargarHistorial();
       }
     });
   }
-
 
   cargarConfiguracion() {
     this.respaldosService.obtenerConfiguracion().subscribe(res => {
@@ -115,11 +117,13 @@ export class RespaldosBd implements OnInit {
     };
 
     this.respaldosService.guardarConfiguracion(config).subscribe({
-      next: () => alert('Configuración guardada con éxito.'),
-      error: (err) => console.error('Error guardando config:', err)
+      next: () => this.ui.exito('Configuración guardada con éxito.'),
+      error: (err) => {
+        console.error('Error guardando config:', err);
+        this.ui.error('Hubo un error al guardar la configuración.');
+      }
     });
   }
-
 
   cargarHistorial() {
     this.cargandoHistorial = true;
@@ -141,7 +145,6 @@ export class RespaldosBd implements OnInit {
     });
   }
 
-
   padZero(num: number): string {
     return num < 10 ? '0' + num : num.toString();
   }
@@ -152,6 +155,7 @@ export class RespaldosBd implements OnInit {
     if (mb < 1024) return mb.toFixed(2) + ' MB';
     return (mb / 1024).toFixed(2) + ' GB';
   }
+
   restaurarBackup(idBackup: number) {
     const confirmado = confirm(
       'Esto descargará el respaldo desde Azure y creará una NUEVA base de datos. El proceso puede tardar un par de minutos. ¿Deseas continuar?'
@@ -167,13 +171,14 @@ export class RespaldosBd implements OnInit {
           this.cdr.detectChanges();
 
           const nombreDb = res?.nombreNuevaBd || 'creada exitosamente';
-          alert(`¡Éxito! Nueva base de datos clonada: ${nombreDb}`);
+          this.ui.exito(`¡Éxito! Nueva base de datos clonada: ${nombreDb}`);
         },
         error: (err) => {
           this.restaurandoArchivo = null;
           this.cdr.detectChanges();
           console.error('Error restaurando la base de datos:', err);
-          alert('Hubo un error crítico al intentar restaurar la base de datos. Revisa la consola para más detalles.');
+          // 🔥 7. Cambiamos el alert por error
+          this.ui.error('Error crítico al restaurar la base de datos. Revisa la consola.');
         }
       });
     }
@@ -181,7 +186,7 @@ export class RespaldosBd implements OnInit {
 
   descargarRespaldoHistorial(item: any) {
     if (!item.urlAzure) {
-      alert('Error: No se encontró la ruta del archivo en la nube.');
+      this.ui.error('Error: No se encontró la ruta del archivo en la nube.');
       return;
     }
 
@@ -208,7 +213,8 @@ export class RespaldosBd implements OnInit {
         this.descargandoArchivo = null;
         this.cdr.detectChanges();
         console.error('Error descargando de Azure:', err);
-        alert('No se pudo descargar el archivo desde Azure. Es posible que haya sido eliminado de la nube.');
+
+        this.ui.error('No se pudo descargar el archivo de Azure. Posiblemente fue eliminado.');
       }
     });
   }

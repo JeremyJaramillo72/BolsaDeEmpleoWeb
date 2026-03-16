@@ -14,6 +14,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -39,10 +41,26 @@ public class DatabaseBackupService {
 
     @Value("${azure.storage.container-name.backups}")
     private String containerNameBackups;
- private final JdbcTemplate jdbcTemplate;
-    public File generarBackupYSubirAzure() throws Exception {
 
-        // 1. Nombres de Archivos
+    private final JdbcTemplate jdbcTemplate;
+
+    
+    public static class BackupResult {
+        private File archivoLocal;
+        private String urlAzure;
+
+        public BackupResult(File archivoLocal, String urlAzure) {
+            this.archivoLocal = archivoLocal;
+            this.urlAzure = urlAzure;
+        }
+
+        public File getArchivoLocal() { return archivoLocal; }
+        public String getUrlAzure() { return urlAzure; }
+    }
+
+
+    public BackupResult generarBackupYSubirAzure() throws Exception {
+
         String timeStamp = new SimpleDateFormat("dd-MMM-yyyy_hh-mm-a").format(new Date());
         String dbFileName = "Bolsa_Uteq_" + timeStamp + ".backup";
         String zipFileName = "Backup_Bolsa_" + timeStamp + ".zip";
@@ -50,7 +68,6 @@ public class DatabaseBackupService {
         String tempDbPath = Paths.get(System.getProperty("java.io.tmpdir"), dbFileName).toString();
         String tempZipPath = Paths.get(System.getProperty("java.io.tmpdir"), zipFileName).toString();
 
-        // 2. Ejecutar pg_dump
         ProcessBuilder pb = new ProcessBuilder(
                 pgDumpPath,
                 "-U", dbUser,
@@ -64,7 +81,6 @@ public class DatabaseBackupService {
         pb.environment().put("PGPASSWORD", dbPassword);
         pb.environment().put("PGSSLMODE", "require");
         pb.redirectErrorStream(true);
-
         Process process = pb.start();
 
         java.io.BufferedReader reader = new java.io.BufferedReader(
@@ -81,17 +97,10 @@ public class DatabaseBackupService {
             throw new RuntimeException("Fallo pg_dump. Código: " + exitCode + ". Detalle:\n" + outputMessage.toString());
         }
 
-        // 🟢 3. MAGIA: EMPAQUETAR EL .BACKUP DENTRO DE UN .ZIP 🟢
         empaquetarEnZip(tempDbPath, tempZipPath, dbFileName);
-
-        // 4. Subimos el .ZIP a Azure (en vez del .backup suelto)
-        subirAAzure(tempZipPath, zipFileName);
-
-        // 5. Limpieza: Borramos el .backup original para no dejar basura en el servidor
+        String urlGeneradaAzure = subirAAzure(tempZipPath, zipFileName);
         Files.deleteIfExists(Paths.get(tempDbPath));
-
-
-        return new File(tempZipPath);
+        return new BackupResult(new File(tempZipPath), urlGeneradaAzure);
     }
 
     private void empaquetarEnZip(String sourceFilePath, String zipFilePath, String fileNameInsideZip) throws Exception {
@@ -111,8 +120,9 @@ public class DatabaseBackupService {
         }
     }
 
-    public ByteArrayResource descargarDeAzure(String fileName) {
+    public ByteArrayResource descargarDeAzure(String encodedFileName) {
         try {
+            String fileName = URLDecoder.decode(encodedFileName, StandardCharsets.UTF_8.name());
             BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
                     .connectionString(azureConnectionString)
                     .buildClient();
@@ -134,107 +144,123 @@ public class DatabaseBackupService {
         }
     }
 
-        private void subirAAzure (String filePath, String fileName){
-            try {
-                BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
-                        .connectionString(azureConnectionString)
-                        .buildClient();
 
-                BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerNameBackups);
-                if (!containerClient.exists()) {
-                    containerClient.create();
-                }
+    private String subirAAzure(String filePath, String fileName) {
+        try {
+            BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
+                    .connectionString(azureConnectionString)
+                    .buildClient();
 
-                BlobClient blobClient = containerClient.getBlobClient(fileName);
-                blobClient.uploadFromFile(filePath);
-            } catch (Exception e) {
-                throw new RuntimeException("Error subiendo a Azure: " + e.getMessage());
+            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerNameBackups);
+            if (!containerClient.exists()) {
+                containerClient.create();
             }
+
+            BlobClient blobClient = containerClient.getBlobClient(fileName);
+            blobClient.uploadFromFile(filePath, true);
+
+            return blobClient.getBlobUrl();
+        } catch (Exception e) {
+            throw new RuntimeException("Error subiendo a Azure: " + e.getMessage());
         }
+    }
+
     public String restaurarEnNuevaBd(Long idBackup) throws Exception {
 
-        // 1. Ir a la base de datos para obtener el nombre del archivo ZIP y la fecha del backup
         String sql = "SELECT url_azure, fecha_ejecucion FROM seguridad.historial_backups WHERE id_backup = ?";
         java.util.Map<String, Object> backupRecord = jdbcTemplate.queryForMap(sql, idBackup);
 
         String urlAzure = (String) backupRecord.get("url_azure");
+        if (urlAzure == null || urlAzure.trim().isEmpty()) {
+            throw new RuntimeException("Error crítico: Este respaldo no tiene URL de Azure.");
+        }
+
         Date fechaEjecucion = (Date) backupRecord.get("fecha_ejecucion");
+        if (fechaEjecucion == null) fechaEjecucion = new Date();
 
-        // Extraer solo el nombre del archivo si la URL viene completa
-        String zipFileName = urlAzure.substring(urlAzure.lastIndexOf('/') + 1);
+        String rawZipFileName = urlAzure.substring(urlAzure.lastIndexOf('/') + 1);
+        String zipFileName = java.net.URLDecoder.decode(rawZipFileName, java.nio.charset.StandardCharsets.UTF_8.name());
 
-        // 2. Generar el nombre AUTOMÁTICO de la nueva Base de Datos (Postgres exige minúsculas y sin guiones medios)
         String fechaSegura = new SimpleDateFormat("yyyy_MM_dd_HHmm").format(fechaEjecucion);
         String nuevaBd = "bolsa_uteq_" + fechaSegura;
 
-        // Rutas temporales en el servidor
         String tempZipPath = Paths.get(System.getProperty("java.io.tmpdir"), zipFileName).toString();
         String tempUnzippedPath = null;
+        String tempGrantsPath = Paths.get(System.getProperty("java.io.tmpdir"), "grants_extraidos.sql").toString();
 
         try {
-            // 3. Descargar el archivo .ZIP desde Azure al disco duro
             BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().connectionString(azureConnectionString).buildClient();
             BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerNameBackups);
             BlobClient blobClient = containerClient.getBlobClient(zipFileName);
 
-            if (!blobClient.exists()) {
-                throw new RuntimeException("El backup no existe en la nube: " + zipFileName);
-            }
-            blobClient.downloadToFile(tempZipPath, true); // true = sobreescribir si ya existe
+            if (!blobClient.exists()) throw new RuntimeException("El backup no existe en Azure: " + zipFileName);
+            blobClient.downloadToFile(tempZipPath, true);
 
-            // 4. DESCOMPRIMIR EL .ZIP para sacar el archivo .backup (pg_restore no lee zips)
             tempUnzippedPath = descomprimirZip(tempZipPath);
 
-            // 5. Crear la nueva base de datos vacía
             jdbcTemplate.execute("CREATE DATABASE " + nuevaBd);
             System.out.println("Base de datos clonada creada: " + nuevaBd);
 
-            ProcessBuilder pb = new ProcessBuilder(
-                    "pg_restore",
-                    "-U", dbUser,
+            // 🟢 FASE 1: RESTAURAR DATOS Y ESQUEMA (SIN DUEÑOS NI PERMISOS)
+            ProcessBuilder pbData = new ProcessBuilder(
+                    "pg_restore", "-U", dbUser,
                     "-h", "bolsa-empleo-dbpg.postgres.database.azure.com",
-                    "-p", "5432",
-                    "-d", nuevaBd,
-                    "--no-owner",            // Evita cambiar el dueño de las tablas
-                    // 🔥 QUITAMOS --no-privileges PARA QUE SÍ RESTAURE TUS ROLES Y PERMISOS
-                    "--role=" + dbUser,
+                    "-p", "5432", "-d", nuevaBd,
+                    "--no-owner", "--no-privileges",
                     tempUnzippedPath
             );
+            pbData.environment().put("PGPASSWORD", dbPassword);
+            pbData.environment().put("PGSSLMODE", "require");
+            pbData.redirectErrorStream(true);
 
-            // Inyectar contraseña para automatizar
-            pb.environment().put("PGPASSWORD", dbPassword);
-            pb.environment().put("PGSSLMODE", "require");
-            pb.redirectErrorStream(true);
+            System.out.println("Iniciando Fase 1: Inyección de datos...");
+            Process procesoData = pbData.start();
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(procesoData.getInputStream()))) {
+                while (reader.readLine() != null) { }
+            }
+            procesoData.waitFor();
 
-            System.out.println("Iniciando inyección de datos con pg_restore en " + nuevaBd + "...");
-            Process proceso = pb.start();
+            // 🟢 FASE 2: EXTRAER Y FILTRAR PERMISOS (EL BYPASS)
+            System.out.println("Iniciando Fase 2: Extracción de esquema para obtener GRANTs...");
 
-            // Leer logs de la consola por si Postgres se queja
-            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(proceso.getInputStream()));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                System.out.println("pg_restore: " + line);
+            ProcessBuilder pbGrants = new ProcessBuilder(
+                    "pg_restore", "-s", "-f", tempGrantsPath, tempUnzippedPath
+            );
+            pbGrants.start().waitFor();
+
+            if (Files.exists(Paths.get(tempGrantsPath))) {
+                System.out.println("Filtrando y aplicando permisos limpios...");
+
+                java.util.List<String> todasLasLineas = Files.readAllLines(Paths.get(tempGrantsPath), java.nio.charset.StandardCharsets.UTF_8);
+                StringBuilder sqlSoloGrants = new StringBuilder();
+
+                for (String linea : todasLasLineas) {
+                    String lineaTrim = linea.trim().toUpperCase();
+                    if (lineaTrim.startsWith("GRANT ") || lineaTrim.startsWith("ALTER DEFAULT PRIVILEGES")) {
+                        sqlSoloGrants.append(linea).append("\n");
+                    }
+                }
+
+                if (sqlSoloGrants.length() > 0) {
+                    String jdbcUrl = "jdbc:postgresql://bolsa-empleo-dbpg.postgres.database.azure.com:5432/" + nuevaBd + "?sslmode=require";
+                    try (java.sql.Connection conn = java.sql.DriverManager.getConnection(jdbcUrl, dbUser, dbPassword);
+                         java.sql.Statement stmt = conn.createStatement()) {
+                        stmt.execute(sqlSoloGrants.toString());
+                        System.out.println("✅ Todos los permisos (GRANTs) han sido aplicados con éxito.");
+                    }
+                }
             }
 
-            int exitCode = proceso.waitFor();
-
-            if (exitCode > 1) {
-                throw new RuntimeException("Fallo pg_restore. Código fatal: " + exitCode);
-            }
-
+            System.out.println("¡Restauración Completa!");
             return nuevaBd;
 
         } finally {
-            // 7. LIMPIEZA EXTREMA: Borramos el .zip y el .backup del servidor temporal
             Files.deleteIfExists(Paths.get(tempZipPath));
-            if (tempUnzippedPath != null) {
-                Files.deleteIfExists(Paths.get(tempUnzippedPath));
-            }
-            System.out.println("Archivos temporales limpiados del servidor.");
+            Files.deleteIfExists(Paths.get(tempGrantsPath));
+            if (tempUnzippedPath != null) Files.deleteIfExists(Paths.get(tempUnzippedPath));
         }
     }
 
-    // 🔥 MÉTODO AYUDANTE: Extrae el .backup del .zip
     private String descomprimirZip(String zipFilePath) throws Exception {
         String unzippedFilePath = zipFilePath.replace(".zip", ".backup");
 
@@ -255,5 +281,4 @@ public class DatabaseBackupService {
         }
         return unzippedFilePath;
     }
-
 }

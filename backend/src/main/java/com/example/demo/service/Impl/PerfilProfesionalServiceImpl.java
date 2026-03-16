@@ -36,23 +36,26 @@ private final PerfilProfesionalRepository perfilProfesionalRepository;
     @Override
     public void procesarYRegistrar(Long idUsuario, String tipoItem, Map<String, Object> datos, MultipartFile archivo) {
 
+        String jsonDatos;
+
         try {
-            String jsonDatos = objectMapper.writeValueAsString(datos);
-            String urlArchivo = null;
-            try{
-            if (archivo != null && !archivo.isEmpty()) {
-                urlArchivo = azureStorageConfig.subirDocumento(archivo);
-            }
-            } catch (Exception e) {
-                throw new RuntimeException("Error grave de comunicación con Azure. No se guardarán los datos.", e);
-            }
-
-            perfilProfesionalRepository.registrarItemPerfil(idUsuario, tipoItem, jsonDatos, urlArchivo);
-
+            jsonDatos = objectMapper.writeValueAsString(datos);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error al procesar los datos del formulario.", e);
         }
 
+        String urlArchivo = null;
+
+
+        if (archivo != null && !archivo.isEmpty()) {
+            try {
+                urlArchivo = azureStorageConfig.subirDocumento(archivo);
+            } catch (Exception e) {
+                throw new RuntimeException("Error grave de comunicación con Azure. El archivo es muy pesado o el servidor falló.", e);
+            }
+        }
+
+        perfilProfesionalRepository.registrarItemPerfil(idUsuario, tipoItem, jsonDatos, urlArchivo);
     }
 
     @Override

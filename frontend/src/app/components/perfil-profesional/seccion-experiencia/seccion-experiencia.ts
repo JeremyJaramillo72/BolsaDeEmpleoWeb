@@ -2,6 +2,9 @@ import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, ChangeDe
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+
+import { UiNotificationService } from '../../../services/ui-notification.service';
+
 @Component({
   selector: 'app-seccion-experiencia',
   standalone: true,
@@ -12,20 +15,15 @@ import { FormsModule } from '@angular/forms';
 export class SeccionExperienciaComponent {
 
   @Input() experiencias: any[] = [];
-
-
   @Input() provincias: any[] = [];
   @Input() ciudadesExp: any[] = [];
   @Input() categorias: any[] = [];
-
   @Input() cargosDisponibles: any[] = [];
   @Input() empresasDisponibles: any[] = [];
-
 
   @Output() onGuardarExperiencia = new EventEmitter<{formData: FormData, idEdicion: number | null}>();
   @Output() onEliminar = new EventEmitter<{index: number, id: number}>();
   @Output() onVerPdf = new EventEmitter<string>();
-
 
   @Output() onBuscarCargo = new EventEmitter<string>();
   @Output() onBuscarEmpresa = new EventEmitter<string>();
@@ -34,7 +32,6 @@ export class SeccionExperienciaComponent {
   @Output() onCrearEmpresa = new EventEmitter<{empresa: any, callback: (res: any) => void}>();
 
   @ViewChild('fileInputExp') fileInputExp!: ElementRef;
-
 
   modalExperiencia: boolean = false;
   idEdicionExperiencia: number | null = null;
@@ -51,7 +48,10 @@ export class SeccionExperienciaComponent {
     id_empresa_catalogo: null, id_provincia: null, id_ciudad: null,
     fecha_inicio: '', fecha_fin: '', descripcion: '', archivo_comprobante: null, nombreArchivo: ''
   };
-  constructor(private cdr: ChangeDetectorRef) {}
+
+
+  constructor(private cdr: ChangeDetectorRef, private ui: UiNotificationService) {}
+
   abrirModal() { this.modalExperiencia = true; }
 
   cerrarModal() {
@@ -85,7 +85,7 @@ export class SeccionExperienciaComponent {
     this.abrirModal();
   }
 
-  // --- LÓGICA DE CARGOS ---
+
   buscarCargoLocal(event: any) {
     const termino = event.target?.value || '';
     this.onBuscarCargo.emit(termino);
@@ -94,7 +94,7 @@ export class SeccionExperienciaComponent {
   seleccionarCargoPred(cargo: any) {
     this.cargoActual = cargo.idCargo;
     this.busquedaCargoTexto = cargo.nombreCargo;
-    this.cargosDisponibles = []; // Limpiamos la lista localmente
+    this.cargosDisponibles = [];
   }
 
   agregarCargoTemporal() {
@@ -102,7 +102,6 @@ export class SeccionExperienciaComponent {
       this.cargosTemporales.push({id_cargo: this.cargoActual, nombre_cargo: this.busquedaCargoTexto});
       this.cargoActual = null;
       this.busquedaCargoTexto = '';
-
     }
   }
 
@@ -111,9 +110,11 @@ export class SeccionExperienciaComponent {
   }
 
   guardarNuevoCargoLocal() {
-    if (!this.nuevoNombreCargo) return;
+    if (!this.nuevoNombreCargo) {
+      this.ui.advertencia('⚠️ El nombre del cargo no puede estar vacío.');
+      return;
+    }
 
-    // Le pasamos el nombre al Padre y una función para que nos avise cuando termine
     this.onCrearCargo.emit({
       nombre: this.nuevoNombreCargo,
       callback: (res: any) => {
@@ -127,7 +128,7 @@ export class SeccionExperienciaComponent {
     });
   }
 
-  // --- LÓGICA DE EMPRESAS ---
+
   buscarEmpresaLocal(event: any) {
     const termino = event.target?.value || '';
     this.onBuscarEmpresa.emit(termino);
@@ -141,7 +142,9 @@ export class SeccionExperienciaComponent {
 
   guardarNuevaEmpresaLocal() {
     if (!this.nuevaEmpresaObj.nombre_empresa) {
-      alert('El nombre de la empresa es obligatorio'); return;
+
+      this.ui.advertencia('⚠️ El nombre de la empresa es obligatorio.');
+      return;
     }
 
     this.onCrearEmpresa.emit({
@@ -156,9 +159,28 @@ export class SeccionExperienciaComponent {
     });
   }
 
+
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (!file) return;
+
+
+    const maxSize = 20 * 1024 * 1024;
+    if (file.size > maxSize) {
+      this.ui.error('⚠️ El certificado es muy pesado. El límite máximo permitido es de 20 MB.');
+      event.target.value = '';
+      this.nuevaExperiencia.archivo_comprobante = null;
+      this.nuevaExperiencia.nombreArchivo = '';
+      return;
+    }
+
+
+    if (file.type !== 'application/pdf') {
+      this.ui.advertencia('⚠️ Por favor, sube el certificado de experiencia únicamente en formato PDF.');
+      event.target.value = '';
+      return;
+    }
+
     this.nuevaExperiencia.archivo_comprobante = file;
     this.nuevaExperiencia.nombreArchivo = file.name;
   }
@@ -170,10 +192,26 @@ export class SeccionExperienciaComponent {
     }
   }
 
+
   prepararGuardado() {
     if (this.cargosTemporales.length === 0 || !this.nuevaExperiencia.id_empresa_catalogo || !this.nuevaExperiencia.id_ciudad) {
-      alert('Agrega al menos un cargo, una empresa y una ciudad primero.');
+      this.ui.advertencia('⚠️ Agrega al menos un cargo, la empresa y la ciudad donde trabajaste.');
       return;
+    }
+
+    if (!this.nuevaExperiencia.fecha_inicio) {
+      this.ui.advertencia('⚠️ La fecha de inicio es obligatoria.');
+      return;
+    }
+
+    if (this.nuevaExperiencia.fecha_fin) {
+      const fInicio = new Date(this.nuevaExperiencia.fecha_inicio);
+      const fFin = new Date(this.nuevaExperiencia.fecha_fin);
+
+      if (fInicio > fFin) {
+        this.ui.advertencia('⚠️ La fecha de inicio no puede ser posterior a la fecha de fin.');
+        return;
+      }
     }
 
     const formData = new FormData();

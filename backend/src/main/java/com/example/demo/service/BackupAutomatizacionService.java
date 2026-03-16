@@ -43,20 +43,23 @@ public class BackupAutomatizacionService {
         return historialRepo.findAll();
     }
 
-
     public void registrarAuditoria(String tipo, String estado, Long tamano, String error) {
         registrarAuditoria(tipo, estado, tamano, error, null);
     }
 
-    public void registrarAuditoria(String tipo, String estado, Long tamano, String error, String nombreArchivo) {
+
+    public void registrarAuditoria(String tipo, String estado, Long tamano, String error, String urlAzure) {
         HistorialBackup historial = new HistorialBackup();
         historial.setTipo(tipo);
         historial.setEstado(estado);
         historial.setTamanoBytes(tamano);
         historial.setMensajeError(error);
 
-        if (nombreArchivo != null) {
-            historial.setUrlAzure("https://storage.azure.com/" + nombreArchivo);
+
+        historial.setFechaEjecucion(LocalDateTime.now(ZoneId.of("America/Guayaquil")));
+
+        if (urlAzure != null) {
+            historial.setUrlAzure(urlAzure);
         }
 
         historialRepo.save(historial);
@@ -66,7 +69,7 @@ public class BackupAutomatizacionService {
     public void revisarYEjecutarBackupAutomatico() {
         ConfiguracionBackup config = obtenerConfiguracion();
 
-        // Si está apagado, no hace nada
+
         if (config.getHabilitado() == null || !config.getHabilitado()) {
             return;
         }
@@ -74,7 +77,7 @@ public class BackupAutomatizacionService {
         LocalDateTime ahora = LocalDateTime.now(ZoneId.of("America/Guayaquil"));
         LocalTime horaActual = ahora.toLocalTime();
 
-        // Buscar la última vez que se hizo para calcular los intervalos
+
         HistorialBackup ultimoBackup = historialRepo.findFirstByTipoOrderByIdBackupDesc("AUTOMATICO");
         LocalDateTime fechaUltimo = (ultimoBackup != null && ultimoBackup.getFechaEjecucion() != null)
                 ? ultimoBackup.getFechaEjecucion()
@@ -147,14 +150,18 @@ public class BackupAutomatizacionService {
 
     public void ejecutarProcesoBackup(String tipoBackup) {
         try {
-            File archivoZip = respaldosDbService.generarBackupYSubirAzure();
 
+            DatabaseBackupService.BackupResult resultado = respaldosDbService.generarBackupYSubirAzure();
 
-            registrarAuditoria(tipoBackup, "EXITO", archivoZip.length(), null, archivoZip.getName());
+            File archivoZip = resultado.getArchivoLocal();
+            String urlAzure = resultado.getUrlAzure();
+
+            registrarAuditoria(tipoBackup, "EXITO", archivoZip.length(), null, urlAzure);
 
             System.out.println("✅ Backup " + tipoBackup + " finalizado. Archivo: " + archivoZip.getName());
 
         } catch (Exception e) {
+
             registrarAuditoria(tipoBackup, "ERROR", 0L, e.getMessage());
             System.err.println("❌ Error en Backup " + tipoBackup + ": " + e.getMessage());
         }
