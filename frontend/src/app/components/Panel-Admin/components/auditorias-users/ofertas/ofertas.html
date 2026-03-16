@@ -72,16 +72,26 @@
 
 <div class="modal-overlay fade-in" *ngIf="mostrarModalHistorialOferta" (click)="cerrarModalHistorialOferta()">
   <div class="modal-pro large" (click)="$event.stopPropagation()">
-    <div class="modal-header-pro border-bottom">
+
+    <div class="modal-header-pro border-bottom" style="display: flex; justify-content: space-between; align-items: flex-start;">
       <div>
         <h2 class="text-indigo-dark mb-0">Trazabilidad de la Oferta</h2>
         <p class="text-muted mt-1 mb-0">
           <strong>#{{ ofertaSeleccionada?.idOferta }}</strong> - {{ ofertaSeleccionada?.tituloOferta }}
         </p>
       </div>
-      <button class="btn-close-pro" (click)="cerrarModalHistorialOferta()">
-        <span class="material-icons">close</span>
-      </button>
+
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <button (click)="descargarReportePdf()"
+                style="display: flex; align-items: center; gap: 6px; background-color: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 50px; font-weight: 600; font-size: 13px; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3); transition: all 0.2s;">
+          <span class="material-icons" style="font-size: 18px;">file_download</span>
+          <span>Exportar Historial</span>
+        </button>
+
+        <button class="btn-close-pro" (click)="cerrarModalHistorialOferta()" style="margin: 0;">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
     </div>
 
     <div class="modal-body-pro bg-gray-50 p-4" *ngIf="!cargandoHistorialOferta">

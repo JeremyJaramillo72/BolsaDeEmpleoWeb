@@ -134,4 +134,22 @@ public class AuditoriasController {
                     .body(Map.of("error", "Error al cerrar sesión: " + e.getMessage()));
         }
     }
+
+
+    @GetMapping("/exportar/pdf/{idParametro}")
+    public ResponseEntity<byte[]> exportarAuditoriasPdfUniversal(
+            @PathVariable Integer idParametro,
+            @RequestParam String tipo) {
+
+        // Llamamos al servicio que acabamos de refactorizar
+        byte[] pdf = auditoriaService.exportarAuditoriasPdfPorTipo(idParametro, tipo.toUpperCase());
+
+        // Configuramos el nombre del archivo dinámicamente
+        String nombreArchivo = "reporte_" + tipo.toLowerCase() + "_" + idParametro + ".pdf";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + nombreArchivo)
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
 }

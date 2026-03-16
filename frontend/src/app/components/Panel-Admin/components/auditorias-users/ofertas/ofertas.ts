@@ -133,6 +133,34 @@ export class OfertasComponent implements OnInit {
     this.listaHistorialOferta = [];
   }
 
+  // 🔥 AQUÍ ESTÁ EL MÉTODO QUE FALTABA PARA EL PDF 🔥
+  descargarReportePdf(): void {
+    if (!this.ofertaSeleccionada) return;
+
+    const idOferta = this.ofertaSeleccionada.idOferta;
+    const tipoFiltro = 'TRAZABILIDAD_OFERTA'; // Asegúrate de que el backend soporte este tipo
+
+    console.log(`Generando PDF para la oferta #${idOferta}...`);
+
+    this.adminService.descargarReportePdf(idOferta, tipoFiltro).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Historial_Oferta_${idOferta}_${new Date().getTime()}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (error) => {
+        console.error('Error al descargar el PDF', error);
+        this.mensajeError = 'Error al generar el reporte PDF.';
+      }
+    });
+  }
+
   // ✅ LOGICA PARA ABRIR EL MODAL CON EL DISEÑO CORRECTO
   abrirModalDetallesOferta(historial: TrazabilidadOferta): void {
     this.trazabilidadSeleccionada = historial;

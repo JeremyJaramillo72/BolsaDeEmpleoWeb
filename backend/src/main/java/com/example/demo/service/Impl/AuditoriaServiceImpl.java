@@ -3,8 +3,14 @@ package com.example.demo.service.Impl;
 import com.example.demo.dto.AuditoriaDTO;
 import com.example.demo.dto.ResumenAuditoriaDTO;
 import com.example.demo.service.IAuditoriaService;
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.layout.element.*;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Table;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import org.apache.poi.ss.usermodel.*;
@@ -12,6 +18,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.ByteArrayOutputStream;
 
 import java.util.*;
+import java.util.List;
 
 // Importaciones para JSON (Jackson)
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,10 +31,6 @@ import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Cell;
-import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.element.Text;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import com.itextpdf.layout.properties.VerticalAlignment;
@@ -35,8 +38,9 @@ import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.borders.SolidBorder;
 
 @Service
+@RequiredArgsConstructor
 public class AuditoriaServiceImpl implements IAuditoriaService {
-
+    private final JdbcTemplate jdbcTemplate;
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -46,9 +50,6 @@ public class AuditoriaServiceImpl implements IAuditoriaService {
     private final DeviceRgb COLOR_PRIMARIO    = new DeviceRgb(37,  99,  235); // #2563EB Azul Royal
     private final DeviceRgb COLOR_FONDO_GRIS  = new DeviceRgb(245, 245, 247);
     private final DeviceRgb COLOR_TEXTO_GRIS  = new DeviceRgb(100, 100, 100);
-    private final DeviceRgb COLOR_ICONO_CAL   = new DeviceRgb(37,  99,  235); // Azul  — Calendario
-    private final DeviceRgb COLOR_ICONO_DOC   = new DeviceRgb(79,  70,  229); // Índigo — Documento
-    private final DeviceRgb COLOR_ICONO_LIST  = new DeviceRgb(16, 185, 129);  // Verde  — Lista
 
     // Colores para el "Diff"
     private final DeviceRgb BG_ROJO   = new DeviceRgb(254, 226, 226);
@@ -57,7 +58,7 @@ public class AuditoriaServiceImpl implements IAuditoriaService {
     private final DeviceRgb TXT_VERDE = new DeviceRgb( 22, 101,  52);
 
     // ==========================================
-    // MÉTODOS DE NEGOCIO (sin cambios)
+    // MÉTODOS DE NEGOCIO (Sin cambios)
     // ==========================================
 
     @Override
@@ -67,8 +68,7 @@ public class AuditoriaServiceImpl implements IAuditoriaService {
                         "SELECT id_usuario, nombre, apellido, correo, fecha_registro, " +
                                 "estado_validacion, nombre_rol, ultimo_acceso, total_auditorias " +
                                 "FROM seguridad.fn_obtener_todos_usuarios()"
-                )
-                .getResultList();
+                ).getResultList();
 
         List<Map<String, Object>> lista = new ArrayList<>();
         for (Object[] row : resultados) {
@@ -98,8 +98,7 @@ public class AuditoriaServiceImpl implements IAuditoriaService {
                         "SELECT total_usuarios, usuarios_activos, administradores, " +
                                 "empresas, usuarios_normales, registros_hoy " +
                                 "FROM seguridad.fn_estadisticas_usuarios()"
-                )
-                .getSingleResult();
+                ).getSingleResult();
 
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalUsuarios",    row[0] != null ? ((Number) row[0]).intValue() : 0);
@@ -119,24 +118,9 @@ public class AuditoriaServiceImpl implements IAuditoriaService {
                                 "accion::text, tabla_afectada::text, id_registro_afectado, " +
                                 "datos_anteriores::text, datos_nuevos::text, campos_modificados::text " +
                                 "FROM seguridad.fn_reporte_auditoria_usuario(:idUsuario)"
-                )
-                .setParameter("idUsuario", idUsuario)
-                .getResultList();
+                ).setParameter("idUsuario", idUsuario).getResultList();
 
-        return resultados.stream().map(row -> new AuditoriaDTO(
-                row[0] != null ? ((Number) row[0]).intValue() : null,
-                row[1] != null ? row[1].toString() : null,
-                null,
-                row[2] != null ? (row[2] instanceof java.sql.Timestamp ?
-                        ((java.sql.Timestamp) row[2]).toLocalDateTime() :
-                        (java.time.LocalDateTime) row[2]) : null,
-                row[3] != null ? row[3].toString() : null,
-                row[4] != null ? row[4].toString() : null,
-                row[5] != null ? ((Number) row[5]).intValue() : null,
-                row[6] != null ? row[6].toString() : null,
-                row[7] != null ? row[7].toString() : null,
-                row[8] != null ? row[8].toString() : null
-        )).toList();
+        return mapearResultadosAuditoria(resultados);
     }
 
     @Override
@@ -310,147 +294,141 @@ public class AuditoriaServiceImpl implements IAuditoriaService {
     }
 
     // ==========================================
-    // PDF CORPORATIVO — VERSIÓN FINAL
+    // PDF CORPORATIVO — VERSIÓN FINAL CON TRAZABILIDAD
     // ==========================================
 
     @Override
-    public byte[] exportarAuditoriasPdfPorTipo(Integer idUsuario, String tipo) {
-        List<AuditoriaDTO> auditorias = getAuditoriasUsuarioPorTipo(idUsuario, tipo);
+    public byte[] exportarAuditoriasPdfPorTipo(Integer idParametro, String tipo) {
+
+        // 🔥 MAGIA: Identificamos si es un reporte genérico o la trazabilidad de una sola oferta
+        boolean esTrazabilidad = "TRAZABILIDAD_OFERTA".equalsIgnoreCase(tipo);
         boolean esUpdate = "UPDATE".equalsIgnoreCase(tipo);
 
+        List<AuditoriaDTO> auditorias;
+        String tituloPrincipal;
+        String subtituloReporte;
+
+        if (esTrazabilidad) {
+            // Si es trazabilidad, el idParametro que llega es el ID de la Oferta
+            auditorias = obtenerHistorialPorOferta(idParametro);
+            tituloPrincipal = "EXPEDIENTE DE TRAZABILIDAD";
+            subtituloReporte = "Historial cronológico de la Oferta Laboral #" + idParametro;
+        } else {
+            // Si es normal, el idParametro es el ID del Usuario
+            auditorias = getAuditoriasUsuarioPorTipo(idParametro, tipo);
+            tituloPrincipal = "REPORTE DE AUDITORÍAS";
+            subtituloReporte = "Detalle de actualizaciones (" + tipo.toUpperCase() + ")";
+        }
+
+        // Obtener Config de Empresa
+        String nombreApp = "Bolsa de Empleos UTEQ";
+        String logoUrl = "";
+        try {
+            Map<String, Object> configEmpresa = jdbcTemplate.queryForMap("SELECT nombre_aplicativo, logo_url FROM seguridad.sistema_empresa LIMIT 1");
+            if (configEmpresa.get("nombre_aplicativo") != null) nombreApp = configEmpresa.get("nombre_aplicativo").toString();
+            if (configEmpresa.get("logo_url") != null) logoUrl = configEmpresa.get("logo_url").toString();
+        } catch (Exception ignored) {}
+
+        // Generación del PDF
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            PdfWriter writer = new PdfWriter(out);
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf, PageSize.A4.rotate());
+            document.setMargins(30, 30, 40, 30);
 
-            PdfWriter   writer   = new PdfWriter(out);
-            PdfDocument pdf      = new PdfDocument(writer);
-            Document    document = new Document(pdf, PageSize.A4.rotate());
-            document.setMargins(20, 20, 50, 20);
+            // --- HEADER MODERNO ---
+            Table headerTable = new Table(UnitValue.createPercentArray(new float[]{15, 50, 35}))
+                    .useAllAvailableWidth().setMarginBottom(20);
 
-            // ─────────────────────────────────────────────
-            // 1. HEADER CORPORATIVO
-            // ─────────────────────────────────────────────
-            Table headerTable = new Table(UnitValue.createPercentArray(new float[]{60, 40}))
-                    .useAllAvailableWidth();
-            headerTable.setMarginBottom(15);
+            Cell logoCell = new Cell().setBorder(Border.NO_BORDER).setVerticalAlignment(VerticalAlignment.MIDDLE);
+            if (!logoUrl.isEmpty()) {
+                try {
+                    Image img = new Image(ImageDataFactory.create(logoUrl)).setMaxWidth(80);
+                    logoCell.add(img);
+                } catch (Exception ignored) {}
+            }
+            headerTable.addCell(logoCell);
 
-            // Celda Izquierda — Azul
-            Cell headerLeft = new Cell()
-                    .setBackgroundColor(COLOR_PRIMARIO)
-                    .setPaddingLeft(22).setPaddingRight(22)
-                    .setPaddingTop(20).setPaddingBottom(20)
-                    .setBorder(Border.NO_BORDER);
+            Cell titleCell = new Cell().setBorder(Border.NO_BORDER).setVerticalAlignment(VerticalAlignment.MIDDLE);
+            titleCell.add(new Paragraph(nombreApp.toUpperCase())
+                    .setFontSize(22).setBold().setFontColor(COLOR_PRIMARIO).setMarginBottom(-5));
+            titleCell.add(new Paragraph(tituloPrincipal + " - " + subtituloReporte)
+                    .setFontSize(12).setFontColor(ColorConstants.GRAY).setItalic());
+            headerTable.addCell(titleCell);
 
-            headerLeft.add(new Paragraph("UTEQ")
-                    .setFontSize(38).setBold()
-                    .setFontColor(ColorConstants.WHITE)
-                    .setMarginBottom(8).setMarginTop(0));
-
-            headerLeft.add(new Paragraph("REPORTE DE AUDITORÍAS")
-                    .setFontSize(14).setBold()
-                    .setFontColor(ColorConstants.WHITE)
-                    .setMarginBottom(4).setMarginTop(0));
-
-            headerLeft.add(new Paragraph("DETALLE DE ACTUALIZACIONES (" + tipo.toUpperCase() + ")")
-                    .setFontSize(9)
-                    .setFontColor(new DeviceRgb(190, 215, 255))
-                    .setMarginTop(0).setMarginBottom(0));
-
-            headerTable.addCell(headerLeft);
-
-            // Celda Derecha — Gris con "iconos" visuales
-            String fechaGen = java.time.LocalDateTime.now()
-                    .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-            String idReporte = "AU-" + String.format("%03d", idUsuario != null ? idUsuario : 0);
-
-            Cell headerRight = new Cell()
-                    .setBackgroundColor(COLOR_FONDO_GRIS)
-                    .setPaddingLeft(25).setPaddingRight(25)
-                    .setPaddingTop(22).setPaddingBottom(22)
-                    .setBorder(Border.NO_BORDER)
+            Cell infoCell = new Cell().setBorder(Border.NO_BORDER).setPadding(10)
+                    .setBackgroundColor(new DeviceRgb(245, 247, 250))
                     .setVerticalAlignment(VerticalAlignment.MIDDLE);
 
-            // Fila 1: Icono Calendario (azul) + fecha
-            headerRight.add(crearFilaIconoCaja("CAL", COLOR_ICONO_CAL,  "Generado: "        + fechaGen));
-            // Fila 2: Icono Documento  (índigo) + ID reporte
-            headerRight.add(crearFilaIconoCaja("DOC", COLOR_ICONO_DOC,  "ID Reporte: "      + idReporte));
-            // Fila 3: Icono Lista      (verde) + total
-            headerRight.add(crearFilaIconoCaja("LST", COLOR_ICONO_LIST, "Total Registros: " + auditorias.size()));
-
-            headerTable.addCell(headerRight);
+            String fechaGen = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+            infoCell.add(new Paragraph("Generado: " + fechaGen).setFontSize(8));
+            infoCell.add(new Paragraph("Referencia ID: " + idParametro).setFontSize(8).setBold());
+            infoCell.add(new Paragraph("Total Movimientos: " + auditorias.size()).setFontSize(8).setFontColor(COLOR_PRIMARIO));
+            headerTable.addCell(infoCell);
             document.add(headerTable);
 
-            // ─────────────────────────────────────────────
-            // 2. TABLA DE DATOS
-            // ─────────────────────────────────────────────
-            float[] anchos = esUpdate
-                    ? new float[]{1f, 3f, 3f, 1.5f, 2.5f, 1.2f, 6.5f}
-                    : new float[]{1f, 2.5f, 3f, 1.5f, 2.5f, 1.2f, 3f, 3f};
+            // --- COLUMNAS DINÁMICAS ---
+            float[] anchos;
+            String[] headersCols;
+
+            if (esTrazabilidad) {
+                // En trazabilidad no ocupamos ver la tabla ni ID, porque todo es sobre la misma oferta
+                anchos = new float[]{1.2f, 3.5f, 3.5f, 2.5f, 6.5f};
+                headersCols = new String[]{"ID", "EJECUTOR", "FECHA/HORA", "ACCIÓN", "DETALLE DE LOS DATOS"};
+            } else if (esUpdate) {
+                anchos = new float[]{1.2f, 3.5f, 3.5f, 1.5f, 3f, 1.2f, 7f};
+                headersCols = new String[]{"ID", "USUARIO DB", "FECHA/HORA", "ACCIÓN", "TABLA", "ID REG.", "DETALLE DE CAMBIOS"};
+            } else {
+                anchos = new float[]{1f, 3f, 3.5f, 1.5f, 3f, 1.2f, 4f, 4f};
+                headersCols = new String[]{"ID", "USUARIO DB", "FECHA/HORA", "ACCIÓN", "TABLA", "ID REG.", "DATOS ANTERIORES", "DATOS NUEVOS"};
+            }
 
             Table tabla = new Table(UnitValue.createPercentArray(anchos)).useAllAvailableWidth();
 
-            String[] headersCols = esUpdate
-                    ? new String[]{"ID", "USUARIO DB", "FECHA/HORA", "ACCIÓN", "TABLA", "ID REG.", "DETALLE DE CAMBIOS"}
-                    : new String[]{"ID", "USUARIO DB", "FECHA/HORA", "ACCIÓN", "TABLA", "ID REG.", "DATOS ANTERIORES", "DATOS NUEVOS"};
-
             for (String h : headersCols) {
-                tabla.addHeaderCell(
-                        new Cell()
-                                .add(new Paragraph(h).setBold().setFontSize(9).setFontColor(ColorConstants.WHITE))
-                                .setBackgroundColor(COLOR_PRIMARIO)
-                                .setBorder(new SolidBorder(ColorConstants.WHITE, 1))
-                                .setTextAlignment(TextAlignment.CENTER)
-                                .setPaddingTop(8).setPaddingBottom(8)
-                                .setPaddingLeft(5).setPaddingRight(5)
-                );
+                tabla.addHeaderCell(new Cell().add(new Paragraph(h).setBold().setFontSize(8).setFontColor(ColorConstants.WHITE))
+                        .setBackgroundColor(COLOR_PRIMARIO).setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.CENTER).setPadding(6));
             }
 
-            boolean par = false;
+            // --- PINTADO DE FILAS DINÁMICO ---
             for (AuditoriaDTO aud : auditorias) {
-                com.itextpdf.kernel.colors.Color bg = par ? COLOR_FONDO_GRIS : ColorConstants.WHITE;
+                tabla.addCell(celdaModerna(String.valueOf(aud.getIdAuditoria()), TextAlignment.CENTER));
+                tabla.addCell(celdaModerna(Objects.toString(aud.getUsuarioDb(), "N/A"), TextAlignment.LEFT));
+                tabla.addCell(celdaModerna(Objects.toString(aud.getFechaHora(), ""), TextAlignment.CENTER));
 
-                tabla.addCell(celdaPdfBasica(String.valueOf(aud.getIdAuditoria()),                                   bg, TextAlignment.CENTER));
-                tabla.addCell(celdaPdfBasica(Objects.toString(aud.getUsuarioDb(),        "N/A"),                     bg, TextAlignment.LEFT));
-                tabla.addCell(celdaPdfBasica(Objects.toString(aud.getFechaHora(),        ""),                        bg, TextAlignment.CENTER));
-                tabla.addCell(celdaPdfAccion(tipo.toUpperCase(),                                                     bg));
-                tabla.addCell(celdaPdfBasica(Objects.toString(aud.getTablaAfectada(),    ""),                        bg, TextAlignment.LEFT));
-                tabla.addCell(celdaPdfBasica(aud.getIdRegistroAfectado() != null ? String.valueOf(aud.getIdRegistroAfectado()) : "", bg, TextAlignment.CENTER));
+                String accionAud = Objects.toString(aud.getAccion(), "").toUpperCase();
+                tabla.addCell(celdaEtiquetaAccion(accionAud));
 
-                if (esUpdate) {
-                    tabla.addCell(celdaPdfUpdateDiff(aud.getCamposModificados(), bg));
+                if (esTrazabilidad) {
+                    // Lógica visual específica para el Historial de la Oferta
+                    if (accionAud.contains("UPDATE") || accionAud.contains("ACTUALIZADA") || accionAud.contains("MODIFICADA")) {
+                        tabla.addCell(celdaPdfUpdateDiff(aud.getCamposModificados(), ColorConstants.WHITE));
+                    } else if (accionAud.contains("DELETE") || accionAud.contains("ELIMINADA") || accionAud.contains("RECHAZADA")) {
+                        tabla.addCell(celdaModerna("DATOS RETIRADOS:\n" + formatearJsonParaExcel(aud.getDatosAnteriores()), TextAlignment.LEFT));
+                    } else {
+                        tabla.addCell(celdaModerna("DATOS REGISTRADOS:\n" + formatearJsonParaExcel(aud.getDatosNuevos()), TextAlignment.LEFT));
+                    }
                 } else {
-                    tabla.addCell(celdaPdfBasica(formatearJsonParaExcel(aud.getDatosAnteriores()), bg, TextAlignment.LEFT));
-                    tabla.addCell(celdaPdfBasica(formatearJsonParaExcel(aud.getDatosNuevos()),     bg, TextAlignment.LEFT));
+                    // Lógica para Reportes Generales (Tu código original)
+                    tabla.addCell(celdaModerna(Objects.toString(aud.getTablaAfectada(), ""), TextAlignment.LEFT));
+                    tabla.addCell(celdaModerna(aud.getIdRegistroAfectado() != null ? String.valueOf(aud.getIdRegistroAfectado()) : "", TextAlignment.CENTER));
+
+                    if (esUpdate) {
+                        tabla.addCell(celdaPdfUpdateDiff(aud.getCamposModificados(), ColorConstants.WHITE));
+                    } else {
+                        tabla.addCell(celdaModerna(formatearJsonParaExcel(aud.getDatosAnteriores()), TextAlignment.LEFT));
+                        tabla.addCell(celdaModerna(formatearJsonParaExcel(aud.getDatosNuevos()), TextAlignment.LEFT));
+                    }
                 }
-                par = !par;
             }
 
             document.add(tabla);
 
-            // ─────────────────────────────────────────────
-            // 3. FOOTER — 3 columnas con "iconos" texto
-            // ─────────────────────────────────────────────
-            Table footer = new Table(UnitValue.createPercentArray(new float[]{38, 24, 38}))
-                    .useAllAvailableWidth();
-            footer.setMarginTop(14);
+            // --- FOOTER LIMPIO ---
+            Paragraph footerText = new Paragraph("Este documento es confidencial y para uso exclusivo. Generado automáticamente por el Módulo de Seguridad.")
+                    .setFontSize(7).setFontColor(ColorConstants.LIGHT_GRAY).setTextAlignment(TextAlignment.CENTER).setMarginTop(20);
 
-            // Pie izquierdo
-            footer.addCell(new Cell()
-                    .add(crearTextoFooter("[ARCH]  Bolsa de Empleo UTEQ - Modulo de Seguridad"))
-                    .setBorder(Border.NO_BORDER)
-                    .setTextAlignment(TextAlignment.LEFT));
-
-            // Pie centro — paginación
-            footer.addCell(new Cell()
-                    .add(crearTextoFooter("[PAG]  Pagina 1 de X"))
-                    .setBorder(Border.NO_BORDER)
-                    .setTextAlignment(TextAlignment.CENTER));
-
-            // Pie derecho
-            footer.addCell(new Cell()
-                    .add(crearTextoFooter("Confidencial - Para uso interno solamente  [LOCK]"))
-                    .setBorder(Border.NO_BORDER)
-                    .setTextAlignment(TextAlignment.RIGHT));
-
-            document.add(footer);
+            document.add(footerText);
             document.close();
             return out.toByteArray();
 
@@ -462,113 +440,145 @@ public class AuditoriaServiceImpl implements IAuditoriaService {
     }
 
     // ==========================================
-    // UTILERÍAS PARA EL PDF
+    // UTILERÍAS PRIVADAS PARA EL DISEÑO Y QUERIES
     // ==========================================
 
     /**
-     * Crea una fila de header con un cuadradito de color (simula icono) y texto al lado.
-     * Usa una mini-tabla interna de 2 columnas para que quede alineado perfectamente.
+     * 🔥 CONSULTA CORREGIDA: Extrae la trazabilidad exacta usando la misma función del frontend.
      */
-    private Table crearFilaIconoCaja(String letraIcono, DeviceRgb colorIcono, String texto) {
-        Table fila = new Table(UnitValue.createPercentArray(new float[]{8, 92}))
-                .useAllAvailableWidth()
-                .setMarginBottom(12)
-                .setMarginTop(0);
+    private List<AuditoriaDTO> obtenerHistorialPorOferta(Integer idOferta) {
+        // Armamos el JSON exactamente como lo hace HistorialOfertaServiceImpl
+        String jsonParam = "{\"id_oferta\": " + idOferta + "}";
 
-        // Cuadrito de color SÓLIDO — sin texto adentro, solo color
-        Cell celdaIcono = new Cell()
-                .add(new Paragraph(" ").setFontSize(6).setMargin(0))  // espacio vacío
-                .setBackgroundColor(colorIcono)
-                .setBorder(Border.NO_BORDER)
-                .setTextAlignment(TextAlignment.CENTER)
-                .setVerticalAlignment(VerticalAlignment.MIDDLE)
-                .setPaddingTop(10)
-                .setPaddingBottom(10)
-                .setPaddingLeft(5)
-                .setPaddingRight(5);
+        // Llamamos a la función de base de datos
+        String sql = "SELECT * FROM ofertas.fn_obtener_trazabilidad_oferta(CAST(:json AS json))";
 
-        // Texto descriptivo
-        Cell celdaTexto = new Cell()
-                .add(new Paragraph(texto)
-                        .setFontSize(10)
-                        .setFontColor(COLOR_TEXTO_GRIS)
-                        .setMargin(0))
-                .setBorder(Border.NO_BORDER)
-                .setBackgroundColor(COLOR_FONDO_GRIS)
-                .setVerticalAlignment(VerticalAlignment.MIDDLE)
-                .setPaddingLeft(10);
+        List<Object[]> resultados = entityManager.createNativeQuery(sql)
+                .setParameter("json", jsonParam)
+                .getResultList();
 
-        fila.addCell(celdaIcono);
-        fila.addCell(celdaTexto);
-        return fila;
-    }
+        // Mapeamos manualmente a AuditoriaDTO para que el PDF lo pueda leer
+        List<AuditoriaDTO> historialMapeado = new ArrayList<>();
 
-    /**
-     * Párrafo simple para el footer.
-     */
-    private Paragraph crearTextoFooter(String texto) {
-        return new Paragraph(texto)
-                .setFontSize(8)
-                .setFontColor(COLOR_TEXTO_GRIS)
-                .setMargin(0);
-    }
+        for (Object[] obj : resultados) {
+            AuditoriaDTO dto = new AuditoriaDTO();
 
-    /**
-     * Badge de color para la columna ACCIÓN según tipo (INSERT/UPDATE/DELETE).
-     */
-    private Cell celdaPdfAccion(String tipo, com.itextpdf.kernel.colors.Color bg) {
-        DeviceRgb bgBadge;
-        DeviceRgb txtBadge;
-        switch (tipo) {
-            case "INSERT" -> { bgBadge = BG_VERDE;                          txtBadge = TXT_VERDE;   }
-            case "DELETE" -> { bgBadge = BG_ROJO;                           txtBadge = TXT_ROJO;    }
-            default       -> { bgBadge = new DeviceRgb(219, 234, 254);      txtBadge = COLOR_PRIMARIO; }
+            // obj[0] -> id_historial
+            dto.setIdAuditoria(obj[0] != null ? ((Number) obj[0]).intValue() : null);
+
+            // obj[1] -> accion
+            dto.setAccion(obj[1] != null ? obj[1].toString() : "");
+
+            // obj[2] -> fecha_hora
+            if (obj[2] != null) {
+                if (obj[2] instanceof java.sql.Timestamp) {
+                    dto.setFechaHora(((java.sql.Timestamp) obj[2]).toLocalDateTime());
+                } else if (obj[2] instanceof java.time.LocalDateTime) {
+                    dto.setFechaHora((java.time.LocalDateTime) obj[2]);
+                }
+            }
+
+            // obj[3] -> ejecutor
+            dto.setUsuarioDb(obj[3] != null ? obj[3].toString() : "Sistema");
+
+            // obj[4] -> campo_modificado (Si necesitas mostrarlo, puedes meterlo en un campo del DTO)
+
+            // obj[5] -> valores_anteriores (JSON)
+            dto.setDatosAnteriores(obj[5] != null ? obj[5].toString() : null);
+
+            // obj[6] -> valores_nuevos (JSON)
+            dto.setDatosNuevos(obj[6] != null ? obj[6].toString() : null);
+
+            // Para que el método de diseño UPDATE funcione, pasamos el campo "campos_modificados"
+            // usando los mismos JSONs para que los compare.
+            if (dto.getAccion().toUpperCase().contains("UPDATE") || dto.getAccion().toUpperCase().contains("ACTUALIZADA")) {
+                dto.setCamposModificados(generarJsonDiffSimulado(dto.getDatosAnteriores(), dto.getDatosNuevos()));
+            }
+
+            historialMapeado.add(dto);
         }
-        Paragraph badge = new Paragraph(tipo)
-                .setFontSize(7).setBold()
-                .setFontColor(txtBadge)
-                .setBackgroundColor(bgBadge)
-                .setTextAlignment(TextAlignment.CENTER)
-                .setPaddingTop(3).setPaddingBottom(3)
-                .setPaddingLeft(5).setPaddingRight(5);
 
-        return new Cell()
-                .add(badge)
-                .setBackgroundColor(bg)
-                .setBorder(new SolidBorder(new DeviceRgb(220, 220, 220), 1))
-                .setTextAlignment(TextAlignment.CENTER)
-                .setVerticalAlignment(VerticalAlignment.MIDDLE)
-                .setPadding(5);
+        return historialMapeado;
     }
 
     /**
-     * Celda estándar de la tabla de datos.
+     * Utilidad para crear un JSON compatible con tu método celdaPdfUpdateDiff,
+     * simulando el formato {"campo": {"anterior": "A", "nuevo": "B"}}
      */
-    private Cell celdaPdfBasica(String valor, com.itextpdf.kernel.colors.Color bg, TextAlignment alineacion) {
-        return new Cell()
-                .add(new Paragraph(valor != null ? valor : "").setFontSize(8))
-                .setBackgroundColor(bg)
-                .setTextAlignment(alineacion)
-                .setVerticalAlignment(VerticalAlignment.MIDDLE)
-                .setBorder(new SolidBorder(new DeviceRgb(220, 220, 220), 1))
-                .setPadding(6);
+    private String generarJsonDiffSimulado(String jsonAnterior, String jsonNuevo) {
+        if (jsonAnterior == null && jsonNuevo == null) return "{}";
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode oldNode = jsonAnterior != null ? mapper.readTree(jsonAnterior) : mapper.createObjectNode();
+            JsonNode newNode = jsonNuevo != null ? mapper.readTree(jsonNuevo) : mapper.createObjectNode();
+
+            com.fasterxml.jackson.databind.node.ObjectNode diffNode = mapper.createObjectNode();
+
+            // Juntamos todas las claves de ambos JSONs
+            Set<String> allKeys = new HashSet<>();
+            oldNode.fieldNames().forEachRemaining(allKeys::add);
+            newNode.fieldNames().forEachRemaining(allKeys::add);
+
+            for (String key : allKeys) {
+                com.fasterxml.jackson.databind.node.ObjectNode valNode = mapper.createObjectNode();
+                valNode.put("anterior", oldNode.has(key) && !oldNode.get(key).isNull() ? oldNode.get(key).asText() : "N/A");
+                valNode.put("nuevo", newNode.has(key) && !newNode.get(key).isNull() ? newNode.get(key).asText() : "N/A");
+                diffNode.set(key, valNode);
+            }
+            return diffNode.toString();
+        } catch (Exception e) {
+            return "{}";
+        }
     }
 
     /**
-     * Celda especial para UPDATE con "diff" visual:
-     *   nombre campo: (rojo) Anterior: X   (verde) Nuevo: Y
+     * Helper para mapear objetos de BD a DTO.
      */
+    private List<AuditoriaDTO> mapearResultadosAuditoria(List<Object[]> resultados) {
+        return resultados.stream().map(row -> new AuditoriaDTO(
+                row[0] != null ? ((Number) row[0]).intValue() : null,
+                row[1] != null ? row[1].toString() : null,
+                null,
+                row[2] != null ? (row[2] instanceof java.sql.Timestamp ? ((java.sql.Timestamp) row[2]).toLocalDateTime() : (java.time.LocalDateTime) row[2]) : null,
+                row[3] != null ? row[3].toString() : null,
+                row[4] != null ? row[4].toString() : null,
+                row[5] != null ? ((Number) row[5]).intValue() : null,
+                row[6] != null ? row[6].toString() : null,
+                row[7] != null ? row[7].toString() : null,
+                row[8] != null ? row[8].toString() : null
+        )).toList();
+    }
+
+    private Cell celdaModerna(String texto, TextAlignment alineacion) {
+        return new Cell().add(new Paragraph(texto != null ? texto : "").setFontSize(8))
+                .setBorder(new SolidBorder(new DeviceRgb(230, 230, 230), 0.5f))
+                .setPadding(5).setTextAlignment(alineacion).setVerticalAlignment(VerticalAlignment.MIDDLE);
+    }
+
+    private Cell celdaEtiquetaAccion(String accion) {
+        com.itextpdf.kernel.colors.Color colorEtiqueta;
+        String acc = accion.toUpperCase();
+
+        if (acc.contains("INSERT") || acc.contains("CREADA") || acc.contains("NUEVA") || acc.contains("APROBADA")) {
+            colorEtiqueta = new DeviceRgb(40, 167, 69); // Verde
+        } else if (acc.contains("UPDATE") || acc.contains("ACTUALIZADA") || acc.contains("MODIFICADA")) {
+            colorEtiqueta = new DeviceRgb(253, 126, 20); // Naranja
+        } else if (acc.contains("DELETE") || acc.contains("ELIMINADA") || acc.contains("RECHAZADA") || acc.contains("RETIRADA")) {
+            colorEtiqueta = new DeviceRgb(220, 53, 69); // Rojo
+        } else {
+            colorEtiqueta = ColorConstants.GRAY;
+        }
+
+        return new Cell().add(new Paragraph(accion).setBold().setFontSize(7).setFontColor(colorEtiqueta))
+                .setBorder(new SolidBorder(new DeviceRgb(230, 230, 230), 0.5f))
+                .setTextAlignment(TextAlignment.CENTER).setVerticalAlignment(VerticalAlignment.MIDDLE);
+    }
+
     private Cell celdaPdfUpdateDiff(String jsonStr, com.itextpdf.kernel.colors.Color bg) {
-        Cell celda = new Cell()
-                .setBackgroundColor(bg)
-                .setBorder(new SolidBorder(new DeviceRgb(220, 220, 220), 1))
-                .setPadding(6);
-
+        Cell celda = new Cell().setBackgroundColor(bg).setBorder(new SolidBorder(new DeviceRgb(230, 230, 230), 0.5f)).setPadding(5);
         if (jsonStr == null || jsonStr.trim().isEmpty() || "{}".equals(jsonStr)) {
-            return celda.add(new Paragraph("Sin cambios detectados")
-                    .setFontSize(8).setFontColor(COLOR_TEXTO_GRIS));
+            return celda.add(new Paragraph("Sin cambios detectados").setFontSize(8).setFontColor(COLOR_TEXTO_GRIS));
         }
-
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode rootNode = mapper.readTree(jsonStr);
@@ -576,34 +586,17 @@ public class AuditoriaServiceImpl implements IAuditoriaService {
 
             while (fields.hasNext()) {
                 Map.Entry<String, JsonNode> field = fields.next();
-                String    nombreCampo = field.getKey().replace("_", " ");
-                JsonNode  valores     = field.getValue();
+                String nombreCampo = field.getKey().replace("_", " ").toUpperCase();
+                JsonNode valores = field.getValue();
 
-                String anterior = valores.has("anterior") && !valores.get("anterior").isNull()
-                        ? valores.get("anterior").asText() : "N/A";
-                String nuevo = valores.has("nuevo") && !valores.get("nuevo").isNull()
-                        ? valores.get("nuevo").asText() : "N/A";
+                String anterior = valores.has("anterior") && !valores.get("anterior").isNull() ? valores.get("anterior").asText() : "N/A";
+                String nuevo = valores.has("nuevo") && !valores.get("nuevo").isNull() ? valores.get("nuevo").asText() : "N/A";
 
-                // Etiqueta del campo
-                celda.add(new Paragraph(nombreCampo + ":")
-                        .setFontSize(8).setBold().setMarginBottom(2));
-
-                // Badges coloreados en línea
-                Paragraph badges = new Paragraph().setMarginBottom(6);
-
-                Text txtAnt = new Text(" Anterior: " + anterior + " ")
-                        .setFontSize(8)
-                        .setFontColor(TXT_ROJO)
-                        .setBackgroundColor(BG_ROJO);
-
-                Text espacio = new Text("    ");
-
-                Text txtNue = new Text(" Nuevo: " + nuevo + " ")
-                        .setFontSize(8)
-                        .setFontColor(TXT_VERDE)
-                        .setBackgroundColor(BG_VERDE);
-
-                badges.add(txtAnt).add(espacio).add(txtNue);
+                celda.add(new Paragraph(nombreCampo + ":").setFontSize(8).setBold().setMarginBottom(1));
+                Paragraph badges = new Paragraph().setMarginBottom(4);
+                badges.add(new Text(" Anterior: " + anterior + " ").setFontSize(8).setFontColor(TXT_ROJO).setBackgroundColor(BG_ROJO));
+                badges.add(new Text("    "));
+                badges.add(new Text(" Nuevo: " + nuevo + " ").setFontSize(8).setFontColor(TXT_VERDE).setBackgroundColor(BG_VERDE));
                 celda.add(badges);
             }
         } catch (Exception e) {
@@ -612,27 +605,17 @@ public class AuditoriaServiceImpl implements IAuditoriaService {
         return celda;
     }
 
-    /**
-     * Formatea un JSON plano para mostrarlo en celdas Excel (sin llaves ni comillas).
-     */
     private String formatearJsonParaExcel(String json) {
         if (json == null || json.trim().isEmpty() || json.equals("{}")) { return ""; }
-        String limpio = json.replace("{", "").replace("}", "").replace("\"", "");
-        return limpio.replace(",", "\n").replace(":", ": ");
+        return json.replace("{", "").replace("}", "").replace("\"", "").replace(",", "\n").replace(":", ": ");
     }
 
     @Override
     public List<Map<String, Object>> getSesiones() {
-        List<Object[]> rows = entityManager
-                .createNativeQuery("SELECT * FROM seguridad.fn_obtener_sesiones()")
-                .getResultList();
-
+        List<Object[]> rows = entityManager.createNativeQuery("SELECT * FROM seguridad.fn_obtener_sesiones()").getResultList();
         return rows.stream().map(row -> {
             Map<String, Object> map = new LinkedHashMap<>();
-            // 🔥 AQUI AGREGAMOS EL ID EN LA POSICIÓN 0
             map.put("idSesion",    row[0]);
-
-            // Recorremos los demás un número hacia abajo
             map.put("loginName",   row[1]);
             map.put("fechaInicio", row[2]);
             map.put("fechaCierre", row[3]);
