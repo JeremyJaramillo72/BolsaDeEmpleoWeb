@@ -4,13 +4,12 @@ import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { UsuarioEmpresaService } from '../../services/usuario-empresa.service';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClientModule } from '@angular/common/http';  // ✅ requerido para que HttpClient funcione en el módulo
+import { SistemaConfigService } from '../Panel-Admin/services/sistema-config.service';
 
 import { NotificationService } from '../../services/notification.service';
 import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
 import {PerfilEmpresaComponent} from '../perfil-empresa/perfil-empresa';
-import { SistemaConfigService } from '../Panel-Admin/services/sistema-config.service';
-
 // 1. ACTUALIZAMOS LAS INTERFACES CON LOS NUEVOS CAMPOS VISUALES
 export interface MenuItem {
   icon: string;
@@ -48,7 +47,6 @@ export class MenuprincipalComponent implements OnInit {
   rolUsuario: string = '';
   fotoMenu: string = '';
 
-
   // ✅ Logo y nombre del SISTEMA (sidebar brand) — separado de fotoMenu del usuario
   logoSistema:   string = '';
   nombreSistema: string = 'Bolsa de Empleo';
@@ -65,8 +63,7 @@ export class MenuprincipalComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private usuarioEmpresaService: UsuarioEmpresaService,
     public notificationService: NotificationService,
-    private http: HttpClient,        // ✅ para cargar config del sistema
-    private sistemaConfigService: SistemaConfigService  // ✅ actualizaciones en tiempo real
+    private sistemaConfigService: SistemaConfigService  // ✅ logo/nombre del sistema en tiempo real para todos los roles
   ) {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -78,20 +75,20 @@ export class MenuprincipalComponent implements OnInit {
   ngOnInit(): void {
     this.nombreUsuario = localStorage.getItem('nombre') || 'Usuario';
     this.rolUsuario = localStorage.getItem('rol') || '';
-    const idUsuario = localStorage.getItem('idUsuario');
 
+    const idUsuario = localStorage.getItem('idUsuario');
     if (!idUsuario) {
       this.cerrarSesion();
       return;
     }
     this.authService.obtenerFotoPerfil(idUsuario).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         if (res.url) {
           this.fotoMenu = res.url;
           this.cdr.detectChanges();
         }
       }
-    })
+    });
 
     this.usuarioEmpresaService.logoActual$.subscribe(nuevaUrl => {
       if (nuevaUrl) {
@@ -100,20 +97,19 @@ export class MenuprincipalComponent implements OnInit {
       }
     });
 
-    // ✅ Suscribirse a actualizaciones en tiempo real del logo y nombre del sistema
-    // SistemaConfigService usa BehaviorSubject — emite de inmediato con el valor actual
-    // y cada vez que configuracion-app.ts suba un nuevo logo o guarde un nombre.
-    this.sistemaConfigService.logo$.subscribe(url => {
+    // ✅ Logo y nombre del sistema — funciona para TODOS los roles
+    //    (postulante, empresa, admin)
+    //    1. subscribe() recibe inmediatamente el valor de localStorage (sin delay)
+    //    2. cargarDesdeAPI() actualiza desde el servidor y emite a todos los suscriptores
+    this.sistemaConfigService.logo$.subscribe((url: string) => {
       this.logoSistema = url;
       this.cdr.detectChanges();
     });
-    this.sistemaConfigService.nombre$.subscribe(nombre => {
+    this.sistemaConfigService.nombre$.subscribe((nombre: string) => {
       if (nombre) this.nombreSistema = nombre;
       this.cdr.detectChanges();
     });
-
-    // ✅ También consultar la API para tener el valor más fresco del servidor
-    this.cargarConfiguracionSistema();
+    this.sistemaConfigService.cargarDesdeAPI();
 
     this.verificarRutaActual();
     this.inicializarMenuPorRol();
@@ -132,28 +128,6 @@ export class MenuprincipalComponent implements OnInit {
     }
   }
 
-  // ✅ Carga logo y nombre desde la BD vía API.
-  // Primero muestra lo que hay en localStorage (instantáneo, sin parpadeo)
-  // y luego actualiza con la respuesta del servidor.
-  private cargarConfiguracionSistema(): void {
-    // El BehaviorSubject ya emitió los valores de localStorage en ngOnInit
-    // — no necesitamos leer localStorage aquí directamente.
-    // Solo mostramos un log para debug en desarrollo.
-    // console.log('[Menu] Config sistema cargando desde API...');
-
-    // Actualizar desde el servidor en segundo plano
-    this.http.get<any>('http://localhost:8080/api/configuracion-sistema').subscribe({
-      next: cfg => {
-        // Actualizar a través del service para que quede en caché y emita a suscriptores
-        if (cfg?.logoUrl)          this.sistemaConfigService.actualizarLogo(cfg.logoUrl);
-        if (cfg?.nombreAplicativo) this.sistemaConfigService.actualizarNombre(cfg.nombreAplicativo);
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        // Si falla la API, queda el valor de caché o el default
-      }
-    });
-  }
 
   private verificarRutaActual(): void {
 
