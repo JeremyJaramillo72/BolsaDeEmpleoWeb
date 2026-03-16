@@ -29,6 +29,10 @@ public interface OfertaLaboralRepository extends JpaRepository<OfertaLaboral, In
     @Query(value = "SELECT * FROM ofertas.listar_ofertas_por_estado(:estado)", nativeQuery = true)
     List<IOfertaResumen> listarPorEstadoSP(@Param("estado") String estado);
 
+    // Obtener ofertas aprobadas sin postulación previa - para notificaciones de "última oportunidad"
+    @Query(value = "SELECT * FROM ofertas.fn_obtener_ofertas_sin_postular(:idUsuario)", nativeQuery = true)
+    List<IOfertaResumen> obtenerOfertasSinPostularCerrandoProximamente(@Param("idUsuario") Long idUsuario);
+
     @Modifying
     @Query(value = "UPDATE ofertas.oferta_laboral SET estado_oferta = :estado WHERE id_oferta = :id", nativeQuery = true)
     void actualizarEstadoDirecto(@Param("id") Long id, @Param("estado") String estado);

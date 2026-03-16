@@ -271,6 +271,11 @@ public class NotificacionService {
         return notificacionesDB;
     }
 
+    /**
+     * Genera notificaciones virtuales para ofertas que cierran en menos de 24 horas
+     * y a las que el usuario ya ha postulado.
+     * Estas notificaciones NO se guardan en BD, solo se generan dinámicamente.
+     */
     @Transactional(readOnly = true)
     private List<NotificacionDTO> generarNotificacionesUltimaOportunidad(Long idUsuario) {
         List<NotificacionDTO> notificacionesVirtuales = new java.util.ArrayList<>();
@@ -284,12 +289,12 @@ public class NotificacionService {
                 return notificacionesVirtuales;
             }
 
-            // Obtener ofertas aprobadas que cierran en máximo 24 horas
+            // Obtener ofertas aprobadas que cierran en máximo 24 horas Y a las que el usuario no ha postulado
             LocalDate hoy = LocalDate.now();
             LocalDate mañana = hoy.plusDays(1);
             LocalDateTime ahora = LocalDateTime.now();
 
-            List<IOfertaResumen> ofertasAprobadas = ofertaRepo.listarPorEstadoSP("aprobado");
+            List<IOfertaResumen> ofertasAprobadas = ofertaRepo.obtenerOfertasSinPostularCerrandoProximamente(idUsuario);
 
             for (IOfertaResumen oferta : ofertasAprobadas) {
                 if (oferta.getFechaCierre() == null) continue;
