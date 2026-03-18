@@ -14,6 +14,8 @@ export class UsuariosService {
   // Aquí defines la ruta de tu API para este módulo
   private apiUsuariosUrl = 'http://localhost:8080/api/GestionUser';
 
+  private apiUsuarios = 'http://localhost:8080/api/usuarios-bd';
+
   constructor(private http: HttpClient) { }
 
   // ==========================================
@@ -33,6 +35,15 @@ export class UsuariosService {
       {},
       { responseType: 'text' }
     );
+  }
+
+  obtenerRolesDeBD(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUsuarios}/roles`);
+  }
+
+  crearUsuario(usuario: any): Observable<any> {
+    // Aquí sí usamos la ruta específica de registro
+    return this.http.post(`${this.apiUsuarios}/registrar-completo`, usuario, { responseType: 'text' });
   }
 
   // ==========================================

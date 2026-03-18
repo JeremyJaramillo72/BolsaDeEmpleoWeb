@@ -40,32 +40,17 @@ export class RolesEnlazarFormComponent implements OnInit {
     {
       categoria: 'Módulos de Administrador',
       modulos: [
+        { id: 'GESTION_USERS', nombre: 'Gestión de Usuarios', seleccionado: false },
         { id: 'USERS', nombre: 'Auditorias', seleccionado: false },
+        { id: 'Perfil_X', nombre: 'Perfil', seleccionado: false },
         { id: 'CATALOGOS', nombre: 'Gestión de Catálogos', seleccionado: false },
         { id: 'REGISTRO_OFERTAS', nombre: 'Registro de Ofertas', seleccionado: false },
         { id: 'VALIDACION_O', nombre: 'Validación de Ofertas', seleccionado: false },
-        { id: 'GESTION_ADMINS', nombre: 'Gestión Administradores', seleccionado: false },
+
         { id: 'REPORTES', nombre: 'Reportes y Estadísticas', seleccionado: false },
         { id: 'VALIDACION_E', nombre: 'Validación Empresas', seleccionado: false },
         { id: 'ROLES_BD', nombre: 'Gestión Roles BD', seleccionado: false },
         { id: 'CONFIG_SISTEMA', nombre: 'Configuración del Sistema', seleccionado: false }
-      ]
-    },
-    {
-      categoria: 'Módulos de Empresa',
-      modulos: [
-        { id: 'PERFIL_EMP', nombre: 'Gestión de Perfil Empresarial', seleccionado: false },
-        { id: 'OFERTAS_EMP', nombre: 'Gestión de Ofertas Laborales', seleccionado: false },
-        { id: 'POSTULANTES_EMP', nombre: 'Revisión de Postulaciones', seleccionado: false },
-        { id: 'REPORTES_EMP', nombre: 'Reportes de Empresa', seleccionado: false }
-      ]
-    },
-    {
-      categoria: 'Módulos de Postulante',
-      modulos: [
-        { id: 'PERFIL_POS', nombre: 'Mi Perfil Profesional', seleccionado: false },
-        { id: 'BUSQUEDA_POS', nombre: 'Búsqueda de Empleos', seleccionado: false },
-        { id: 'POSTULACIONES_POS', nombre: 'Mis Postulaciones', seleccionado: false }
       ]
     },
     {

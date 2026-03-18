@@ -1,0 +1,105 @@
+<div class="personal-info-layout fade-in">
+
+  <aside class="profile-sidebar">
+    <div class="card-box text-center">
+
+      <div class="avatar-wrapper">
+        <img [src]="fotoUrl || 'assets/default-avatar.png'" alt="Avatar del usuario" class="profile-avatar">
+
+        <label class="btn-upload-photo" title="Cambiar foto de perfil">
+          <span class="material-icons">photo_camera</span>
+          <input type="file" (change)="seleccionarImagen($event)" accept="image/*" class="hidden-input">
+        </label>
+      </div>
+
+      <h2 class="profile-name">{{ perfil.nombreCompleto || 'Tu Nombre' }}</h2>
+      <p class="profile-role text-muted">{{ rol }}</p>
+
+      <hr class="divider">
+
+      <div class="progress-section">
+        <div class="progress-header">
+          <span class="progress-title">Completitud del Perfil</span>
+          <span class="progress-percentage text-blue">{{ completitudPerfil }}%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" [style.width.%]="completitudPerfil"></div>
+        </div>
+      </div>
+
+    </div>
+  </aside>
+
+  <main class="form-main-content">
+    <div class="card-box">
+
+      <div class="section-header-custom">
+        <div class="icon-box-blue">
+          <span class="material-icons">person</span>
+        </div>
+        <div>
+          <h3 class="section-title">Información Personal</h3>
+          <p class="section-subtitle">Tus datos básicos y de contacto profesional</p>
+        </div>
+      </div>
+
+      <div class="form-grid mt-4">
+
+        <div class="form-group">
+          <label>Nombre Completo <span class="required">*</span></label>
+          <input type="text" class="form-control" [(ngModel)]="perfil.nombreCompleto" (ngModelChange)="onInputChange()" placeholder="Ej: Jeremy Jaramillo">
+        </div>
+
+        <div class="form-group">
+          <label>Fecha de Nacimiento</label>
+          <input type="date" class="form-control" [(ngModel)]="perfil.fechaNacimiento" (ngModelChange)="onInputChange()">
+        </div>
+
+        <div class="form-group">
+          <label>Género</label>
+          <select class="form-control" [(ngModel)]="perfil.genero" (ngModelChange)="onInputChange()">
+            <option value="" disabled selected>Seleccione...</option>
+            <option value="Masculino">Masculino</option>
+            <option value="Femenino">Femenino</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Email Corporativo <span class="required">*</span></label>
+          <input type="email" class="form-control" [(ngModel)]="perfil.correo" (ngModelChange)="onInputChange()" placeholder="ejemplo@correo.com" disabled>
+        </div>
+
+        <div class="form-group">
+          <label>Teléfono Móvil</label>
+          <input type="text" class="form-control" [(ngModel)]="perfil.telefono" (ngModelChange)="onInputChange()" placeholder="Ej: 0999090748">
+        </div>
+
+        <div class="form-group">
+          <label>Provincia</label>
+          <select class="form-control" [(ngModel)]="perfil.id_provincia" (change)="onProvinciaChange()">
+            <option [ngValue]="null" disabled selected>Seleccione una provincia...</option>
+            <option *ngFor="let prov of provincias" [ngValue]="prov.idProvincia">{{ prov.nombreProvincia }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Ciudad</label>
+          <select class="form-control" [(ngModel)]="perfil.id_ciudad" (ngModelChange)="onInputChange()">
+            <option [ngValue]="null" disabled selected>Seleccione una ciudad...</option>
+            <option *ngFor="let ciu of ciudades" [ngValue]="ciu.idCiudad">{{ ciu.nombreCiudad }}</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div class="form-actions mt-4">
+        <button class="btn-success" (click)="guardarDatosPersonales()">
+          <span class="material-icons">save</span> Guardar Datos Personales
+        </button>
+      </div>
+
+    </div>
+  </main>
+
+</div>

@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { UsuariosService } from './Service/UsuariosService'; // Asegúrate de que el nombre del archivo coincida
+import { UsuariosService } from './Service/UsuariosService';
 import { ConfirmService } from '../../../../services/confirm.service';
 
 @Component({
@@ -12,32 +12,62 @@ import { ConfirmService } from '../../../../services/confirm.service';
   styleUrls: ['./usuarios.css']
 })
 export class UsuariosComponent implements OnInit {
+
+  // --- CONTROL DE VISTAS ---
+  vistaActual: 'LISTA' | 'CREAR' = 'LISTA';
+  isLoading: boolean = false;
+
+  // --- DATOS DE TABLA Y BÚSQUEDA ---
   usuarios: any[] = [];
   usuariosFiltrados: any[] = [];
   terminoBusqueda: string = '';
 
+  // --- PAGINACIÓN ---
+  currentPage: number = 1;
+  pageSize: number = 7;
+
+  // --- DATOS DE CREACIÓN ---
+  nuevoUsuario = {
+    usuario: '',
+    contrasena: '',
+    rolId: null as number | null,
+    nombre: '',
+    apellido: ''
+  };
+  rolesDisponibles: any[] = [];
+
+  // --- MENSAJES ---
   mensajeExito = '';
   mensajeError = '';
 
   constructor(
-    private usuariosService: UsuariosService, // <-- CORREGIDO: Unificado a usuariosService
+    private usuariosService: UsuariosService,
     private cdr: ChangeDetectorRef,
     private confirmService: ConfirmService
   ) {}
 
   ngOnInit() {
     this.cargarUsuarios();
+    this.cargarRolesInternos();
   }
 
+  // ==========================================
+  // LÓGICA DE LISTADO, FILTRO Y ESTADOS
+  // ==========================================
+
   cargarUsuarios(): void {
-    // <-- CORREGIDO: Usando this.usuariosService y el método getUsuariosTabla()
+    this.isLoading = true;
     this.usuariosService.getUsuariosTabla().subscribe({
       next: (data) => {
         this.usuarios = [...data];
         this.usuariosFiltrados = [...data];
+        this.isLoading = false;
         this.cdr.detectChanges();
       },
-      error: (err) => this.mostrarError('Error al cargar la lista de usuarios')
+      error: (err) => {
+        this.mostrarError('Error al cargar la lista de usuarios');
+        this.isLoading = false;
+      }
     });
   }
 
@@ -45,52 +75,171 @@ export class UsuariosComponent implements OnInit {
     const termino = this.terminoBusqueda.toLowerCase().trim();
     if (!termino) {
       this.usuariosFiltrados = [...this.usuarios];
-      return;
+    } else {
+      this.usuariosFiltrados = this.usuarios.filter(u =>
+        (u.nombre && u.nombre.toLowerCase().includes(termino)) ||
+        (u.correo && u.correo.toLowerCase().includes(termino)) ||
+        (u.nombre_rol && u.nombre_rol.toLowerCase().includes(termino))
+      );
     }
-
-    this.usuariosFiltrados = this.usuarios.filter(u =>
-      (u.nombre && u.nombre.toLowerCase().includes(termino)) ||
-      (u.correo && u.correo.toLowerCase().includes(termino)) ||
-      (u.nombre_rol && u.nombre_rol.toLowerCase().includes(termino))
-    );
+    this.currentPage = 1; // Resetear a la página 1 después de buscar
   }
 
-  // === MÉTODO PARA LA INICIAL DEL AVATAR ===
   obtenerInicial(nombre: string): string {
     if (!nombre) return 'U';
     return nombre.charAt(0).toUpperCase();
   }
 
   bloquearUsuario(usr: any): void {
-    // Evaluamos el valor real de la base de datos (Ahora con 'A' y 'P' mayúsculas)
     const nuevoEstado = usr.estado_validacion === 'Aprobado' ? 'Pendiente' : 'Aprobado';
-
-    // Texto para el modal basado en lo que el usuario ve
     const accionTexto = usr.estado_validacion === 'Aprobado' ? 'inactivar' : 'activar';
 
     this.confirmService.abrir(`¿Está seguro de ${accionTexto} a este usuario?`, 'Confirmar Acción').then(acepto => {
       if (acepto) {
+        this.isLoading = true;
         this.usuariosService.cambiarEstadoUsuario(usr.id_usuario, nuevoEstado).subscribe({
           next: () => {
-            // Mostramos el mensaje con la traducción visual para que no se confunda
             const estadoVisual = nuevoEstado === 'Aprobado' ? 'ACTIVO' : 'INACTIVO';
             this.mostrarExito(`Usuario actualizado a ${estadoVisual} exitosamente.`);
-
-            this.cargarUsuarios(); // Recargamos la tabla para ver el cambio
+            this.cargarUsuarios();
           },
-          error: () => this.mostrarError('Error al cambiar el estado del usuario')
+          error: () => {
+            this.mostrarError('Error al cambiar el estado del usuario');
+            this.isLoading = false;
+          }
         });
       }
     });
   }
 
+  // ==========================================
+  // LÓGICA DE CREACIÓN DE USUARIOS
+  // ==========================================
+
+  cargarRolesInternos() {
+    // NOTA: Asegúrate de tener este método en tu UsuariosService
+    this.usuariosService.obtenerRolesDeBD().subscribe({
+      next: (data: any) => {
+        this.rolesDisponibles = data
+          .filter((rol: any) => rol.idRol !== 2 && rol.idRol !== 3 && rol.idRol !== 1)
+          .map((rol: any) => ({
+            id: rol.idRol,
+            etiqueta: rol.nombreRol
+          }));
+      },
+      error: (e: any) => console.error('Error cargando roles', e)
+    });
+  }
+
+  iniciarCreacion() {
+    this.vistaActual = 'CREAR';
+    this.limpiarFormulario();
+  }
+
+  cancelarCreacion() {
+    this.vistaActual = 'LISTA';
+    this.limpiarFormulario();
+  }
+
+  guardarUsuario() {
+    if (!this.nuevoUsuario.usuario || !this.nuevoUsuario.contrasena || this.nuevoUsuario.rolId == null) {
+      this.mostrarError('Por favor completa: Correo, Contraseña y Rol.');
+      return;
+    }
+
+    if (!this.nuevoUsuario.nombre || !this.nuevoUsuario.apellido) {
+      this.mostrarError('Por favor completa: Nombre y Apellido.');
+      return;
+    }
+
+    const usuarioParaBackend = {
+      nombre: this.nuevoUsuario.nombre,
+      apellido: this.nuevoUsuario.apellido,
+      correo: this.nuevoUsuario.usuario,
+      contrasena: this.nuevoUsuario.contrasena,
+      telefono: '0987654321',
+      genero: 'Masculino',
+      fechaNacimiento: '2000-01-01',
+      rol: { idRol: this.nuevoUsuario.rolId },
+      ciudad: { idCiudad: 1 },
+      permisosUi: '',
+      estadoValidacion: 'Activo'
+    };
+
+    this.isLoading = true;
+
+    // NOTA: Asegúrate de tener crearUsuario (o el nombre que uses) en UsuariosService
+    this.usuariosService.crearUsuario(usuarioParaBackend).subscribe({
+      next: (respuesta: any) => {
+        this.mostrarExito('Usuario creado exitosamente');
+        setTimeout(() => {
+          this.cancelarCreacion();
+          this.cargarUsuarios(); // Recargamos la tabla
+        }, 500);
+      },
+      error: (error: any) => {
+        console.error('Error HTTP:', error);
+        const mensaje = error.error?.text || error.error || error.message;
+        this.mostrarError('Ocurrió un error: ' + mensaje);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private limpiarFormulario() {
+    this.nuevoUsuario = { usuario: '', contrasena: '', rolId: null, nombre: '', apellido: '' };
+  }
+
+  // ==========================================
+  // HELPERS DE PAGINACIÓN (Basados en filtrados)
+  // ==========================================
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.usuariosFiltrados.length / this.pageSize));
+  }
+
+  get usuariosPagina() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    // Usamos usuariosFiltrados para que la paginación respete la búsqueda
+    return this.usuariosFiltrados.slice(start, start + this.pageSize);
+  }
+
+  get pages() {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  prevPage() {
+    if (this.currentPage > 1) { this.currentPage--; this.cdr.detectChanges(); }
+  }
+
+  nextPage() {
+    if (this.currentPage < this.totalPages) { this.currentPage++; this.cdr.detectChanges(); }
+  }
+
+  goToPage(n: number) {
+    if (n >= 1 && n <= this.totalPages) { this.currentPage = n; this.cdr.detectChanges(); }
+  }
+
+  get displayStart(): number {
+    if (this.usuariosFiltrados.length === 0) return 0;
+    return (this.currentPage - 1) * this.pageSize + 1;
+  }
+
+  get displayEnd(): number {
+    return Math.min(this.currentPage * this.pageSize, this.usuariosFiltrados.length);
+  }
+
+  // ==========================================
+  // NOTIFICACIONES UI
+  // ==========================================
   mostrarExito(mensaje: string): void {
-    this.mensajeExito = mensaje; this.mensajeError = '';
+    this.mensajeExito = mensaje;
+    this.mensajeError = '';
     setTimeout(() => this.mensajeExito = '', 3000);
   }
 
   mostrarError(mensaje: string): void {
-    this.mensajeError = mensaje; this.mensajeExito = '';
+    this.mensajeError = mensaje;
+    this.mensajeExito = '';
     setTimeout(() => this.mensajeError = '', 3000);
   }
 }

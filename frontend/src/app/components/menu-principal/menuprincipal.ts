@@ -204,8 +204,6 @@ export class MenuprincipalComponent implements OnInit {
         path: 'Reportes-Empresa',
         route: '/menu-principal/Reporte-Empresa'
       },
-
-
       // --- MÓDULOS DE POSTULANTE ---
       {
         icon: 'person',
@@ -214,7 +212,8 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#2563EB', bgHex: '#EFF6FF',
         roles: ['POSTULANTE'],
         path: '/perfil-profesional',
-        route: '/menu-principal/perfil-profesional'
+        route: '/menu-principal/perfil-profesional',
+        //permiso: 'PERFIL_X'
       },
       {
         icon: 'search',
@@ -246,7 +245,16 @@ export class MenuprincipalComponent implements OnInit {
         route: '/menu-principal/notificaciones'
       },
       // --- MÓDULOS DE ADMINISTRADOR ---
-
+      {
+        icon: 'manage_accounts',
+        title: 'Gestión de Usuarios',
+        description: 'Administra los Usuarios de tu Aplicativo',
+        colorHex: '#7c3aed', bgHex: '#f5f3ff',
+        roles: ['ADMINISTRADOR'],
+        path: '/menu-principal/gestion/users',
+        route: '/menu-principal/gestion/users',
+        permiso: 'GESTION_USERS'
+      },
       {
         icon: 'admin_panel_settings',
         title: 'Auditorias',
@@ -287,7 +295,7 @@ export class MenuprincipalComponent implements OnInit {
         route: '/menu-principal/PanelAdmi/ValidarOfertas',
         permiso: 'VALIDACION_O'
       },
-      {
+      /*{
         icon: 'manage_accounts',
         title: 'Gestión Administradores',
         description: 'Crear y gestionar administradores secundarios',
@@ -295,17 +303,8 @@ export class MenuprincipalComponent implements OnInit {
         roles: ['ADMINISTRADOR'],
         path: '/PanelAdmi/admin-MiniAdmi',
         route: '/menu-principal/PanelAdmi/admin-MiniAdmi'
-      },
-      {
-        icon: 'manage_accounts',
-        title: 'Gestión de Usuarios',
-        description: 'Administra los Usuarios de tu Aplicativo',
-        colorHex: '#7c3aed', bgHex: '#f5f3ff',
-        roles: ['ADMINISTRADOR'],
-        path: '/menu-principal/gestion/users', // <-- ¡Papá + Hijo!
-        route: '/menu-principal/gestion/users', // <-- ¡Papá + Hijo!
-        permiso: 'GESTION_USERS'
-      },
+      },*/
+
       {
         icon: 'bar_chart',
         title: 'Reportes y Estadísticas',
@@ -333,7 +332,18 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#0f172a', bgHex: '#f1f5f9',
         roles: ['ADMINISTRADOR'],
         path: '/GestionRolesbd',
-        route: '/menu-principal/GestionRolesbd'
+        route: '/menu-principal/GestionRolesbd',
+        permiso: 'ROLES_BD'
+      },
+      {
+        icon: 'person',
+        title: 'Perfil',
+        description: 'Crea y Gestiona tu Perfil',
+        colorHex: '#0f172a', bgHex: '#f1f5f9',
+        //roles: ['ADMINISTRADOR'],
+        path: '/perfil-x',
+        route: '/menu-principal/perfil-x',
+        permiso: 'Perfil_X'
       },
       {
         icon: 'settings_backup_restore',
@@ -342,17 +352,20 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#7c3aed', bgHex: '#f5f3ff',
         roles: ['ADMINISTRADOR'],
         path: '/configuracion-sistema',
-        route: '/menu-principal/configuracion-sistema'
+        route: '/menu-principal/configuracion-sistema',
+        permiso:'CONFIG_SISTEMA'
       }
     ];
 
     this.menuItems = todasLasOpciones.filter(item => {
-      const rolCoincide = item.roles?.includes(this.rolUsuario);
-      if (rolCoincide && item.permiso) {
+      // 1. Si el ítem tiene un 'permiso' asignado, evaluamos ÚNICAMENTE si tiene el permiso.
+      // Así ya no dependemos del nombre exacto del rol (útil para roles personalizados).
+      if (item.permiso) {
         return this.authService.tienePermiso(item.permiso);
       }
-      return rolCoincide;
 
+      // 2. Si el ítem NO tiene permiso (menús genéricos), validamos por el nombre del rol.
+      return item.roles?.includes(this.rolUsuario);
     });
     this.cdr.detectChanges();
     /*// 3. ACTUALIZAMOS LOS KPIs SUPERIORES CON SUS ICONOS Y COLORES

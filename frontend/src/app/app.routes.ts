@@ -22,6 +22,7 @@ import { MisPostulacionesComponent } from './components/mis-postulaciones/mis-po
 import {ListaPostulantesComponent} from './components/revision-postulantes/lista-postulantes/lista-postulantes';
 import {PerfilCandidatoComponent} from './components/revision-postulantes/perfil-candidato/perfil-candidato';
 import {RegistroOfertasAdministradorComponent} from './components/Panel-Admin/components/gestion-ofertas-administrador/gestion-ofertas-administrador';
+import {InformacionPersonalComponent} from './components/Panel-Admin/components/perfil-x/perfil-x';
 
 // (Asegúrate de importar tus 3 nuevos componentes arriba)
 import { DashboardAdminComponent } from './components/menu-principal/dashboard-admin/dashboard-admin.component';
@@ -36,6 +37,7 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'registro-candidato', component: RegistroCandidatoComponent },
   { path: 'registro-empresa', component: RegistroEmpresaComponent },
+
   {
     path: 'menu-principal',
     component: MenuprincipalComponent,
@@ -45,7 +47,7 @@ export const routes: Routes = [
       { path: 'dashboard-admin', component: DashboardAdminComponent },
       { path: 'dashboard-empresa', component: DashboardEmpresaComponent },
       { path: 'dashboard-postulante', component: DashboardPostulanteComponent },
-
+      { path: 'perfil-x', component: InformacionPersonalComponent },
 
       { path: 'perfil-profesional', component: PerfilProfesionalComponent },
       { path: 'empresa/perfil', component: PerfilEmpresaComponent },
