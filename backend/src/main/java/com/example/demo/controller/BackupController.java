@@ -1,10 +1,10 @@
 package com.example.demo.controller;
+
 import com.example.demo.model.ConfiguracionBackup;
 import com.example.demo.model.HistorialBackup;
 import com.example.demo.service.BackupAutomatizacionService;
 import com.example.demo.service.DatabaseBackupService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/seguridad")
@@ -28,9 +29,7 @@ public class BackupController {
     @PostMapping("/backup/descargar")
     public ResponseEntity<Resource> descargarRespaldo() {
         try {
-
             DatabaseBackupService.BackupResult resultado = backupService.generarBackupYSubirAzure();
-
 
             File backupFile = resultado.getArchivoLocal();
             String urlAzure = resultado.getUrlAzure();
@@ -52,11 +51,11 @@ public class BackupController {
 
         } catch (Exception e) {
             e.printStackTrace();
-
             backupAutomatizacionService.registrarAuditoria("MANUAL", "ERROR", 0L, e.getMessage(), null);
             return ResponseEntity.internalServerError().build();
         }
     }
+
     @GetMapping("/backup/descargar-nube")
     public ResponseEntity<Resource> descargarDesdeNube(@RequestParam String fileName) {
         try {
@@ -78,19 +77,32 @@ public class BackupController {
     }
 
     @PostMapping("/backup/restaurar/{idBackup}")
-    public ResponseEntity<?> restaurarBackup(@PathVariable Long idBackup) {
+    public ResponseEntity<?> restaurarBackup(
+            @PathVariable Long idBackup,
+            @RequestParam(required = false, defaultValue = "clon") String modo) {
+
         try {
-            String nombreNuevaBd = backupService.restaurarEnNuevaBd(idBackup);
-            return ResponseEntity.ok(Map.of(
-                    "mensaje", "Restauración completada con éxito",
-                    "nombreNuevaBd", nombreNuevaBd
-            ));
+            if ("reemplazo".equalsIgnoreCase(modo)) {
+                String mensaje = backupService.restaurarReemplazandoBdActual(idBackup);
+                return ResponseEntity.ok(Map.of(
+                        "mensaje", mensaje,
+                        "modo", "reemplazo_total"
+                ));
+            } else {
+                String nombreNuevaBd = backupService.restaurarEnNuevaBd(idBackup);
+                return ResponseEntity.ok(Map.of(
+                        "mensaje", "Restauración completada con éxito (Clon creado)",
+                        "nombreNuevaBd", nombreNuevaBd,
+                        "modo", "clon"
+                ));
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error al restaurar: " + e.getMessage()));
         }
     }
+
     @GetMapping("/backup/configuracion")
     public ResponseEntity<ConfiguracionBackup> obtenerConfig() {
         return ResponseEntity.ok(backupAutomatizacionService.obtenerConfiguracion());

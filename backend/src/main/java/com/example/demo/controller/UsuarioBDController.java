@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Map;
 import com.example.demo.service.IUsuarioService;
 import com.example.demo.service.Impl.UsuarioServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,21 +20,17 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/usuarios-bd") // Ruta actualizada para mayor claridad
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class UsuarioBDController {
 
-    @Autowired
-    private IUsuarioService usuarioService;
-    @Autowired
-    private RolesRepository rolesRepository;
+    private final IUsuarioService usuarioService;
+    private final RolesRepository rolesRepository;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private EmailService emailService;
+    private final EmailService emailService;
 
-    @Autowired
-    private UsuarioImagenRepository usuarioImagenRepository;
+    private final UsuarioImagenRepository usuarioImagenRepository;
 
     // ── Endpoints existentes — sin modificar ─────────────────────────────
 

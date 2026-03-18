@@ -22,12 +22,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class RegistroEmpresaController {
 
-    @Autowired
-    private IUsuarioService usuarioService;
-
-    @Autowired
-    private CiudadRepository ciudadRepository;
-
+    private final IUsuarioService usuarioService;
+    private  final CiudadRepository ciudadRepository;
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     @PostMapping("/crear")

@@ -45,8 +45,6 @@
             fechaCierre: o.fecha_cierre || o.fechaCierre,
             postulantes: Number(o.postulantes || 0)
           }));
-
-
           this.ofertas = ofertasMapeadas.filter(o => o.estadoOferta !== 'pendiente');
           this.cdr.detectChanges();
         },

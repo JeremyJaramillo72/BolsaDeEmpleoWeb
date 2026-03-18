@@ -8,6 +8,7 @@ import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.service.*;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,29 +21,23 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth/email")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class GoogleAuthController {
 
-    @Autowired
-    private GoogleAuthService googleAuthService;
+    private final  GoogleAuthService googleAuthService;
 
-    @Autowired
-    private UsuarioServiceGoogle usuarioService;
+    private final UsuarioServiceGoogle usuarioService;
 
-    @Autowired
-    private JwtService jwtService; // 🔥 Inyectamos el nuevo servicio de JWT
+    private final JwtService jwtService; // 🔥 Inyectamos el nuevo servicio de JWT
 
     // 👇 INYECCIONES AÑADIDAS PARA EL SWITCH DE BASE DE DATOS 👇
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private SeguridadRepository seguridadRepository;
+    private final SeguridadRepository seguridadRepository;
 
-    @Autowired
-    private DbSwitchService dbSwitchService;
+    private final DbSwitchService dbSwitchService;
 
-    @Autowired
-    private ISesionService sesionService;
+    private final ISesionService sesionService;
 
     @PostMapping("/google")
     public ResponseEntity<?> loginConGoogle(@RequestBody GoogleTokenDto tokenDto, HttpServletRequest request) {

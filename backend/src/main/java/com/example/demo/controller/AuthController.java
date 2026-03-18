@@ -27,28 +27,14 @@ import java.util.*;
 public class AuthController {
 
     private final PerfilProfesionalRepository perfilProfesionalRepository;
-    @Autowired
-    private AuthService authService;
-
-    @Autowired
-    private EmailService emailService;
-
-    @Autowired
-    private UsuarioEmpresaRepository usuarioEmpresaRepository;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private DbSwitchService dbSwitchService;
-
-    @Autowired
-    private SeguridadRepository seguridadRepository;
-    @Autowired
-    private ISesionService sesionService;
+    private final AuthService authService;
+    private final EmailService emailService;
+    private final UsuarioEmpresaRepository usuarioEmpresaRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final DbSwitchService dbSwitchService;
+    private final SeguridadRepository seguridadRepository;
+    private final ISesionService sesionService;
 
     @PostMapping("/enviar-codigo")
     public ResponseEntity<?> solicitarCodigo(

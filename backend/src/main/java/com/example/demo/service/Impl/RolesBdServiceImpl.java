@@ -1,24 +1,22 @@
 package com.example.demo.service.Impl;
 
 import com.example.demo.service.IRolesBdService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-
+@RequiredArgsConstructor
 @Service
 public class RolesBdServiceImpl implements IRolesBdService {
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    // ✅ Inyectar el JdbcTemplate del superusuario
-    @Autowired
+    private final  JdbcTemplate jdbcTemplate;
     @Qualifier("adminJdbcTemplate")
-    private JdbcTemplate adminJdbcTemplate;
+    private final JdbcTemplate adminJdbcTemplate;
 
     // ==============================================================================
     // LECTURA DE DATOS (LISTADOS Y ESTRUCTURAS)

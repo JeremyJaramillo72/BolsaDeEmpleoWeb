@@ -9,6 +9,7 @@ import com.example.demo.dto.DashboardDTO.GraficoDTO;
 import com.example.demo.dto.DashboardDTO.GraficoMultiDatasetDTO;
 import com.example.demo.dto.DashboardDTO.GraficoDataset;
 import com.example.demo.repository.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,30 +18,26 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-
+@RequiredArgsConstructor
 @Service
 public class DashboardService {
 
-    @Autowired(required = false)
-    private OfertaLaboralRepository ofertaLaboralRepository;
 
-    @Autowired(required = false)
-    private PostulacionRepository postulacionRepository;
+    private final  OfertaLaboralRepository ofertaLaboralRepository;
 
-    @Autowired(required = false)
-    private UsuarioRepository usuarioRepository;
+    private final PostulacionRepository postulacionRepository;
 
-    @Autowired(required = false)
-    private NotificacionRepository notificacionRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    @Autowired(required = false)
-    private OfertasFavoritasRepository ofertasFavoritasRepository;
+    private final NotificacionRepository notificacionRepository;
 
-    @Autowired(required = false)
-    private UsuarioEmpresaRepository usuarioEmpresaRepository;
+    private final OfertasFavoritasRepository ofertasFavoritasRepository;
 
-    @Autowired(required = false)
-    private AuditoriaRepository auditoriaRepository;
+
+    private final UsuarioEmpresaRepository usuarioEmpresaRepository;
+
+
+    private final AuditoriaRepository auditoriaRepository;
 
     public AdminStats getAdminStats() {
         AdminStats stats = new AdminStats();

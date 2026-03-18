@@ -44,7 +44,6 @@ public class DatabaseBackupService {
 
     private final JdbcTemplate jdbcTemplate;
 
-    
     public static class BackupResult {
         private File archivoLocal;
         private String urlAzure;
@@ -60,7 +59,6 @@ public class DatabaseBackupService {
 
 
     public BackupResult generarBackupYSubirAzure() throws Exception {
-
         String timeStamp = new SimpleDateFormat("dd-MMM-yyyy_hh-mm-a").format(new Date());
         String dbFileName = "Bolsa_Uteq_" + timeStamp + ".backup";
         String zipFileName = "Backup_Bolsa_" + timeStamp + ".zip";
@@ -103,6 +101,145 @@ public class DatabaseBackupService {
         return new BackupResult(new File(tempZipPath), urlGeneradaAzure);
     }
 
+
+    public String restaurarEnNuevaBd(Long idBackup) throws Exception {
+        String tempUnzippedPath = prepararBackupDesdeAzure(idBackup);
+
+        Date fechaEjecucion = obtenerFechaBackup(idBackup);
+        String fechaSegura = new SimpleDateFormat("yyyy_MM_dd_HHmm").format(fechaEjecucion);
+        String nuevaBd = "bolsa_uteq_" + fechaSegura;
+
+        try {
+            jdbcTemplate.execute("CREATE DATABASE " + nuevaBd);
+            System.out.println("Base de datos clonada creada: " + nuevaBd);
+
+            ejecutarPgRestoreYPermisos(tempUnzippedPath, nuevaBd);
+            return nuevaBd;
+        } finally {
+            if (tempUnzippedPath != null) Files.deleteIfExists(Paths.get(tempUnzippedPath));
+        }
+    }
+
+
+    public String restaurarReemplazandoBdActual(Long idBackup) throws Exception {
+        String currentDb = jdbcTemplate.queryForObject("SELECT current_database()", String.class);
+        String tempUnzippedPath = prepararBackupDesdeAzure(idBackup);
+        String masterJdbcUrl = "jdbc:postgresql://bolsa-empleo-dbpg.postgres.database.azure.com:5432/postgres?sslmode=require";
+
+        try {
+            try (java.sql.Connection conn = java.sql.DriverManager.getConnection(masterJdbcUrl, dbUser, dbPassword);
+                 java.sql.Statement stmt = conn.createStatement()) {
+
+                System.out.println("Bloqueando nuevas conexiones a: " + currentDb);
+                stmt.execute("ALTER DATABASE \"" + currentDb + "\" ALLOW_CONNECTIONS false");
+
+                System.out.println("Desconectando a todos los usuarios de: " + currentDb);
+                stmt.execute("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '" + currentDb + "' AND pid <> pg_backend_pid()");
+
+                Thread.sleep(1000);
+
+                System.out.println("Borrando la base de datos actual...");
+                stmt.execute("DROP DATABASE IF EXISTS \"" + currentDb + "\"");
+
+                System.out.println("Creando la base de datos limpia...");
+                stmt.execute("CREATE DATABASE \"" + currentDb + "\"");
+            }
+
+            System.out.println("Inyectando el respaldo en la base de datos limpia...");
+            ejecutarPgRestoreYPermisos(tempUnzippedPath, currentDb);
+
+            return "La base de datos actual ('" + currentDb + "') fue reemplazada exitosamente.";
+        } finally {
+            if (tempUnzippedPath != null) Files.deleteIfExists(Paths.get(tempUnzippedPath));
+        }
+    }
+
+
+    private String prepararBackupDesdeAzure(Long idBackup) throws Exception {
+        String sql = "SELECT url_azure FROM seguridad.historial_backups WHERE id_backup = ?";
+        String urlAzure = jdbcTemplate.queryForObject(sql, String.class, idBackup);
+
+        if (urlAzure == null || urlAzure.trim().isEmpty()) {
+            throw new RuntimeException("Error crítico: Este respaldo no tiene URL de Azure.");
+        }
+
+        String rawZipFileName = urlAzure.substring(urlAzure.lastIndexOf('/') + 1);
+        String zipFileName = java.net.URLDecoder.decode(rawZipFileName, java.nio.charset.StandardCharsets.UTF_8.name());
+
+        String tempZipPath = Paths.get(System.getProperty("java.io.tmpdir"), zipFileName).toString();
+
+        BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().connectionString(azureConnectionString).buildClient();
+        BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerNameBackups);
+        BlobClient blobClient = containerClient.getBlobClient(zipFileName);
+
+        if (!blobClient.exists()) throw new RuntimeException("El backup no existe en Azure: " + zipFileName);
+
+        blobClient.downloadToFile(tempZipPath, true);
+        String tempUnzippedPath = descomprimirZip(tempZipPath);
+
+        Files.deleteIfExists(Paths.get(tempZipPath));
+        return tempUnzippedPath;
+    }
+
+    private void ejecutarPgRestoreYPermisos(String tempUnzippedPath, String targetDb) throws Exception {
+        String tempGrantsPath = Paths.get(System.getProperty("java.io.tmpdir"), "grants_extraidos.sql").toString();
+
+        try {
+            ProcessBuilder pbData = new ProcessBuilder(
+                    "pg_restore", "-U", dbUser,
+                    "-h", "bolsa-empleo-dbpg.postgres.database.azure.com",
+                    "-p", "5432", "-d", targetDb,
+                    "--no-owner", "--no-privileges",
+                    tempUnzippedPath
+            );
+            pbData.environment().put("PGPASSWORD", dbPassword);
+            pbData.environment().put("PGSSLMODE", "require");
+            pbData.redirectErrorStream(true);
+
+            Process procesoData = pbData.start();
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(procesoData.getInputStream()))) {
+                while (reader.readLine() != null) { }
+            }
+            procesoData.waitFor();
+
+            ProcessBuilder pbGrants = new ProcessBuilder("pg_restore", "-s", "-f", tempGrantsPath, tempUnzippedPath);
+            pbGrants.start().waitFor();
+
+            if (Files.exists(Paths.get(tempGrantsPath))) {
+                java.util.List<String> todasLasLineas = Files.readAllLines(Paths.get(tempGrantsPath), java.nio.charset.StandardCharsets.UTF_8);
+                StringBuilder sqlSoloGrants = new StringBuilder();
+
+                for (String linea : todasLasLineas) {
+                    if (linea.trim().toUpperCase().startsWith("GRANT ") || linea.trim().toUpperCase().startsWith("ALTER DEFAULT PRIVILEGES")) {
+                        sqlSoloGrants.append(linea).append("\n");
+                    }
+                }
+
+                if (sqlSoloGrants.length() > 0) {
+                    String jdbcUrl = "jdbc:postgresql://bolsa-empleo-dbpg.postgres.database.azure.com:5432/" + targetDb + "?sslmode=require";
+                    try (java.sql.Connection conn = java.sql.DriverManager.getConnection(jdbcUrl, dbUser, dbPassword);
+                         java.sql.Statement stmt = conn.createStatement()) {
+                        stmt.execute(sqlSoloGrants.toString());
+                    }
+                }
+            }
+            System.out.println("✅ Restauración y permisos aplicados exitosamente.");
+
+        } finally {
+            Files.deleteIfExists(Paths.get(tempGrantsPath));
+        }
+    }
+
+    private Date obtenerFechaBackup(Long idBackup) {
+        String sql = "SELECT fecha_ejecucion FROM seguridad.historial_backups WHERE id_backup = ?";
+        try {
+            Date fecha = jdbcTemplate.queryForObject(sql, Date.class, idBackup);
+            return fecha != null ? fecha : new Date();
+        } catch (Exception e) {
+            return new Date();
+        }
+    }
+
     private void empaquetarEnZip(String sourceFilePath, String zipFilePath, String fileNameInsideZip) throws Exception {
         try (FileOutputStream fos = new FileOutputStream(zipFilePath);
              ZipOutputStream zos = new ZipOutputStream(fos);
@@ -110,7 +247,6 @@ public class DatabaseBackupService {
 
             ZipEntry zipEntry = new ZipEntry(fileNameInsideZip);
             zos.putNextEntry(zipEntry);
-
             byte[] buffer = new byte[1024];
             int length;
             while ((length = fis.read(buffer)) >= 0) {
@@ -130,20 +266,15 @@ public class DatabaseBackupService {
             BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerNameBackups);
             BlobClient blobClient = containerClient.getBlobClient(fileName);
 
-            if (!blobClient.exists()) {
-                throw new RuntimeException("El archivo no existe en Azure: " + fileName);
-            }
+            if (!blobClient.exists()) throw new RuntimeException("El archivo no existe en Azure: " + fileName);
 
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             blobClient.downloadStream(outputStream);
-
             return new ByteArrayResource(outputStream.toByteArray());
-
         } catch (Exception e) {
             throw new RuntimeException("Error descargando desde Azure: " + e.getMessage());
         }
     }
-
 
     private String subirAAzure(String filePath, String fileName) {
         try {
@@ -152,122 +283,20 @@ public class DatabaseBackupService {
                     .buildClient();
 
             BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerNameBackups);
-            if (!containerClient.exists()) {
-                containerClient.create();
-            }
+            if (!containerClient.exists()) containerClient.create();
 
             BlobClient blobClient = containerClient.getBlobClient(fileName);
             blobClient.uploadFromFile(filePath, true);
-
             return blobClient.getBlobUrl();
         } catch (Exception e) {
             throw new RuntimeException("Error subiendo a Azure: " + e.getMessage());
         }
     }
 
-    public String restaurarEnNuevaBd(Long idBackup) throws Exception {
-
-        String sql = "SELECT url_azure, fecha_ejecucion FROM seguridad.historial_backups WHERE id_backup = ?";
-        java.util.Map<String, Object> backupRecord = jdbcTemplate.queryForMap(sql, idBackup);
-
-        String urlAzure = (String) backupRecord.get("url_azure");
-        if (urlAzure == null || urlAzure.trim().isEmpty()) {
-            throw new RuntimeException("Error crítico: Este respaldo no tiene URL de Azure.");
-        }
-
-        Date fechaEjecucion = (Date) backupRecord.get("fecha_ejecucion");
-        if (fechaEjecucion == null) fechaEjecucion = new Date();
-
-        String rawZipFileName = urlAzure.substring(urlAzure.lastIndexOf('/') + 1);
-        String zipFileName = java.net.URLDecoder.decode(rawZipFileName, java.nio.charset.StandardCharsets.UTF_8.name());
-
-        String fechaSegura = new SimpleDateFormat("yyyy_MM_dd_HHmm").format(fechaEjecucion);
-        String nuevaBd = "bolsa_uteq_" + fechaSegura;
-
-        String tempZipPath = Paths.get(System.getProperty("java.io.tmpdir"), zipFileName).toString();
-        String tempUnzippedPath = null;
-        String tempGrantsPath = Paths.get(System.getProperty("java.io.tmpdir"), "grants_extraidos.sql").toString();
-
-        try {
-            BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().connectionString(azureConnectionString).buildClient();
-            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerNameBackups);
-            BlobClient blobClient = containerClient.getBlobClient(zipFileName);
-
-            if (!blobClient.exists()) throw new RuntimeException("El backup no existe en Azure: " + zipFileName);
-            blobClient.downloadToFile(tempZipPath, true);
-
-            tempUnzippedPath = descomprimirZip(tempZipPath);
-
-            jdbcTemplate.execute("CREATE DATABASE " + nuevaBd);
-            System.out.println("Base de datos clonada creada: " + nuevaBd);
-
-            // 🟢 FASE 1: RESTAURAR DATOS Y ESQUEMA (SIN DUEÑOS NI PERMISOS)
-            ProcessBuilder pbData = new ProcessBuilder(
-                    "pg_restore", "-U", dbUser,
-                    "-h", "bolsa-empleo-dbpg.postgres.database.azure.com",
-                    "-p", "5432", "-d", nuevaBd,
-                    "--no-owner", "--no-privileges",
-                    tempUnzippedPath
-            );
-            pbData.environment().put("PGPASSWORD", dbPassword);
-            pbData.environment().put("PGSSLMODE", "require");
-            pbData.redirectErrorStream(true);
-
-            System.out.println("Iniciando Fase 1: Inyección de datos...");
-            Process procesoData = pbData.start();
-            try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(procesoData.getInputStream()))) {
-                while (reader.readLine() != null) { }
-            }
-            procesoData.waitFor();
-
-            // 🟢 FASE 2: EXTRAER Y FILTRAR PERMISOS (EL BYPASS)
-            System.out.println("Iniciando Fase 2: Extracción de esquema para obtener GRANTs...");
-
-            ProcessBuilder pbGrants = new ProcessBuilder(
-                    "pg_restore", "-s", "-f", tempGrantsPath, tempUnzippedPath
-            );
-            pbGrants.start().waitFor();
-
-            if (Files.exists(Paths.get(tempGrantsPath))) {
-                System.out.println("Filtrando y aplicando permisos limpios...");
-
-                java.util.List<String> todasLasLineas = Files.readAllLines(Paths.get(tempGrantsPath), java.nio.charset.StandardCharsets.UTF_8);
-                StringBuilder sqlSoloGrants = new StringBuilder();
-
-                for (String linea : todasLasLineas) {
-                    String lineaTrim = linea.trim().toUpperCase();
-                    if (lineaTrim.startsWith("GRANT ") || lineaTrim.startsWith("ALTER DEFAULT PRIVILEGES")) {
-                        sqlSoloGrants.append(linea).append("\n");
-                    }
-                }
-
-                if (sqlSoloGrants.length() > 0) {
-                    String jdbcUrl = "jdbc:postgresql://bolsa-empleo-dbpg.postgres.database.azure.com:5432/" + nuevaBd + "?sslmode=require";
-                    try (java.sql.Connection conn = java.sql.DriverManager.getConnection(jdbcUrl, dbUser, dbPassword);
-                         java.sql.Statement stmt = conn.createStatement()) {
-                        stmt.execute(sqlSoloGrants.toString());
-                        System.out.println("✅ Todos los permisos (GRANTs) han sido aplicados con éxito.");
-                    }
-                }
-            }
-
-            System.out.println("¡Restauración Completa!");
-            return nuevaBd;
-
-        } finally {
-            Files.deleteIfExists(Paths.get(tempZipPath));
-            Files.deleteIfExists(Paths.get(tempGrantsPath));
-            if (tempUnzippedPath != null) Files.deleteIfExists(Paths.get(tempUnzippedPath));
-        }
-    }
-
     private String descomprimirZip(String zipFilePath) throws Exception {
         String unzippedFilePath = zipFilePath.replace(".zip", ".backup");
-
         try (java.util.zip.ZipInputStream zis = new java.util.zip.ZipInputStream(new FileInputStream(zipFilePath))) {
-            java.util.zip.ZipEntry zipEntry = zis.getNextEntry();
-
-            if (zipEntry != null) {
+            if (zis.getNextEntry() != null) {
                 try (FileOutputStream fos = new FileOutputStream(unzippedFilePath)) {
                     byte[] buffer = new byte[1024];
                     int len;

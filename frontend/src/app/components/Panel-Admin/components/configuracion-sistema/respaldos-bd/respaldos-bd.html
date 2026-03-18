@@ -193,9 +193,10 @@
             <div *ngIf="item.estado === 'ERROR'" class="text-muted text-sm" style="font-size: 0.75rem; margin-top: 4px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="item.mensajeError">
               {{ item.mensajeError }}
             </div>
-          </td> <td>
-          <strong>{{ formatearTamano(item.tamanoBytes) }}</strong>
-        </td>
+          </td>
+          <td>
+            <strong>{{ formatearTamano(item.tamanoBytes) }}</strong>
+          </td>
 
           <td style="text-align: center; vertical-align: middle;">
 
@@ -205,18 +206,18 @@
                       title="Descargar desde Azure"
                       [disabled]="item.estado === 'ERROR' || descargandoArchivo === item.idBackup"
                       (click)="descargarRespaldoHistorial(item)">
-                <span class="material-icons" [class.icon-spin]="descargandoArchivo === item.idBackup">
-                  {{ descargandoArchivo === item.idBackup ? 'sync' : 'cloud_download' }}
-                </span>
+                  <span class="material-icons" [class.icon-spin]="descargandoArchivo === item.idBackup">
+                    {{ descargandoArchivo === item.idBackup ? 'sync' : 'cloud_download' }}
+                  </span>
               </button>
 
               <button class="btn-action hover-effect"
-                      title="Restaurar copia como nueva Base de Datos"
+                      title="Opciones de Restauración"
                       style="color: #f59e0b;"
                       [disabled]="item.estado === 'ERROR' || restaurandoArchivo === item.idBackup"
-                      (click)="restaurarBackup(item.idBackup)">
-                <span class="material-icons" [class.icon-spin]="restaurandoArchivo === item.idBackup">
-                  {{ restaurandoArchivo === item.idBackup ? 'sync' : 'settings_backup_restore' }}
+                      (click)="abrirModalRestauracion(item.idBackup)">
+                  <span class="material-icons" [class.icon-spin]="restaurandoArchivo === item.idBackup">
+                      {{ restaurandoArchivo === item.idBackup ? 'sync' : 'settings_backup_restore' }}
                 </span>
               </button>
 
@@ -234,4 +235,50 @@
     </div>
   </div>
 
+</div>
+
+<div class="modal-overlay" *ngIf="modalRestaurarVisible">
+  <div class="modal-content restore-modal">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span class="material-icons" style="color: #f59e0b; font-size: 28px;">settings_backup_restore</span>
+        <h2 style="margin: 0; color: #1e293b;">Opciones de Restauración</h2>
+      </div>
+      <button class="btn-close" (click)="cerrarModalRestauracion()"><span class="material-icons">close</span></button>
+    </div>
+
+    <div class="modal-body">
+      <p class="text-muted mb-4">Selecciona el método de restauración para el respaldo seleccionado. Esta acción no se puede deshacer.</p>
+
+      <div class="restore-option option-safe" (click)="ejecutarRestauracion('clon')">
+        <div class="opt-icon bg-indigo-light text-indigo"><span class="material-icons">file_copy</span></div>
+        <div class="opt-content">
+          <h4>Restaurar como Copia Segura (Clon)</h4>
+          <p>Crea una nueva base de datos independiente. El sistema actual seguirá funcionando sin interrupciones.</p>
+        </div>
+        <span class="material-icons opt-arrow">chevron_right</span>
+      </div>
+
+      <div class="restore-option option-danger mt-3" [class.active-danger]="modoReemplazo" (click)="activarModoReemplazo()">
+        <div class="opt-icon bg-danger-light text-danger"><span class="material-icons">warning</span></div>
+        <div class="opt-content">
+          <h4 class="text-danger">Reemplazo Total de Base de Datos</h4>
+          <p>Borra la base de datos actual y monta este respaldo. Desconectará a todos los usuarios.</p>
+        </div>
+        <span class="material-icons opt-arrow text-danger">{{ modoReemplazo ? 'keyboard_arrow_down' : 'chevron_right' }}</span>
+      </div>
+
+      <div class="danger-confirm-box fade-in mt-3" *ngIf="modoReemplazo">
+        <label>Para evitar accidentes, escribe <strong>CONFIRMAR</strong>:</label>
+        <div class="input-wrapper mt-2 mb-3">
+          <span class="material-icons input-icon text-danger">edit</span>
+          <input type="text" class="form-control" style="border-color: #ef4444; color: #ef4444;" [(ngModel)]="textoConfirmacion" placeholder="Escribe CONFIRMAR aquí">
+        </div>
+        <button class="btn-execute-danger w-100" [disabled]="textoConfirmacion !== 'CONFIRMAR'" (click)="ejecutarRestauracion('reemplazo')">
+          <span class="material-icons">local_fire_department</span> Ejecutar Reemplazo Total
+        </button>
+      </div>
+
+    </div>
+  </div>
 </div>

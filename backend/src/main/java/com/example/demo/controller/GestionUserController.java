@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.UsuarioTablaDTO;
 import com.example.demo.service.IUsuarioService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,15 +11,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/GestionUser") // Mantenemos la ruta para que Angular no falle
+@RequestMapping("/api/GestionUser")
+@RequiredArgsConstructor
 public class GestionUserController {
+    private final IUsuarioService usuarioService;
 
-    @Autowired
-    private IUsuarioService usuarioService;
-
-    // ==========================================
-    // 1. OBTENER TABLA COMPLETA DE USUARIOS
-    // ==========================================
     @GetMapping("/tabla")
     public ResponseEntity<List<UsuarioTablaDTO>> obtenerTablaUsuarios() {
         try {

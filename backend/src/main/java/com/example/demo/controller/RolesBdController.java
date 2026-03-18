@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 import com.example.demo.service.IRolesBdService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,10 +12,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/rolesbd")
 @CrossOrigin(origins = "*") // En producción, cámbialo por la URL de tu Angular
+@RequiredArgsConstructor
 public class RolesBdController {
 
-    @Autowired
-    private IRolesBdService rolesBdService;
+    private final IRolesBdService rolesBdService;
     /**
      * 1. Lista los roles personalizados creados por el administrador.
      * Endpoint: GET /api/admin/roles-bd

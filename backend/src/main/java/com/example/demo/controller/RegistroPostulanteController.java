@@ -5,6 +5,7 @@ import com.example.demo.model.Usuario;
 import com.example.demo.repository.CiudadRepository;
 import com.example.demo.service.AuthService;
 import com.example.demo.service.IUsuarioService; // Cambiado a la Interfaz
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,17 +22,14 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/registro-postulante")
 @CrossOrigin(origins = "http://localhost:4200")
+@RequiredArgsConstructor
 public class RegistroPostulanteController {
 
 
-    @Autowired
-    private IUsuarioService usuarioService;
+    private final  IUsuarioService usuarioService;
 
-    @Autowired
-    private AuthService authService;
-
-    @Autowired
-    private CiudadRepository ciudadRepository;
+    private final AuthService authService;
+    private final CiudadRepository ciudadRepository;
 
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 

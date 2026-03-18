@@ -22,10 +22,7 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:4200")
 @RequiredArgsConstructor
 public class OfertaLaboralController {
-
-    @Autowired
-    private IOfertaLaboralService ofertaService;
-
+    private final  IOfertaLaboralService ofertaService;
     @PostMapping
     public OfertaLaboral guardarOferta(@RequestBody OfertaLaboralDTO ofertaDTO) {
         return ofertaService.guardarOferta(ofertaDTO);

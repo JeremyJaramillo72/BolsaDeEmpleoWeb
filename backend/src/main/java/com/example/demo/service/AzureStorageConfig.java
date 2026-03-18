@@ -44,4 +44,5 @@ public class AzureStorageConfig {
 
         return blobClient.getBlobUrl();
     }
+
 }

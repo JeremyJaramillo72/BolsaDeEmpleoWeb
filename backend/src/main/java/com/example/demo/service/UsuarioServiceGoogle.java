@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -9,16 +10,14 @@ import java.util.Map;
 import java.util.HashMap;
 
 @Service
+@RequiredArgsConstructor
 public class UsuarioServiceGoogle {
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
-    @Autowired
-    private NotificacionService notificacionService;
+    private final NotificacionService notificacionService;
 
     @Transactional // 🔥 Importante: Si falla el segundo procedure, que no se guarde el primero
     public Long registrarUsuarioCompletoGoogle(String nombre, String apellido, String correo, String fotoUrl) {

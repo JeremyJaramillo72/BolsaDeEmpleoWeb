@@ -4,6 +4,7 @@ import com.example.demo.dto.EnlazarRolDTO;
 import com.example.demo.model.Roles;
 import com.example.demo.repository.RolesRepository;
 import com.example.demo.service.RolService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,15 +15,12 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/academico/roles") // Mantenemos tu ruta original
-@CrossOrigin(origins = "*") // Para que Angular no te de problemas de CORS
+@CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class RolesController {
 
-    @Autowired
-    private RolesRepository rolesRepository;
-
-    // ¡NUEVO! Inyectamos el servicio que hace la magia de enlazar
-    @Autowired
-    private RolService rolService;
+    private final  RolesRepository rolesRepository;
+    private  final RolService rolService;
 
     // --- GET: Listar catálogo ---
     @GetMapping("/catalogo")

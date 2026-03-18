@@ -14,8 +14,6 @@ import { UiNotificationService } from '../../../../../services/ui-notification.s
 export class RespaldosBd implements OnInit {
   private respaldosService = inject(RespaldosDbService);
   public cdr = inject(ChangeDetectorRef);
-
-  // 🔥 2. Inyectamos el servicio al estilo moderno de Angular
   private ui = inject(UiNotificationService);
 
   restaurandoArchivo: number | null = null;
@@ -39,10 +37,78 @@ export class RespaldosBd implements OnInit {
   historialBackups: any[] = [];
   cargandoHistorial: boolean = false;
 
+
+  modalRestaurarVisible: boolean = false;
+  backupParaRestaurarId: number | null = null;
+  modoReemplazo: boolean = false;
+  textoConfirmacion: string = '';
+
   ngOnInit(): void {
     this.cargarConfiguracion();
     this.cargarHistorial();
   }
+
+
+
+  abrirModalRestauracion(idBackup: number) {
+    this.backupParaRestaurarId = idBackup;
+    this.modoReemplazo = false;
+    this.textoConfirmacion = '';
+    this.modalRestaurarVisible = true;
+  }
+
+  cerrarModalRestauracion() {
+    this.modalRestaurarVisible = false;
+    this.backupParaRestaurarId = null;
+    this.modoReemplazo = false;
+    this.textoConfirmacion = '';
+  }
+
+  activarModoReemplazo() {
+    this.modoReemplazo = true;
+  }
+
+  ejecutarRestauracion(modo: 'clon' | 'reemplazo') {
+    if (!this.backupParaRestaurarId) return;
+
+    // 🔥 1. RESCATAMOS EL ID ANTES DE CERRAR EL MODAL
+    const idSeguro = this.backupParaRestaurarId;
+
+    this.restaurandoArchivo = idSeguro;
+    this.cerrarModalRestauracion(); // Esto limpia las variables del modal para cerrarlo
+
+    this.ui.exito(modo === 'clon'
+      ? '⏳ Iniciando creación de clon seguro. Esto puede tardar unos minutos...'
+      : '⚠️ Iniciando REEMPLAZO TOTAL. El sistema se desconectará brevemente...');
+
+    // 🔥 2. ENVIAMOS EL "idSeguro" AL BACKEND
+    this.respaldosService.restaurarEnNuevaBd(idSeguro, modo).subscribe({
+      next: (res: any) => {
+        this.restaurandoArchivo = null;
+        this.cdr.detectChanges();
+
+        if (modo === 'clon') {
+          const nombreDb = res?.nombreNuevaBd || 'creada exitosamente';
+          this.ui.exito(`¡Éxito! Nueva base de datos clonada: ${nombreDb}`);
+        } else {
+          this.ui.exito('¡Éxito! La base de datos ha sido reemplazada por completo.');
+
+          // Recargamos la página después de un Reemplazo Total para limpiar conexiones
+          setTimeout(() => {
+            window.location.reload();
+          }, 5000);
+        }
+      },
+      error: (err) => {
+        this.restaurandoArchivo = null;
+        this.cdr.detectChanges();
+        console.error('Error restaurando la base de datos:', err);
+        this.ui.error('Error crítico al restaurar la base de datos. Revisa la consola.');
+      }
+    });
+  }
+
+
 
   ejecutarBackup() {
     this.isBackingUp = true;
@@ -68,7 +134,6 @@ export class RespaldosBd implements OnInit {
         this.isBackingUp = false;
         this.cdr.detectChanges();
         console.error('Error del servidor:', err);
-
         this.ui.error('Falló la generación de la copia de seguridad.');
         this.cargarHistorial();
       }
@@ -156,34 +221,6 @@ export class RespaldosBd implements OnInit {
     return (mb / 1024).toFixed(2) + ' GB';
   }
 
-  restaurarBackup(idBackup: number) {
-    const confirmado = confirm(
-      'Esto descargará el respaldo desde Azure y creará una NUEVA base de datos. El proceso puede tardar un par de minutos. ¿Deseas continuar?'
-    );
-
-    if (confirmado) {
-      this.restaurandoArchivo = idBackup;
-      this.cdr.detectChanges();
-
-      this.respaldosService.restaurarEnNuevaBd(idBackup).subscribe({
-        next: (res: any) => {
-          this.restaurandoArchivo = null;
-          this.cdr.detectChanges();
-
-          const nombreDb = res?.nombreNuevaBd || 'creada exitosamente';
-          this.ui.exito(`¡Éxito! Nueva base de datos clonada: ${nombreDb}`);
-        },
-        error: (err) => {
-          this.restaurandoArchivo = null;
-          this.cdr.detectChanges();
-          console.error('Error restaurando la base de datos:', err);
-          // 🔥 7. Cambiamos el alert por error
-          this.ui.error('Error crítico al restaurar la base de datos. Revisa la consola.');
-        }
-      });
-    }
-  }
-
   descargarRespaldoHistorial(item: any) {
     if (!item.urlAzure) {
       this.ui.error('Error: No se encontró la ruta del archivo en la nube.');
@@ -213,7 +250,6 @@ export class RespaldosBd implements OnInit {
         this.descargandoArchivo = null;
         this.cdr.detectChanges();
         console.error('Error descargando de Azure:', err);
-
         this.ui.error('No se pudo descargar el archivo de Azure. Posiblemente fue eliminado.');
       }
     });

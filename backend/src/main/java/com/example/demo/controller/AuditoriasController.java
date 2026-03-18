@@ -4,6 +4,7 @@ import com.example.demo.dto.AuditoriaDTO;
 import com.example.demo.dto.ResumenAuditoriaDTO;
 import com.example.demo.service.IAuditoriaService;
 import com.example.demo.service.ISesionService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -16,15 +17,11 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auditorias") // 👈 Nombre de la API actualizado
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class AuditoriasController {
 
-    @Autowired
-    private IAuditoriaService auditoriaService;
-
-
-    // 👇 AGREGA ESTO
-    @Autowired
-    private ISesionService sesionService;
+    private final IAuditoriaService auditoriaService;
+    private final ISesionService sesionService;
 
     // ✅ GET /api/auditorias/usuarios
     @GetMapping("/usuarios")

@@ -277,7 +277,7 @@ public class NotificacionService {
      * Estas notificaciones NO se guardan en BD, solo se generan dinámicamente.
      */
     @Transactional(readOnly = true)
-    private List<NotificacionDTO> generarNotificacionesUltimaOportunidad(Long idUsuario) {
+    protected List<NotificacionDTO> generarNotificacionesUltimaOportunidad(Long idUsuario) {
         List<NotificacionDTO> notificacionesVirtuales = new java.util.ArrayList<>();
 
         try {

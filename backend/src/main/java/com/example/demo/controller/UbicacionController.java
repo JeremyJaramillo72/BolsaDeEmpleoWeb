@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
-// Imports de Spring Framework
+
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,13 +17,14 @@ import com.example.demo.repository.CiudadRepository;
 @RestController
 @RequestMapping("/api/ubicaciones")
 @CrossOrigin(origins = "http://localhost:4200")
+@RequiredArgsConstructor
 public class UbicacionController {
 
-    @Autowired 
-    private ProvinciaRepository provinciaRepo;
 
-    @Autowired 
-    private CiudadRepository ciudadRepo;
+    private final ProvinciaRepository provinciaRepo;
+
+
+    private final CiudadRepository ciudadRepo;
 
     @GetMapping("/provincias")
     public List<Provincia> listarProvincias() {

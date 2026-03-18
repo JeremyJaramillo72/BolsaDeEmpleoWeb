@@ -25,27 +25,19 @@ public class llenarCmbs {
     private  final CatalogoHabilidadRepository catalogoHabilidadRepository;
     private final CargoRepository cargoRepository;
     private final  CatalogoEmpresaRepository catalogoEmpresaRepository;
-    @Autowired
-    private FacultadRepository facultadRepository;
-    @Autowired
-    private CarreraRepository carreraRepository;
-    @Autowired
-    private IdiomaRepository idiomaRepository;
+    private final  FacultadRepository facultadRepository;
+    private final CarreraRepository carreraRepository;
+    private final  IdiomaRepository idiomaRepository;
 
-    @Autowired
-    private CategoriaOfertaRepository categoriaRepository;
+    private  final CategoriaOfertaRepository categoriaRepository;
 
-    @Autowired
-    private JornadaOfertaRepository jornadaRepository;
+    private final  JornadaOfertaRepository jornadaRepository;
 
-    @Autowired
-    private ModalidadOfertaRepository modalidadRepository;
+    private final ModalidadOfertaRepository modalidadRepository;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final  UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private RolesRepository rolesRepository;
+    private final RolesRepository rolesRepository;
 
 
 
