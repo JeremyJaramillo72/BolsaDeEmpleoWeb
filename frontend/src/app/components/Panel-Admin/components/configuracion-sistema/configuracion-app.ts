@@ -50,7 +50,7 @@ export class ConfiguracionAppComponent implements OnInit {
   cargarConfiguracion(): void {
     this.cargando = true;
     this.service.obtenerConfiguracion().subscribe({
-      next: cfg => {
+      next: (cfg: any) => {
         this.config               = cfg;
         this.nombreAplicativo     = cfg.nombreAplicativo     ?? '';
         this.descripcion          = cfg.descripcion          ?? '';
@@ -62,7 +62,7 @@ export class ConfiguracionAppComponent implements OnInit {
         this.cargando             = false;
         this.cdr.detectChanges();
       },
-      error: err => {
+      error: (err: any) => {
         console.error('Error cargando configuración:', err);
         this.mensajeError = 'Error al cargar la configuración del sistema.';
         this.cargando     = false;
@@ -145,7 +145,7 @@ export class ConfiguracionAppComponent implements OnInit {
     this.mensajeError = '';
 
     this.service.actualizarLogo(this.archivoLogo).subscribe({
-      next: res => {
+      next: (res: any) => {
         this.mostrarExito('✅ Logo actualizado correctamente.');
         // ✅ Emitir a través del service — menuprincipal.ts se actualiza sin F5
         if (res.logoUrl)                  this.sistemaConfigSvc.actualizarLogo(res.logoUrl);
@@ -158,7 +158,7 @@ export class ConfiguracionAppComponent implements OnInit {
         this.subiendoLogo = false;
         this.cdr.detectChanges();
       },
-      error: err => {
+      error: (err: any) => {
         this.mostrarError('❌ Error al subir el logo: ' + (err.error?.error || err.message));
         this.subiendoLogo = false;
         this.cdr.detectChanges();
@@ -194,7 +194,7 @@ export class ConfiguracionAppComponent implements OnInit {
       telefonoContacto:     this.telefonoContacto.trim()     || null,
       direccionInstitucion: this.direccionInstitucion.trim() || null
     }).subscribe({
-      next: cfg => {
+      next: (cfg: any) => {
         this.config    = cfg;
         this.guardando = false;
         // ✅ Emitir nombre a través del service — menuprincipal.ts se actualiza sin F5
@@ -202,7 +202,7 @@ export class ConfiguracionAppComponent implements OnInit {
         this.mostrarExito('✅ Configuración guardada correctamente.');
         this.cdr.detectChanges();
       },
-      error: err => {
+      error: (err: any) => {
         this.mostrarError('❌ Error al guardar: ' + (err.error?.error || err.message));
         this.guardando = false;
         this.cdr.detectChanges();

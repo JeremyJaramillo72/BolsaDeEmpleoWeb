@@ -8,7 +8,16 @@
 
   <div class="tabs-navigation">
 
-    <!-- Tab nuevo: Aplicación (primero) -->
+    <!-- Tab Mi Perfil — primero y visible para todos los roles admin -->
+    <button
+      class="tab-button"
+      [class.active]="activeTab === 'perfil'"
+      (click)="activeTab = 'perfil'">
+      <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 4px;">person</span>
+      Mi Perfil
+    </button>
+
+    <!-- Tab Aplicación -->
     <button
       class="tab-button"
       [class.active]="activeTab === 'aplicacion'"
@@ -45,7 +54,12 @@
 
   <div class="tabs-content">
 
-    <!-- Tab nuevo: Configuración de la Aplicación -->
+    <!-- Tab Mi Perfil -->
+    <div *ngIf="activeTab === 'perfil'" class="tab-pane active">
+      <app-perfil-admin></app-perfil-admin>
+    </div>
+
+    <!-- Tab Aplicación -->
     <div *ngIf="activeTab === 'aplicacion'" class="tab-pane active">
       <app-configuracion-app></app-configuracion-app>
     </div>

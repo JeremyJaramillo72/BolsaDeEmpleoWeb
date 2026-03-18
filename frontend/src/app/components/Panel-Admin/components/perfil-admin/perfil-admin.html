@@ -1,0 +1,165 @@
+<div class="config-container">
+
+  <div class="header-section">
+    <div class="header-content">
+      <h1>👤 Mi Perfil</h1>
+      <p class="subtitle">Actualiza tu información personal y foto de perfil</p>
+    </div>
+  </div>
+
+  <div *ngIf="cargando" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando perfil...</p>
+  </div>
+
+  <div *ngIf="!cargando && perfil" class="content-wrapper">
+
+    <div *ngIf="mensajeExito" class="message-exito">{{ mensajeExito }}</div>
+    <div *ngIf="mensajeError" class="message-error">{{ mensajeError }}</div>
+
+    <!-- ══ SECCIÓN 1: FOTO DE PERFIL ══════════════════════════════════ -->
+    <div class="card-section">
+      <div class="card-header"><h2>📷 Foto de Perfil</h2></div>
+      <div class="card-body">
+        <p class="section-desc">
+          <strong>Haz clic</strong> sobre la foto o <strong>arrastra</strong> una imagen.
+        </p>
+
+        <div class="logo-area-wrapper">
+
+          <!-- Zona clicable + drag-and-drop -->
+          <div
+            class="logo-drop-zone avatar-zone"
+            [class.dragging]="isDragging"
+            [class.has-foto]="fotoActual"
+            (click)="abrirSelector()"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave($event)"
+            (drop)="onDrop($event)">
+
+            <img *ngIf="fotoActual" [src]="fotoActual" alt="Foto" class="logo-img avatar-img-round" />
+
+            <div *ngIf="!fotoActual" class="logo-placeholder-content">
+              <span class="avatar-iniciales">{{ iniciales }}</span>
+              <p class="upload-hint">Clic o arrastra tu foto</p>
+            </div>
+
+            <div class="logo-overlay">
+              <span class="overlay-icon">📷</span>
+              <span class="overlay-text">{{ isDragging ? 'Suelta aquí' : 'Cambiar foto' }}</span>
+            </div>
+
+            <span *ngIf="fotoPreviewUrl" class="preview-badge">Vista previa</span>
+          </div>
+
+          <input type="file" id="fotoInput" accept="image/*"
+                 style="display:none;" (change)="onArchivoSeleccionado($event)" />
+
+          <div *ngIf="archivoFoto" class="logo-actions">
+            <p class="archivo-nombre">📎 {{ archivoFoto.name }}</p>
+            <div class="logo-btn-group">
+              <button (click)="subirFoto()" [disabled]="subiendoFoto" class="btn btn-guardar">
+                {{ subiendoFoto ? '⏳ Subiendo...' : '☁️ Subir foto' }}
+              </button>
+              <button (click)="cancelarFoto()" [disabled]="subiendoFoto" class="btn btn-cancelar">
+                ✕ Cancelar
+              </button>
+            </div>
+            <p class="info-note-small">La foto se sube de forma independiente.</p>
+          </div>
+
+          <div *ngIf="!archivoFoto" class="logo-info">
+            <p class="info-small">{{ perfil.nombre }} {{ perfil.apellido }}</p>
+            <p class="info-small">{{ perfil.correo }}</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SECCIÓN 2: DATOS PERSONALES ════════════════════════════════ -->
+    <div class="card-section">
+      <div class="card-header"><h2>📋 Datos Personales</h2></div>
+      <div class="card-body">
+
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label>Nombre *</label>
+            <input type="text" [(ngModel)]="nombre" maxlength="100"
+                   placeholder="Juan" class="input-field" [disabled]="guardando" />
+          </div>
+
+          <div class="form-group">
+            <label>Apellido *</label>
+            <input type="text" [(ngModel)]="apellido" maxlength="100"
+                   placeholder="Pérez" class="input-field" [disabled]="guardando" />
+          </div>
+
+          <!-- Correo solo lectura -->
+          <div class="form-group form-group-full">
+            <label>📧 Correo (solo lectura)</label>
+            <input type="email" [value]="perfil.correo" readonly
+                   class="input-field input-readonly" />
+            <div class="input-helper">El correo no puede modificarse desde aquí.</div>
+          </div>
+
+          <div class="form-group">
+            <label>📞 Teléfono</label>
+            <input type="text" [(ngModel)]="telefono" maxlength="20"
+                   placeholder="0991234567" class="input-field" [disabled]="guardando" />
+          </div>
+
+          <div class="form-group">
+            <label>Género</label>
+            <select [(ngModel)]="genero" class="input-field" [disabled]="guardando">
+              <option value="">— Seleccionar —</option>
+              <option *ngFor="let g of opcionesGenero" [value]="g.valor">{{ g.label }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>📅 Fecha de Nacimiento</label>
+            <input type="date" [(ngModel)]="fechaNacimiento"
+                   class="input-field" [disabled]="guardando" />
+          </div>
+
+        </div>
+
+        <div class="action-buttons">
+          <button (click)="guardar()"
+                  [disabled]="guardando || !nombre.trim() || !apellido.trim()"
+                  class="btn btn-guardar">
+            {{ guardando ? '💾 Guardando...' : '💾 Guardar Cambios' }}
+          </button>
+          <button (click)="cancelar()" [disabled]="guardando" class="btn btn-cancelar">
+            ↺ Cancelar
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ SECCIÓN 3: ESTADO ACTUAL ═══════════════════════════════════ -->
+    <div class="card-section">
+      <div class="card-header"><h2>📊 Datos Actuales</h2></div>
+      <div class="card-body">
+        <div class="info-row"><label>Nombre completo:</label>
+          <div class="info-value">{{ perfil.nombre }} {{ perfil.apellido }}</div></div>
+        <div class="info-row"><label>Correo:</label>
+          <div class="info-value">{{ perfil.correo }}</div></div>
+        <div class="info-row"><label>Teléfono:</label>
+          <div class="info-value">{{ perfil.telefono || '—' }}</div></div>
+        <div class="info-row"><label>Género:</label>
+          <div class="info-value">{{ perfil.genero || '—' }}</div></div>
+        <div class="info-row"><label>Fecha nacimiento:</label>
+          <div class="info-value">{{ formatearFecha(perfil.fechaNacimiento) }}</div></div>
+        <div class="info-note">
+          ℹ️ Los cambios de nombre se reflejan en el menú al guardar.
+          La foto se refleja en tiempo real en el menú lateral y superior.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

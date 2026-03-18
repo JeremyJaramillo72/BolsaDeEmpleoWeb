@@ -6,6 +6,7 @@ import { filter } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 import { HttpClientModule } from '@angular/common/http';  // ✅ requerido para que HttpClient funcione en el módulo
 import { SistemaConfigService } from '../Panel-Admin/services/sistema-config.service';
+import { PerfilAdminService }    from '../Panel-Admin/services/perfil-admin.service';
 
 import { NotificationService } from '../../services/notification.service';
 import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
@@ -63,7 +64,8 @@ export class MenuprincipalComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private usuarioEmpresaService: UsuarioEmpresaService,
     public notificationService: NotificationService,
-    private sistemaConfigService: SistemaConfigService  // ✅ logo/nombre del sistema en tiempo real para todos los roles
+    private sistemaConfigService: SistemaConfigService,  // ✅ logo/nombre del sistema para todos los roles
+    private perfilAdminService:   PerfilAdminService         // ✅ foto perfil admin en tiempo real
   ) {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -88,6 +90,14 @@ export class MenuprincipalComponent implements OnInit {
           this.cdr.detectChanges();
         }
       }
+    });
+
+    // ✅ Foto + Nombre del admin en tiempo real (topbar + sidebar)
+    this.perfilAdminService.foto$.subscribe((url: string) => {
+      if (url) { this.fotoMenu = url; this.cdr.detectChanges(); }
+    });
+    this.perfilAdminService.nombre$.subscribe((nombre: string) => {
+      if (nombre) { this.nombreUsuario = nombre; this.cdr.detectChanges(); }
     });
 
     this.usuarioEmpresaService.logoActual$.subscribe(nuevaUrl => {

@@ -4,7 +4,7 @@ import { ConfiguracionCorreoComponent } from './configuracion-correo/configuraci
 import { PlantillaNotificacionComponent } from './plantilla-notificacion/plantilla-notificacion';
 import { RespaldosBd } from './respaldos-bd/respaldos-bd';
 import { ConfiguracionAppComponent } from './configuracion-app';
-
+import { PerfilAdminComponent } from '../perfil-admin/perfil-admin';
 @Component({
   selector: 'app-configuracion-sistema',
   standalone: true,
@@ -13,11 +13,13 @@ import { ConfiguracionAppComponent } from './configuracion-app';
     ConfiguracionCorreoComponent,
     PlantillaNotificacionComponent,
     RespaldosBd,
-    ConfiguracionAppComponent
+    ConfiguracionAppComponent,
+    PerfilAdminComponent,
+    PerfilAdminComponent
   ],
   templateUrl: './configuracion-sistema.html',
   styleUrls: ['./configuracion-sistema.css']
 })
 export class ConfiguracionSistemaComponent {
-  activeTab: 'aplicacion' | 'correo' | 'plantillas' | 'respaldos' = 'aplicacion';
+  activeTab: 'perfil' | 'aplicacion' | 'correo' | 'plantillas' | 'respaldos' = 'perfil';
 }
