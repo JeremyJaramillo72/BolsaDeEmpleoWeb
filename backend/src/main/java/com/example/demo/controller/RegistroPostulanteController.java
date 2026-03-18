@@ -92,8 +92,8 @@ public class RegistroPostulanteController {
         }
     }
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+
+    private final UsuarioRepository usuarioRepository;
     @PutMapping("/actualizar/{id}")
     public ResponseEntity<?> actualizarPostulante(
             @PathVariable("id") Long id,            // Identificador del usuario a modificar

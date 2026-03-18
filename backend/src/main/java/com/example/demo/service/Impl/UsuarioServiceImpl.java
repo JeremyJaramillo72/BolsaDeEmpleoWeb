@@ -6,6 +6,7 @@ import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.service.IUsuarioService;
 import com.example.demo.service.NotificacionService;
 import com.example.demo.service.EmailService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -20,25 +21,24 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class UsuarioServiceImpl implements IUsuarioService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private SeguridadDbRepository seguridadDbRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final SeguridadDbRepository seguridadDbRepository;
 
-    @Autowired
-    private NotificacionService notificacionService;
 
-    @Autowired
-    private EmailService emailService;
+    private final JdbcTemplate jdbcTemplate;
+
+
+    private final PasswordEncoder passwordEncoder;
+
+    private final NotificacionService notificacionService;
+
+    private final EmailService emailService;
 
     // Clave única acordada con el ingeniero
     private static final String CLAVE_UNICA_BD = "Uteq_2026_Secure";
