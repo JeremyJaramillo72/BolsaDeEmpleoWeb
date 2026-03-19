@@ -157,7 +157,7 @@ export class UsuariosComponent implements OnInit {
       apellido: this.nuevoUsuario.apellido,
       correo: this.nuevoUsuario.usuario,
       contrasena: this.nuevoUsuario.contrasena,
-      telefono: '0987654321',
+      telefono: '0987654321', // Recuerda que esto está quemado por ahora jsjs
       genero: 'Masculino',
       fechaNacimiento: '2000-01-01',
       rol: { idRol: this.nuevoUsuario.rolId },
@@ -168,14 +168,17 @@ export class UsuariosComponent implements OnInit {
 
     this.isLoading = true;
 
-    // NOTA: Asegúrate de tener crearUsuario (o el nombre que uses) en UsuariosService
+    // NOTA: Asegúrate de tener crearUsuario en UsuariosService apuntando a tu Controller
     this.usuariosService.crearUsuario(usuarioParaBackend).subscribe({
       next: (respuesta: any) => {
-        this.mostrarExito('Usuario creado exitosamente');
+        // 🔥 NUEVO: Cambiamos el mensaje para que el admin sepa del correo
+        this.mostrarExito('¡Usuario creado! Las credenciales han sido enviadas a su correo.');
+
+        // 🔥 NUEVO: Aumentamos el tiempo a 2000ms (2 segundos) para que lea el mensaje
         setTimeout(() => {
           this.cancelarCreacion();
           this.cargarUsuarios(); // Recargamos la tabla
-        }, 500);
+        }, 2000);
       },
       error: (error: any) => {
         console.error('Error HTTP:', error);

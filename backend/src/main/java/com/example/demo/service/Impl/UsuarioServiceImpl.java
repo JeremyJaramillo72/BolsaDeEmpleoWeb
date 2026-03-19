@@ -1,5 +1,6 @@
 package com.example.demo.service.Impl;
 
+import ch.qos.logback.classic.Logger;
 import com.example.demo.model.Usuario;
 import com.example.demo.repository.SeguridadDbRepository;
 import com.example.demo.repository.UsuarioRepository;
@@ -119,6 +120,9 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Transactional
     public void registrarUsuarioConAccesoBD(Usuario usuario) {
 
+        // 🔥 NUEVO: Guardamos la contraseña en texto plano en una variable ANTES de encriptarla
+        String contrasenaPlana = usuario.getContrasena();
+
         String contrasenaEncriptada = passwordEncoder.encode(usuario.getContrasena());
 
         // Obtenemos el ID del rol para la validación
@@ -171,6 +175,23 @@ public class UsuarioServiceImpl implements IUsuarioService {
                     idRol
             );
             System.out.println("✅ Credenciales de BD creadas para: " + usuarioGuardado.getCorreo());
+
+            // 🔥 NUEVO: Magia para enviar el correo asíncrono
+            // Solo lo enviamos si es un Admin Interno (roles distintos a 2 y 3)
+            // Ya que postulantes (3) y empresas (2) tienen su propio flujo de correos
+            if (idRol != 3 && idRol != 2) {
+                java.util.concurrent.CompletableFuture.runAsync(() -> {
+                    try {
+                        emailService.enviarCredencialesNuevoUsuario(
+                                usuarioGuardado.getCorreo(),
+                                usuarioGuardado.getNombre() != null ? usuarioGuardado.getNombre() : "Usuario",
+                                contrasenaPlana // Enviamos la plana que guardamos al principio
+                        );
+                    } catch (Exception e) {
+                        System.err.println("⚠️ Error enviando correo de credenciales en segundo plano: " + e.getMessage());
+                    }
+                });
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -280,6 +301,37 @@ public class UsuarioServiceImpl implements IUsuarioService {
         }
 
 
+    }
+
+    // 🔥 NUEVO: Método para cambiar la contraseña
+    // 🔥 NUEVO: Método para cambiar la contraseña
+    @Override
+    @Transactional
+    public void cambiarContrasena(Long idUsuario, String claveActual, String nuevaClave) {
+        try {
+            // 1. Buscamos al usuario
+            Usuario usuario = usuarioRepository.findById(idUsuario)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            // 2. Verificamos que la contraseña actual coincida con la de la BD
+            if (!passwordEncoder.matches(claveActual, usuario.getContrasena())) {
+                throw new RuntimeException("La contraseña actual es incorrecta.");
+            }
+
+            // 3. Encriptamos la nueva contraseña y la guardamos
+            usuario.setContrasena(passwordEncoder.encode(nuevaClave));
+            usuarioRepository.save(usuario);
+
+            // Mensaje de éxito en consola normal
+            System.out.println("✅ Contraseña actualizada exitosamente para el usuario ID: " + idUsuario);
+
+        } catch (Exception e) {
+            // Mensaje de error en consola de errores (letras rojas)
+            System.err.println("❌ Error al cambiar la contraseña del usuario ID " + idUsuario + ": " + e.getMessage());
+
+            // Volvemos a lanzar la excepción para que el Controller envíe el código 400 a Angular
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     @Override

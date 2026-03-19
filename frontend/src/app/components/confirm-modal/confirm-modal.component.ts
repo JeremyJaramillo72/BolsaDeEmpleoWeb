@@ -15,7 +15,8 @@ export class ConfirmModalComponent implements OnInit, OnDestroy {
   visible  = false;
   titulo   = '';
   mensaje  = '';
-  tipo: 'confirmacion' | 'advertencia' = 'confirmacion'; // <-- NUEVA VARIABLE
+  // 🔥 ACTUALIZADO: Agregamos 'exito' a los tipos permitidos
+  tipo: 'confirmacion' | 'advertencia' | 'exito' = 'confirmacion';
 
   private resolver: ((valor: boolean) => void) | null = null;
   private sub!: Subscription;
@@ -31,7 +32,7 @@ export class ConfirmModalComponent implements OnInit, OnDestroy {
         Promise.resolve().then(() => {
           this.titulo = peticion.titulo;
           this.mensaje = peticion.mensaje;
-          this.tipo = peticion.tipo; // <-- CAPTURAMOS EL TIPO AQUÍ
+          this.tipo = peticion.tipo; // Capturamos el tipo (confirmacion, advertencia o exito)
           this.resolver = peticion.resolver;
           this.visible = true;
           this.cdr.detectChanges();

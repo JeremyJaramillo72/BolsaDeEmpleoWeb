@@ -310,6 +310,8 @@ public class ConfiguracionCorreoService {
         }
     }
 
+
+
     /**
      * Validar formato de correo electrónico
      */

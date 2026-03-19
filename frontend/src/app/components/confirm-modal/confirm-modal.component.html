@@ -1,8 +1,10 @@
 <div class="overlay" *ngIf="visible" (click)="responder(false)">
   <div class="modal-card" (click)="$event.stopPropagation()">
 
-    <div class="modal-icon">
-      <span>&#9888;</span>
+    <div class="modal-icon" [ngClass]="{'icon-exito': tipo === 'exito', 'icon-warning': tipo !== 'exito'}">
+      <span class="material-icons" *ngIf="tipo === 'exito'" style="font-size: 48px; color: #10b981;">check_circle</span>
+      <span class="material-icons" *ngIf="tipo === 'advertencia'" style="font-size: 48px; color: #f59e0b;">warning</span>
+      <span class="material-icons" *ngIf="tipo === 'confirmacion'" style="font-size: 48px; color: #3b82f6;">help_outline</span>
     </div>
 
     <h3 class="modal-titulo">{{ titulo }}</h3>
@@ -11,8 +13,8 @@
     <div class="modal-botones">
       <button class="btn-cancelar" *ngIf="tipo === 'confirmacion'" (click)="responder(false)">Cancelar</button>
 
-      <button class="btn-confirmar" (click)="responder(true)">
-        {{ tipo === 'advertencia' ? 'Aceptar' : 'Confirmar' }}
+      <button class="btn-confirmar" [ngStyle]="tipo === 'exito' ? {'background-color': '#10b981'} : {}" (click)="responder(true)">
+        {{ tipo === 'confirmacion' ? 'Confirmar' : 'Aceptar' }}
       </button>
     </div>
 

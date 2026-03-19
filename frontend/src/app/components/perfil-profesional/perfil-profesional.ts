@@ -6,7 +6,6 @@ import { SeccionAcademicaComponent } from '../perfil-profesional/seccion-academi
 import { SeccionIdiomasComponent } from '../perfil-profesional/seccion-idiomas/seccion-idiomas';
 import { SeccionExperienciaComponent } from '../perfil-profesional/seccion-experiencia/seccion-experiencia';
 import { SeccionCursosComponent } from '../perfil-profesional/seccion-cursos/seccion-cursos';
-
 import { PerfilService } from './perfil.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

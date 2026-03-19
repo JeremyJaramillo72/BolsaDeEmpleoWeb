@@ -55,7 +55,8 @@
               (click)="toggleModulo(modulo)">
 
               <div class="checkbox-custom" [class.checked]="modulo.seleccionado">
-                <span class="material-icons" *ngIf="modulo.seleccionado">check</span>
+                <!-- <span class="material-icons" *ngIf="modulo.seleccionado">check</span> -->
+                <span class="material-icons" *ngIf="modulo.seleccionado">close</span>
               </div>
               <span class="modulo-name">{{ modulo.nombre }}</span>
             </div>

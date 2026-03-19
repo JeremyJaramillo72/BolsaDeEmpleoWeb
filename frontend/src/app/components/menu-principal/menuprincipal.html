@@ -68,19 +68,41 @@
         </button>
         <app-notification-bell></app-notification-bell>
 
-        <div class="user-profile">
-          <div class="avatar-container">
-            <div class="avatar" *ngIf="!fotoMenu">
-              {{ nombreUsuario.charAt(0) | uppercase }}
+        <div class="user-dropdown-wrapper">
+
+          <div class="user-profile clickable" (click)="toggleUserDropdown()">
+            <div class="avatar-container">
+              <div class="avatar" *ngIf="!fotoMenu">
+                {{ nombreUsuario.charAt(0) | uppercase }}
+              </div>
+              <img *ngIf="fotoMenu" [src]="fotoMenu" class="avatar-img" alt="Usuario">
             </div>
-            <img *ngIf="fotoMenu" [src]="fotoMenu" class="avatar-img" alt="Usuario">
+
+            <div class="user-info">
+              <span class="user-name">{{ nombreUsuario }}</span>
+              <span class="user-role">{{ rolUsuario | titlecase }}</span>
+            </div>
+            <span class="material-icons text-gray dropdown-arrow" [class.rotated]="isUserDropdownOpen">expand_more</span>
           </div>
 
-          <div class="user-info">
-            <span class="user-name">{{ nombreUsuario }}</span>
-            <span class="user-role">{{ rolUsuario | titlecase }}</span>
+          <div class="dropdown-menu-flotante fade-in" *ngIf="isUserDropdownOpen">
+            <div class="dropdown-header">
+              <strong>Mi Cuenta</strong>
+            </div>
+
+            <a routerLink="/menu-principal/cambio-clave" (click)="isUserDropdownOpen = false" class="dropdown-item">
+              <span class="material-icons text-blue">lock_reset</span>
+              Cambiar Contraseña
+            </a>
+
+            <div class="dropdown-divider"></div>
+
+            <a (click)="cerrarSesion()" class="dropdown-item text-danger">
+              <span class="material-icons">logout</span>
+              Cerrar Sesión
+            </a>
           </div>
-          <span class="material-icons text-gray">expand_more</span>
+
         </div>
       </div>
     </header>

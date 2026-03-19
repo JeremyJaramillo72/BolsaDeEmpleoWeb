@@ -14,12 +14,15 @@
     <button class="tab-button" [class.active]="tabActiva === 'categorias'" (click)="cambiarTab('categorias')">
       <span class="material-icons">category</span> Categorías
     </button>
-    <button class="tab-button" [class.active]="tabActiva === 'carreras'" (click)="cambiarTab('carreras')">
-      <span class="material-icons">school</span> Carreras
-    </button>
+
     <button class="tab-button" [class.active]="tabActiva === 'facultades'" (click)="cambiarTab('facultades')">
       <span class="material-icons">account_balance</span> Facultades
     </button>
+
+    <button class="tab-button" [class.active]="tabActiva === 'carreras'" (click)="cambiarTab('carreras')">
+      <span class="material-icons">school</span> Carreras
+    </button>
+
     <button class="tab-button" [class.active]="tabActiva === 'idiomas'" (click)="cambiarTab('idiomas')">
       <span class="material-icons">language</span> Idiomas
     </button>

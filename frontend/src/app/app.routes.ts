@@ -32,6 +32,7 @@ import { NotificacionesComponent } from './components/notificaciones/notificacio
 import { ConfiguracionSistemaComponent } from './components/Panel-Admin/components/configuracion-sistema/configuracion-sistema';
 
 import {UsuariosComponent} from './components/Panel-Admin/components/usuarios/usuarios';
+import { CambioClaveComponent } from './components/menu-principal/cambio-clave/cambio-clave';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -87,7 +88,8 @@ export const routes: Routes = [
       {   path: 'postulacion/empleo', component: MisPostulacionesComponent },
       {   path: 'notificaciones', component: NotificacionesComponent },
       {   path: 'configuracion-sistema', component: ConfiguracionSistemaComponent },
-      {   path: 'gestion/users', component: UsuariosComponent }
+      {   path: 'gestion/users', component: UsuariosComponent },
+      {   path: 'cambio-clave', component: CambioClaveComponent }
     ]
   },
   { path: '', redirectTo: '/login', pathMatch: 'full' },

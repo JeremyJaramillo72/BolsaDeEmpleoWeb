@@ -1,9 +1,12 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.CambioClaveDTO;
 import com.example.demo.model.Usuario;
 import com.example.demo.repository.RolesRepository;
 import com.example.demo.model.Roles;
 import com.example.demo.service.EmailService;
+
+import java.util.Collections;
 import java.util.List;
 import com.example.demo.repository.UsuarioImagenRepository;
 import com.example.demo.repository.UsuarioRepository;
@@ -122,6 +125,20 @@ public class UsuarioBDController {
             return ResponseEntity.ok(Map.of("urlImagen", url != null ? url : ""));
         } catch (Exception e) {
             return ResponseEntity.ok(Map.of("urlImagen", ""));
+        }
+    }
+
+    @PutMapping("/{id}/cambiar-clave")
+    public ResponseEntity<?> cambiarClave(
+            @PathVariable Long id,
+            @RequestBody CambioClaveDTO dto) {
+        try {
+            usuarioService.cambiarContrasena(id, dto.getClaveActual(), dto.getNuevaClave());
+            // Devolvemos un JSON con mensaje de éxito para que Angular lo lea fácil
+            return ResponseEntity.ok(Collections.singletonMap("mensaje", "Contraseña actualizada correctamente"));
+        } catch (RuntimeException e) {
+            // Si la clave es incorrecta, devolvemos un error 400
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
         }
     }
 }

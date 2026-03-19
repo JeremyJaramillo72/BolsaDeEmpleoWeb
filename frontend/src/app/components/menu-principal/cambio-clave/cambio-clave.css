@@ -1,0 +1,234 @@
+/* =======================================
+   ANIMACIONES Y ALERTAS
+   ======================================= */
+.fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.alert {
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.alert-success { background-color: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+.alert-error { background-color: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
+/* =======================================
+   LAYOUT PRINCIPAL
+   ======================================= */
+.page-container {
+  padding: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #334155;
+}
+
+.page-header {
+  margin-bottom: 30px;
+}
+.page-header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 8px 0;
+}
+.header-icon-main {
+  color: #3b82f6;
+  font-size: 32px;
+  background: #eff6ff;
+  padding: 8px;
+  border-radius: 10px;
+}
+.page-description {
+  color: #64748b;
+  margin: 0;
+  font-size: 15px;
+}
+
+/* =======================================
+   TARJETA DEL FORMULARIO
+   ======================================= */
+.section-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 32px;
+  border: 1px solid #e2e8f0;
+}
+
+.form-header-bar {
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 20px;
+  margin-bottom: 30px;
+}
+.form-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+}
+.form-subtitle {
+  color: #64748b;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* =======================================
+   INPUTS Y FORM GROUP
+   ======================================= */
+.form-group {
+  margin-bottom: 24px;
+  text-align: left;
+}
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 8px;
+}
+.required {
+  color: #ef4444;
+  margin-left: 2px;
+}
+
+/* Wrapper del Input (Diseño Moderno) */
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0 16px;
+  transition: all 0.3s ease;
+  height: 50px;
+}
+.input-wrapper:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  background: #ffffff;
+}
+.input-wrapper .material-icons {
+  color: #94a3b8;
+  font-size: 22px;
+  margin-right: 12px;
+}
+.input-wrapper .text-blue {
+  color: #3b82f6;
+}
+.input-wrapper input {
+  border: none;
+  background: transparent;
+  flex: 1;
+  outline: none;
+  font-size: 15px;
+  color: #1e293b;
+  width: 100%;
+  height: 100%;
+}
+.input-wrapper input::placeholder {
+  color: #94a3b8;
+}
+
+/* Estados de Error */
+.input-wrapper.input-error {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+.input-wrapper.input-error:focus-within {
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+.error-text {
+  color: #ef4444;
+  font-size: 13px;
+  margin-top: 6px;
+  display: block;
+  font-weight: 500;
+}
+
+/* Botón del Ojo */
+.btn-icon-eye {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  height: 100%;
+  margin-left: 10px;
+}
+.btn-icon-eye:hover {
+  color: #3b82f6;
+}
+
+/* Utilidades de texto */
+.text-xs { font-size: 12px; }
+.text-muted { color: #64748b; }
+.mt-1 { margin-top: 6px; display: block; }
+.mb-4 { margin-bottom: 24px; }
+
+/* =======================================
+   BOTÓN PRINCIPAL Y SPINNER
+   ======================================= */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+  width: 100%;
+  max-width: 300px;
+}
+.btn-primary:hover:not(:disabled) {
+  background-color: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
+}
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+.btn-primary:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.8;
+}
+
+.spinner-small {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-bottom-color: #ffffff;
+  border-radius: 50%;
+  display: inline-block;
+  animation: rotation 1s linear infinite;
+}
+@keyframes rotation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

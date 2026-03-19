@@ -500,4 +500,10 @@ export class AdminService {
     return this.http.get(url, { responseType: 'blob' });
   }
 
+  // 🔥 NUEVO: Petición HTTP al backend
+  cambiarClave(idUsuario: string | number, datos: { claveActual: string, nuevaClave: string }) {
+    // Asegúrate de que this.apiUrl apunte a tu backend correctamente
+    return this.http.put(`${this.apiUsuariosUrl}/${idUsuario}/cambiar-clave`, datos);
+  }
+
 }

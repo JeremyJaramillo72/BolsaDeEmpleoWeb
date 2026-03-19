@@ -122,6 +122,59 @@ public class EmailService {
         }
     }
 
+    public void enviarCredencialesNuevoUsuario(String destino, String nombre, String contrasenaTemporal) {
+        try {
+            JavaMailSender mailSender = dynamicMailConfig.getJavaMailSender();
+            MimeMessage mensaje = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
+            helper.setTo(destino);
+            helper.setSubject("🎉 ¡Bienvenido! Tus credenciales de acceso");
+            helper.setFrom(obtenerCorreoConfiguracion());
+            helper.setText(generarTemplateCredenciales(nombre, destino, contrasenaTemporal), true);
+            mailSender.send(mensaje);
+            log.info("✅ Correo de credenciales enviado exitosamente a: {}", destino);
+        } catch (MailException e) {
+            log.error("❌ Error enviando email de credenciales a {}: {}", destino, e.getMessage());
+        } catch (Exception e) {
+            log.error("❌ Error inesperado al enviar email de credenciales a {}: {}", destino, e.getMessage());
+        }
+    }
+
+    // Pon este método al final con tus otros templates HTML
+    private String generarTemplateCredenciales(String nombre, String correo, String contrasena) {
+        return "<html lang=\"es\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><style>" +
+                "body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f7fa; margin: 0; padding: 0; }" +
+                ".container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.12); }" +
+                ".header { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 40px 30px; text-align: center; color: white; }" +
+                ".header .icono { font-size: 48px; margin-bottom: 15px; }" +
+                ".header h1 { margin: 0; font-size: 24px; font-weight: 700; }" +
+                ".content { padding: 40px 30px; }" +
+                ".credenciales-box { background-color: #f0f9ff; border-left: 4px solid #3b82f6; padding: 25px; border-radius: 8px; margin: 25px 0; }" +
+                ".dato-fila { margin-bottom: 15px; }" +
+                ".dato-fila:last-child { margin-bottom: 0; }" +
+                ".etiqueta { color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase; display: block; margin-bottom: 5px; }" +
+                ".valor { color: #0f172a; font-size: 18px; font-weight: 700; font-family: monospace; background: #fff; padding: 8px 12px; border-radius: 4px; border: 1px dashed #cbd5e1; display: inline-block; }" +
+                ".descripcion { color: #475569; font-size: 15px; line-height: 1.6; margin: 15px 0; }" +
+                ".advertencia { background-color: #fffbeb; color: #b45309; padding: 15px; border-radius: 6px; font-size: 14px; margin-top: 20px; text-align: center; }" +
+                ".footer { background-color: #f8fafc; padding: 25px 30px; text-align: center; border-top: 1px solid #e2e8f0; }" +
+                ".footer p { color: #94a3b8; font-size: 12px; margin: 5px 0; }" +
+                "</style></head><body>" +
+                "<div class=\"container\">" +
+                "<div class=\"header\"><div class=\"icono\">👋</div>" +
+                "<h1>¡Bienvenido a la plataforma!</h1></div>" +
+                "<div class=\"content\">" +
+                "<p class=\"descripcion\">Hola <strong>" + nombre + "</strong>,</p>" +
+                "<p class=\"descripcion\">Te han creado una cuenta en el sistema de la Bolsa de Empleos. Aquí tienes tus credenciales para iniciar sesión:</p>" +
+                "<div class=\"credenciales-box\">" +
+                "<div class=\"dato-fila\"><span class=\"etiqueta\">Usuario / Correo:</span><span class=\"valor\">" + correo + "</span></div>" +
+                "<div class=\"dato-fila\"><span class=\"etiqueta\">Contraseña Temporal:</span><span class=\"valor\">" + contrasena + "</span></div>" +
+                "</div>" +
+                "<div class=\"advertencia\">⚠️ <strong>Importante:</strong> Por tu seguridad, te recomendamos cambiar esta contraseña inmediatamente después de tu primer inicio de sesión.</div>" +
+                "</div>" +
+                "<div class=\"footer\"><p><strong>Bolsa de Empleos UTEQ</strong></p>" +
+                "<p>© 2026 Universidad Técnica Estatal de Quevedo</p></div></div></body></html>";
+    }
+
     public void notificarAprobacionEmpresa(String correoEmpresa, String nombreEmpresa) {
         try {
             JavaMailSender mailSender = dynamicMailConfig.getJavaMailSender();

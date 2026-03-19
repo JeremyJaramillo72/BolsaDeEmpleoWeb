@@ -16,4 +16,6 @@ public interface IUsuarioService {
     // 🔥 NUEVOS MÉTODOS: GESTIÓN DE USUARIOS
     // ==========================================
     List<UsuarioTablaDTO> obtenerUsuariosGenerales();
+    void cambiarContrasena(Long idUsuario, String claveActual, String nuevaClave);
+
 }

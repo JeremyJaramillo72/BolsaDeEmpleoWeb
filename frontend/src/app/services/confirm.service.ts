@@ -4,7 +4,7 @@ import { Subject } from 'rxjs';
 export interface ConfirmPeticion {
   titulo:   string;
   mensaje:  string;
-  tipo:     'confirmacion' | 'advertencia'; // <-- Agregamos el tipo aquí
+  tipo:     'confirmacion' | 'advertencia' | 'exito'; // 🔥 Agregamos 'exito'
   resolver: (valor: boolean) => void;
 }
 
@@ -14,8 +14,8 @@ export class ConfirmService {
   private subject = new Subject<ConfirmPeticion | null>();
   peticion$ = this.subject.asObservable();
 
-  // Recibimos el tipo y lo enviamos en el next()
-  abrir(mensaje: string, titulo: string = 'Confirmar', tipo: 'confirmacion' | 'advertencia' = 'confirmacion'): Promise<boolean> {
+  // 🔥 Actualizamos la firma para permitir 'exito'
+  abrir(mensaje: string, titulo: string = 'Confirmar', tipo: 'confirmacion' | 'advertencia' | 'exito' = 'confirmacion'): Promise<boolean> {
     return new Promise(resolve => {
       this.subject.next({ titulo, mensaje, tipo, resolver: resolve });
     });

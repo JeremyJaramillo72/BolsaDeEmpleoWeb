@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { UsuarioEmpresaService } from '../../services/usuario-empresa.service';
@@ -57,6 +57,7 @@ export class MenuprincipalComponent implements OnInit {
 
   menuItems: MenuItem[] = [];
   // statsCards: StatCard[] = [];
+  isUserDropdownOpen: boolean = false;
 
   constructor(
     public router: Router,
@@ -65,13 +66,27 @@ export class MenuprincipalComponent implements OnInit {
     private usuarioEmpresaService: UsuarioEmpresaService,
     public notificationService: NotificationService,
     private sistemaConfigService: SistemaConfigService,  // ✅ logo/nombre del sistema para todos los roles
-    private perfilAdminService:   PerfilAdminService         // ✅ foto perfil admin en tiempo real
+    private perfilAdminService:   PerfilAdminService    // ✅ foto perfil admin en tiempo real,
   ) {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
         this.verificarRutaActual();
       });
+  }
+
+  toggleUserDropdown(): void {
+    this.isUserDropdownOpen = !this.isUserDropdownOpen;
+  }
+
+  @HostListener('document:click', ['$event'])
+  clickout(event: Event) {
+    const elementoClickeado = event.target as HTMLElement;
+
+    // Si el clic NO ocurrió dentro del contenedor del perfil/dropdown, lo cerramos
+    if (!elementoClickeado.closest('.user-dropdown-wrapper')) {
+      this.isUserDropdownOpen = false;
+    }
   }
 
   ngOnInit(): void {
@@ -99,6 +114,7 @@ export class MenuprincipalComponent implements OnInit {
     this.perfilAdminService.nombre$.subscribe((nombre: string) => {
       if (nombre) { this.nombreUsuario = nombre; this.cdr.detectChanges(); }
     });
+
 
     this.usuarioEmpresaService.logoActual$.subscribe(nuevaUrl => {
       if (nuevaUrl) {
@@ -283,7 +299,7 @@ export class MenuprincipalComponent implements OnInit {
         roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
         path: '/PanelAdmi/RegistroOfertas',
         route: '/menu-principal/PanelAdmi/RegistroOfertas',
-        permiso: 'VALIDACION_O'
+        permiso: 'REGISTRO_OFERTAS'
       },
       {
         icon: 'fact_check',
