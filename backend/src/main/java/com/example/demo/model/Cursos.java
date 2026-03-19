@@ -25,7 +25,7 @@ public class Cursos {
     @Column(name = "institucion", columnDefinition = "VARCHAR(100)")
     private String institucion;
 
-    @Column(name = "hora_duracion", columnDefinition = "VARCHAR(5)")
+    @Column(name = "horas_duracion", columnDefinition = "VARCHAR(5)")
     private String horaDuracion;
 
     @Column(name = "fecha_finalizacion", columnDefinition = "DATE")

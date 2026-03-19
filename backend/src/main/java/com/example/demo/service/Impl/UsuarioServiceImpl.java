@@ -7,6 +7,7 @@ import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.service.IUsuarioService;
 import com.example.demo.service.NotificacionService;
 import com.example.demo.service.EmailService;
+import jakarta.persistence.EntityManager; // 🔥 IMPORTANTE: Importar EntityManager
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -25,15 +26,14 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UsuarioServiceImpl implements IUsuarioService {
 
-
     private final UsuarioRepository usuarioRepository;
 
+    // 🔥 NUEVO: Inyectamos el EntityManager para forzar la sincronización con PostgreSQL
+    private final EntityManager entityManager;
 
     private final SeguridadDbRepository seguridadDbRepository;
 
-
     private final JdbcTemplate jdbcTemplate;
-
 
     private final PasswordEncoder passwordEncoder;
 
@@ -41,7 +41,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
     private final EmailService emailService;
 
-    // Clave única acordada con el ingeniero
+
     private static final String CLAVE_UNICA_BD = "Uteq_2026_Secure";
 
     @Override
@@ -63,27 +63,30 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 idRolParaGuardar
         );
 
+
+        entityManager.flush();
+        entityManager.clear();
+
         Usuario usuarioGuardado = usuarioRepository.findByCorreo(usuario.getCorreo())
                 .orElseThrow(() -> new RuntimeException("Error al recuperar usuario registrado."));
 
 
-        jdbcTemplate.update("CALL seguridad.registroUsuarioLogin(?, ?, ?)",
-                usuarioGuardado.getCorreo(),
-                usuarioGuardado.getIdUsuario().intValue(),
-                idRolParaGuardar// ID del rol Postulante
-        );
+        entityManager.createNativeQuery("CALL seguridad.registroUsuarioLogin(:correo, :idUsuario, :idRol)")
+                .setParameter("correo", usuarioGuardado.getCorreo())
+                .setParameter("idUsuario", usuarioGuardado.getIdUsuario().intValue())
+                .setParameter("idRol", idRolParaGuardar)
+                .executeUpdate();
+
         try {
-            // 1. Notificación en Campanita (In-App)
             notificacionService.crearYEnviarNotificacion(
                     usuarioGuardado.getIdUsuario(),
                     "in_app_registro_completado",
                     Map.of("usuarioNombre", usuarioGuardado.getNombre()),
                     Map.of(),
-                    "/menu-principal/perfil", // de una al cv
+                    "/menu-principal/perfil",
                     "waving_hand"
             );
 
-            // 2. Notificación por Correo
             notificacionService.crearYEnviarNotificacion(
                     usuarioGuardado.getIdUsuario(),
                     "email_registro_postulante",
@@ -120,20 +123,15 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Transactional
     public void registrarUsuarioConAccesoBD(Usuario usuario) {
 
-        // 🔥 NUEVO: Guardamos la contraseña en texto plano en una variable ANTES de encriptarla
         String contrasenaPlana = usuario.getContrasena();
 
         String contrasenaEncriptada = passwordEncoder.encode(usuario.getContrasena());
 
-        // Obtenemos el ID del rol para la validación
         Integer idRol = usuario.getRol().getIdRol();
 
         try {
-            // Asumiendo que 3 es Postulante y 2 es Empresa.
-            // Si no es 3 ni 2, entonces es un Admin Interno.
             if (idRol != 3 && idRol != 2) {
 
-                // ¡ACTUALIZADO! Ya no enviamos usuario.getPermisosUi() al final
                 usuarioRepository.registrarAdminInternoPro(
                         usuario.getNombre(),
                         usuario.getApellido(),
@@ -164,7 +162,9 @@ public class UsuarioServiceImpl implements IUsuarioService {
             throw new RuntimeException("El correo " + usuario.getCorreo() + " ya está registrado.");
         }
 
-        // 3. RECUPERAR ID Y CREAR LOGIN
+        entityManager.flush();
+        entityManager.clear();
+
         Usuario usuarioGuardado = usuarioRepository.findByCorreo(usuario.getCorreo())
                 .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado tras registro."));
 
@@ -176,9 +176,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
             );
             System.out.println("✅ Credenciales de BD creadas para: " + usuarioGuardado.getCorreo());
 
-            // 🔥 NUEVO: Magia para enviar el correo asíncrono
-            // Solo lo enviamos si es un Admin Interno (roles distintos a 2 y 3)
-            // Ya que postulantes (3) y empresas (2) tienen su propio flujo de correos
+
             if (idRol != 3 && idRol != 2) {
                 java.util.concurrent.CompletableFuture.runAsync(() -> {
                     try {
@@ -213,6 +211,8 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 web
         );
 
+        entityManager.flush();
+        entityManager.clear();
 
         Usuario usuarioGuardado = usuarioRepository.findByCorreo(usuario.getCorreo())
                 .orElseThrow(() -> new RuntimeException("Error al recuperar empresa registrada."));
@@ -220,24 +220,21 @@ public class UsuarioServiceImpl implements IUsuarioService {
         enviarNotificacionesRegistro(usuarioGuardado, nombreEmp);
     }
 
-
     private void enviarNotificacionesRegistro(Usuario usuario, String nombreEmp) {
         try {
-            // 1. Email de bienvenida a la empresa
             try {
                 String asuntoEmail = "Bienvenida a Bolsa de Empleo - " + nombreEmp;
                 String cuerpoEmail = "¡Bienvenida a Bolsa de Empleo UTEQ!\n\n" +
-                                   "Hemos recibido tu solicitud de registro para la empresa: " + nombreEmp + "\n\n" +
-                                   "Tu cuenta ha sido creada y está actualmente en estado de revisión.\n" +
-                                   "Nuestros administradores evaluarán tu información y te notificarán cuando sea aprobada.\n\n" +
-                                   "Mientras tanto, puedes explorar la plataforma y preparar tus ofertas de empleo.\n\n" +
-                                   "¿Preguntas? Contacta nuestro equipo de soporte.";
+                        "Hemos recibido tu solicitud de registro para la empresa: " + nombreEmp + "\n\n" +
+                        "Tu cuenta ha sido creada y está actualmente en estado de revisión.\n" +
+                        "Nuestros administradores evaluarán tu información y te notificarán cuando sea aprobada.\n\n" +
+                        "Mientras tanto, puedes explorar la plataforma y preparar tus ofertas de empleo.\n\n" +
+                        "¿Preguntas? Contacta nuestro equipo de soporte.";
                 emailService.sendSimpleEmail(usuario.getCorreo(), asuntoEmail, cuerpoEmail);
             } catch (Exception e) {
                 System.err.println("⚠️ Error enviando email de bienvenida a empresa: " + e.getMessage());
             }
 
-            // 2. Notificación en App
             try {
                 notificacionService.crearYEnviarNotificacion(
                         usuario.getIdUsuario(),
@@ -255,6 +252,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
             System.err.println("⚠️ Error en notificaciones: " + e.getMessage());
         }
     }
+
     @Override
     @Transactional
     public void cambiarEstadoUsuario(Long idUsuario, String nuevoEstado) {
@@ -264,7 +262,6 @@ public class UsuarioServiceImpl implements IUsuarioService {
         usuario.setEstadoValidacion(nuevoEstado);
         Usuario usuarioActualizado = usuarioRepository.save(usuario);
 
-        // Si la empresa fue aprobada, crear notificación
         if ("activo".equalsIgnoreCase(nuevoEstado) || "aprobado".equalsIgnoreCase(nuevoEstado)) {
             try {
                 Map<String, String> variables = new java.util.HashMap<>();
@@ -299,44 +296,34 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 e.printStackTrace();
             }
         }
-
-
     }
 
-    // 🔥 NUEVO: Método para cambiar la contraseña
     // 🔥 NUEVO: Método para cambiar la contraseña
     @Override
     @Transactional
     public void cambiarContrasena(Long idUsuario, String claveActual, String nuevaClave) {
         try {
-            // 1. Buscamos al usuario
             Usuario usuario = usuarioRepository.findById(idUsuario)
                     .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-            // 2. Verificamos que la contraseña actual coincida con la de la BD
             if (!passwordEncoder.matches(claveActual, usuario.getContrasena())) {
                 throw new RuntimeException("La contraseña actual es incorrecta.");
             }
 
-            // 3. Encriptamos la nueva contraseña y la guardamos
             usuario.setContrasena(passwordEncoder.encode(nuevaClave));
             usuarioRepository.save(usuario);
 
-            // Mensaje de éxito en consola normal
             System.out.println("✅ Contraseña actualizada exitosamente para el usuario ID: " + idUsuario);
 
         } catch (Exception e) {
-            // Mensaje de error en consola de errores (letras rojas)
             System.err.println("❌ Error al cambiar la contraseña del usuario ID " + idUsuario + ": " + e.getMessage());
 
-            // Volvemos a lanzar la excepción para que el Controller envíe el código 400 a Angular
             throw new RuntimeException(e.getMessage());
         }
     }
 
     @Override
     public List<UsuarioTablaDTO> obtenerUsuariosGenerales() {
-        // Le pasamos un JSON vacío a la función de PostgreSQL para que traiga TODOS los usuarios
         return usuarioRepository.obtenerUsuariosTablaNativa("{}");
     }
 }

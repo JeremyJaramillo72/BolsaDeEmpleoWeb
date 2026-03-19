@@ -1,6 +1,9 @@
 package com.example.demo.model;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.time.LocalDate;
+
 @Data
 @Entity
 @Table(name = "ofertas_favoritas", schema = "ofertas")
@@ -24,6 +27,9 @@ public class OfertasFavoritas {
 
     @Column(name = "estado_fav", length = 20)
     private String estadoFav;
+
+    @Column(name = "fecha_agregado")
+    private LocalDate fecha; // o LocalDateTime, Date, etc.
 
     // a espera de lo que digan
     // @Column(name = "fecha_agregado")
