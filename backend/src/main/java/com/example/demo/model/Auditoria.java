@@ -19,12 +19,10 @@ public class Auditoria {
     @Column(name = "id_auditoria")
     private Integer idAuditoria;
 
-    // En la imagen es 'id_seguridad', no 'id_usuario'.
-    // Lo dejo como Integer. Si tienes una entidad 'Seguridad', cámbialo a @ManyToOne.
-    @Column(name = "id_seguridad")
-    private Integer idSeguridad;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_seguridad", foreignKey = @ForeignKey(name = "fk_auditoria_seguridad"))
+    private Seguridad seguridad;
 
-    // Campo nuevo según la imagen: varchar(100)
     @NotBlank(message = "El usuario de base de datos es obligatorio")
     @Size(max = 100)
     @Column(name = "usuario_db", length = 100)
@@ -47,8 +45,6 @@ public class Auditoria {
     @Column(name = "id_registro_afectado", nullable = false)
     private Integer idRegistroAfectado;
 
-
-
     @Column(name = "datos_anteriores", columnDefinition = "jsonb")
     @JdbcTypeCode(SqlTypes.JSON)
     private String datosAnteriores;
@@ -59,7 +55,7 @@ public class Auditoria {
 
     @Column(name = "campos_modificados", columnDefinition = "jsonb")
     @JdbcTypeCode(SqlTypes.JSON)
-    private String  camposModificados;  // o String, o JsonNode
+    private String camposModificados;
 
     @PrePersist
     public void prePersist() {
@@ -67,4 +63,9 @@ public class Auditoria {
             this.fechaHora = LocalDateTime.now();
         }
     }
+
+    public void setIdSeguridad(Integer idSeguridad) {
+    }
+
+
 }

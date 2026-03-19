@@ -188,7 +188,7 @@ public class ConfiguracionCorreoService {
                 ConfiguracionCorreoDTO.HistorialItem item = new ConfiguracionCorreoDTO.HistorialItem();
 
                 // Obtener info del admin desde Seguridad
-                Seguridad seguridad = seguridadRepo.findById(reg.getIdSeguridad()).orElse(null);
+                Seguridad seguridad = seguridadRepo.findById(reg.getSeguridad().getIdSeguridad()).orElse(null);
                 if (seguridad != null && seguridad.getUsuario() != null) {
                     item.setAdminNombre(seguridad.getUsuario().getNombre());
                     item.setAdminEmail(seguridad.getUsuario().getCorreo());

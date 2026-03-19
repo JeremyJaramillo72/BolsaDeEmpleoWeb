@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 @Data
@@ -19,11 +18,21 @@ public class HistorialPostulante {
     @Column(name = "id_historial")
     private Long idHistorial;
 
-    @Column(name = "id_perfil_academico", nullable = false)
-    private Integer idPerfilAcademico;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "id_perfil_academico",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_historial_perfil")
+    )
+    private PerfilAcademico perfilAcademico;
 
-    @Column(name = "id_seguridad")
-    private Integer idSeguridad;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "id_seguridad",
+            foreignKey = @ForeignKey(name = "fk_historial_seguridad")
+    )
+    private Seguridad seguridad;
 
     @Column(name = "seccion", nullable = false, length = 50)
     private String seccion;

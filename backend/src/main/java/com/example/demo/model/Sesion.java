@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "sesiones", schema = "seguridad")
-@Data // Usamos Lombok para que te genere los getters y setters automáticamente
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Sesion {
@@ -18,21 +18,15 @@ public class Sesion {
     @Column(name = "id_sesion")
     private Long idSesion;
 
-    /* * OPCIÓN 1: Mapeo simple (Si solo necesitas el número del ID)
-     */
-    @Column(name = "id_seguridad", nullable = false)
-    private Integer idSeguridad;
-
-    /*
-     * OPCIÓN 2: Mapeo relacional (Descomenta esto y borra la Opción 1
-     * si ya tienes creada la entidad Seguridad.java)
-     * * @ManyToOne(fetch = FetchType.LAZY)
-     * @JoinColumn(name = "id_seguridad", nullable = false)
-     * private Seguridad seguridad;
-     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "id_seguridad",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_sesion_seguridad")
+    )
+    private Seguridad seguridad;
 
     @Column(name = "fecha_inicio", insertable = false, updatable = false)
-    // insertable = false deja que la BD ponga el DEFAULT now() como lo tienes en tu SQL
     private LocalDateTime fechaInicio;
 
     @Column(name = "fecha_cierre")
@@ -50,7 +44,6 @@ public class Sesion {
     @Column(name = "accion", length = 20)
     private String accion;
 
-    // Si la acción por defecto es INACTIVA en BD, puedes asegurarlo también desde Java:
     @PrePersist
     public void prePersist() {
         if (this.accion == null) {

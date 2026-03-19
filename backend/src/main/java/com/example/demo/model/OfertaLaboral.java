@@ -10,6 +10,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -94,6 +95,10 @@ public class OfertaLaboral {
 
     @Column(name="url_documento_fisico")
     private String urlDocumentFisico;
+
+
+    @OneToMany(mappedBy = "oferta", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RequisitoManual> requisitosManuales;
 
     @PrePersist
     public void prePersist() {

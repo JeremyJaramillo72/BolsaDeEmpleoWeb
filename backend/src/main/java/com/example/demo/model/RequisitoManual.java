@@ -16,9 +16,13 @@ public class RequisitoManual {
     @Column(name = "id_requisito_manual")
     private Integer idRequisitoManual;
 
-    @Column(name = "id_oferta")
-    private Integer idOferta;
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "id_oferta",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_manual_oferta")
+    )
+    private OfertaLaboral oferta;
 
     @NotBlank(message = "La descripción del requisito es obligatoria")
     @Size(min = 10, max = 2000, message = "La descripción debe tener entre 10 y 2000 caracteres")
@@ -34,6 +38,7 @@ public class RequisitoManual {
     @PrePersist
     public void prePersist() {
         if (this.fechaRegistro == null) this.fechaRegistro = LocalDateTime.now();
-        if (this.esObligatorio == null) this.esObligatorio = false;
+
+        if (this.esObligatorio == null) this.esObligatorio = true;
     }
 }

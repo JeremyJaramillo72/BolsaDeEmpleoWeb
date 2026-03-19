@@ -15,8 +15,9 @@ public class OfertasFavoritas {
     @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    @Column(name = "id_oferta", nullable = false)
-    private Integer idOferta;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_oferta", nullable = false)
+    private OfertaLaboral oferta;
 
     @Column(name = "origen_oferta", length = 20)
     private String origenOferta;
