@@ -42,7 +42,7 @@ public class PostulacionServiceImpl implements IPostulacionService {
         String urlCv = null;
         int porcentajeMatch = 0;
         String jsonAnalisis = null;
-
+        PerfilProfesionalDTO perfilUsuario = null;
         if (archivo != null && !archivo.isEmpty()) {
 
 
@@ -56,7 +56,7 @@ public class PostulacionServiceImpl implements IPostulacionService {
             if (datosOferta == null) {
                 throw new IllegalArgumentException("No se encontró la oferta laboral especificada.");
             }
-            PerfilProfesionalDTO perfilUsuario = perfilProfesionalRepository.obtenerPerfilCompleto(idUsuario);
+             perfilUsuario = perfilProfesionalRepository.obtenerPerfilCompleto(idUsuario);
 
 
             String requisitosOferta = String.format(
@@ -95,23 +95,41 @@ public class PostulacionServiceImpl implements IPostulacionService {
 
         // 9. Notificación a la empresa y al candidato
         try {
-            List<Object[]> datosOferta = postulacionRepository.obtenerDatosEmpresaPorOfertaId(idOferta);
+            List<Object[]> datosEmpresa = postulacionRepository.obtenerDatosEmpresaPorOfertaId(idOferta);
 
-            if (!datosOferta.isEmpty()) {
-                Object[] fila = datosOferta.get(0);
+            if (!datosEmpresa.isEmpty()) {
+                Object[] fila = datosEmpresa.get(0);
                 Long idUsuarioEmpresa = ((Number) fila[0]).longValue();
                 String tituloOferta = (String) fila[1];
 
-                // 🧪 CONSULTAS RÁPIDAS: Obtenemos los nombres reales
-                String nombreCandidato = usuarioRepository.findById(idUsuario)
-                        .map(u -> u.getNombre() + " " + (u.getApellido() != null ? u.getApellido() : ""))
-                        .orElse("Candidato").trim();
+                var usuarioCandidato = usuarioRepository.findById(idUsuario).orElse(null);
 
+                String nombreCandidato = (usuarioCandidato != null)
+                        ? usuarioCandidato.getNombre() + " " + (usuarioCandidato.getApellido() != null ? usuarioCandidato.getApellido() : "")
+                        : "Candidato";
+
+                String nombreCompleto = (usuarioCandidato != null)
+                        ? usuarioCandidato.getNombre() + " " + (usuarioCandidato.getApellido() != null ? usuarioCandidato.getApellido() : "")
+                        : "Candidato";
                 String nombreEmpresa = usuarioEmpresaRepository.findById(idUsuarioEmpresa)
                         .map(e -> e.getUsuario() != null ? e.getUsuario().getNombre() : "La Empresa")
                         .orElse("La Empresa");
 
-                // Notificación para la empresa
+                //  NOTIFICACIÓN WEB
+                String carreraLimpia = "Profesional";
+                if (perfilUsuario != null && perfilUsuario.getFormacionAcademica() != null) {
+                    String rawCarrera = perfilUsuario.getFormacionAcademica();
+
+                    if (rawCarrera.contains("[")) {
+                        carreraLimpia = rawCarrera.replaceAll(".*?\"carrera\":\\s*\"([^\"]+)\".*?", "$1, ")
+                                .replaceAll(", $", "") // Quita la última coma
+                                .replaceAll("(\\[|\\{).*?(\\]|\\})", "");  
+
+                          carreraLimpia = "Múltiples carreras (Ver detalles en perfil)";
+                    } else {
+                        carreraLimpia = rawCarrera;
+                    }
+                }
                 notificacionService.crearYEnviarNotificacion(
                         idUsuarioEmpresa,
                         "nueva_postulacion",
@@ -121,18 +139,20 @@ public class PostulacionServiceImpl implements IPostulacionService {
                         "person_add"
                 );
 
-               /* // Email directo usando tu plantilla HTML
                 notificacionService.crearYEnviarNotificacion(
                         idUsuarioEmpresa,
-                        "email_postulacion_recibida", // <--- EL NOMBRE CORRECTO
+                        "email_postulacion_recibida",
                         Map.of(
                                 "empresaNombre", nombreEmpresa,
                                 "ofertaTitulo", tituloOferta,
-                                "candidatoNombre", nombreCandidato,
-                                "candidatoEmail", "No especificado", // Pon variables dummy si no las tienes a mano
-                                "candidatoTelefono", "No especificado",
-                                "candidatoCarrera", "No especificada",
-                                "resumenCV", "Revisa el perfil para más detalles.",
+                                "candidatoNombre", nombreCompleto,
+                                "candidatoEmail", usuarioCandidato != null ? usuarioCandidato.getCorreo() : "No disponible",
+                                "candidatoTelefono", (perfilUsuario != null && perfilUsuario.getTelefono() != null) ? perfilUsuario.getTelefono() : "No registrado",
+
+                                // USA LA VARIABLE LIMPIA AQUÍ
+                                "candidatoCarrera", carreraLimpia,
+
+                                "resumenCV", "Match de IA: " + porcentajeMatch + "%. El candidato posee formación en el área requerida.",
                                 "enlacePerfil", "https://tudominio.com/menu-principal/gestion-ofertas"
                         ),
                         Map.of("idOferta", idOferta),
@@ -140,9 +160,7 @@ public class PostulacionServiceImpl implements IPostulacionService {
                         "email"
                 );
 
-                */
-
-                // Notificación al candidato
+                // --- NOTIFICACIÓN AL CANDIDATO ---
                 notificacionService.crearYEnviarNotificacion(
                         idUsuario,
                         "in_app_postulacion_recibida",
@@ -157,7 +175,7 @@ public class PostulacionServiceImpl implements IPostulacionService {
                 );
             }
         } catch (Exception e) {
-            System.err.println("Error enviando notificaciones de postulación: " + e.getMessage());
+            System.err.println("⚠️ Error en el flujo de notificaciones: " + e.getMessage());
         }
     }
 

@@ -85,7 +85,7 @@ public class NotificacionService {
                          "email_registro_postulante",
                          "email_registro_empresa",
                          "email_correo_actualizado"
-                  /*  , "email_postulacion_recibida" */
+                   , "email_postulacion_recibida"
                             -> true;
                     default -> false;
                 };
