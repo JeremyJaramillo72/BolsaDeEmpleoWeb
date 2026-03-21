@@ -81,27 +81,24 @@ public class AdminController {
     public ResponseEntity<?> cambiarEstadoEmpresa(@PathVariable Long idUsuario, @RequestBody Map<String, String> body) {
         try {
             String nuevoEstado = body.get("nuevoEstado");
-            usuarioService.cambiarEstadoUsuario(idUsuario, nuevoEstado); //nue
+            usuarioService.cambiarEstadoUsuario(idUsuario, nuevoEstado);
+            if (!nuevoEstado.equalsIgnoreCase("Aprobado") && !nuevoEstado.equalsIgnoreCase("Activo")) {
+                usuarioRepository.findById(idUsuario).ifPresent(usuario -> {
+                    try {
+                        emailService.enviarCorreoValidacion(usuario.getCorreo(), usuario.getNombre(), nuevoEstado);
+                    } catch (Exception e) {
+                        System.out.println("No se pudo enviar el correo de rechazo: " + e.getMessage());
+                    }
+                });
+            }
+            return ResponseEntity.ok(Map.of("mensaje", "Empresa " + nuevoEstado + " correctamente."));
 
-            return usuarioRepository.findById(idUsuario).map(usuario -> {
-
-                // 1. cambiamos el estado y guardamos
-                usuario.setEstadoValidacion(nuevoEstado);
-                usuarioRepository.save(usuario);
-                // 2 notificacmos al usuario por correo
-
-                try {
-                    emailService.enviarCorreoValidacion(usuario.getCorreo(), usuario.getNombre(), nuevoEstado);
-                } catch (Exception e) {
-                    System.out.println("no se pudo enviar el correo: " + e.getMessage());
-                }
-                return ResponseEntity.ok(Map.of("mensaje", "empresa " + nuevoEstado + " correctamente."));
-            }).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "usuario no encontrado")));
-
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "error del servidor: " + e.getMessage()));
+                    .body(Map.of("error", "Error del servidor: " + e.getMessage()));
         }
     }
 }
