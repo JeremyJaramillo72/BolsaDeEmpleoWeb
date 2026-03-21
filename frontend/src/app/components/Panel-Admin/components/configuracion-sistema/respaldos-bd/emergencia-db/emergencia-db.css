@@ -1,0 +1,146 @@
+.emergencia-container {
+  padding: 50px 20px;
+  text-align: center;
+  background-color: #fef2f2; /* Fondo rojo clarito tipo alerta */
+  min-height: 100vh;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.emergencia-header {
+  margin-bottom: 30px;
+}
+
+.warning-icon {
+  font-size: 60px;
+  color: #dc2626;
+  margin-bottom: 10px;
+}
+
+.emergencia-title {
+  color: #dc2626;
+  font-size: 2.5rem;
+  margin: 0 0 10px 0;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.emergencia-subtitle {
+  font-size: 1.2rem;
+  color: #475569;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.emergencia-loading {
+  margin-top: 20px;
+  font-size: 1.1rem;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.spinner {
+  animation: spin 1.5s linear infinite;
+  color: #2563eb;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.emergencia-backups-container {
+  width: 100%;
+  max-width: 700px;
+  margin: 20px auto;
+  text-align: left;
+}
+
+.emergencia-backups-container h3 {
+  color: #1e293b;
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+  border-bottom: 2px solid #cbd5e1;
+  padding-bottom: 8px;
+}
+
+.backup-card {
+  background: white;
+  padding: 15px 20px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  border-left: 5px solid #2563eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.backup-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.backup-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.cloud-icon {
+  color: #2563eb;
+  font-size: 30px;
+}
+
+.backup-info strong {
+  color: #0f172a;
+  font-size: 1.1rem;
+}
+
+.backup-info small {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.btn-restaurar {
+  background: #dc2626;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s ease;
+}
+
+.btn-restaurar:hover {
+  background: #b91c1c;
+}
+
+.emergencia-mensaje {
+  margin-top: 30px;
+  padding: 15px 25px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #dcfce7;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.emergencia-mensaje.error-msg {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}

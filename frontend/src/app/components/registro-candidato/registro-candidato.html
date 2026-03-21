@@ -134,7 +134,20 @@
           <label>Fecha de Nacimiento</label>
           <div class="input-icon-wrapper">
             <span class="material-icons icono-input">calendar_today</span>
-            <input type="date" name="fechaNac" [(ngModel)]="fechaNac" class="input-moderno con-icono">
+            <input
+              type="date"
+              name="fechaNac"
+              [(ngModel)]="fechaNac"
+              class="input-moderno con-icono"
+              [max]="fechaMaxima"
+              required
+            >
+          </div>
+
+          <div *ngIf="fechaNac && !esMayorDeEdad(fechaNac)"
+               style="color: #dc2626; font-size: 12px; font-weight: 500; margin-top: 5px; display: flex; align-items: center; gap: 4px;">
+            <span class="material-icons" style="font-size: 16px;">error_outline</span>
+            Debes ser mayor de 18 años.
           </div>
         </div>
 

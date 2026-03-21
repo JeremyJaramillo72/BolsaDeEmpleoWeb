@@ -84,6 +84,25 @@
 .btn-icon {
   font-size: 1rem;
 }
+.error-validacion-edad {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #dc2626; /* Rojo elegante */
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 8px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.error-validacion-edad .material-icons {
+  font-size: 16px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 /* ============================================================== */
 
 /* Botón Principal de Registrar */

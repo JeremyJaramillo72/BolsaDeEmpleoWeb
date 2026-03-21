@@ -5,7 +5,6 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { RouterLink, Router } from '@angular/router';
 import { UiNotificationService } from '../../services/ui-notification.service';
 
-// 🔥 Importaciones para el botón de Google
 import { SocialAuthService, GoogleSigninButtonModule } from '@abacritt/angularx-social-login';
 
 @Component({
@@ -17,17 +16,16 @@ import { SocialAuthService, GoogleSigninButtonModule } from '@abacritt/angularx-
 })
 export class RegistroCandidatoComponent implements OnInit {
 
-  // Variables para el flujo de validación
   enviandoCodigo: boolean = false;
   codigoValido: boolean = false;
   codigoInvalido: boolean = false;
   correoVerificado: boolean = false;
+  fechaMaxima: string = '';
 
-  // Listas para los combos dinámicos
   provincias: any[] = [];
   ciudades: any[] = [];
 
-  // Datos del formulario vinculados a tu [(ngModel)]
+
   nombre: string = '';
   apellido: string = '';
   correo: string = '';
@@ -44,34 +42,30 @@ export class RegistroCandidatoComponent implements OnInit {
     private router: Router,
     private ui: UiNotificationService,
     private authService: SocialAuthService,
-    private cdr: ChangeDetectorRef // 🔥 2. Inyectado para fixear el error de provincias
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.cargarProvincias();
+    this.configurarFechaMaxima();
 
-    // 🔥 3. FLUJO COMPLETO DE GOOGLE AL 100%
     this.authService.authState.subscribe((user) => {
       if (user) {
         this.ui.info('Verificando cuenta con el servidor...');
 
-        // Enviamos el token de Google a tu API de Spring Boot
         this.http.post<any>('http://localhost:8080/api/auth/email/google', {
           token: user.idToken
         }).subscribe({
           next: (res) => {
             if (res.status === 'success') {
-              // Guardamos el TOKEN de nuestro sistema y los datos del usuario
               localStorage.setItem('token', res.token_sistema);
               localStorage.setItem('user', JSON.stringify(res.user));
 
-              // 🔥 Guardar idUsuario y rol para que AuthGuard valide correctamente
               localStorage.setItem('idUsuario', res.user.idUsuario || res.user.id_usuario);
               localStorage.setItem('rol', res.user.rol || 'POSTULANTE');
 
               this.ui.exito(`¡Bienvenido, ${res.user.nombre}!`);
 
-              // Redirigimos al Dashboard del Postulante
               setTimeout(() => {
                 this.router.navigate(['/menu-principal/dashboard-postulante']);
               }, 1500);
@@ -85,13 +79,31 @@ export class RegistroCandidatoComponent implements OnInit {
       }
     });
   }
+  configurarFechaMaxima() {
+    const hoy = new Date();
+    const hace18Anios = new Date(hoy.getFullYear() - 18, hoy.getMonth(), hoy.getDate());
+    this.fechaMaxima = hace18Anios.toISOString().split('T')[0];
+  }
+
+  esMayorDeEdad(fecha: string): boolean {
+    if (!fecha) return false;
+    const nacimiento = new Date(fecha);
+    const hoy = new Date();
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const mes = hoy.getMonth() - nacimiento.getMonth();
+
+    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+      edad--;
+    }
+    return edad >= 18;
+  }
 
   cargarProvincias() {
     this.http.get<any[]>('http://localhost:8080/api/ubicaciones/provincias')
       .subscribe({
         next: (data) => {
           this.provincias = data;
-          this.cdr.detectChanges(); // 🔥 Fix para el error ExpressionChangedAfterItHasBeenChecked
+          this.cdr.detectChanges();
         },
         error: (err) => console.error('Error al cargar provincias', err)
       });
@@ -104,7 +116,7 @@ export class RegistroCandidatoComponent implements OnInit {
           next: (data) => {
             this.ciudades = data;
             this.idCiudadSeleccionada = null;
-            this.cdr.detectChanges(); // 🔥 También aquí por si acaso
+            this.cdr.detectChanges();
           },
           error: (err) => console.error('Error al cargar ciudades', err)
         });
@@ -142,6 +154,15 @@ export class RegistroCandidatoComponent implements OnInit {
   }
 
   registrar() {
+    if (!this.esMayorDeEdad(this.fechaNac)) {
+      this.ui.error('Debes ser mayor de 18 años para registrarte en la plataforma.');
+      return;
+    }
+
+    if (!this.idCiudadSeleccionada) {
+      this.ui.advertencia('Por favor, selecciona tu ubicación.');
+      return;
+    }
     const payload = {
       Nombre: this.nombre,
       Apellido: this.apellido,

@@ -1,0 +1,34 @@
+<div class="emergencia-container">
+  <div class="emergencia-header">
+    <span class="material-icons warning-icon">warning_amber</span>
+    <h1 class="emergencia-title">ERROR CRÍTICO DEL SISTEMA</h1>
+    <p class="emergencia-subtitle">No se pudo conectar con la base de datos de PostgreSQL. Se ha activado el Modo de Recuperación.</p>
+  </div>
+
+  <div *ngIf="cargando" class="emergencia-loading">
+    <span class="material-icons spinner">sync</span>
+    <p>Conectando con Microsoft Azure para buscar respaldos...</p>
+  </div>
+
+  <div *ngIf="!cargando && backupsAzure.length > 0" class="emergencia-backups-container">
+    <h3>Backups Seguros en la Nube (Azure):</h3>
+    <div *ngFor="let backup of backupsAzure" class="backup-card">
+      <div class="backup-info">
+        <span class="material-icons cloud-icon">cloud_done</span>
+        <div>
+          <strong>{{ backup.nombreArchivo }}</strong><br>
+          <small>Fecha: {{ backup.fechaCreacion | date:'medium' }}</small>
+        </div>
+      </div>
+      <button (click)="restaurar(backup.nombreArchivo)" class="btn-restaurar">
+        <span class="material-icons">settings_backup_restore</span> Restaurar
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="mensajeRestauracion" class="emergencia-mensaje"
+       [ngClass]="{'error-msg': mensajeRestauracion.includes('Falló') || mensajeRestauracion.includes('Error')}">
+    <span class="material-icons">{{ mensajeRestauracion.includes('Falló') || mensajeRestauracion.includes('Error') ? 'error' : 'check_circle' }}</span>
+    {{ mensajeRestauracion }}
+  </div>
+</div>

@@ -83,6 +83,7 @@ public class AuthController {
             HttpServletResponse httpResponse,
             HttpSession session
     ) {
+
         return usuarioRepository.findByCorreo(loginRequest.getCorreo())
                 .map(usuario -> {
                     // 1. Validar contraseña del aplicativo

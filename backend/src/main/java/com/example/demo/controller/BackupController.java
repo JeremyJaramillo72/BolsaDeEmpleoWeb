@@ -117,4 +117,31 @@ public class BackupController {
     public ResponseEntity<List<HistorialBackup>> obtenerHistorial() {
         return ResponseEntity.ok(backupAutomatizacionService.obtenerHistorial());
     }
+
+    @GetMapping("/backups-disponibles")
+    public ResponseEntity<?> listarBackupsDeEmergencia() {
+        try {
+            return ResponseEntity.ok(backupService.listarBackupsDirectoDeAzure());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("error", "Azure inaccesible: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/restaurar")
+    public ResponseEntity<?> ejecutarResurreccion(@RequestBody Map<String, String> payload) {
+        try {
+            String zipFileName = payload.get("nombreArchivo");
+            if (zipFileName == null || zipFileName.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Debe enviar el nombreArchivo exacto de Azure"));
+            }
+
+            String mensaje = backupService.restaurarEmergenciaDesdeAzure(zipFileName);
+            return ResponseEntity.ok(Map.of("mensaje", mensaje));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("error", "Fallo al restaurar: " + e.getMessage()));
+        }
+    }
 }

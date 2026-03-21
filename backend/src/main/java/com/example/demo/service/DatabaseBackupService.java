@@ -4,12 +4,16 @@ import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
+import com.azure.storage.blob.models.BlobItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
-
+import org.springframework.stereotype.Service;import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.time.OffsetDateTime;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,7 +23,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.OffsetDateTime;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -43,6 +48,7 @@ public class DatabaseBackupService {
     private String containerNameBackups;
 
     private final JdbcTemplate jdbcTemplate;
+    private final com.zaxxer.hikari.HikariDataSource dataSource;
 
     public static class BackupResult {
         private File archivoLocal;
@@ -309,5 +315,79 @@ public class DatabaseBackupService {
             }
         }
         return unzippedFilePath;
+    }
+    // 1. Método para listar los backups directo de la nube
+    public List<Map<String, Object>> listarBackupsDirectoDeAzure() {
+        List<Map<String, Object>> listaBackups = new ArrayList<>();
+
+        BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
+                .connectionString(azureConnectionString)
+                .buildClient();
+        BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerNameBackups);
+
+        for (BlobItem blobItem : containerClient.listBlobs()) {
+            Map<String, Object> backupInfo = new HashMap<>();
+            backupInfo.put("nombreArchivo", blobItem.getName());
+            backupInfo.put("tamanoBytes", blobItem.getProperties().getContentLength());            backupInfo.put("fechaCreacion", blobItem.getProperties().getCreationTime().toString());
+            listaBackups.add(backupInfo);
+        }
+
+        // Ordenamos para que los más recientes salgan primero
+        listaBackups.sort((b1, b2) -> {
+            OffsetDateTime f1 = OffsetDateTime.parse((String) b1.get("fechaCreacion"));
+            OffsetDateTime f2 = OffsetDateTime.parse((String) b2.get("fechaCreacion"));
+            return f2.compareTo(f1);
+        });
+
+        return listaBackups;
+    }
+
+    // 2. Método para restaurar en Modo Dios (Pasándole el nombre del archivo exacto)
+    public String restaurarEmergenciaDesdeAzure(String zipFileName) throws Exception {
+        System.out.println("🚨 INICIANDO PROTOCOLO DE EMERGENCIA. Restaurando: " + zipFileName);
+
+        // A. Descargar y descomprimir directo de Azure
+        String tempZipPath = Paths.get(System.getProperty("java.io.tmpdir"), zipFileName).toString();
+        BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().connectionString(azureConnectionString).buildClient();
+        BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerNameBackups);
+        BlobClient blobClient = containerClient.getBlobClient(zipFileName);
+
+        if (!blobClient.exists()) throw new RuntimeException("El archivo no existe en Azure: " + zipFileName);
+
+        blobClient.downloadToFile(tempZipPath, true);
+        String tempUnzippedPath = descomprimirZip(tempZipPath);
+        Files.deleteIfExists(Paths.get(tempZipPath));
+
+        // B. El francotirador desde la Master
+        // NOTA: Uso el nombre de BD que vi en tu código anterior: "Bolsa-Empleo-Azure"
+        String nombreBaseDatos = "Bolsa-Empleo-Azure";
+        String masterJdbcUrl = "jdbc:postgresql://bolsa-empleo-dbpg.postgres.database.azure.com:5432/postgres?sslmode=require";
+
+        try {
+            // Cerramos HikariCP para soltar la base corrupta
+            if (dataSource != null && !dataSource.isClosed()) {
+                dataSource.close();
+            }
+
+            try (java.sql.Connection conn = java.sql.DriverManager.getConnection(masterJdbcUrl, dbUser, dbPassword);
+                 java.sql.Statement stmt = conn.createStatement()) {
+
+                System.out.println("Limpiando procesos zombis de: " + nombreBaseDatos);
+                stmt.execute("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '" + nombreBaseDatos + "' AND pid <> pg_backend_pid()");
+                Thread.sleep(2000);
+
+                System.out.println("Eliminando BD corrupta y recreando...");
+                stmt.execute("DROP DATABASE IF EXISTS \"" + nombreBaseDatos + "\"");
+                stmt.execute("CREATE DATABASE \"" + nombreBaseDatos + "\"");
+            }
+
+            // C. Inyectar los datos limpios
+            System.out.println("Inyectando el respaldo de emergencia...");
+            ejecutarPgRestoreYPermisos(tempUnzippedPath, nombreBaseDatos);
+
+            return "¡La base de datos resucitó con éxito! El sistema debe reiniciarse.";
+        } finally {
+            if (tempUnzippedPath != null) Files.deleteIfExists(Paths.get(tempUnzippedPath));
+        }
     }
 }

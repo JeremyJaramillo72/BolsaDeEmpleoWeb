@@ -1,0 +1,80 @@
+.mantenimiento-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f1f5f9; /* Gris azulado muy suave */
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  padding: 20px;
+}
+
+.mantenimiento-card {
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+  border-top: 6px solid #2563eb; /* Toque azul profesional */
+}
+
+.icon-container {
+  margin-bottom: 20px;
+}
+
+.engineering-icon {
+  font-size: 80px;
+  color: #f59e0b; /* Color ámbar/naranja para 'trabajando' */
+  background-color: #fef3c7;
+  padding: 20px;
+  border-radius: 50%;
+}
+
+.mantenimiento-title {
+  color: #1e293b;
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -1px;
+}
+
+.divider {
+  height: 3px;
+  width: 60px;
+  background-color: #e2e8f0;
+  margin: 20px auto;
+  border-radius: 2px;
+}
+
+.mantenimiento-text {
+  color: #475569;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.mantenimiento-subtext {
+  color: #64748b;
+  font-size: 0.95rem;
+  font-style: italic;
+}
+
+/* Animación sutil de puntitos de carga */
+.loading-dots {
+  font-size: 30px;
+  color: #2563eb;
+  margin-top: 20px;
+}
+
+.loading-dots span {
+  animation: blink 1.4s infinite both;
+}
+
+.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes blink {
+  0%, 80%, 100% { opacity: 0; }
+  40% { opacity: 1; }
+}

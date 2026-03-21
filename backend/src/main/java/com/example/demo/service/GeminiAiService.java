@@ -26,10 +26,9 @@ public class GeminiAiService {
             String tituloOferta,
             String descripcionOferta,
             String requisitosOferta,
-            PerfilProfesionalDTO perfilDB // <-- NUEVO PARÁMETRO
+            PerfilProfesionalDTO perfilDB
     ) {
         try {
-            // 1. Armamos el resumen del perfil del usuario basado en la Base de Datos
             String perfilBaseDatos = String.format(
                     "Candidato: %s %s. Formación: %s. Experiencia: %s. Cursos: %s. Idiomas: %s.",
                     perfilDB.getNombre(), perfilDB.getApellido(),
@@ -37,7 +36,6 @@ public class GeminiAiService {
                     perfilDB.getCursosRealizados(), perfilDB.getIdiomas()
             );
 
-            // 2. Armamos el Prompt con las dos tareas obligatorias
             String prompt = "Eres un reclutador experto (ATS). Tienes dos tareas obligatorias:\n\n" +
                     "TAREA 1: Validar el documento PDF.\n" +
                     "Analiza el siguiente texto extraído de un PDF subido por el usuario:\n" +
@@ -59,7 +57,6 @@ public class GeminiAiService {
                     "  }\n" +
                     "}";
 
-            // 3. Construimos el Body de la petición a Gemini
             Map<String, Object> requestBody = Map.of(
                     "contents", new Object[]{
                             Map.of("parts", new Object[]{
@@ -75,18 +72,15 @@ public class GeminiAiService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
-            // 4. Enviamos la petición
             String fullUrl = apiUrl + apiKey;
             ResponseEntity<String> response = restTemplate.postForEntity(fullUrl, entity, String.class);
 
-            // 5. Extraemos el JSON puro que nos dio la IA
             JsonNode rootNode = objectMapper.readTree(response.getBody());
             String respuestaIaText = rootNode.path("candidates").get(0).path("content").path("parts").get(0).path("text").asText();
 
             return objectMapper.readTree(respuestaIaText);
 
         } catch (org.springframework.web.client.HttpClientErrorException.TooManyRequests e){
-            // Atrapamos el error 429 específicamente
             throw new RuntimeException("El sistema de Inteligencia Artificial está procesando muchas solicitudes. Por favor, espera 15 segundos e intenta de nuevo.");
         } catch (Exception e) {
             e.printStackTrace();

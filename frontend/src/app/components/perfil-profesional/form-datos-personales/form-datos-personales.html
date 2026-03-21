@@ -15,8 +15,21 @@
 
     <div class="form-group">
       <label>Fecha de Nacimiento</label>
-      <input type="date" [(ngModel)]="perfil.fechaNacimiento" name="fechaNacimiento" (ngModelChange)="onInputChange()">
+      <input
+        type="date"
+        [(ngModel)]="perfil.fechaNacimiento"
+        name="fechaNacimiento"
+        [max]="fechaMaxima"
+        (ngModelChange)="onInputChange()"
+        [style.border-color]="perfil.fechaNacimiento && !esMayorDeEdad(perfil.fechaNacimiento) ? '#dc2626' : ''"
+      >
+      <small *ngIf="perfil.fechaNacimiento && !esMayorDeEdad(perfil.fechaNacimiento)"
+             style="color: #dc2626; font-size: 11px; font-weight: 500; margin-top: 4px; display: block;">
+        ⚠️ Debes tener al menos 18 años.
+      </small>
     </div>
+
+
 
     <div class="form-group">
       <label>Género</label>

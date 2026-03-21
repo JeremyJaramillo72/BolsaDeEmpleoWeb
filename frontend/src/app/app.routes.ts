@@ -24,7 +24,6 @@ import {PerfilCandidatoComponent} from './components/revision-postulantes/perfil
 import {RegistroOfertasAdministradorComponent} from './components/Panel-Admin/components/gestion-ofertas-administrador/gestion-ofertas-administrador';
 import {InformacionPersonalComponent} from './components/Panel-Admin/components/perfil-x/perfil-x';
 
-// (Asegúrate de importar tus 3 nuevos componentes arriba)
 import { DashboardAdminComponent } from './components/menu-principal/dashboard-admin/dashboard-admin.component';
 import { DashboardEmpresaComponent } from './components/menu-principal/dashboard-empresa/dashboard-empresa.component';
 import { DashboardPostulanteComponent } from './components/menu-principal/dashboard-postulante/dashboard-postulante.component';
@@ -33,12 +32,15 @@ import { ConfiguracionSistemaComponent } from './components/Panel-Admin/componen
 
 import {UsuariosComponent} from './components/Panel-Admin/components/usuarios/usuarios';
 import { CambioClaveComponent } from './components/menu-principal/cambio-clave/cambio-clave';
+import {EmergenciaDbComponent} from './components/Panel-Admin/components/configuracion-sistema/respaldos-bd/emergencia-db/emergencia-db';
+import {Mantenimiento} from './components/Panel-Admin/components/configuracion-sistema/respaldos-bd/emergencia-db/mantenimiento/mantenimiento';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'registro-candidato', component: RegistroCandidatoComponent },
   { path: 'registro-empresa', component: RegistroEmpresaComponent },
-
+  { path: 'emergencia-db', component: EmergenciaDbComponent },
+  {path: 'mantenimiento', component: Mantenimiento},
   {
     path: 'menu-principal',
     component: MenuprincipalComponent,

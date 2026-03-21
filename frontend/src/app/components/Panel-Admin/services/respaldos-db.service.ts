@@ -34,4 +34,12 @@ export class RespaldosDbService {
       responseType: 'blob'
     });
   }
+
+  listarBackupsEmergencia(): Observable<any[]> {
+    return this.http.get<any[]>('http://localhost:8080/api/seguridad/backups-disponibles');
+  }
+
+  restaurarEmergencia(nombreArchivo: string): Observable<any> {
+    return this.http.post('http://localhost:8080/api/seguridad/restaurar-emergencia', { nombreArchivo });
+  }
 }
