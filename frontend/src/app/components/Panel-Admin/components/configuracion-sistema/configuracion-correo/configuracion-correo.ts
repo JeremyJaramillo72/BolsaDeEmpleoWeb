@@ -214,17 +214,18 @@ export class ConfiguracionCorreoComponent implements OnInit {
       return date.toLocaleDateString('es-ES', {year: 'numeric', month: 'long', day: 'numeric'});
     }
   }
+
   generarConstanciaPdf(item: HistorialItem): void {
     const doc = new jsPDF();
 
     // --- HEADER ---
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
-    doc.setTextColor(100, 116, 139); // Gris sutil
+    doc.setTextColor(100, 116, 139); // Gris sutil UTEQ
     doc.text('BOLSA DE EMPLEO UTEQ', 14, 20);
 
     doc.setFontSize(10);
-    doc.setTextColor(15, 23, 42); // Gris oscuro casi negro
+    doc.setTextColor(15, 23, 42); // Gris oscuro Slate
     doc.text('CONSTANCIA DE AUDITORÍA', 196, 20, { align: 'right' });
 
     // Línea divisoria elegante
@@ -236,12 +237,12 @@ export class ConfiguracionCorreoComponent implements OnInit {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(14);
     doc.setTextColor(15, 23, 42);
-    doc.text('REPORTE DE MODIFICACIÓN DE SISTEMA', 105, 38, { align: 'center' });
+    doc.text('REPORTE INDIVIDUAL DE CAMBIO SMTP', 105, 38, { align: 'center' });
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
-    doc.text(`ID de Registro: #${item.idHistorial}  |  Fecha de emisión: ${new Date().toLocaleDateString('es-ES')}`, 105, 45, { align: 'center' });
+    doc.text(`ID de Registro: #${item.idHistorial}  |  Emisión: ${new Date().toLocaleDateString('es-ES')}`, 105, 45, { align: 'center' });
 
     // --- SECCIÓN 1: RESPONSABLE ---
     let startY = 60;
@@ -275,16 +276,18 @@ export class ConfiguracionCorreoComponent implements OnInit {
       startY: nextY + 5,
       theme: 'grid',
       body: [
-        ['Acción:', item.accion],
-        ['Fecha y Hora:', this.formatearFecha(item.fechaCreacion)],
-        ['Estado:', item.exitoso ? 'COMPLETADO CON ÉXITO' : 'FALLIDO']
+        ['Módulo:', 'Configuración de Correo (SMTP)'],
+        ['Acción Realizada:', item.accion],
+        // Quitamos los emojis de check y X para evitar errores en el PDF
+        ['Estado:', item.exitoso ? 'COMPLETADO CON EXITO' : 'FALLIDO'],
+        ['Fecha y Hora:', this.formatearFecha(item.fechaCreacion)]
       ],
       styles: { fontSize: 10, cellPadding: 3, textColor: [71, 85, 105], lineColor: [226, 232, 240], lineWidth: 0.1 },
       columnStyles: {
         0: { fontStyle: 'bold', textColor: [15, 23, 42], cellWidth: 40, fillColor: [248, 250, 252] }
       },
       willDrawCell: function(data) {
-        // Color verde o rojo sutil solo para el texto de Estado
+        // Pintamos el texto de éxito de verde o rojo sin usar emojis
         if (data.row.index === 2 && data.column.index === 1) {
           doc.setTextColor(item.exitoso ? 22 : 220, item.exitoso ? 163 : 38, item.exitoso ? 74 : 38);
           doc.setFont('helvetica', 'bold');
@@ -292,32 +295,47 @@ export class ConfiguracionCorreoComponent implements OnInit {
       }
     });
 
-    // --- SECCIÓN 3: TRAZABILIDAD ---
+    // --- SECCIÓN 3: TRAZABILIDAD (RESTAURO A DOS COLUMNAS) ---
     nextY = (doc as any).lastAutoTable.finalY + 10;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(11);
     doc.setTextColor(15, 23, 42);
-    doc.text('3. TRAZABILIDAD DE DATOS', 14, nextY);
+    doc.text('3. DETALLE DE LOS CAMBIOS (TRAZABILIDAD)', 14, nextY);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(100, 116, 139);
-    doc.text('Valores modificados en la configuración del servicio SMTP:', 14, nextY + 5);
+    doc.text('Comparativa del correo de envío antes y después de la modificación:', 14, nextY + 5);
 
     autoTable(doc, {
       startY: nextY + 8,
       theme: 'grid',
       head: [['VALOR ANTERIOR', 'VALOR NUEVO']],
       body: [
-        [item.valorAnterior || 'N/A', item.valorNuevo || 'N/A']
+        [item.valorAnterior || '(Vacío)', item.valorNuevo || '(Vacío)']
       ],
-      headStyles: { fillColor: [30, 41, 59], textColor: 255, fontStyle: 'bold', halign: 'center' }, // Fondo oscuro corporativo
-      bodyStyles: { font: 'courier', textColor: [15, 23, 42], halign: 'center', valign: 'middle', cellPadding: 5 }, // Texto fuente tipo código
+      headStyles: { fillColor: [30, 41, 59], textColor: 255, fontStyle: 'bold', halign: 'center' }, // Cabecera oscura
+      bodyStyles: { font: 'courier', textColor: [15, 23, 42], halign: 'center', valign: 'middle', cellPadding: 5 }, // Fuente tipo código
       styles: { lineColor: [203, 213, 225], lineWidth: 0.1 }
     });
 
-    // --- FIRMAS ---
+    // Si hay un error, lo ponemos en una tablita extra abajo
+    if (item.detalleError) {
+      nextY = (doc as any).lastAutoTable.finalY + 5;
+      autoTable(doc, {
+        startY: nextY,
+        theme: 'grid',
+        body: [['MOTIVO DE FALLO:', item.detalleError]],
+        bodyStyles: { textColor: [220, 38, 38], cellPadding: 3, fontSize: 9 }, // Letra roja
+        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 40, fillColor: [254, 242, 242] } },
+        styles: { lineColor: [252, 165, 165], lineWidth: 0.1 }
+      });
+    }
+
+    // --- FIRMAS Y SELLO ---
     nextY = (doc as any).lastAutoTable.finalY + 35;
+    if (nextY > 270) { doc.addPage(); nextY = 40; }
+
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.setTextColor(71, 85, 105);
@@ -329,17 +347,35 @@ export class ConfiguracionCorreoComponent implements OnInit {
     doc.setFont('helvetica', 'normal');
     doc.text(item.adminNombre, 55, nextY + 10, { align: 'center' });
 
-    // Firma derecha
+    // Sello derecha
     doc.text('__________________________________', 155, nextY, { align: 'center' });
     doc.setFont('helvetica', 'bold');
     doc.text('Sello del Sistema', 155, nextY + 5, { align: 'center' });
     doc.setFont('helvetica', 'normal');
-    doc.text('Generado Automáticamente', 155, nextY + 10, { align: 'center' });
 
-    // Descarga del archivo
-    doc.save(`Constancia_Auditoria_${item.idHistorial}.pdf`);
+    doc.setFontSize(8);
+    doc.text('Validado automáticamente por el módulo', 155, nextY + 10, { align: 'center' });
+    doc.text('de Auditoría - Bolsa de Empleo UTEQ.', 155, nextY + 13, { align: 'center' });
+    doc.text(`ID Único de Verificación: UTEQ-SMTP-${item.idHistorial}`, 155, nextY + 16, { align: 'center' });
+
+    // Descarga
+    doc.save(`Constancia_Individual_SMTP_${item.idHistorial}.pdf`);
   }
-
+  // Helper para limpiar el HTML y que el texto se acomode bien en el PDF
+  private limpiarContenidoParaPdf(html: string): string {
+    if (!html) return '(Vacío)';
+    // 1. Convertir tags de salto comunes en \n para que jspdf los entienda
+    let text = html.replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<div[^>]*>/gi, '\n')
+      .replace(/<p[^>]*>/gi, '\n');
+    // 2. Eliminar todos los demás tags HTML (<strong>, <span>, etc.)
+    text = text.replace(/<[^>]+>/g, '');
+    // 3. Decodificar entidades HTML básicas (&amp; -> &) y limpiar espacios extra
+    return text.replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .trim();
+  }
 
   exportarHistorialCompletoPdf(): void {
     if (!this.historial || this.historial.length === 0) {

@@ -143,13 +143,22 @@
             <tr (click)="toggleFilaHistorial(i)" style="cursor: pointer;" [class.active-row]="filaExpandidaIndex === i">
               <td class="td-fecha">{{ formatearFecha(item.fechaCreacion) }}</td>
               <td>
-            <span class="status-badge" style="background: #e0f2fe; color: #0369a1; border-radius: 4px; padding: 2px 6px;">
-              {{ item.accion }}
-            </span>
+    <span class="status-badge" style="background: #e0f2fe; color: #0369a1; border-radius: 4px; padding: 2px 6px;">
+      {{ item.accion }}
+    </span>
               </td>
               <td>{{ item.adminNombre }} <span class="text-muted" style="font-size: 0.8rem;">({{ item.adminEmail }})</span></td>
               <td style="text-align: right; color: var(--primary);">
-                <span class="material-icons">{{ filaExpandidaIndex === i ? 'expand_less' : 'visibility' }}</span>
+                <div style="display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
+
+                  <button class="btn-outline" (click)="generarConstanciaPdf(item, $event)"
+                          style="display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; font-size: 0.75rem; border: 1px solid var(--border-color); border-radius: 4px; background: transparent; cursor: pointer; color: var(--text-main);">
+                    <span class="material-icons" style="font-size: 14px; color: #ef4444;">picture_as_pdf</span>
+                    PDF
+                  </button>
+
+                  <span class="material-icons">{{ filaExpandidaIndex === i ? 'expand_less' : 'visibility' }}</span>
+                </div>
               </td>
             </tr>
 

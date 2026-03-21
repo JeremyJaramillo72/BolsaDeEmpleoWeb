@@ -2,6 +2,8 @@ import { Component, OnInit, ChangeDetectorRef, ElementRef, ViewChild } from '@an
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PlantillaNotificacionService } from '../../../services/plantilla-notificacion.service';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export interface PlantillaDTO {
   idPlantilla: number;
@@ -43,7 +45,7 @@ export class PlantillaNotificacionComponent implements OnInit {
   variablesProtegidas: string[] = [];
 
   tituloEditado: string = '';
-  contenidoEditado: string = ''; // valor real con variables para guardar en BD
+  contenidoEditado: string = '';
 
   cargando: boolean = true;
   guardando: boolean = false;
@@ -51,11 +53,12 @@ export class PlantillaNotificacionComponent implements OnInit {
   mensajeError: string = '';
   expandidoHistorial: { [key: number]: boolean } = {};
   filaExpandidaIndex: number | null = null;
-  mostrarSeccionPlantillas: boolean = true; // Inicia abierta
-  mostrarSeccionEditar: boolean = false;    // Inicia cerrada
-  mostrarSeccionHistorial: boolean = false; // Inicia cerrada
+  mostrarSeccionPlantillas: boolean = true;
+  mostrarSeccionEditar: boolean = false;
+  mostrarSeccionHistorial: boolean = false;
   currentPage: number = 1;
   itemsPerPage: number = 5;
+
   constructor(
     private plantillaService: PlantillaNotificacionService,
     private cdr: ChangeDetectorRef
@@ -84,12 +87,11 @@ export class PlantillaNotificacionComponent implements OnInit {
       }
     });
   }
+
   seleccionarPlantilla(plantilla: PlantillaDTO): void {
     this.plantillaSeleccionada = plantilla;
     this.tituloEditado = plantilla.titulo;
     this.contenidoEditado = plantilla.contenido;
-
-    // ✅ Agregamos esta línea para llenar la cajita de arriba
     this.variablesProtegidas = this.extraerVariables(plantilla.contenido);
 
     this.mensajeExito = '';
@@ -101,9 +103,6 @@ export class PlantillaNotificacionComponent implements OnInit {
     setTimeout(() => this.renderizarEditor(), 50);
   }
 
-
-  // Convierte el texto plano con variables en HTML con spans de colores
-  // Convierte el texto plano con variables en HTML con spans de colores y estilos
   contenidoAHtml(texto: string): string {
     const escaped = texto
       .replace(/&/g, '&amp;')
@@ -112,12 +111,212 @@ export class PlantillaNotificacionComponent implements OnInit {
       .replace(/\n/g, '<br>');
 
     return escaped.replace(/(\{\{[^}]+\}\}|\{[^}]+\})/g, (match) => {
-      // 🚀 CIENCIA PURA: Le inyectamos el style directamente aquí "ahí mismo"
       return `<span class="var-chip" contenteditable="false" data-var="${match}" style="font-weight: bold; font-style: italic; font-family: monospace; color: #5b21b6; background-color: #ede9fe; padding: 2px 4px; border-radius: 4px;">${match}</span>`;
     });
-
   }
 
+  // 🔥 Helper global para limpiar Emojis y Símbolos de cualquier texto antes del PDF
+  private purgarTextosPdf(str: string): string {
+    if (!str) return '(Vacío)';
+    return str
+      .replace(/<[^>]+>/g, '') // Quitar HTML
+      .replace(/[\u{1F600}-\u{1F64F}]/gu, '') // Emoticons
+      .replace(/[\u{1F300}-\u{1F5FF}]/gu, '') // Misc Symbols
+      .replace(/[\u{1F680}-\u{1F6FF}]/gu, '') // Transport
+      .replace(/[\u{1F700}-\u{1F77F}]/gu, '') // Alchemical
+      .replace(/[\u{1F780}-\u{1F7FF}]/gu, '') // Geometric Shapes
+      .replace(/[\u{1F800}-\u{1F8FF}]/gu, '') // Arrows
+      .replace(/[\u{1F900}-\u{1F9FF}]/gu, '') // Supplemental Symbols
+      .replace(/[\u{1FA00}-\u{1FA6F}]/gu, '') // Chess
+      .replace(/[\u{1FA70}-\u{1FAFF}]/gu, '') // Symbols Ext
+      .replace(/[\u{2600}-\u{26FF}]/gu, '')   // Misc symbols
+      .replace(/[\u{2700}-\u{27BF}]/gu, '')   // Dingbats
+      .replace(/[\u200B-\u200D\uFEFF]/g, '')  // Zero width spaces
+      .replace(/\r\n|\r|\n/g, ' ')            // Saltos a espacios para evitar desborde
+      .trim();
+  }
+
+  // ==========================================
+  // PDF 1: CONSTANCIA INDIVIDUAL
+  // ==========================================
+  generarConstanciaPdf(item: HistorialItem, event: Event): void {
+    event.stopPropagation();
+    const doc = new jsPDF();
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(100, 116, 139);
+    doc.text('BOLSA DE EMPLEO UTEQ', 14, 20);
+
+    doc.setFontSize(10);
+    doc.setTextColor(15, 23, 42);
+    doc.text('CONSTANCIA DE AUDITORÍA', 196, 20, { align: 'right' });
+
+    doc.setLineWidth(0.5);
+    doc.setDrawColor(30, 41, 59);
+    doc.line(14, 25, 196, 25);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.setTextColor(15, 23, 42);
+    doc.text('REPORTE DE EDICIÓN DE PLANTILLA', 105, 38, { align: 'center' });
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
+    doc.text(`ID de Registro: #${item.idHistorial}  |  Fecha de emisión: ${new Date().toLocaleDateString('es-ES')}`, 105, 45, { align: 'center' });
+
+    let startY = 60;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(15, 23, 42);
+    doc.text('1. DATOS DEL RESPONSABLE', 14, startY);
+
+    autoTable(doc, {
+      startY: startY + 5,
+      theme: 'plain',
+      body: [
+        ['Administrador:', this.purgarTextosPdf(item.adminNombre)],
+        ['Correo:', item.adminEmail],
+        ['IP de Origen:', item.ipAddress || 'No registrada']
+      ],
+      styles: { fontSize: 10, cellPadding: 2, textColor: [71, 85, 105] },
+      columnStyles: { 0: { fontStyle: 'bold', textColor: [15, 23, 42], cellWidth: 40 } }
+    });
+
+    let nextY = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(15, 23, 42);
+    doc.text('2. DETALLE DE LA OPERACIÓN', 14, nextY);
+
+    autoTable(doc, {
+      startY: nextY + 5,
+      theme: 'grid',
+      body: [
+        ['Plantilla Editada:', this.plantillaSeleccionada?.tipo || 'Desconocida'],
+        ['Acción:', item.accion],
+        ['Fecha y Hora:', this.formatearFecha(item.fechaCreacion)]
+      ],
+      styles: { fontSize: 10, cellPadding: 3, textColor: [71, 85, 105], lineColor: [226, 232, 240], lineWidth: 0.1 },
+      columnStyles: { 0: { fontStyle: 'bold', textColor: [15, 23, 42], cellWidth: 40, fillColor: [248, 250, 252] } }
+    });
+
+    nextY = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(15, 23, 42);
+    doc.text('3. DETALLE DE LOS CAMBIOS', 14, nextY);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text('Comparativa de los valores antes y después de la modificación:', 14, nextY + 5);
+
+    const cambiosBody = [];
+    if (item.tituloAnterior !== item.tituloNuevo) {
+      cambiosBody.push(['ASUNTO/TÍTULO ANTERIOR', this.purgarTextosPdf(item.tituloAnterior)]);
+      cambiosBody.push(['ASUNTO/TÍTULO NUEVO', this.purgarTextosPdf(item.tituloNuevo)]);
+    }
+
+    if (item.contenidoAnterior !== item.contenidoNuevo) {
+      cambiosBody.push(['CONTENIDO ANTERIOR', this.purgarTextosPdf(item.contenidoAnterior)]);
+      cambiosBody.push(['CONTENIDO NUEVO', this.purgarTextosPdf(item.contenidoNuevo)]);
+    }
+
+    if (cambiosBody.length === 0) {
+      cambiosBody.push(['SIN CAMBIOS', 'No se detectaron modificaciones sustanciales.']);
+    }
+
+    autoTable(doc, {
+      startY: nextY + 8,
+      theme: 'grid',
+      body: cambiosBody,
+      bodyStyles: { font: 'courier', textColor: [15, 23, 42], valign: 'middle', cellPadding: 5 },
+      columnStyles: {
+        0: { fontStyle: 'bold', fillColor: [248, 250, 252], cellWidth: 50 },
+        1: { cellWidth: 'wrap' }
+      },
+      styles: { lineColor: [203, 213, 225], lineWidth: 0.1, overflow: 'linebreak' }
+    });
+
+    nextY = (doc as any).lastAutoTable.finalY + 35;
+    if (nextY > 270) { doc.addPage(); nextY = 40; }
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(71, 85, 105);
+
+    // Firma centrada, sin Sello del Sistema
+    doc.text('__________________________________', 105, nextY, { align: 'center' });
+    doc.setFont('helvetica', 'bold');
+    doc.text('Firma del Administrador', 105, nextY + 5, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.text(this.purgarTextosPdf(item.adminNombre), 105, nextY + 10, { align: 'center' });
+
+    doc.save(`Constancia_Plantilla_${item.idHistorial}.pdf`);
+  }
+
+  // ==========================================
+  // PDF 2: REPORTE COMPLETO POR TIPO
+  // ==========================================
+  exportarReporteGeneralPorTipoPdf(): void {
+    if (!this.plantillaSeleccionada || this.historial.length === 0) {
+      this.mensajeError = '❌ No hay historial para exportar de esta plantilla.';
+      return;
+    }
+
+    const doc = new jsPDF('landscape');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.setTextColor(15, 23, 42);
+    doc.text('BOLSA DE EMPLEO UTEQ', 14, 20);
+
+    doc.setFontSize(11);
+    doc.setTextColor(100, 116, 139);
+    doc.text(`REPORTE GENERAL DE AUDITORÍA: PLANTILLA '${this.plantillaSeleccionada.tipo}'`, 14, 28);
+
+    doc.setFontSize(10);
+    doc.text(`Emisión: ${new Date().toLocaleDateString('es-ES')}`, 280, 20, { align: 'right' });
+
+    doc.setLineWidth(0.5);
+    doc.setDrawColor(30, 41, 59);
+    doc.line(14, 32, 280, 32);
+
+    const bodyData = this.historial.map(item => {
+      const cambioAsunto = item.tituloAnterior !== item.tituloNuevo ? 'SÍ' : 'NO';
+      const cambioCuerpo = item.contenidoAnterior !== item.contenidoNuevo ? 'SÍ' : 'NO';
+
+      return [
+        item.idHistorial,
+        this.formatearFecha(item.fechaCreacion),
+        item.accion,
+        this.purgarTextosPdf(item.adminNombre),
+        cambioAsunto,
+        cambioCuerpo
+      ];
+    });
+
+    autoTable(doc, {
+      startY: 40,
+      head: [['ID', 'FECHA Y HORA', 'ACCIÓN', 'ADMINISTRADOR', 'CAMBIO ASUNTO', 'CAMBIO CUERPO']],
+      body: bodyData,
+      theme: 'grid',
+      headStyles: { fillColor: [30, 41, 59], textColor: 255, fontStyle: 'bold', fontSize: 9, halign: 'center' },
+      bodyStyles: { fontSize: 9, textColor: [15, 23, 42], valign: 'middle' },
+      columnStyles: {
+        0: { halign: 'center', cellWidth: 15 },
+        1: { cellWidth: 40 },
+        2: { cellWidth: 35 },
+        3: { cellWidth: 60 },
+        4: { halign: 'center', cellWidth: 30 },
+        5: { halign: 'center', cellWidth: 30 }
+      }
+    });
+
+    doc.save(`Reporte_General_Plantilla_${this.plantillaSeleccionada.tipo}.pdf`);
+  }
 
   // --- LÓGICA DE PAGINACIÓN ---
   get plantillasPaginadas() {
@@ -134,54 +333,45 @@ export class PlantillaNotificacionComponent implements OnInit {
   paginaAnterior() { if (this.currentPage > 1) this.currentPage--; }
   paginaSiguiente() { if (this.currentPage < this.totalPages) this.currentPage++; }
 
-
-
   toggleSeccion(seccion: 'plantillas' | 'editar' | 'historial'): void {
     if (seccion === 'plantillas') this.mostrarSeccionPlantillas = !this.mostrarSeccionPlantillas;
     if (seccion === 'editar') this.mostrarSeccionEditar = !this.mostrarSeccionEditar;
     if (seccion === 'historial') this.mostrarSeccionHistorial = !this.mostrarSeccionHistorial;
   }
+
   renderizarEditor(): void {
     if (!this.editorRef) return;
     const el = this.editorRef.nativeElement;
     el.innerHTML = this.contenidoAHtml(this.contenidoEditado);
   }
 
-  // Extrae el texto real del editor (reponiendo las variables desde data-var)
-  // Extrae el texto real del editor (reponiendo las variables desde data-var)
   extraerContenidoReal(): string {
     if (!this.editorRef) return this.contenidoEditado;
     const el = this.editorRef.nativeElement;
-
-    // Clonar para no modificar el DOM real
     const clon = el.cloneNode(true) as HTMLElement;
 
-    // Reemplazar cada span de variable por su valor original
     clon.querySelectorAll('.var-chip').forEach((span: Element) => {
       const valorOriginal = span.getAttribute('data-var') || '';
       const text = document.createTextNode(valorOriginal);
       span.replaceWith(text);
     });
 
-    // 🚀 MAGIA PARA LOS ENTERS:
-    // Convertimos los bloques que los navegadores crean al dar "Enter" en \n reales
     return clon.innerHTML
-      .replace(/<br\s*\/?>/gi, '\n')      // 1. Convierte los <br> (Shift+Enter) en saltos de línea
-      .replace(/<div[^>]*>/gi, '\n')      // 2. Convierte los <div> (Enter en Chrome/Edge) en saltos
-      .replace(/<p[^>]*>/gi, '\n')        // 3. Convierte los <p> (Enter en Firefox) en saltos
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<div[^>]*>/gi, '\n')
+      .replace(/<p[^>]*>/gi, '\n')
       .replace(/&amp;/g, '&')
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
-      .replace(/<[^>]+>/g, '')            // 4. Ahora sí, limpiamos los tags de cierre sobrantes (</div>, </p>)
-      .trim();                            // 5. Quitamos espacios o enters accidentales al principio o al final
+      .replace(/<[^>]+>/g, '')
+      .trim();
   }
 
   extraerVariables(texto: string): string[] {
-    // Busca todo lo que esté entre {llaves} o {{dobles llaves}}
     const matches = texto.match(/(\{\{[^}]+\}\}|\{[^}]+\})/g) || [];
-    // Retorna solo los valores únicos para que no se repitan en la lista
     return Array.from(new Set(matches));
   }
+
   guardarCambios(): void {
     if (!this.plantillaSeleccionada) return;
 
@@ -205,7 +395,6 @@ export class PlantillaNotificacionComponent implements OnInit {
       this.mensajeExito = '';
       return;
     }
-
 
     this.guardando = true;
 
@@ -237,10 +426,11 @@ export class PlantillaNotificacionComponent implements OnInit {
       }
     });
   }
+
   toggleFilaHistorial(index: number) {
-    // Si das clic en la misma, se cierra. Si no, se abre la nueva.
     this.filaExpandidaIndex = this.filaExpandidaIndex === index ? null : index;
   }
+
   cancelarCambios(): void {
     if (!this.plantillaSeleccionada) return;
     this.tituloEditado = this.plantillaSeleccionada.titulo;
@@ -279,6 +469,4 @@ export class PlantillaNotificacionComponent implements OnInit {
       return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
     }
   }
-
-
 }
