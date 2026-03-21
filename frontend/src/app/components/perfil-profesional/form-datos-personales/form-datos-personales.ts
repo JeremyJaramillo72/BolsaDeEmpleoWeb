@@ -29,4 +29,5 @@ export class FormDatosPersonalesComponent {
   guardarDatos() {
     this.guardar.emit();
   }
+
 }

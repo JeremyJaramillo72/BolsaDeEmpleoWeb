@@ -73,7 +73,8 @@ export class LoginComponent implements OnInit {
 
           localStorage.setItem('idUsuario', res.idUsuario);
           localStorage.setItem('idRol', res.rol?.idRol || res.idRol);
-          localStorage.setItem('nombre', res.nombre);
+          const nombreCompleto = `${res.nombre || ''} ${res.apellido || ''}`.trim();
+          localStorage.setItem('nombre', nombreCompleto);
 
           // ¡AQUÍ ESTÁ LA MAGIA! 👇 Buscamos en el Rol
           const permisosDelRol = res.rol?.permisosUi || '';

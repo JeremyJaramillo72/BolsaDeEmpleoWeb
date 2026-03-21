@@ -150,6 +150,7 @@ public class AuthController {
                         response.put("idUsuario", usuario.getIdUsuario());
                         response.put("rol", usuario.getRol());
                         response.put("nombre", usuario.getNombre());
+                        response.put("apellido",usuario.getApellido());
                         //response.put("permisosUi", usuario.getPermisosUi());
                         if ("Administrador".equalsIgnoreCase(nombreRol)) {
                             try {

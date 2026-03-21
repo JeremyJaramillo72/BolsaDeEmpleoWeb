@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UiNotificationService } from '../../services/ui-notification.service';
 import { ConfirmService } from '../../services/confirm.service';
+import {AuthService} from '../../services/auth.service';
 
 @Component({
   selector: 'app-perfil-profesional',
@@ -53,7 +54,8 @@ export class PerfilProfesionalComponent implements OnInit {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private notif: UiNotificationService,
-    private confirmSvc: ConfirmService
+    private confirmSvc: ConfirmService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -89,6 +91,11 @@ export class PerfilProfesionalComponent implements OnInit {
         this.fotoUrl = data.urlFotoPerfil || null;
         this.perfil.id_provincia = data.idProvincia || null;
         this.perfil.id_ciudad = data.idCiudad || null;
+
+        this.authService.actualizarNombreEnPantalla(this.perfil.nombreCompleto);
+        if (this.fotoUrl) {
+          this.authService.actualizarFotoEnPantalla(this.fotoUrl as string);
+        }
 
         if (this.perfil.id_provincia) {
           this.perfilService.getCiudadesPorProvincia(this.perfil.id_provincia).subscribe(res => {
@@ -206,6 +213,7 @@ export class PerfilProfesionalComponent implements OnInit {
         next: (respuesta: any) => {
           this.perfil.urlImagen = respuesta.urlImagen;
           this.fotoUrl = respuesta.urlImagen;
+          this.authService.actualizarFotoEnPantalla(respuesta.urlImagen);
           this.actualizarProgreso();
           this.cdr.detectChanges();
         },
@@ -231,7 +239,8 @@ export class PerfilProfesionalComponent implements OnInit {
     const payload = { nombreCompleto: this.perfil.nombreCompleto, fechaNacimiento: this.perfil.fechaNacimiento, genero: this.perfil.genero, telefono: this.perfil.telefono, idCiudad: this.perfil.id_ciudad };
 
     this.perfilService.actualizarDatosPersonales(this.idUsuarioLogueado, payload).subscribe({
-      next: (res) => { this.notif.exito('Datos personales actualizados exitosamente.'); this.actualizarProgreso(); this.cdr.detectChanges(); },
+      next: (res) => { this.notif.exito('Datos personales actualizados exitosamente.');
+        this.authService.actualizarNombreEnPantalla(this.perfil.nombreCompleto);this.actualizarProgreso(); this.cdr.detectChanges(); },
       error: (err) => this.notif.error('Hubo un error al guardar tu información.')
     });
   }

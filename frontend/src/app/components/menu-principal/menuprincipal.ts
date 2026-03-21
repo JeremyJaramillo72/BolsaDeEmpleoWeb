@@ -89,44 +89,47 @@ export class MenuprincipalComponent implements OnInit {
     }
   }
 
-  ngOnInit(): void {
-    this.nombreUsuario = localStorage.getItem('nombre') || 'Usuario';
-    this.rolUsuario = localStorage.getItem('rol') || '';
+  // En menuprincipal.ts - Reemplaza todo tu ngOnInit()
 
+  ngOnInit(): void {
     const idUsuario = localStorage.getItem('idUsuario');
     if (!idUsuario) {
       this.cerrarSesion();
       return;
     }
-    this.authService.obtenerFotoPerfil(idUsuario).subscribe({
-      next: (res: any) => {
-        if (res.url) {
-          this.fotoMenu = res.url;
-          this.cdr.detectChanges();
-        }
-      }
-    });
 
-    // ✅ Foto + Nombre del admin en tiempo real (topbar + sidebar)
-    this.perfilAdminService.foto$.subscribe((url: string) => {
-      if (url) { this.fotoMenu = url; this.cdr.detectChanges(); }
-    });
-    this.perfilAdminService.nombre$.subscribe((nombre: string) => {
-      if (nombre) { this.nombreUsuario = nombre; this.cdr.detectChanges(); }
-    });
+    this.rolUsuario = localStorage.getItem('rol') || '';
 
-
-    this.usuarioEmpresaService.logoActual$.subscribe(nuevaUrl => {
-      if (nuevaUrl) {
-        this.fotoMenu = nuevaUrl;
+    this.authService.fotoActual$.subscribe(url => {
+      if (url) {
+        this.fotoMenu = url;
         this.cdr.detectChanges();
       }
     });
 
-    // ✅ Logo y nombre del sistema — funciona para TODOS los roles
-    //    (postulante, empresa, admin)
-    //    1. subscribe() recibe inmediatamente el valor de localStorage (sin delay)
-    //    2. cargarDesdeAPI() actualiza desde el servidor y emite a todos los suscriptores
+    this.authService.nombreActual$.subscribe(nuevoNombre => {
+      if (nuevoNombre && nuevoNombre !== 'Usuario') {
+        this.nombreUsuario = nuevoNombre;
+        this.cdr.detectChanges();
+      }
+    });
+
+
+    if (!this.fotoMenu || this.fotoMenu === '') {
+      this.authService.obtenerFotoPerfil(idUsuario).subscribe({
+        next: (res: any) => {
+          if (res.url) {
+            this.authService.actualizarFotoEnPantalla(res.url);
+          }
+        }
+      });
+    }
+
+    // Rescate del nombre desde el caché inicial
+    if (!this.nombreUsuario || this.nombreUsuario === '') {
+      this.nombreUsuario = localStorage.getItem('nombre') || 'Usuario';
+    }
+
     this.sistemaConfigService.logo$.subscribe((url: string) => {
       this.logoSistema = url;
       this.cdr.detectChanges();
@@ -137,15 +140,16 @@ export class MenuprincipalComponent implements OnInit {
     });
     this.sistemaConfigService.cargarDesdeAPI();
 
+    this.notificationService.notificaciones$.subscribe(() => {
+      this.actualizarKPIsNotificaciones();
+    });
+
     this.verificarRutaActual();
     this.inicializarMenuPorRol();
 
     if (this.router.url === '/menu-principal' || this.router.url === '/menu-principal/') {
       this.irAInicio();
     }
-    this.notificationService.notificaciones$.subscribe(() => {
-      this.actualizarKPIsNotificaciones();
-    });
 
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
