@@ -115,7 +115,7 @@ export class PlantillaNotificacionComponent implements OnInit {
     });
   }
 
-  // 🔥 Helper global para limpiar Emojis y Símbolos de cualquier texto antes del PDF
+  // 🔥 Helper global corregido
   private purgarTextosPdf(str: string): string {
     if (!str) return '(Vacío)';
     return str
@@ -132,7 +132,7 @@ export class PlantillaNotificacionComponent implements OnInit {
       .replace(/[\u{2600}-\u{26FF}]/gu, '')   // Misc symbols
       .replace(/[\u{2700}-\u{27BF}]/gu, '')   // Dingbats
       .replace(/[\u200B-\u200D\uFEFF]/g, '')  // Zero width spaces
-      .replace(/\r\n|\r|\n/g, ' ')            // Saltos a espacios para evitar desborde
+      .replace(/\r\n|\r/g, '\n')              // 🔥 MANTENER saltos de línea reales para que el PDF los respete
       .trim();
   }
 
@@ -235,7 +235,7 @@ export class PlantillaNotificacionComponent implements OnInit {
       bodyStyles: { font: 'courier', textColor: [15, 23, 42], valign: 'middle', cellPadding: 5 },
       columnStyles: {
         0: { fontStyle: 'bold', fillColor: [248, 250, 252], cellWidth: 50 },
-        1: { cellWidth: 'wrap' }
+        1: { cellWidth: 'auto' } // 🔥 AQUÍ ESTABA EL ERROR ('wrap' desbordaba, 'auto' lo ajusta a los márgenes)
       },
       styles: { lineColor: [203, 213, 225], lineWidth: 0.1, overflow: 'linebreak' }
     });
