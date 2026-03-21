@@ -118,14 +118,21 @@
           {{ usuarioSeleccionado.nombreCompleto }} - {{ usuarioSeleccionado.email }}
         </p>
       </div>
+
       <div class="flex-between gap-2">
-        <button class="btn-icon-text btn-primary" (click)="exportarAuditorias()">
+        <!-- ✅ Botón exportar con clase correcta -->
+        <button class="btn-exportar"
+                (click)="exportarAuditorias()"
+                [disabled]="cargandoAuditorias || auditorias.length === 0">
           <span class="material-icons">download</span> Exportar Todo
         </button>
+
         <button class="btn-close-pro" (click)="cerrarModalAuditorias()">
           <span class="material-icons">close</span>
         </button>
       </div>
+
+
     </div>
 
     <div class="modal-body-pro p-4 bg-gray-50">

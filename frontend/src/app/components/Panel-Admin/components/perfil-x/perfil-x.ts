@@ -28,7 +28,7 @@ export class InformacionPersonalComponent implements OnInit {
   };
 
   // --- ESTADOS DE LA INTERFAZ ---
-  rol: string = 'Postulante';
+  rol: string = '';
   completitudPerfil: number = 0;
   fotoUrl: string | ArrayBuffer | null = null;
   archivoSeleccionado: File | null = null;

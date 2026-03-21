@@ -137,3 +137,44 @@
 .empty-icon { width: 64px; height: 64px; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; background: #f3f4f6; margin-bottom: 1rem; }
 .empty-icon .material-icons { font-size: 32px; color: #9ca3af;}
 .loading-state-pro { text-align: center; color: #6b7280; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+
+
+/* ✅ Botón Exportar Historial PDF */
+.btn-exportar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
+  white-space: nowrap;
+}
+
+.btn-exportar:hover {
+  background: linear-gradient(135deg, #4338ca, #6d28d9);
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.5);
+  transform: translateY(-1px);
+}
+
+.btn-exportar:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
+}
+
+.btn-exportar:disabled {
+  background: #c4c4c4;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-exportar .material-icons {
+  font-size: 1rem;
+}

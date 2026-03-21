@@ -68,6 +68,7 @@
 
 <div class="modal-overlay fade-in" *ngIf="mostrarModalHistorial" (click)="cerrarModalHistorial()">
   <div class="modal-pro large" (click)="$event.stopPropagation()">
+
     <div class="modal-header-pro border-bottom">
       <div>
         <h2 class="text-indigo-dark mb-0">Trazabilidad del Perfil Profesional</h2>
@@ -75,9 +76,19 @@
           <strong>Postulante:</strong> {{ postulanteSeleccionado?.nombrePostulante }}
         </p>
       </div>
-      <button class="btn-close-pro" (click)="cerrarModalHistorial()">
-        <span class="material-icons">close</span>
-      </button>
+
+      <!-- ✅ Botones agrupados a la derecha -->
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button class="btn-exportar"
+                (click)="exportarHistorialPDF()"
+                [disabled]="cargandoHistorial || listaHistorial.length === 0">
+          <span class="material-icons">download</span> Exportar Historial
+        </button>
+
+        <button class="btn-close-pro" (click)="cerrarModalHistorial()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
     </div>
 
     <div class="modal-body-pro bg-gray-50 p-4" *ngIf="!cargandoHistorial">

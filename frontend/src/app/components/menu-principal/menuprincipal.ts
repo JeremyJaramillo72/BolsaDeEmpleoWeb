@@ -266,6 +266,16 @@ export class MenuprincipalComponent implements OnInit {
       },
       // --- MÓDULOS DE ADMINISTRADOR ---
       {
+        icon: 'person',
+        title: 'Perfil',
+        description: 'Crea y Gestiona tu Perfil',
+        colorHex: '#0f172a', bgHex: '#f1f5f9',
+        //roles: ['ADMINISTRADOR'],
+        path: '/perfil-x',
+        route: '/menu-principal/perfil-x',
+        permiso: 'Perfil_X'
+      },
+      {
         icon: 'manage_accounts',
         title: 'Gestión de Usuarios',
         description: 'Administra los Usuarios de tu Aplicativo',
@@ -355,16 +365,7 @@ export class MenuprincipalComponent implements OnInit {
         route: '/menu-principal/GestionRolesbd',
         permiso: 'ROLES_BD'
       },
-      {
-        icon: 'person',
-        title: 'Perfil',
-        description: 'Crea y Gestiona tu Perfil',
-        colorHex: '#0f172a', bgHex: '#f1f5f9',
-        //roles: ['ADMINISTRADOR'],
-        path: '/perfil-x',
-        route: '/menu-principal/perfil-x',
-        permiso: 'Perfil_X'
-      },
+
       {
         icon: 'settings_backup_restore',
         title: 'Configuración del Sistema',

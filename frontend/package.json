@@ -34,7 +34,7 @@
     "@fortawesome/fontawesome-free": "^7.1.0",
     "@stomp/stompjs": "^7.3.0",
     "chart.js": "^4.5.1",
-    "jspdf": "^4.1.0",
+    "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
     "material-icons": "^1.13.14",
     "ng2-charts": "^10.0.0",
