@@ -78,13 +78,12 @@ public class GoogleAuthController {
 
             // --- 🔥 LA PIEZA QUE FALTABA: REGISTRAR SESIÓN ---
             // Obtenemos datos del navegador para la auditoría
-            String ip = request.getRemoteAddr();
+
             String agent = request.getHeader("User-Agent");
 
             // Registramos la sesión en la tabla seguridad.sesiones y obtenemos el ID
             // Nota: Asegúrate que registrarLogin devuelva el Long del id_sesion
-            Long idSesionGenerado = sesionService.registrarLogin(idSeguridad.intValue(), ip, agent, "Google Login");
-
+            Long idSesionGenerado = sesionService.registrarLogin(idSeguridad.intValue(), agent, "Google Login");
             // 3. 🔥 GENERAMOS NUESTRO PROPIO JWT DEL SISTEMA
             // ¡AHORA SÍ! Le pasamos los 3 parámetros: email, rol e idSesion
             String tokenSistema = jwtService.generarToken(email, "POSTULANTE", idSesionGenerado);

@@ -12,7 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,7 +21,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:4200" , allowCredentials = "true")
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -58,24 +57,6 @@ public class AuthController {
         }
     }
 
-    private String obtenerIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("Proxy-Client-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("WL-Proxy-Client-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
-        }
-        // Si hay múltiples IPs en X-Forwarded-For, tomar la primera
-        if (ip != null && ip.contains(",")) {
-            ip = ip.split(",")[0].trim();
-        }
-        return ip;
-    }
-
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @RequestBody LoginRequest loginRequest,
@@ -83,7 +64,6 @@ public class AuthController {
             HttpServletResponse httpResponse,
             HttpSession session
     ) {
-
         return usuarioRepository.findByCorreo(loginRequest.getCorreo())
                 .map(usuario -> {
                     // 1. Validar contraseña del aplicativo
@@ -94,15 +74,12 @@ public class AuthController {
                         String estadoActual = (estado != null && !estado.isEmpty()) ? estado : "Pendiente";
 
                         if (!estadoActual.equalsIgnoreCase("Aprobado") && !estadoActual.equalsIgnoreCase("Activo")) {
-
-                            // Enviamos el correo de advertencia
                             try {
                                 emailService.enviarCorreoCuentaNoAprobada(usuario.getCorreo(), usuario.getNombre(), estadoActual);
                             } catch (Exception e) {
                                 System.out.println("aviso: no se pudo enviar el correo de bloqueo: " + e.getMessage());
                             }
 
-                            // Personalizamos el mensaje según el estado
                             String msjFront = estadoActual.equalsIgnoreCase("Rechazado")
                                     ? "tu solicitud de cuenta fue rechazada. comunícate con el administrador."
                                     : "tu cuenta aún está en revisión. no puedes iniciar sesión hasta ser aprobado.";
@@ -116,7 +93,6 @@ public class AuthController {
                         Seguridad seguridad = seguridadRepository.findByUsuario(usuario);
                         if (seguridad != null) {
                             try {
-                                // HACEMOS EL SWITCH FÍSICO A LA BD
                                 dbSwitchService.switchToUser(seguridad.getLoginName(), seguridad.getClaveName());
                             } catch (Exception e) {
                                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -128,43 +104,43 @@ public class AuthController {
                         session.setAttribute("nombre_usuario", usuario.getNombre());
                         session.setAttribute("idUsuario", usuario.getIdUsuario());
                         if (seguridad != null) {
-                            session.setAttribute("idSeguridad", seguridad.getIdSeguridad());   // <-- NUEVO
+                            session.setAttribute("idSeguridad", seguridad.getIdSeguridad());
                         }
 
                         String nombreRol = usuario.getRol().getNombreRol();
 
                         // 4. Registrar inicio de sesión (auditoría)
+                        // ✅ Ya no pasamos IP — PostgreSQL la captura con inet_client_addr()
                         if (seguridad != null) {
-                            String ip = obtenerIp(httpRequest);
                             String navegador = httpRequest.getHeader("User-Agent");
                             String dispositivo = navegador != null && navegador.contains("Mobile") ? "Mobile" : "Desktop";
-                            sesionService.registrarLogin(seguridad.getIdSeguridad(), ip, navegador, dispositivo);
+                            sesionService.registrarLogin(seguridad.getIdSeguridad(), navegador, dispositivo);
                         }
-
 
                         httpResponse.addHeader("X-Auth-Token", UUID.randomUUID().toString());
                         httpResponse.addHeader("X-UTEQ-Session", "Active");
 
-                        // Respuesta al Frontend
+                        // 5. Respuesta al Frontend
                         Map<String, Object> response = new HashMap<>();
                         response.put("mensaje", "¡bienvenido de nuevo!");
                         response.put("idUsuario", usuario.getIdUsuario());
                         response.put("rol", usuario.getRol());
                         response.put("nombre", usuario.getNombre());
-                        response.put("apellido",usuario.getApellido());
-                        //response.put("permisosUi", usuario.getPermisosUi());
+                        response.put("apellido", usuario.getApellido());
+
+                        // 6. Notificar al admin por correo (usamos remoteAddr solo para el email)
                         if ("Administrador".equalsIgnoreCase(nombreRol)) {
                             try {
-                                String ip = obtenerIp(httpRequest);
+                                String ip = httpRequest.getRemoteAddr();
                                 emailService.notificarLoginAdmin(usuario.getCorreo(), ip, "Ecuador");
                             } catch (Exception e) {
                                 System.out.println("⚠️ No se pudo enviar alerta de login admin: " + e.getMessage());
                             }
                         }
 
+                        // 7. Si es empresa, agregar datos de empresa
                         if (nombreRol != null && nombreRol.equalsIgnoreCase("EMPRESA")) {
                             UsuarioEmpresa empresa = usuarioEmpresaRepository.findByIdUsuario(Long.valueOf(usuario.getIdUsuario()));
-
                             if (empresa != null) {
                                 response.put("idEmpresa", empresa.getIdEmpresa());
                                 response.put("empresa", empresa);
@@ -188,20 +164,16 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpSession session) {
         try {
-            // Registrar cierre de sesión antes de invalidar
             Object idSeguridadObj = session.getAttribute("idSeguridad");
             System.out.println("🔴 idSeguridad en logout: " + idSeguridadObj);
             Integer idSeguridad = (Integer) idSeguridadObj;
             if (idSeguridad != null) {
                 sesionService.registrarLogout(idSeguridad);
             }
-
-            // CUANDO CIERRA SESIÓN, REGRESAMOS AL USUARIO POR DEFECTO DEL BACKEND
             dbSwitchService.resetToDefault();
         } catch (Exception e) {
             System.out.println("⚠️ Advertencia al registrar logout: " + e.getMessage());
         } finally {
-            // Invalidar sesión al final para evitar conflictos
             try {
                 session.invalidate();
             } catch (IllegalStateException e) {
