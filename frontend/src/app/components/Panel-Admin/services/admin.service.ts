@@ -26,6 +26,7 @@ export class AdminService {
   private apiHistorialOferta = 'http://localhost:8080/api/auditoria/ofertas';
 
   private apiPostulanteAudi = 'http://localhost:8080/api/auditoria/postulantes';
+  private apiRespaldosAudi = 'http://localhost:8080/auditoria/respaldos';
   constructor(private http: HttpClient) { }
 
   // ==========================================
@@ -504,6 +505,21 @@ export class AdminService {
   cambiarClave(idUsuario: string | number, datos: { claveActual: string, nuevaClave: string }) {
     // Asegúrate de que this.apiUrl apunte a tu backend correctamente
     return this.http.put(`${this.apiUsuariosUrl}/${idUsuario}/cambiar-clave`, datos);
+  }
+
+
+  // ==========================================
+  // AUDITORÍA DE RESPALDOS
+  // ==========================================
+
+  obtenerResumenRespaldos() {
+    // No mandamos body, Postgres ya tiene su default '{}' en la función
+    return this.http.get<any[]>(`${this.apiRespaldosAudi}/resumen`);
+  }
+
+  obtenerDetalleRespaldos(idUsuario: number) {
+    // Pasamos el ID por la URL: /detalle?id_usuario=9
+    return this.http.get<any[]>(`${this.apiRespaldosAudi}/detalle?id_usuario=${idUsuario}`);
   }
 
 }

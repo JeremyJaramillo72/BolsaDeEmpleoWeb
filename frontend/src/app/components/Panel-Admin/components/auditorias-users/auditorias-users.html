@@ -26,11 +26,12 @@
     <button class="nav-pill" [class.active]="tabPrincipal === 'ofertas'" (click)="tabPrincipal = 'ofertas'">
       <span class="material-icons">work_history</span> Histórico Ofertas
     </button>
-
-    <button class="nav-pill"
-            [class.active]="tabPrincipal === 'postulantes'"
-            (click)="cambiarTabPrincipal('postulantes')">
+    <button class="nav-pill" [class.active]="tabPrincipal === 'postulantes'" (click)="cambiarTabPrincipal('postulantes')">
       <span class="material-icons text-sm">badge</span> Histórico Postulantes
+    </button>
+
+    <button class="nav-pill" [class.active]="tabPrincipal === 'respaldos'" (click)="cambiarTabPrincipal('respaldos')">
+      <span class="material-icons text-sm">cloud_sync</span> Respaldos BD
     </button>
   </div>
 
@@ -39,5 +40,7 @@
     <app-sesiones *ngIf="tabPrincipal === 'sesiones'"></app-sesiones>
     <app-ofertas *ngIf="tabPrincipal === 'ofertas'"></app-ofertas>
     <app-postulantes *ngIf="tabPrincipal === 'postulantes'"></app-postulantes>
+
+    <app-respaldos *ngIf="tabPrincipal === 'respaldos'"></app-respaldos>
   </div>
 </div>

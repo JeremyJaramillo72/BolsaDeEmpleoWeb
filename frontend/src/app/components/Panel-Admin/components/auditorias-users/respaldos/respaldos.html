@@ -1,0 +1,125 @@
+<div class="fade-in">
+  <div class="pro-card">
+    <div class="flex-between border-bottom pb-4 mb-4">
+      <div>
+        <h2 class="text-dark" style="font-size: 1.25rem; margin: 0;">Auditoría de Respaldos</h2>
+        <p class="text-muted text-sm mt-1">Monitorea la ejecución de backups manuales y automáticos.</p>
+      </div>
+
+      <div class="search-wrapper">
+        <span class="material-icons search-icon">search</span>
+        <input type="text" class="pro-input" placeholder="Buscar por correo..." [(ngModel)]="textoBusqueda">
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table-custom">
+        <thead>
+        <tr>
+          <th>Usuario Ejecutor</th>
+          <th>Total Acciones</th>
+          <th>Último Respaldo</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let item of resumenBackups" class="hover-row">
+          <td>
+              <span class="badge-db-user">
+                <span class="material-icons text-xs">person</span>
+                {{ item.correo_ejecutor }}
+              </span>
+          </td>
+          <td>
+            <span class="badge badge-light">{{ item.total_acciones_realizadas }} ejecuciones</span>
+          </td>
+          <td class="text-sm text-gray-700 font-medium">
+            {{ item.fecha_ultimo_backup | date:'dd MMM yyyy, h:mm a' }}
+          </td>
+          <td class="text-center">
+            <button class="btn-action-pill btn-indigo-outline" (click)="abrirDetalle(item)">
+              <span class="material-icons text-sm">history</span> Ver Historial
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="resumenBackups.length === 0">
+          <td colspan="4" class="empty-state-pro py-5">
+            <div class="empty-icon"><span class="material-icons">inbox</span></div>
+            <p class="text-dark">No hay registros de respaldos en la base de datos.</p>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="modalAbierto" (click)="cerrarModal()">
+  <div class="modal-pro medium fade-in" (click)="$event.stopPropagation()">
+
+    <div class="modal-header-pro border-bottom">
+      <div>
+        <h3 class="text-dark m-0">Historial de Ejecución</h3>
+        <p class="text-muted text-sm mt-1">Usuario: <span class="text-indigo font-bold">{{ usuarioSeleccionado }}</span></p>
+      </div>
+      <button class="btn-close-pro" (click)="cerrarModal()" title="Cerrar">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <div class="modal-body-pro bg-gray-50" style="max-height: 60vh;">
+      <div class="modern-timeline">
+
+        <div class="timeline-item" *ngFor="let detalle of detallesHistorial">
+
+          <div class="timeline-icon"
+               [ngClass]="detalle.estado === 'EXITO' ? 'accion-crear' : 'accion-eliminar'">
+            <span class="material-icons">{{ detalle.estado === 'EXITO' ? 'cloud_done' : 'error' }}</span>
+          </div>
+
+          <div class="timeline-content">
+            <div class="flex-between align-center border-bottom pb-2 mb-3">
+              <span class="text-xs font-bold text-gray-400">{{ detalle.fecha_ejecucion | date:'dd MMM yyyy, h:mm a' }}</span>
+              <span class="badge"
+                    [ngClass]="detalle.estado === 'EXITO' ? 'estado-activo' : 'estado-bloqueado'">
+                {{ detalle.estado }}
+              </span>
+            </div>
+
+            <p class="text-sm text-gray-800 font-medium mb-1">
+              Tipo de ejecución: <span class="badge-tabla">{{ detalle.tipo_accion }}</span>
+            </p>
+
+            <div *ngIf="detalle.estado === 'EXITO'" class="insert-banner mt-3">
+              <div class="text-xs font-bold text-gray-600 mb-1">TAMAÑO DEL RESPALDO:</div>
+              <div class="value-box">{{ formatBytes(detalle.tamano_bytes) }}</div>
+
+              <div class="text-xs font-bold text-gray-600 mb-1 mt-2">URL AZURE:</div>
+              <a *ngIf="detalle.url_azure" [href]="detalle.url_azure" target="_blank" class="value-box" style="text-decoration: none; cursor: pointer;">
+                {{ detalle.url_azure }}
+              </a>
+              <div *ngIf="!detalle.url_azure" class="value-box text-muted">Sin URL disponible</div>
+            </div>
+
+            <div *ngIf="detalle.estado !== 'EXITO'" class="delete-banner mt-3">
+              <div class="text-xs font-bold text-gray-600 mb-1">MOTIVO DEL ERROR:</div>
+              <div class="value-box-delete">{{ detalle.mensaje_error || 'Error desconocido' }}</div>
+            </div>
+
+          </div>
+        </div>
+
+        <div *ngIf="cargandoDetalles" class="loading-state-pro py-4">
+          <span class="material-icons icon-spin" style="font-size: 2rem; color: #4f46e5;">autorenew</span>
+          <p class="mt-2 font-medium">Cargando historial desde la BD...</p>
+        </div>
+
+        <div *ngIf="!cargandoDetalles && detallesHistorial.length === 0" class="empty-state-pro py-4">
+          <p class="text-muted font-medium">Este usuario no tiene registros detallados de respaldos.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
