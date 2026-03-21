@@ -102,8 +102,14 @@
           </div>
         </div>
 
-        <button type="submit" class="btn-registrar" [disabled]="!registroForm.valid" style="margin-top: 1rem;">
-          Registrar Empresa <span class="material-icons">arrow_forward</span>
+        <button type="submit" class="btn-registrar" [disabled]="!registroForm.valid || registrando" style="margin-top: 1rem;">
+          <ng-container *ngIf="!registrando">
+            Registrar Empresa <span class="material-icons">arrow_forward</span>
+          </ng-container>
+
+          <ng-container *ngIf="registrando">
+            <i class="fa fa-spinner fa-spin" style="margin-right: 8px;"></i> Creando cuenta...
+          </ng-container>
         </button>
 
       </form>

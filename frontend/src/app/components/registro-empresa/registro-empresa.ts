@@ -20,7 +20,7 @@ export class RegistroEmpresaComponent implements OnInit {
   codigoValido: boolean = false;
   codigoInvalido: boolean = false;
   correoVerificado: boolean = false;
-
+  registrando: boolean = false;
 
   provincias: any[] = [];
   ciudades: any[] = [];
@@ -66,6 +66,7 @@ export class RegistroEmpresaComponent implements OnInit {
 
   // Registro final enviando el objeto que el Controller espera
   registrar() {
+    this.registrando = true;
     const payload = {
       correo: this.correo,
       contrasena: this.contrasena,
@@ -82,9 +83,11 @@ export class RegistroEmpresaComponent implements OnInit {
         next: (res: any) => {
           this.ui.exito(res.mensaje || '¡Empresa registrada con éxito!');
           this.router.navigate(['/api/auth/login']);
+          this.registrando = false;
         },
         error: (err) => {
           this.ui.error('Error: ' + (err.error?.error || 'Error en el servidor'));
+          this.registrando = false;
         }
       });
   }

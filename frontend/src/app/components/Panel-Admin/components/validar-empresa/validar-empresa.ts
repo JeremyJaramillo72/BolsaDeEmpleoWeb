@@ -159,7 +159,7 @@ export class ValidarEmpresaComponent implements OnInit {
         this.cargando = false;
       },
       error: (err) => {
-        this.mostrarExito(`Empresa ${this.accionValidacion} procesada`);
+        this.mostrarError(`Empresa ${this.accionValidacion} procesada`);
         this.cargarEmpresas();
         this.cerrarModal();
         this.cargando = false;

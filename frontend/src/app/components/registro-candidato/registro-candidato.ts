@@ -21,7 +21,7 @@ export class RegistroCandidatoComponent implements OnInit {
   codigoInvalido: boolean = false;
   correoVerificado: boolean = false;
   fechaMaxima: string = '';
-
+  registrando: boolean = false;
   provincias: any[] = [];
   ciudades: any[] = [];
 
@@ -163,6 +163,7 @@ export class RegistroCandidatoComponent implements OnInit {
       this.ui.advertencia('Por favor, selecciona tu ubicación.');
       return;
     }
+    this.registrando = true;
     const payload = {
       Nombre: this.nombre,
       Apellido: this.apellido,
@@ -180,6 +181,7 @@ export class RegistroCandidatoComponent implements OnInit {
         next: (res) => {
           this.ui.exito('¡Postulante registrado con éxito!');
           this.router.navigate(['/api/auth/login']);
+          this.registrando = false;
         },
         error: (err) => {
           if (err.status === 400) {
@@ -189,6 +191,7 @@ export class RegistroCandidatoComponent implements OnInit {
           } else {
             this.ui.error('Error interno en el servidor');
           }
+          this.registrando = false;
         }
       });
   }

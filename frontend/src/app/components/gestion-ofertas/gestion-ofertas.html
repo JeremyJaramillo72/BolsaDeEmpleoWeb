@@ -118,10 +118,20 @@
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn-text" (click)="cerrarFormulario()">Cancelar</button>
-        <button type="button" class="btn-primary" (click)="guardar()">
-          <span class="material-icons">{{ nuevaOferta.idOferta ? 'save' : 'send' }}</span>
-          {{ nuevaOferta.idOferta ? 'Guardar Cambios' : 'Publicar Oferta' }}
+        <button type="button" class="btn-text" (click)="cerrarFormulario()" [disabled]="guardando">Cancelar</button>
+
+        <button type="button" class="btn-primary" (click)="guardar()" [disabled]="guardando">
+
+          <ng-container *ngIf="!guardando">
+            <span class="material-icons">{{ nuevaOferta.idOferta ? 'save' : 'send' }}</span>
+            {{ nuevaOferta.idOferta ? 'Guardar Cambios' : 'Publicar Oferta' }}
+          </ng-container>
+
+          <ng-container *ngIf="guardando">
+            <i class="fa fa-spinner fa-spin" style="margin-right: 8px;"></i>
+            {{ nuevaOferta.idOferta ? 'Guardando...' : 'Publicando...' }}
+          </ng-container>
+
         </button>
       </div>
     </div>

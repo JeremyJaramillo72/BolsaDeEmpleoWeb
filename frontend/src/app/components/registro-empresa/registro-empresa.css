@@ -14,7 +14,25 @@
 .textos-marca { display: flex; flex-direction: column; }
 .titulo-marca { color: white; font-weight: 700; font-size: 0.9rem; }
 .subtitulo-marca { color: #ddd6fe; font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+/* Estilo para cuando los botones están deshabilitados */
+button:disabled,
+.btn-registrar:disabled,
+.btn-primary:disabled {
+  background-color: #cbd5e1 !important; /* Color gris apagado */
+  color: #64748b !important; /* Texto gris más oscuro */
+  cursor: not-allowed !important; /* Aparece el ícono de "prohibido" 🚫 */
+  transform: none !important; /* Evita que el botón se mueva al pasar el mouse */
+  box-shadow: none !important; /* Le quita sombras para que se vea "plano" */
+  opacity: 0.7;
+}
 
+/* Evitamos que haga hover cuando está deshabilitado */
+button:disabled:hover,
+.btn-registrar:disabled:hover,
+.btn-primary:disabled:hover {
+  background-color: #cbd5e1 !important;
+  transform: none !important;
+}
 .badge-oficial { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: 20px; padding: 4px 10px; color: #ddd6fe; font-size: 0.7rem; font-weight: 500; margin-bottom: 0.8rem; }
 .icono-pequeno { font-size: 0.9rem; }
 .hero-titulo { color: white; font-size: 1.9rem; font-weight: 800; line-height: 1.1; margin-bottom: 0.6rem; }

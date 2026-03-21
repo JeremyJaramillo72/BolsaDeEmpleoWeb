@@ -223,9 +223,21 @@
           <p>¿Está seguro de que desea <strong>{{ accionValidacion === 'Aprobado' ? 'aprobar' : 'rechazar' }}</strong> a esta empresa?</p>
 
           <div class="confirm-actions">
-            <button class="btn-modern btn-cancel" (click)="setAccion(null)">Cancelar</button>
-            <button class="btn-modern" [ngClass]="accionValidacion==='Aprobado' ? 'btn-success-fill' : 'btn-danger-fill'" (click)="confirmarValidacion()">
-              Confirmar Decisión
+            <button class="btn-modern btn-cancel" (click)="setAccion(null)" [disabled]="cargando">
+              Cancelar
+            </button>
+
+            <button class="btn-modern"
+                    [ngClass]="accionValidacion==='Aprobado' ? 'btn-success-fill' : 'btn-danger-fill'"
+                    (click)="confirmarValidacion()"
+                    [disabled]="cargando">
+
+              <span *ngIf="!cargando">Confirmar Decisión</span>
+
+              <span *ngIf="cargando">
+                <i class="fa fa-spinner fa-spin" style="margin-right: 5px;"></i>
+                Procesando...
+              </span>
             </button>
           </div>
         </div>

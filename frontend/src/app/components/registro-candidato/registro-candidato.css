@@ -16,7 +16,25 @@
 .textos-marca { display: flex; flex-direction: column; }
 .titulo-marca { color: white; font-weight: 700; font-size: 1rem; }
 .subtitulo-marca { color: #a7f3d0; font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+/* Estilo para cuando los botones están deshabilitados */
+button:disabled,
+.btn-registrar:disabled,
+.btn-primary:disabled {
+  background-color: #cbd5e1 !important; /* Color gris apagado */
+  color: #64748b !important; /* Texto gris más oscuro */
+  cursor: not-allowed !important; /* Aparece el ícono de "prohibido" 🚫 */
+  transform: none !important; /* Evita que el botón se mueva al pasar el mouse */
+  box-shadow: none !important; /* Le quita sombras para que se vea "plano" */
+  opacity: 0.7;
+}
 
+/* Evitamos que haga hover cuando está deshabilitado */
+button:disabled:hover,
+.btn-registrar:disabled:hover,
+.btn-primary:disabled:hover {
+  background-color: #cbd5e1 !important;
+  transform: none !important;
+}
 .badge-oficial { display: inline-flex; align-items: center; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: 20px; padding: 6px 14px; color: #d1fae5; font-size: 0.72rem; font-weight: 500; margin-bottom: 1.25rem; }
 .hero-titulo { color: white; font-size: 2.5rem; font-weight: 800; line-height: 1.12; margin-bottom: 1rem; letter-spacing: -0.03em; }
 .hero-texto { color: #d1fae5; font-size: 0.9rem; line-height: 1.7; margin-bottom: 2rem; }

@@ -23,7 +23,7 @@ export class GestionOfertasComponent implements OnInit {
   listaCiudades: any[] = [];
   listaTiposHabilidad: any[] = [];
   listaHabilidadesFiltradas: any[] = [];
-
+  guardando: boolean = false;
 
   mostrarFormulario: boolean = false;
   idEmpresaLogueada: number = 0;
@@ -363,11 +363,13 @@ export class GestionOfertasComponent implements OnInit {
     if (!this.validarFormulario()) {
       return;
     }
+    this.guardando = true;
     this.ofertaService.crearOferta(this.nuevaOferta).subscribe({
       next: () => {
         this.ui.exito('¡Oferta guardada con éxito!');
         this.cerrarFormulario();
         this.cargarOfertas();
+        this.guardando = false;
       },
       error: (err) => {
         if (err.status === 200 || err.status === 201) {
@@ -378,6 +380,7 @@ export class GestionOfertasComponent implements OnInit {
           console.error("Detalle del error al guardar:", err);
           const mensajeReal = err.error?.error || err.error?.message || 'Error al guardar la oferta. Revisa la consola.';
           this.ui.error(`⚠️ ${mensajeReal}`);
+          this.guardando = false;
         }
       }
     });

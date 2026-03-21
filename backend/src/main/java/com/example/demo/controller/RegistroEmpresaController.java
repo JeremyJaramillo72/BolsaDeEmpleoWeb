@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
+import org.springframework.dao.DataIntegrityViolationException;
 import java.util.Map;
 
 @RestController
@@ -50,11 +50,17 @@ public class RegistroEmpresaController {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of("mensaje", "¡Registro de empresa exitoso! Ahora puede iniciar sesión."));
 
-        } catch (Exception e) {
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "El correo o RUC ingresado ya se encuentra registrado."));
+
+        }
+        catch (Exception e) {
             // Captura de errores detallada para la UTEQ
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error en el registro de empresa: " + e.getMessage()));
         }
+
     }
 
 }
