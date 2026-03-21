@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {Observable} from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -9,6 +10,20 @@ export class AuthService {
 
   constructor(private http: HttpClient) { }
 
+  private nombreUsuarioSource = new BehaviorSubject<string>(localStorage.getItem('nombre') || 'Usuario');
+  nombreActual$ = this.nombreUsuarioSource.asObservable();
+
+  private fotoUsuarioSource = new BehaviorSubject<string | null>(null); // Empieza en nulo
+  fotoActual$ = this.fotoUsuarioSource.asObservable();
+
+  actualizarNombreEnPantalla(nuevoNombre: string) {
+    localStorage.setItem('nombre', nuevoNombre);
+    this.nombreUsuarioSource.next(nuevoNombre);
+  }
+  actualizarFotoEnPantalla(nuevaUrl: string) {
+    localStorage.setItem('urlFoto', nuevaUrl);
+    this.fotoUsuarioSource.next(nuevaUrl);
+  }
   tienePermiso(permisoRequerido: string): boolean {
 
     const idRol = localStorage.getItem('idRol');
