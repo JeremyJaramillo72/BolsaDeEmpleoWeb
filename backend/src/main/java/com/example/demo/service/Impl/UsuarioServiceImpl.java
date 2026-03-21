@@ -21,6 +21,7 @@ import com.example.demo.dto.UsuarioTablaDTO;
 import java.sql.Date;
 import java.util.List;
 import java.util.Map;
+import java.text.Normalizer;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +51,6 @@ public class UsuarioServiceImpl implements IUsuarioService {
         int idRolParaGuardar = (usuario.getRol() != null && usuario.getRol().getIdRol() != null)
                 ? usuario.getRol().getIdRol()
                 : 3;
-
         usuarioRepository.registrarPostulantePro(
                 usuario.getNombre(),
                 usuario.getApellido(),
@@ -62,17 +62,20 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 usuario.getCiudad() != null ? usuario.getCiudad().getIdCiudad() : null,
                 idRolParaGuardar
         );
-
-
         entityManager.flush();
         entityManager.clear();
 
         Usuario usuarioGuardado = usuarioRepository.findByCorreo(usuario.getCorreo())
                 .orElseThrow(() -> new RuntimeException("Error al recuperar usuario registrado."));
 
+        String usernameUnico = generarUsernameBD(
+                usuarioGuardado.getNombre(),
+                usuarioGuardado.getApellido(),
+                usuarioGuardado.getIdUsuario()
+        );
 
-        entityManager.createNativeQuery("CALL seguridad.registroUsuarioLogin(:correo, :idUsuario, :idRol)")
-                .setParameter("correo", usuarioGuardado.getCorreo())
+        entityManager.createNativeQuery("CALL seguridad.registroUsuarioLogin(:username, :idUsuario, :idRol)")
+                .setParameter("username", usernameUnico) // Inyectamos el username seguro
                 .setParameter("idUsuario", usuarioGuardado.getIdUsuario().intValue())
                 .setParameter("idRol", idRolParaGuardar)
                 .executeUpdate();
@@ -171,13 +174,20 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 .orElseThrow(() -> new RuntimeException("Error: Usuario no encontrado tras registro."));
 
         try {
+            // 1. Generamos el nuevo nombre de usuario único
+            String usernameUnico = generarUsernameBD(
+                    usuarioGuardado.getNombre(),
+                    usuarioGuardado.getApellido(),
+                    usuarioGuardado.getIdUsuario()
+            );
+
+            // 2. Pasamos el usernameUnico en lugar del correo
             usuarioRepository.crearCredencialesBD(
-                    usuarioGuardado.getCorreo(),
+                    usernameUnico, // <-- ¡CAMBIO AQUÍ!
                     usuarioGuardado.getIdUsuario().intValue(),
                     idRol
             );
-            System.out.println("✅ Credenciales de BD creadas para: " + usuarioGuardado.getCorreo());
-
+            System.out.println("✅ Credenciales de BD creadas con el usuario: " + usernameUnico);
 
             if (idRol != 3 && idRol != 2) {
                 java.util.concurrent.CompletableFuture.runAsync(() -> {
@@ -185,7 +195,9 @@ public class UsuarioServiceImpl implements IUsuarioService {
                         emailService.enviarCredencialesNuevoUsuario(
                                 usuarioGuardado.getCorreo(),
                                 usuarioGuardado.getNombre() != null ? usuarioGuardado.getNombre() : "Usuario",
-                                contrasenaPlana // Enviamos la plana que guardamos al principio
+                                contrasenaPlana
+                                // Ojo: Si también necesitan este usernameUnico para hacer login en algún lado,
+                                // deberías pasarlo a tu emailService también.
                         );
                     } catch (Exception e) {
                         System.err.println("⚠️ Error enviando correo de credenciales en segundo plano: " + e.getMessage());
@@ -218,6 +230,19 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
         Usuario usuarioGuardado = usuarioRepository.findByCorreo(usuario.getCorreo())
                 .orElseThrow(() -> new RuntimeException("Error al recuperar empresa registrada."));
+
+        // 🔥 NUEVO: Crear credenciales de BD para la Empresa
+        try {
+            // Pasamos nombreEmp como nombre y null como apellido
+            String usernameUnico = generarUsernameBD(nombreEmp, null, usuarioGuardado.getIdUsuario());
+
+            // 2 es el idRol para Empresa
+            usuarioRepository.crearCredencialesBD(usernameUnico, usuarioGuardado.getIdUsuario().intValue(), 2);
+            System.out.println("✅ Credenciales de BD creadas para EMPRESA: " + usernameUnico);
+        } catch (Exception e) {
+            System.err.println("⚠️ Error creando credenciales BD para empresa: " + e.getMessage());
+            // throw new RuntimeException("Error creando credenciales de empresa: " + e.getMessage()); // Descomenta si quieres que aborte el registro si falla esto
+        }
 
         enviarNotificacionesRegistro(usuarioGuardado, nombreEmp);
     }
@@ -280,6 +305,25 @@ public class UsuarioServiceImpl implements IUsuarioService {
             }
         }
     }
+
+    private String generarUsernameBD(String nombre, String apellido, Long idUsuario) {
+        String n = (nombre != null && !nombre.trim().isEmpty()) ? nombre.trim() : "user";
+        String base;
+        if (apellido == null || apellido.trim().isEmpty()) {
+            base = n.replaceAll("\\s+", "").toLowerCase();
+            if (base.length() > 10) {
+                base = base.substring(0, 10);
+            }
+        } else {
+            base = (n.charAt(0) + apellido.trim()).toLowerCase();
+        }
+        base = Normalizer.normalize(base, Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+                .replaceAll("[^a-z0-9]", "");
+        return base + "_" + idUsuario;
+    }
+
+
 
     // 🔥 NUEVO: Método para cambiar la contraseña
     @Override
