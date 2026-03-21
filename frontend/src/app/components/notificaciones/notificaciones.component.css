@@ -354,3 +354,242 @@
 .header-icon-container .material-icons {
   font-size: 24px;
 }
+/* =========================================
+   🔥 FIX MODO OSCURO (ANGULAR HOST-CONTEXT) 🔥
+   ========================================= */
+
+/* Fondo general transparente para que se funda con el fondo de tu panel */
+:host-context(.dark) .notificaciones-container,
+:host-context(.dark-mode) .notificaciones-container,
+:host-context([data-theme="dark"]) .notificaciones-container {
+  background: transparent;
+}
+
+/* Cajas principales (Filtros y Tarjetas) */
+:host-context(.dark) .filtros-section,
+:host-context(.dark-mode) .filtros-section,
+:host-context([data-theme="dark"]) .filtros-section,
+:host-context(.dark) .notificacion-card,
+:host-context(.dark-mode) .notificacion-card,
+:host-context([data-theme="dark"]) .notificacion-card {
+  background: #1e293b; /* Azul grisáceo oscuro elegante */
+  border-color: #334155;
+}
+
+/* Tarjeta leída un poco más oscura para diferenciar */
+:host-context(.dark) .notificacion-card.leida,
+:host-context(.dark-mode) .notificacion-card.leida,
+:host-context([data-theme="dark"]) .notificacion-card.leida {
+  background: #0f172a;
+  border-color: #1e293b;
+}
+
+/* Textos principales */
+:host-context(.dark) .header-text h1,
+:host-context(.dark) .titulo,
+:host-context([data-theme="dark"]) .header-text h1,
+:host-context([data-theme="dark"]) .titulo {
+  color: #f8fafc;
+}
+
+/* Textos secundarios */
+:host-context(.dark) .subtitle,
+:host-context(.dark) .mensaje,
+:host-context(.dark) .filtro-label,
+:host-context(.dark) .fecha,
+:host-context([data-theme="dark"]) .subtitle,
+:host-context([data-theme="dark"]) .mensaje,
+:host-context([data-theme="dark"]) .filtro-label,
+:host-context([data-theme="dark"]) .fecha {
+  color: #94a3b8;
+}
+
+/* Botones de Filtro */
+:host-context(.dark) .filtro-btn,
+:host-context([data-theme="dark"]) .filtro-btn {
+  background: #0f172a;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .filtro-btn:hover,
+:host-context([data-theme="dark"]) .filtro-btn:hover {
+  background: #334155;
+  color: #f8fafc;
+}
+
+:host-context(.dark) .filtro-btn.activo,
+:host-context([data-theme="dark"]) .filtro-btn.activo {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+/* Iconos de las tarjetas */
+:host-context(.dark) .icono-container,
+:host-context(.dark) .header-icon-container,
+:host-context([data-theme="dark"]) .icono-container,
+:host-context([data-theme="dark"]) .header-icon-container {
+  background: #1e3a8a;
+  color: #60a5fa;
+}
+
+/* Icono tarjeta leída */
+:host-context(.dark) .notificacion-card.leida .icono-container,
+:host-context([data-theme="dark"]) .notificacion-card.leida .icono-container {
+  background: #1e293b;
+  color: #475569;
+}
+
+/* Footer y Separadores */
+:host-context(.dark) .notificacion-footer,
+:host-context([data-theme="dark"]) .notificacion-footer {
+  border-top-color: #334155;
+}
+
+/* Checkboxes */
+:host-context(.dark) .custom-check,
+:host-context([data-theme="dark"]) .custom-check {
+  background: #0f172a;
+  border-color: #475569;
+}
+
+/* Empty State (Estado Vacio) */
+:host-context(.dark) .estado-vacio,
+:host-context([data-theme="dark"]) .estado-vacio {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+:host-context(.dark) .estado-vacio h3,
+:host-context([data-theme="dark"]) .estado-vacio h3 {
+  color: #f8fafc;
+}
+
+:host-context(.dark) .icono-gigante,
+:host-context([data-theme="dark"]) .icono-gigante {
+  color: #475569;
+}
+/* =========================================
+   🔥 MODO OSCURO (COMPLETO Y BRILLANTE) 🔥
+   ========================================= */
+
+/* 1. Fondo general transparente para integrarse al panel */
+:host-context(.dark) .notificaciones-container,
+:host-context(.dark-mode) .notificaciones-container,
+:host-context([data-theme="dark"]) .notificaciones-container {
+  background: transparent;
+}
+
+/* 2. Cajas principales (Filtros y Tarjetas) */
+:host-context(.dark) .filtros-section,
+:host-context(.dark-mode) .filtros-section,
+:host-context([data-theme="dark"]) .filtros-section,
+:host-context(.dark) .notificacion-card,
+:host-context(.dark-mode) .notificacion-card,
+:host-context([data-theme="dark"]) .notificacion-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+/* 3. Tarjeta leída (Fondo un poco más oscuro) */
+:host-context(.dark) .notificacion-card.leida,
+:host-context(.dark-mode) .notificacion-card.leida,
+:host-context([data-theme="dark"]) .notificacion-card.leida {
+  background: #0f172a;
+  border-color: #1e293b;
+}
+
+/* 4. Textos principales (Títulos) - BLANCO PURO 🔥 */
+:host-context(.dark) .header-text h1,
+:host-context(.dark) .titulo,
+:host-context(.dark) .estado-vacio h3,
+:host-context([data-theme="dark"]) .header-text h1,
+:host-context([data-theme="dark"]) .titulo,
+:host-context([data-theme="dark"]) .estado-vacio h3 {
+  color: #ffffff;
+}
+
+/* 5. Textos secundarios (Mensajes, subtítulos, fechas) - GRIS CLARITO 🔥 */
+:host-context(.dark) .subtitle,
+:host-context(.dark) .mensaje,
+:host-context(.dark) .filtro-label,
+:host-context(.dark) .fecha,
+:host-context(.dark) .estado-vacio p,
+:host-context([data-theme="dark"]) .subtitle,
+:host-context([data-theme="dark"]) .mensaje,
+:host-context([data-theme="dark"]) .filtro-label,
+:host-context([data-theme="dark"]) .fecha,
+:host-context([data-theme="dark"]) .estado-vacio p {
+  color: #e2e8f0;
+}
+
+/* 6. Textos para tarjetas LEÍDAS (Ajustados para buen contraste) */
+:host-context(.dark) .notificacion-card.leida .titulo,
+:host-context([data-theme="dark"]) .notificacion-card.leida .titulo {
+  color: #e2e8f0;
+}
+:host-context(.dark) .notificacion-card.leida .mensaje,
+:host-context(.dark) .notificacion-card.leida .fecha,
+:host-context([data-theme="dark"]) .notificacion-card.leida .mensaje,
+:host-context([data-theme="dark"]) .notificacion-card.leida .fecha {
+  color: #cbd5e1;
+}
+
+/* 7. Botones de Filtro */
+:host-context(.dark) .filtro-btn,
+:host-context([data-theme="dark"]) .filtro-btn {
+  background: #0f172a;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+:host-context(.dark) .filtro-btn:hover,
+:host-context([data-theme="dark"]) .filtro-btn:hover {
+  background: #334155;
+  color: #f8fafc;
+}
+
+:host-context(.dark) .filtro-btn.activo,
+:host-context([data-theme="dark"]) .filtro-btn.activo {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+/* 8. Iconos */
+:host-context(.dark) .icono-container,
+:host-context(.dark) .header-icon-container,
+:host-context([data-theme="dark"]) .icono-container,
+:host-context([data-theme="dark"]) .header-icon-container {
+  background: #1e3a8a;
+  color: #60a5fa;
+}
+
+:host-context(.dark) .notificacion-card.leida .icono-container,
+:host-context([data-theme="dark"]) .notificacion-card.leida .icono-container {
+  background: #1e293b;
+  color: #475569;
+}
+
+:host-context(.dark) .icono-gigante,
+:host-context([data-theme="dark"]) .icono-gigante {
+  color: #475569;
+}
+
+/* 9. Enlaces y Checkboxes */
+:host-context(.dark) .notificacion-footer,
+:host-context([data-theme="dark"]) .notificacion-footer {
+  border-top-color: #334155;
+}
+
+:host-context(.dark) .enlace-indicador,
+:host-context([data-theme="dark"]) .enlace-indicador {
+  color: #60a5fa;
+}
+
+:host-context(.dark) .custom-check,
+:host-context([data-theme="dark"]) .custom-check {
+  background: #0f172a;
+  border-color: #475569;
+}

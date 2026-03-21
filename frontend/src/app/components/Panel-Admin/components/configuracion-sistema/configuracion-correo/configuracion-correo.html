@@ -166,6 +166,7 @@
 
     <!-- Tarjeta 4: Registro de Auditoría -->
     <div class="pro-card card-info">
+
       <div class="card-header-flex card-header-clickable" (click)="toggleSection('history')">
         <div class="title-group">
           <div class="icon-container bg-cyan-light text-cyan">
@@ -176,9 +177,21 @@
             <p class="subtitle-text">Historial de todas las modificaciones realizadas a la configuración.</p>
           </div>
         </div>
-        <span class="material-icons text-muted">
-          {{ openSection === 'history' ? 'expand_less' : 'expand_more' }}
-        </span>
+
+        <div style="display: flex; align-items: center; gap: 15px;">
+
+          <button *ngIf="openSection === 'history' && historial.length > 0"
+                  class="btn-primary"
+                  (click)="exportarHistorialCompletoPdf(); $event.stopPropagation();"
+                  style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 0.9rem;">
+            <span class="material-icons" style="font-size: 18px;">download</span>
+            Reporte Completo
+          </button>
+
+          <span class="material-icons text-muted">
+        {{ openSection === 'history' ? 'expand_less' : 'expand_more' }}
+      </span>
+        </div>
       </div>
 
       <div *ngIf="openSection === 'history'">
@@ -189,6 +202,7 @@
 
         <div *ngIf="historial.length > 0" class="timeline">
           <div *ngFor="let item of historial" class="timeline-item">
+
             <div class="timeline-icon-wrap">
               <div class="timeline-dot" [ngClass]="item.exitoso ? 'dot-success' : 'dot-error'">
                 <span class="material-icons">{{ item.exitoso ? 'check' : 'close' }}</span>
@@ -197,9 +211,7 @@
 
             <div class="timeline-content">
               <div class="timeline-header">
-                <div class="timeline-title">
-                  {{ item.accion }}
-                </div>
+                <div class="timeline-title">{{ item.accion }}</div>
                 <div class="timeline-date">{{ formatearFecha(item.fechaCreacion) }}</div>
               </div>
 
@@ -219,23 +231,33 @@
                 </div>
               </div>
 
-              <div *ngIf="item.ipAddress || item.detalleError">
-                <button class="btn-expandir" (click)="toggleHistorial(item.idHistorial)">
-                  {{ historialActivo === item.idHistorial ? 'Ocultar Detalles' : 'Ver Detalles Técnicos' }}
-                  <span class="material-icons" style="font-size: 18px;">
-                    {{ historialActivo === item.idHistorial ? 'expand_less' : 'expand_more' }}
-                  </span>
+              <div style="display: flex; gap: 10px; margin-top: 12px; align-items: center; flex-wrap: wrap;">
+
+                <div *ngIf="item.ipAddress || item.detalleError">
+                  <button class="btn-expandir" (click)="toggleHistorial(item.idHistorial)" style="margin: 0;">
+                    {{ historialActivo === item.idHistorial ? 'Ocultar Detalles' : 'Ver Detalles Técnicos' }}
+                    <span class="material-icons" style="font-size: 18px;">
+              {{ historialActivo === item.idHistorial ? 'expand_less' : 'expand_more' }}
+            </span>
+                  </button>
+                </div>
+
+                <button class="btn-outline" (click)="generarConstanciaPdf(item)" style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; font-size: 0.85rem; border-color: var(--border-color); color: var(--text-main);">
+                  <span class="material-icons" style="font-size: 16px; color: #ef4444;">picture_as_pdf</span>
+                  Constancia PDF
                 </button>
 
-                <div *ngIf="historialActivo === item.idHistorial" class="details-expanded">
-                  <div *ngIf="item.ipAddress" style="margin-bottom: 5px;">
-                    <strong>IP de Origen:</strong> {{ item.ipAddress }}
-                  </div>
-                  <div *ngIf="item.detalleError" style="color: var(--danger);">
-                    <strong>Motivo de Fallo:</strong> {{ item.detalleError }}
-                  </div>
+              </div>
+
+              <div *ngIf="historialActivo === item.idHistorial" class="details-expanded">
+                <div *ngIf="item.ipAddress" style="margin-bottom: 5px;">
+                  <strong>IP de Origen:</strong> {{ item.ipAddress }}
+                </div>
+                <div *ngIf="item.detalleError" style="color: var(--danger);">
+                  <strong>Motivo de Fallo:</strong> {{ item.detalleError }}
                 </div>
               </div>
+
             </div>
           </div>
         </div>
