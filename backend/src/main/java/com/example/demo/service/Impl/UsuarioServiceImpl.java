@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dto.UsuarioTablaDTO;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.sql.Date;
 import java.util.List;
@@ -80,8 +82,20 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 .setParameter("idRol", idRolParaGuardar)
                 .executeUpdate();
 
-        try {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    enviarNotificacionesPostulante(usuarioGuardado);
+                }
+            });
+        } else {
+            enviarNotificacionesPostulante(usuarioGuardado);
+        }
+    }
 
+    private void enviarNotificacionesPostulante(Usuario usuarioGuardado) {
+        try {
             notificacionService.crearYEnviarNotificacion(
                     usuarioGuardado.getIdUsuario(),
                     "in_app_registro_completado",
@@ -90,7 +104,6 @@ public class UsuarioServiceImpl implements IUsuarioService {
                     "/menu-principal/perfil-profesional",
                     "waving_hand"
             );
-
 
             notificacionService.crearYEnviarNotificacion(
                     usuarioGuardado.getIdUsuario(),
@@ -107,6 +120,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
             System.err.println("⚠️ Error al enviar notificaciones de bienvenida a postulante: " + e.getMessage());
         }
     }
+
 
     @Override
     @Transactional
@@ -243,8 +257,17 @@ public class UsuarioServiceImpl implements IUsuarioService {
             System.err.println("⚠️ Error creando credenciales BD para empresa: " + e.getMessage());
             // throw new RuntimeException("Error creando credenciales de empresa: " + e.getMessage()); // Descomenta si quieres que aborte el registro si falla esto
         }
-
-        enviarNotificacionesRegistro(usuarioGuardado, nombreEmp);
+        // para todos, se controla q primero se guarda completamente en la bd y luego llamamos a notif por q ya sabemos el id de esta empresa
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    enviarNotificacionesRegistro(usuarioGuardado, nombreEmp);
+                }
+            });
+        } else {
+            enviarNotificacionesRegistro(usuarioGuardado, nombreEmp);
+        }
     }
 
     private void enviarNotificacionesRegistro(Usuario usuario, String nombreEmp) {

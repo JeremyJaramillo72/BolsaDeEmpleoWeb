@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.mail.internet.MimeMessage;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -142,7 +143,7 @@ public class ConfiguracionCorreoService {
 
             Map<String, Object> datosNuevos = new HashMap<>();
             datosNuevos.put("valor", configDTO.getValor());
-            datosNuevos.put("password", "***ENCRIPTADA***");
+            datosNuevos.put("password", "************");
             datosNuevos.put("ipAddress", ipAddress);
             datosNuevos.put("nombreAdmin", usuario.getNombre());
 
@@ -154,7 +155,7 @@ public class ConfiguracionCorreoService {
             log.info("✅ Configuración actualizada por: " + usuario.getNombre());
 
             // Notificar a admins
-            enviarNotificacionCambio(usuario, config.getValor(), configGuardada.getValor());
+            enviarNotificacionCambio(usuario, config.getValor(), configGuardada.getValor(), ipAddress);
 
         } catch (Exception e) {
             log.error("❌ Error actualizando configuración: " + e.getMessage());
@@ -230,18 +231,21 @@ public class ConfiguracionCorreoService {
     /**
      * Enviar notificación a todos los admins
      */
-    private void enviarNotificacionCambio(Usuario adminQueHizoCambio, String correoAnterior, String correoNuevo) {
+    private void enviarNotificacionCambio(Usuario adminQueHizoCambio, String correoAnterior, String correoNuevo, String ipAddress) {
         try {
+            // preparamos las variables exactas que pide tu plantilla en la bd
             Map<String, String> variables = new HashMap<>();
             variables.put("adminNombre", adminQueHizoCambio.getNombre());
             variables.put("correoAnterior", correoAnterior != null ? correoAnterior : "No configurado");
             variables.put("correoNuevo", correoNuevo);
-            variables.put("fecha", LocalDateTime.now().toString());
+            variables.put("fecha", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            variables.put("ipAddress", ipAddress != null ? ipAddress : "No detectada");
 
             Map<String, Object> datos = new HashMap<>();
             datos.put("tipoConfiguracion", "EMAIL_FROM");
             datos.put("adminId", adminQueHizoCambio.getIdUsuario());
 
+            //  la plantilla corta configuracion_correo_actualizada
             notificacionService.notificarAdminsDirecto(
                     "configuracion_correo_actualizada",
                     variables,
@@ -250,18 +254,20 @@ public class ConfiguracionCorreoService {
                     "settings_backup_restore"
             );
 
-            // Email directo a todos los admins
+            // la plantilla larga 'email_correo_actualizado
             try {
                 List<Usuario> admins = usuarioRepo.findByRol_NombreRol("Administrador");
                 for (Usuario admin : admins) {
                     if (admin.getCorreo() != null && !admin.getCorreo().isEmpty()) {
-                        String asuntoEmail = "Notificación: Correo del Sistema Actualizado";
-                        String cuerpoEmail = "Se ha actualizado la configuración del correo del sistema.\n\n" +
-                                           "Administrador: " + adminQueHizoCambio.getNombre() + "\n" +
-                                           "Correo anterior: " + (correoAnterior != null ? correoAnterior : "No configurado") + "\n" +
-                                           "Correo nuevo: " + correoNuevo + "\n" +
-                                           "Fecha: " + LocalDateTime.now();
-                        emailService.sendSimpleEmail(admin.getCorreo(), asuntoEmail, cuerpoEmail);
+                        // Magia: Delegamos al NotificacionService para que arme el HTML azul/verde con el texto de la BD
+                        notificacionService.crearYEnviarNotificacion(
+                                admin.getIdUsuario(),
+                                "email_correo_actualizado",
+                                variables,
+                                datos,
+                                "/menu-principal/configuracion-sistema",
+                                "email"
+                        );
                     }
                 }
             } catch (Exception e) {
@@ -271,7 +277,6 @@ public class ConfiguracionCorreoService {
             log.warn("⚠️ Error notificando cambio de correo: " + e.getMessage());
         }
     }
-
     /**
      * Guardar cambio fallido en auditoria
      */

@@ -121,22 +121,26 @@ public class PostulacionServiceImpl implements IPostulacionService {
                         "person_add"
                 );
 
-                // Email directo a la empresa sobre la nueva postulación
-                try {
-                    String emailEmpresa = usuarioEmpresaRepository.findById(idUsuarioEmpresa)
-                            .map(e -> e.getUsuario().getCorreo())
-                            .orElse(null);
+               /* // Email directo usando tu plantilla HTML
+                notificacionService.crearYEnviarNotificacion(
+                        idUsuarioEmpresa,
+                        "email_postulacion_recibida", // <--- EL NOMBRE CORRECTO
+                        Map.of(
+                                "empresaNombre", nombreEmpresa,
+                                "ofertaTitulo", tituloOferta,
+                                "candidatoNombre", nombreCandidato,
+                                "candidatoEmail", "No especificado", // Pon variables dummy si no las tienes a mano
+                                "candidatoTelefono", "No especificado",
+                                "candidatoCarrera", "No especificada",
+                                "resumenCV", "Revisa el perfil para más detalles.",
+                                "enlacePerfil", "https://tudominio.com/menu-principal/gestion-ofertas"
+                        ),
+                        Map.of("idOferta", idOferta),
+                        "/menu-principal/gestion-ofertas",
+                        "email"
+                );
 
-                    if (emailEmpresa != null && !emailEmpresa.isEmpty()) {
-                        String asuntoEmail = "Nueva Postulación Recibida - " + tituloOferta;
-                        String cuerpoEmail = "Has recibido una nueva postulación para la oferta: " + tituloOferta +
-                                           "\n\nCandidato: " + nombreCandidato +
-                                           "\n\nRevisa la postulación en tu panel de control.";
-                        emailService.sendSimpleEmail(emailEmpresa, asuntoEmail, cuerpoEmail);
-                    }
-                } catch (Exception e) {
-                    System.err.println("⚠️ Error enviando email a empresa sobre nueva postulación: " + e.getMessage());
-                }
+                */
 
                 // Notificación al candidato
                 notificacionService.crearYEnviarNotificacion(

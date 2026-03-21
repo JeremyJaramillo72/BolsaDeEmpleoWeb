@@ -50,75 +50,57 @@ public class NotificacionService {
                 String llave = "{" + entry.getKey() + "}";
                 mensajeFinal = mensajeFinal.replace(llave, entry.getValue());
                 tituloFinal = tituloFinal.replace(llave, entry.getValue());
-
             }
 
-            // 2. Guardar en PostgreSQL
-            Notificacion notif = new Notificacion();
-            notif.setUsuario(usuario);
-            notif.setTitulo(tituloFinal);
-            notif.setMensaje(mensajeFinal);
-            notif.setTipo(tipo);
-            notif.setIcono(icono != null ? icono : "bell");
-            notif.setEnlace(enlace != null ? enlace : "");
-            notif.setDatos(datosJson != null ? datosJson : new java.util.HashMap<>());
-            notif.setLeida(false);
+            // si el tipo empieza con "email_", NO guardamos en la campanita
+            if (!tipo.startsWith("email_")) {
+                Notificacion notif = new Notificacion();
+                notif.setUsuario(usuario);
+                notif.setTitulo(tituloFinal);
+                notif.setMensaje(mensajeFinal);
+                notif.setTipo(tipo);
+                notif.setIcono(icono != null ? icono : "bell");
+                notif.setEnlace(enlace != null ? enlace : "");
+                notif.setDatos(datosJson != null ? datosJson : new java.util.HashMap<>());
+                notif.setLeida(false);
 
-            try {
                 Notificacion guardada = notificacionRepo.save(notif);
-                System.out.println("✅ Notificación guardada ID: " + guardada.getIdNotificacion() + " para usuario: " + idUsuario + " tipo=" + tipo);
 
-                // 3. Mapear a DTO
-                NotificacionDTO dto = mapearADTO(guardada);
-
-                // 4. PUSH por WebSocket (usando topic específico por usuario)
                 try {
-                    messagingTemplate.convertAndSend(
-                            "/topic/notificaciones/" + idUsuario,
-                            dto
-                    );
+                    NotificacionDTO dto = mapearADTO(guardada);
+                    messagingTemplate.convertAndSend("/topic/notificaciones/" + idUsuario, dto);
                 } catch (Exception e) {
-                    System.err.println("⚠️ Error enviando WebSocket para usuario " + idUsuario + ": " + e.getMessage());
+                    System.err.println("⚠️ Error enviando WebSocket: " + e.getMessage());
                 }
-
-                // 5. Email condicional (no debe reventar la transaccion si falla)
-                try {
-                    boolean enviarEmail = switch (tipo) {
-                        case "postulacion_aprobada",
-                             "proceso_entrevista",
-                             "oferta_aprobada",
-                             "empresa_aprobada",
-                             "configuracion_correo_actualizada",
-                             "email_registro_postulante",
-                             "email_registro_empresa"
-                                -> true;   // notifica a empresa/postulante/admin
-                        default -> false;
-                    };
-
-                    if (enviarEmail) {
-                        emailService.sendSimpleEmail(
-                                usuario.getCorreo(),
-                                dto.getTitulo(),
-                                dto.getMensaje()
-                        );
-                    }
-                } catch (Exception e) {
-                    System.err.println("⚠️ Error enviando email a " + usuario.getCorreo() + ": " + e.getMessage());
-                }
-
-
-            } catch (Exception e) {
-                System.err.println("❌ Error guardando notificación en BD: " + e.getMessage());
-                e.printStackTrace();
-                // NO lanzar excepción aquí, permitir que continúe
             }
+
+            // 5. Email condicional
+            try {
+                boolean enviarEmail = switch (tipo) {
+                    case "postulacion_aprobada",
+                         "proceso_entrevista",
+                         "oferta_aprobada",
+                         "empresa_aprobada",
+                         "configuracion_correo_actualizada",
+                         "email_registro_postulante",
+                         "email_registro_empresa",
+                         "email_correo_actualizado"
+                  /*  , "email_postulacion_recibida" */
+                            -> true;
+                    default -> false;
+                };
+
+                if (enviarEmail) {
+                    emailService.sendSimpleEmail(usuario.getCorreo(), tituloFinal, mensajeFinal);
+                }
+            } catch (Exception e) {
+                System.err.println("⚠️ Error enviando email a " + usuario.getCorreo() + ": " + e.getMessage());
+            }
+
         } catch (Exception e) {
             System.err.println("❌ Error en crearYEnviarNotificacion: " + e.getMessage());
-            e.printStackTrace();
         }
-
     }
-
 
 
     private String generarTituloPorTipo(String tipo) {
