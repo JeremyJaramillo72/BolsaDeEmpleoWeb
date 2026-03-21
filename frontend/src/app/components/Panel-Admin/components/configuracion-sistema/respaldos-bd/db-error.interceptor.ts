@@ -10,30 +10,26 @@ export const dbErrorInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: HttpErrorResponse) => {
       const errorString = JSON.stringify(error.error || error.message || '').toLowerCase();
 
-      const isServerDead = (error.status === 0);
 
       const isDatabaseFatal = (error.status === 500) && (
-        errorString.includes('hikaripool') ||
-        errorString.includes('connection is not available') ||
-        errorString.includes('terminating connection') ||
-        errorString.includes('database "bolsa-empleo-azure" does not exist')
+        errorString.includes('jdbcconnectionexception') ||
+        errorString.includes('cannotcreatetransactionexception') ||
+        (errorString.includes('hikaripool') && errorString.includes('connection is not available')) ||
+        (errorString.includes('fatal') && errorString.includes('terminating connection')) ||
+        (errorString.includes('fatal: database') && errorString.includes('does not exist'))
       );
 
-
-      const isCodingError = errorString.includes('does not exist') &&
-        (errorString.includes('column') || errorString.includes('relation'));
-
-      if ((isServerDead || isDatabaseFatal) && !isCodingError) {
+      if (isDatabaseFatal) {
 
         if (!req.url.includes('/backups-disponibles') && !req.url.includes('/restaurar')) {
 
           const rolUsuario = localStorage.getItem('rol');
 
           if (rolUsuario === 'ADMINISTRADOR') {
-            console.error('🚨 INFRAESTRUCTURA CAÍDA. Modo Emergencia activado para Admin.');
+            console.error('🚨 COLAPSO DE BASE DE DATOS CONFIRMADO. Activando Modo Dios.');
             router.navigate(['/emergencia-db']);
           } else {
-            console.error('🚨 SISTEMA EN MANTENIMIENTO. Redirigiendo usuario.');
+            console.error('🚨 COLAPSO DE BASE DE DATOS. Redirigiendo a pantalla de mantenimiento.');
             router.navigate(['/mantenimiento']);
           }
         }
