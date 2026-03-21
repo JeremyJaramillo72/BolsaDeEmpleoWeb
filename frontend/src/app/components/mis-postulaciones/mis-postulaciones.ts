@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of, catchError } from 'rxjs';
 import { OfertaService, OfertaDetalladaDTO } from '../../services/oferta.service';
 import { UiNotificationService } from '../../services/ui-notification.service';
 import { ConfirmService } from '../../services/confirm.service';
@@ -144,6 +144,28 @@ export class MisPostulacionesComponent implements OnInit {
     return habilidades?.some(h => h.esObligatorio) ?? false;
   }
 
+  private normalizarListaSeccion(items: any, tipo: 'formacion' | 'experiencia' | 'cursos' | 'idiomas'): any[] {
+    if (!Array.isArray(items)) return [];
+
+    return items.map((item: any) => {
+      const nombreFallback =
+        item?.nombre ??
+        item?.p_nombre ??
+        item?.carrera ??
+        item?.curso ??
+        item?.idioma ??
+        (tipo === 'experiencia' ? [item?.cargo, item?.empresa].filter(Boolean).join(' - ') : '');
+
+      return {
+        ...item,
+        nombre: nombreFallback,
+        archivo: item?.archivo ?? item?.p_archivo ?? item?.archivo_comprobante ?? item?.archivo_certificado ?? null,
+        estadoV: item?.estadoV ?? item?.estado_v ?? item?.p_estado_v ?? item?.estado_validacion ?? null,
+        observacionV: item?.observacionV ?? item?.observacion_v ?? item?.p_observacion_v ?? item?.observacion ?? null
+      };
+    });
+  }
+
   // ── Modal de validación ─────────────────────────────────────────────────
 
   verValidacion(postulacion: OfertaDetalladaDTO): void {
@@ -157,18 +179,18 @@ export class MisPostulacionesComponent implements OnInit {
 
     forkJoin({
       base:        this.ofertaService.obtenerPerfilBase(id),
-      formacion:   this.ofertaService.obtenerFormacion(id),
-      experiencia: this.ofertaService.obtenerExperiencia(id),
-      cursos:      this.ofertaService.obtenerCursos(id),
-      idiomas:     this.ofertaService.obtenerIdiomas(id)
+      formacion:   this.ofertaService.obtenerFormacion(id).pipe(catchError(() => of([]))),
+      experiencia: this.ofertaService.obtenerExperiencia(id).pipe(catchError(() => of([]))),
+      cursos:      this.ofertaService.obtenerCursos(id).pipe(catchError(() => of([]))),
+      idiomas:     this.ofertaService.obtenerIdiomas(id).pipe(catchError(() => of([])))
     }).subscribe({
       next: ({ base, formacion, experiencia, cursos, idiomas }) => {
         this.perfilModal = {
           ...base,
-          formacionAcademica: formacion   ?? [],
-          experienciaLaboral: experiencia ?? [],
-          cursosRealizados:   cursos      ?? [],
-          idiomas:            idiomas     ?? []
+          formacionAcademica: this.normalizarListaSeccion(formacion, 'formacion'),
+          experienciaLaboral: this.normalizarListaSeccion(experiencia, 'experiencia'),
+          cursosRealizados:   this.normalizarListaSeccion(cursos, 'cursos'),
+          idiomas:            this.normalizarListaSeccion(idiomas, 'idiomas')
         };
         this.cargandoModal = false;
         this.cdr.detectChanges();

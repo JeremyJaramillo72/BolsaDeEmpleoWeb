@@ -2356,17 +2356,26 @@ BEGIN
 
     RETURN QUERY
     SELECT
-        (cc.nombre_cargo || ' — ' || COALESCE(ec.nombre_empresa, ''))::character varying,
+        (
+            COALESCE(string_agg(DISTINCT cc.nombre_cargo, ', '), 'Experiencia') ||
+            ' - ' ||
+            COALESCE(ec.nombre_empresa, '')
+        )::character varying,
         ue_exp.archivo_comprobante::character varying,
         vel.estado_validacion::character varying,
         vel.observaciones::text
     FROM usuarios.exp_laboral ue_exp
-    LEFT JOIN catalogos.cargo cc           ON cc.id_cargo            = ue_exp.id_cargo
+    LEFT JOIN usuarios.exp_laboral_cargo elc
+           ON elc.id_exp_laboral = ue_exp.id_exp_laboral
+          AND COALESCE(elc.estado_registro, 'activo') = 'activo'
+    LEFT JOIN catalogos.cargo cc            ON cc.id_cargo            = elc.id_cargo
     LEFT JOIN empresas.catalogo_empresa ec  ON ec.id_empresa_catalogo = ue_exp.id_empresa_catalogo
     LEFT JOIN postulaciones.validacion_exp_laboral vel
           ON vel.id_exp_laboral = ue_exp.id_exp_laboral
          AND vel.id_postulacion = p_id_postulacion
-    WHERE ue_exp.id_usuario = v_id_usuario;
+    WHERE ue_exp.id_usuario = v_id_usuario
+      AND COALESCE(ue_exp.estado_registro, 'activo') = 'activo'
+    GROUP BY ue_exp.id_exp_laboral, ue_exp.archivo_comprobante, vel.estado_validacion, vel.observaciones, ec.nombre_empresa;
 END;
 $$;
 
@@ -2389,15 +2398,19 @@ BEGIN
     RETURN QUERY
     SELECT
         cca.nombre_carrera::character varying,
-        ep.archivo_titulo::character varying,
+        da.archivo_titulo::character varying,
         vd.estado_validacion::character varying,
         vd.observaciones::text
     FROM usuarios.perfil_academico ep
     LEFT JOIN catalogos.carrera cca ON cca.id_carrera = ep.id_carrera
+    LEFT JOIN usuarios.documentacion_academica da
+           ON da.id_perfil_academico = ep.id_perfil_academico
+          AND COALESCE(da.estado_registro, 'activo') = 'activo'
     LEFT JOIN postulaciones.validacion_documentacion vd
-          ON vd.id_documentacion = ep.id_perfil_academico
+          ON vd.id_documentacion = da.id_documentacion
          AND vd.id_postulacion   = p_id_postulacion
-    WHERE ep.id_usuario = v_id_usuario;
+    WHERE ep.id_usuario = v_id_usuario
+      AND COALESCE(ep.estado_registro, 'activo') = 'activo';
 END;
 $$;
 

@@ -72,7 +72,7 @@ public class PostulacionCustomRepository {
         jdbcTemplate.queryForList(sql, idPostulacion, estado, mensaje);
     }
 
-    // ── Métodos por sección ──────────────────────────────────────────────
+    // -- Metodos por seccion ------------------------------------------------
 
     public ResumenPerfilBaseDTO obtenerPerfilBase(Long idPostulacion) {
         String sql = "select * from postulaciones.fn_resumen_perfil_base(?)";
