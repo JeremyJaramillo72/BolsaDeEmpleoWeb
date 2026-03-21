@@ -16,14 +16,15 @@ export interface MenuItem {
   icon: string;
   title: string;
   description: string;
-  color?: string; // (Mantenido por compatibilidad)
-  colorHex?: string; // Nuevo: Color principal (Ej: #2563EB)
-  bgHex?: string;    // Nuevo: Color de fondo suavizado (Ej: #EFF6FF)
-  badge?: number | string; // Nuevo: Para mostrar notitas numéricas
+  color?: string;
+  colorHex?: string;
+  bgHex?: string;
+  badge?: number | string;
   roles?: string[];
   path?: string;
-  route?: string;    // Nuevo: Ruta completa para el routerLink
+  route?: string;
   permiso?: string;
+  ocultoParaIds?: number[];
 }
 
 export interface StatCard {
@@ -185,7 +186,8 @@ export class MenuprincipalComponent implements OnInit {
   }
 
   inicializarMenuPorRol(): void {
-    // 2. ASIGNAMOS LOS COLORES MODERNOS DEL DISEÑO DE FIGMA
+    const idUsuarioStr = localStorage.getItem('idUsuario');
+    const idUsuarioActual = idUsuarioStr ? Number(idUsuarioStr) : 0;
     const todasLasOpciones: MenuItem[] = [
       // --- MÓDULOS DE EMPRESA ---
       {
@@ -273,7 +275,8 @@ export class MenuprincipalComponent implements OnInit {
         //roles: ['ADMINISTRADOR'],
         path: '/perfil-x',
         route: '/menu-principal/perfil-x',
-        permiso: 'Perfil_X'
+        permiso: 'Perfil_X',
+        ocultoParaIds: [3, 9]
       },
       {
         icon: 'manage_accounts',
@@ -379,15 +382,19 @@ export class MenuprincipalComponent implements OnInit {
     ];
 
     this.menuItems = todasLasOpciones.filter(item => {
-      // 1. Si el ítem tiene un 'permiso' asignado, evaluamos ÚNICAMENTE si tiene el permiso.
-      // Así ya no dependemos del nombre exacto del rol (útil para roles personalizados).
+      // 2. Si el ID del usuario actual está en la lista bloqueada, lo ocultamos
+      if (item.ocultoParaIds && item.ocultoParaIds.includes(idUsuarioActual)) {
+        return false;
+      }
+
+      // 3. Tu lógica de permisos intacta
       if (item.permiso) {
         return this.authService.tienePermiso(item.permiso);
       }
 
-      // 2. Si el ítem NO tiene permiso (menús genéricos), validamos por el nombre del rol.
       return item.roles?.includes(this.rolUsuario);
     });
+
     this.cdr.detectChanges();
     /*// 3. ACTUALIZAMOS LOS KPIs SUPERIORES CON SUS ICONOS Y COLORES
     if (this.rolUsuario === 'EMPRESA') {
