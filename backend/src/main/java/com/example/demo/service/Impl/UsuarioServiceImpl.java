@@ -78,14 +78,16 @@ public class UsuarioServiceImpl implements IUsuarioService {
                 .executeUpdate();
 
         try {
+
             notificacionService.crearYEnviarNotificacion(
                     usuarioGuardado.getIdUsuario(),
                     "in_app_registro_completado",
                     Map.of("usuarioNombre", usuarioGuardado.getNombre()),
                     Map.of(),
-                    "/menu-principal/perfil",
+                    "/menu-principal/perfil-profesional",
                     "waving_hand"
             );
+
 
             notificacionService.crearYEnviarNotificacion(
                     usuarioGuardado.getIdUsuario(),
@@ -95,7 +97,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
                             "correoPostulante", usuarioGuardado.getCorreo()
                     ),
                     Map.of(),
-                    "/menu-principal",
+                    "/menu-principal/perfil-profesional",
                     "email"
             );
         } catch (Exception e) {
@@ -221,35 +223,31 @@ public class UsuarioServiceImpl implements IUsuarioService {
     }
 
     private void enviarNotificacionesRegistro(Usuario usuario, String nombreEmp) {
+        //  enviar email de bienvenida a la empresa
         try {
-            try {
-                String asuntoEmail = "Bienvenida a Bolsa de Empleo - " + nombreEmp;
-                String cuerpoEmail = "¡Bienvenida a Bolsa de Empleo UTEQ!\n\n" +
-                        "Hemos recibido tu solicitud de registro para la empresa: " + nombreEmp + "\n\n" +
-                        "Tu cuenta ha sido creada y está actualmente en estado de revisión.\n" +
-                        "Nuestros administradores evaluarán tu información y te notificarán cuando sea aprobada.\n\n" +
-                        "Mientras tanto, puedes explorar la plataforma y preparar tus ofertas de empleo.\n\n" +
-                        "¿Preguntas? Contacta nuestro equipo de soporte.";
-                emailService.sendSimpleEmail(usuario.getCorreo(), asuntoEmail, cuerpoEmail);
-            } catch (Exception e) {
-                System.err.println("⚠️ Error enviando email de bienvenida a empresa: " + e.getMessage());
-            }
-
-            try {
-                notificacionService.crearYEnviarNotificacion(
-                        usuario.getIdUsuario(),
-                        "in_app_registro_completado",
-                        Map.of("empresaNombre", nombreEmp),
-                        Map.of(),
-                        "/menu-principal/perfil",
-                        "business"
-                );
-            } catch (Exception e) {
-                System.err.println("⚠️ Error enviando notificación en app de registro de empresa: " + e.getMessage());
-            }
-
+            notificacionService.crearYEnviarNotificacion(
+                    usuario.getIdUsuario(),
+                    "email_registro_empresa",
+                    Map.of("empresaNombre", nombreEmp, "correoEmpresa", usuario.getCorreo()),
+                    Map.of(),
+                    "/menu-principal/empresa/perfil",
+                    "business"
+            );
         } catch (Exception e) {
-            System.err.println("⚠️ Error en notificaciones: " + e.getMessage());
+            System.err.println("⚠️ Error en notificación de bienvenida a empresa: " + e.getMessage());
+        }
+
+        //  notificar al administrador de que hay una nueva empresa
+        try {
+            notificacionService.notificarAdminsDirecto(
+                    "empresa_pendiente_aprobacion",
+                    Map.of("nombreEmpresa", nombreEmp),
+                    Map.of(),
+                    "/menu-principal/PanelAdmi/ValidarEmpresa",
+                    "admin_panel_settings"
+            );
+        } catch (Exception e) {
+            System.err.println("⚠️ Error notificando a admins sobre nueva empresa: " + e.getMessage());
         }
     }
 
@@ -264,35 +262,20 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
         if ("activo".equalsIgnoreCase(nuevoEstado) || "aprobado".equalsIgnoreCase(nuevoEstado)) {
             try {
-                Map<String, String> variables = new java.util.HashMap<>();
+                System.out.println("Creando notificación de empresa aprobada para usuario: " + idUsuario);
 
-                Map<String, Object> datos = new java.util.HashMap<>();
-                datos.put("idEmpresa", usuarioActualizado.getIdUsuario());
 
-                String enlace = "/menu-principal/gestion-ofertas";
-
-                System.out.println("✅ Creando notificación de empresa aprobada para usuario: " + idUsuario);
                 notificacionService.crearYEnviarNotificacion(
                         idUsuario,
                         "empresa_aprobada",
-                        variables,
-                        datos,
-                        enlace,
+                        new java.util.HashMap<>(),
+                        Map.of("idEmpresa", idUsuario),
+                        "/menu-principal/gestion-ofertas",
                         "check_circle"
                 );
 
-                // Email de aprobación a la empresa
-                try {
-                    emailService.notificarAprobacionEmpresa(
-                            usuarioActualizado.getCorreo(),
-                            usuarioActualizado.getNombre()
-                    );
-                } catch (Exception e) {
-                    System.err.println("⚠️ Error enviando email de aprobación a empresa: " + e.getMessage());
-                }
-
             } catch (Exception e) {
-                System.err.println("❌ Error al crear notificación de empresa aprobada: " + e.getMessage());
+                System.err.println("Error al crear notificación de empresa aprobada: " + e.getMessage());
                 e.printStackTrace();
             }
         }

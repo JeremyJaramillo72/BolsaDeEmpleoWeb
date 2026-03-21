@@ -88,7 +88,10 @@ public class NotificacionService {
                              "proceso_entrevista",
                              "oferta_aprobada",
                              "empresa_aprobada",
-                             "configuracion_correo_actualizada" -> true;   // notifica a empresa/postulante/admin
+                             "configuracion_correo_actualizada",
+                             "email_registro_postulante",
+                             "email_registro_empresa"
+                                -> true;   // notifica a empresa/postulante/admin
                         default -> false;
                     };
 

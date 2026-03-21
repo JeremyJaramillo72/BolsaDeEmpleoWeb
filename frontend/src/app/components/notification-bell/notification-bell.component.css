@@ -47,9 +47,9 @@
 /* --- EL MENÚ DESPLEGABLE TIPO LINKEDIN --- */
 .dropdown-menu {
   position: absolute;
-  top: 110%; /* Justo debajo de la campana */
+  top: 110%;
   right: 0;
-  width: 370px;
+  width: 420px; /* ← Aumentamos el ancho (antes 370px) para que no se vea tan angosto */
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
@@ -205,13 +205,18 @@
 .notif-content {
   flex-grow: 1;
 }
+.format-enters {
+  white-space: pre-line;
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
 
 .notif-title {
   display: block;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: #0f172a;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .notif-message {

@@ -148,6 +148,7 @@ export class PlantillaNotificacionComponent implements OnInit {
   }
 
   // Extrae el texto real del editor (reponiendo las variables desde data-var)
+  // Extrae el texto real del editor (reponiendo las variables desde data-var)
   extraerContenidoReal(): string {
     if (!this.editorRef) return this.contenidoEditado;
     const el = this.editorRef.nativeElement;
@@ -162,13 +163,17 @@ export class PlantillaNotificacionComponent implements OnInit {
       span.replaceWith(text);
     });
 
-    // Convertir <br> de vuelta a saltos de línea
+    // 🚀 MAGIA PARA LOS ENTERS:
+    // Convertimos los bloques que los navegadores crean al dar "Enter" en \n reales
     return clon.innerHTML
-      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<br\s*\/?>/gi, '\n')      // 1. Convierte los <br> (Shift+Enter) en saltos de línea
+      .replace(/<div[^>]*>/gi, '\n')      // 2. Convierte los <div> (Enter en Chrome/Edge) en saltos
+      .replace(/<p[^>]*>/gi, '\n')        // 3. Convierte los <p> (Enter en Firefox) en saltos
       .replace(/&amp;/g, '&')
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
-      .replace(/<[^>]+>/g, ''); // limpiar cualquier tag sobrante
+      .replace(/<[^>]+>/g, '')            // 4. Ahora sí, limpiamos los tags de cierre sobrantes (</div>, </p>)
+      .trim();                            // 5. Quitamos espacios o enters accidentales al principio o al final
   }
 
   extraerVariables(texto: string): string[] {

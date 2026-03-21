@@ -728,7 +728,11 @@
 }
 
 .diff-box p { margin: 0; }
-.diff-content { max-height: 300px; overflow-y: auto; }
+.diff-content {
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap; /* 🔥 ESTA LÍNEA OBLIGA AL HISTORIAL A LEER LOS ENTERS */
+}
 
 /* Colores estilo GitHub/GitLab para diferencias */
 .diff-box.anterior {
