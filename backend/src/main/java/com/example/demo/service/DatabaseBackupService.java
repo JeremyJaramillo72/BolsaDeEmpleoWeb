@@ -50,6 +50,7 @@ public class DatabaseBackupService {
     private final JdbcTemplate jdbcTemplate;
     private final com.zaxxer.hikari.HikariDataSource dataSource;
 
+
     public static class BackupResult {
         private File archivoLocal;
         private String urlAzure;
@@ -162,7 +163,7 @@ public class DatabaseBackupService {
 
 
     private String prepararBackupDesdeAzure(Long idBackup) throws Exception {
-        String sql = "SELECT url_azure FROM seguridad.historial_backups WHERE id_backup = ?";
+        String sql = "SELECT seguridad.fn_obtener_url_backup(?)";
         String urlAzure = jdbcTemplate.queryForObject(sql, String.class, idBackup);
 
         if (urlAzure == null || urlAzure.trim().isEmpty()) {
@@ -237,7 +238,7 @@ public class DatabaseBackupService {
     }
 
     private Date obtenerFechaBackup(Long idBackup) {
-        String sql = "SELECT fecha_ejecucion FROM seguridad.historial_backups WHERE id_backup = ?";
+        String sql = "SELECT seguridad.fn_obtener_fecha_backup(?)";
         try {
             Date fecha = jdbcTemplate.queryForObject(sql, Date.class, idBackup);
             return fecha != null ? fecha : new Date();
@@ -316,7 +317,6 @@ public class DatabaseBackupService {
         }
         return unzippedFilePath;
     }
-    // 1. Método para listar los backups directo de la nube
     public List<Map<String, Object>> listarBackupsDirectoDeAzure() {
         List<Map<String, Object>> listaBackups = new ArrayList<>();
 
@@ -332,7 +332,6 @@ public class DatabaseBackupService {
             listaBackups.add(backupInfo);
         }
 
-        // Ordenamos para que los más recientes salgan primero
         listaBackups.sort((b1, b2) -> {
             OffsetDateTime f1 = OffsetDateTime.parse((String) b1.get("fechaCreacion"));
             OffsetDateTime f2 = OffsetDateTime.parse((String) b2.get("fechaCreacion"));
@@ -342,11 +341,9 @@ public class DatabaseBackupService {
         return listaBackups;
     }
 
-    // 2. Método para restaurar en Modo Dios (Pasándole el nombre del archivo exacto)
     public String restaurarEmergenciaDesdeAzure(String zipFileName) throws Exception {
         System.out.println("🚨 INICIANDO PROTOCOLO DE EMERGENCIA. Restaurando: " + zipFileName);
 
-        // A. Descargar y descomprimir directo de Azure
         String tempZipPath = Paths.get(System.getProperty("java.io.tmpdir"), zipFileName).toString();
         BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().connectionString(azureConnectionString).buildClient();
         BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerNameBackups);
@@ -357,14 +354,10 @@ public class DatabaseBackupService {
         blobClient.downloadToFile(tempZipPath, true);
         String tempUnzippedPath = descomprimirZip(tempZipPath);
         Files.deleteIfExists(Paths.get(tempZipPath));
-
-        // B. El francotirador desde la Master
-        // NOTA: Uso el nombre de BD que vi en tu código anterior: "Bolsa-Empleo-Azure"
         String nombreBaseDatos = "Bolsa-Empleo-Azure";
         String masterJdbcUrl = "jdbc:postgresql://bolsa-empleo-dbpg.postgres.database.azure.com:5432/postgres?sslmode=require";
 
         try {
-            // Cerramos HikariCP para soltar la base corrupta
             if (dataSource != null && !dataSource.isClosed()) {
                 dataSource.close();
             }
@@ -381,7 +374,6 @@ public class DatabaseBackupService {
                 stmt.execute("CREATE DATABASE \"" + nombreBaseDatos + "\"");
             }
 
-            // C. Inyectar los datos limpios
             System.out.println("Inyectando el respaldo de emergencia...");
             ejecutarPgRestoreYPermisos(tempUnzippedPath, nombreBaseDatos);
 

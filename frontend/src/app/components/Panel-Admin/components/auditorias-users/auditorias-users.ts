@@ -9,7 +9,6 @@ import { RespaldosComponent } from './respaldos/respaldos';
 @Component({
   selector: 'app-admin-usuarios',
   standalone: true,
-  // ✅ 2. OJO: Agregamos RespaldosComponent aquí para que Angular lo renderice
   imports: [
     CommonModule,
     UsuariosComponent,

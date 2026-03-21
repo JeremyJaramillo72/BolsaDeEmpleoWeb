@@ -43,7 +43,13 @@
             <artifactId>google-api-client</artifactId>
             <version>2.2.0</version>
         </dependency>
-
+		<!-- Source: https://mvnrepository.com/artifact/com.azure.spring/spring-cloud-azure-starter-keyvault-secrets -->
+		<dependency>
+			<groupId>com.azure.spring</groupId>
+			<artifactId>spring-cloud-azure-starter-keyvault-secrets</artifactId>
+			<version>7.0.0</version>
+			<scope>compile</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>

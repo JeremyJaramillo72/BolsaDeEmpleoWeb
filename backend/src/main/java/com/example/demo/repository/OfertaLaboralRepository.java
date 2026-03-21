@@ -29,7 +29,6 @@ public interface OfertaLaboralRepository extends JpaRepository<OfertaLaboral, In
     @Query(value = "SELECT * FROM ofertas.listar_ofertas_por_estado(:estado)", nativeQuery = true)
     List<IOfertaResumen> listarPorEstadoSP(@Param("estado") String estado);
 
-    // Obtener ofertas aprobadas sin postulación previa - para notificaciones de "última oportunidad"
     @Query(value = "SELECT * FROM ofertas.fn_obtener_ofertas_sin_postular(:idUsuario)", nativeQuery = true)
     List<IOfertaResumen> obtenerOfertasSinPostularCerrandoProximamente(@Param("idUsuario") Long idUsuario);
 
@@ -118,7 +117,6 @@ public interface OfertaLaboralRepository extends JpaRepository<OfertaLaboral, In
             @Param("p_salario_max") BigDecimal salarioMax,
             @Param("p_cantidad_vacantes") Integer cantidadVacantes,
             @Param("p_experiencia_minima") Integer experienciaMinima,
-            @Param("p_estado_oferta") String estadoOferta,
             @Param("p_fecha_cierre") LocalDate fechaCierre,
             @Param("p_habilidades") String habilidadesJson,
             @Param("p_requisitos_manuales") String requisitosJson,

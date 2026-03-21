@@ -29,7 +29,6 @@ public class BackupAutomatizacionService {
     public ConfiguracionBackup obtenerConfiguracion() {
         return configRepo.findById(1L).orElse(new ConfiguracionBackup());
     }
-
     public ConfiguracionBackup guardarConfiguracion(ConfiguracionBackup nuevaConfig) {
         ConfiguracionBackup configExistente = obtenerConfiguracion();
         configExistente.setHabilitado(nuevaConfig.getHabilitado());
@@ -40,7 +39,6 @@ public class BackupAutomatizacionService {
 
         return configRepo.save(configExistente);
     }
-
     public List<HistorialBackup> obtenerHistorial() {
         return historialRepo.findAll();
     }
@@ -48,8 +46,6 @@ public class BackupAutomatizacionService {
     public void registrarAuditoria(String tipo, String estado, Long tamano, String error,Long idUsuario) {
         registrarAuditoria(tipo, estado, tamano, error, null,idUsuario);
     }
-
-
     public void registrarAuditoria(String tipo, String estado, Long tamano, String error, String urlAzure,Long idUsuario) {
         HistorialBackup historial = new HistorialBackup();
         historial.setTipo(tipo);
@@ -61,30 +57,22 @@ public class BackupAutomatizacionService {
                 historial.setUsuarioEjecutor(usuario);
             });
         }
-
-
         historial.setFechaEjecucion(LocalDateTime.now(ZoneId.of("America/Guayaquil")));
 
         if (urlAzure != null) {
             historial.setUrlAzure(urlAzure);
         }
-
         historialRepo.save(historial);
     }
 
     @Scheduled(cron = "0 * * * * ?")
     public void revisarYEjecutarBackupAutomatico() {
         ConfiguracionBackup config = obtenerConfiguracion();
-
-
         if (config.getHabilitado() == null || !config.getHabilitado()) {
             return;
         }
-
         LocalDateTime ahora = LocalDateTime.now(ZoneId.of("America/Guayaquil"));
         LocalTime horaActual = ahora.toLocalTime();
-
-
         HistorialBackup ultimoBackup = historialRepo.findFirstByTipoOrderByIdBackupDesc("AUTOMATICO");
         LocalDateTime fechaUltimo = (ultimoBackup != null && ultimoBackup.getFechaEjecucion() != null)
                 ? ultimoBackup.getFechaEjecucion()
@@ -168,7 +156,7 @@ public class BackupAutomatizacionService {
         } catch (Exception e) {
 
             registrarAuditoria(tipoBackup, "ERROR", 0L, e.getMessage(), null, idUsuario);
-            System.err.println("❌ Error en Backup " + tipoBackup + ": " + e.getMessage());
+            System.err.println(" Error en Backup " + tipoBackup + ": " + e.getMessage());
         }
     }
 }

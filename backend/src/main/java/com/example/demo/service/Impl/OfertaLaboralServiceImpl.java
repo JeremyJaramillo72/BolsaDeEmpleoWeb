@@ -115,7 +115,6 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
             );
 
 
-            // Notificar a admins sobre nueva oferta pendiente
             try {
 
                 String nombreEmpresa = usuarioEmpresaRepository.findById(dto.getIdEmpresa()).
@@ -488,7 +487,6 @@ public class OfertaLaboralServiceImpl implements IOfertaLaboralService {
                         dto.getSalarioMax(),
                         dto.getCantidadVacantes(),
                         dto.getExperienciaMinima(),
-                        dto.getEstadoOferta(),
                         dto.getFechaCierre(),
                         habilidadesJson,
                         requisitosJson,

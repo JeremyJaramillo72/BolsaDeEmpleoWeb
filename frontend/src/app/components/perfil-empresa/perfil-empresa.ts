@@ -118,24 +118,37 @@ export class PerfilEmpresaComponent implements OnInit {
     }
   }
 
+
   subirImagen() {
     if (this.archivoSeleccionado && this.perfil.idUsuario) {
       this.empresaService.subirLogoEmpresa(this.perfil.idUsuario, this.archivoSeleccionado)
         .subscribe({
           next: (respuesta: any) => {
-            console.log('¡foto subida con éxito!', respuesta);
+            console.log('¡Foto subida con éxito!', respuesta);
+
+
             this.perfil.urlImagen = respuesta.urlImagen;
-            this.empresaService.actualizarLogo(respuesta.urlImagen);
             this.calcularCompletitud();
             this.cdr.detectChanges();
 
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+              const userObj = JSON.parse(userStr);
+              userObj.urlImagen = respuesta.urlImagen;
+              localStorage.setItem('user', JSON.stringify(userObj));
+            }
+            this.ui.exito('Logo actualizado correctamente. Sincronizando...');
+            setTimeout(() => {
+              window.location.reload();
+            }, 1500);
+
           },
           error: (err) => {
-            console.error('error al subir la foto', err);
+            console.error('Error al subir la foto', err);
+            this.ui.error('No se pudo subir la imagen.');
           }
         });
     }
-
   }
 
   validarCampos(): boolean {
