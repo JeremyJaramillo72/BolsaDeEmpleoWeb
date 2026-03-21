@@ -33,12 +33,9 @@ public class AzureStorageConfig {
         BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName);
         BlobClient blobClient = containerClient.getBlobClient(nombreUnico);
 
-        // 1. Subimos el archivo a Azure
         blobClient.upload(archivo.getInputStream(), archivo.getSize(), true);
 
-        // 2. ¡EL SECRETO PARA LOS PDF! Le decimos a Azure qué tipo de archivo es
         BlobHttpHeaders headers = new BlobHttpHeaders();
-        // Obtiene automáticamente "application/pdf" desde tu Angular
         headers.setContentType(archivo.getContentType());
         blobClient.setHttpHeaders(headers);
 

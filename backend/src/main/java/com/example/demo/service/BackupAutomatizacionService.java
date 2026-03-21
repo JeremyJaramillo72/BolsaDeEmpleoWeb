@@ -4,6 +4,7 @@ import com.example.demo.model.ConfiguracionBackup;
 import com.example.demo.model.HistorialBackup;
 import com.example.demo.repository.ConfiguracionBackupRepository;
 import com.example.demo.repository.HistorialBackupRepository;
+import com.example.demo.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.util.Locale;
 @Service
 public class BackupAutomatizacionService {
 
+    private final UsuarioRepository usuarioRepo;
     private final ConfiguracionBackupRepository configRepo;
     private final HistorialBackupRepository historialRepo;
     private final DatabaseBackupService respaldosDbService;
@@ -43,17 +45,22 @@ public class BackupAutomatizacionService {
         return historialRepo.findAll();
     }
 
-    public void registrarAuditoria(String tipo, String estado, Long tamano, String error) {
-        registrarAuditoria(tipo, estado, tamano, error, null);
+    public void registrarAuditoria(String tipo, String estado, Long tamano, String error,Long idUsuario) {
+        registrarAuditoria(tipo, estado, tamano, error, null,idUsuario);
     }
 
 
-    public void registrarAuditoria(String tipo, String estado, Long tamano, String error, String urlAzure) {
+    public void registrarAuditoria(String tipo, String estado, Long tamano, String error, String urlAzure,Long idUsuario) {
         HistorialBackup historial = new HistorialBackup();
         historial.setTipo(tipo);
         historial.setEstado(estado);
         historial.setTamanoBytes(tamano);
         historial.setMensajeError(error);
+        if (idUsuario != null) {
+            usuarioRepo.findById(idUsuario).ifPresent(usuario -> {
+                historial.setUsuarioEjecutor(usuario);
+            });
+        }
 
 
         historial.setFechaEjecucion(LocalDateTime.now(ZoneId.of("America/Guayaquil")));
@@ -126,7 +133,7 @@ public class BackupAutomatizacionService {
 
         if (ejecutarAhora) {
             System.out.println("⏰ ¡ES LA HORA! Iniciando Backup Automático (" + tipoFreq + ")...");
-            ejecutarProcesoBackup("AUTOMATICO");
+            ejecutarProcesoBackup("AUTOMATICO",9L);
         }
     }
 
@@ -148,7 +155,7 @@ public class BackupAutomatizacionService {
         return diasSemanaConfigurados.contains(inicialHoy);
     }
 
-    public void ejecutarProcesoBackup(String tipoBackup) {
+    public void ejecutarProcesoBackup(String tipoBackup,Long idUsuario) {
         try {
 
             DatabaseBackupService.BackupResult resultado = respaldosDbService.generarBackupYSubirAzure();
@@ -156,13 +163,11 @@ public class BackupAutomatizacionService {
             File archivoZip = resultado.getArchivoLocal();
             String urlAzure = resultado.getUrlAzure();
 
-            registrarAuditoria(tipoBackup, "EXITO", archivoZip.length(), null, urlAzure);
-
-            System.out.println("✅ Backup " + tipoBackup + " finalizado. Archivo: " + archivoZip.getName());
+            registrarAuditoria(tipoBackup, "EXITO", archivoZip.length(), null, urlAzure, idUsuario);            System.out.println("✅ Backup " + tipoBackup + " finalizado. Archivo: " + archivoZip.getName());
 
         } catch (Exception e) {
 
-            registrarAuditoria(tipoBackup, "ERROR", 0L, e.getMessage());
+            registrarAuditoria(tipoBackup, "ERROR", 0L, e.getMessage(), null, idUsuario);
             System.err.println("❌ Error en Backup " + tipoBackup + ": " + e.getMessage());
         }
     }

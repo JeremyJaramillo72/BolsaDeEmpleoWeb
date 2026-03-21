@@ -27,15 +27,15 @@ public class BackupController {
     private final BackupAutomatizacionService backupAutomatizacionService;
 
     @PostMapping("/backup/descargar")
-    public ResponseEntity<Resource> descargarRespaldo() {
+    public ResponseEntity<Resource> descargarRespaldo(@RequestBody Map<String, Object> payload) {
+        Long idUsuario = Long.valueOf(payload.get("idUsuario").toString());
         try {
             DatabaseBackupService.BackupResult resultado = backupService.generarBackupYSubirAzure();
 
             File backupFile = resultado.getArchivoLocal();
             String urlAzure = resultado.getUrlAzure();
 
-            backupAutomatizacionService.registrarAuditoria("MANUAL", "EXITO", backupFile.length(), null, urlAzure);
-
+            backupAutomatizacionService.registrarAuditoria("MANUAL", "EXITO", backupFile.length(), null, urlAzure, idUsuario);
             FileSystemResource resource = new FileSystemResource(backupFile);
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + backupFile.getName());
@@ -79,15 +79,12 @@ public class BackupController {
     @PostMapping("/backup/restaurar/{idBackup}")
     public ResponseEntity<?> restaurarBackup(
             @PathVariable Long idBackup,
-            @RequestParam(required = false, defaultValue = "clon") String modo) {
+            @RequestParam(required = false, defaultValue = "clon") String modo,@RequestParam Long idUsuario) {
 
         try {
             if ("reemplazo".equalsIgnoreCase(modo)) {
                 String mensaje = backupService.restaurarReemplazandoBdActual(idBackup);
-                return ResponseEntity.ok(Map.of(
-                        "mensaje", mensaje,
-                        "modo", "reemplazo_total"
-                ));
+                return ResponseEntity.ok(Map.of("mensaje", mensaje, "modo", "reemplazo_total"));
             } else {
                 String nombreNuevaBd = backupService.restaurarEnNuevaBd(idBackup);
                 return ResponseEntity.ok(Map.of(
@@ -132,11 +129,14 @@ public class BackupController {
     public ResponseEntity<?> ejecutarResurreccion(@RequestBody Map<String, String> payload) {
         try {
             String zipFileName = payload.get("nombreArchivo");
+            Long idUsuario = Long.valueOf(payload.get("idUsuario").toString());
             if (zipFileName == null || zipFileName.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Debe enviar el nombreArchivo exacto de Azure"));
             }
 
             String mensaje = backupService.restaurarEmergenciaDesdeAzure(zipFileName);
+
+            backupAutomatizacionService.registrarAuditoria("RESURRECCION", "EXITO", 0L, "Desde: " + zipFileName, null, idUsuario);
             return ResponseEntity.ok(Map.of("mensaje", mensaje));
 
         } catch (Exception e) {
