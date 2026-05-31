@@ -98,8 +98,14 @@
 
           <td class="text-center">
             <div class="action-buttons">
+              <button class="btn-action-icon text-indigo" (click)="abrirEditar(usr)" title="Editar Usuario">
+                <span class="material-icons">edit</span>
+              </button>
               <button class="btn-action-icon" [ngClass]="usr.estado_validacion === 'Aprobado' ? 'text-rose' : 'text-green'" (click)="bloquearUsuario(usr)" [title]="usr.estado_validacion === 'Aprobado' ? 'Inactivar Usuario' : 'Activar Usuario'">
                 <span class="material-icons">{{ usr.estado_validacion === 'Aprobado' ? 'block' : 'check_circle' }}</span>
+              </button>
+              <button class="btn-action-icon text-rose" *ngIf="puedeEliminar(usr)" (click)="confirmarEliminar(usr)" [disabled]="eliminandoId === usr.id_usuario" title="Eliminar Usuario">
+                <span class="material-icons">{{ eliminandoId === usr.id_usuario ? 'hourglass_top' : 'delete' }}</span>
               </button>
             </div>
           </td>
@@ -205,4 +211,91 @@
     </div>
   </div>
 
+</div>
+
+<div class="modal-overlay fade-in" *ngIf="mostrarModalEditar" (click)="cerrarModalEditar()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <h3>Editar Usuario</h3>
+        <p class="text-muted text-sm">Actualice los datos del personal seleccionado.</p>
+      </div>
+      <button class="btn-action-icon" (click)="cerrarModalEditar()" title="Cerrar">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group-row">
+        <div class="form-group">
+          <label>Nombre <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <span class="material-icons">person</span>
+            <input type="text" [(ngModel)]="formularioEdicion.nombre" [disabled]="guardandoEdicion">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Apellido</label>
+          <div class="input-wrapper">
+            <input type="text" [(ngModel)]="formularioEdicion.apellido" [disabled]="guardandoEdicion">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group mt-3">
+        <label>Correo <span class="required">*</span></label>
+        <div class="input-wrapper">
+          <span class="material-icons">mail</span>
+          <input type="email" [(ngModel)]="formularioEdicion.correo" [disabled]="guardandoEdicion">
+        </div>
+      </div>
+
+      <div class="form-group mt-3">
+        <label>Teléfono</label>
+        <div class="input-wrapper">
+          <span class="material-icons">call</span>
+          <input type="text" [(ngModel)]="formularioEdicion.telefono" [disabled]="guardandoEdicion">
+        </div>
+      </div>
+
+      <div class="form-group-row mt-3">
+        <div class="form-group">
+          <label>Rol</label>
+          <div class="input-wrapper">
+            <span class="material-icons text-blue">shield</span>
+            <select [(ngModel)]="formularioEdicion.rolId" [disabled]="guardandoEdicion">
+              <option *ngFor="let rol of rolesDisponibles" [ngValue]="rol.id">{{ rol.etiqueta }}</option>
+            </select>
+            <span class="material-icons select-chevron">expand_more</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Ciudad</label>
+          <div class="input-wrapper">
+            <span class="material-icons">location_on</span>
+            <select [(ngModel)]="formularioEdicion.idCiudad" [disabled]="guardandoEdicion">
+              <option [ngValue]="null">Seleccionar...</option>
+              <option *ngFor="let c of ciudadesDisponibles" [ngValue]="c.id">{{ c.nombre }}</option>
+            </select>
+            <span class="material-icons select-chevron">expand_more</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group mt-3">
+        <label>Nueva contraseña (opcional)</label>
+        <div class="input-wrapper">
+          <span class="material-icons">password</span>
+          <input type="password" [(ngModel)]="formularioEdicion.contrasena" placeholder="Dejar vacío para no cambiar" [disabled]="guardandoEdicion">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="cerrarModalEditar()" [disabled]="guardandoEdicion">Cancelar</button>
+      <button class="btn-primary" (click)="guardarEdicion()" [disabled]="guardandoEdicion">
+        <span class="material-icons">save</span> Guardar Cambios
+      </button>
+    </div>
+  </div>
 </div>

@@ -4,18 +4,54 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="200ec303-1cb9-4c6f-97c3-a0eefd75d97e" name="Changes" comment="Cambios y reportes">
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+    <list default="true" id="200ec303-1cb9-4c6f-97c3-a0eefd75d97e" name="Changes" comment="Cambios_Kenny">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/model/ValidacionCurso.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/model/ValidacionCurso.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/config/JwtAuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/config/JwtAuthenticationFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/controller/AuditoriasController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/controller/AuditoriasController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/controller/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/controller/GestionUserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/controller/GestionUserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/repository/SesionRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/repository/SesionRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/IAuditoriaService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/IAuditoriaService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/ISesionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/ISesionService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/IUsuarioService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/IUsuarioService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/Impl/AuditoriaServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/Impl/AuditoriaServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/Impl/SesionServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/Impl/SesionServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/Impl/UsuarioServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/Impl/UsuarioServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/demo/config/SecurityConfig.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/example/demo/config/SecurityConfig.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/demo/model/ValidacionCurso.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/example/demo/model/ValidacionCurso.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/angular.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/angular.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/demo/controller/AuthController.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/example/demo/controller/AuthController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/demo/service/IUsuarioService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/example/demo/service/IUsuarioService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/example/demo/service/Impl/UsuarioServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/example/demo/service/Impl/UsuarioServiceImpl.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/auditorias-users.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/auditorias-users.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/auditorias-users.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/auditorias-users.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/auditorias-users.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/auditorias-users.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/ofertas/ofertas.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/ofertas/ofertas.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/ofertas/ofertas.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/ofertas/ofertas.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/ofertas/ofertas.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/ofertas/ofertas.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/postulantes/postulantes.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/postulantes/postulantes.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/postulantes/postulantes.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/postulantes/postulantes.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/postulantes/postulantes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/postulantes/postulantes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/respaldos/respaldos.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/respaldos/respaldos.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/respaldos/respaldos.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/respaldos/respaldos.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/sesiones/sesiones.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/sesiones/sesiones.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/sesiones/sesiones.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/sesiones/sesiones.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/sesiones/sesiones.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/sesiones/sesiones.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/usuarios/usuarios.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/usuarios/usuarios.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/usuarios/usuarios.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/usuarios/usuarios.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/usuarios/usuarios.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/auditorias-users/usuarios/usuarios.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/usuarios/Service/UsuariosService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/usuarios/Service/UsuariosService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/usuarios/usuarios.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/usuarios/usuarios.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/usuarios/usuarios.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/usuarios/usuarios.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/usuarios/usuarios.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/components/usuarios/usuarios.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/services/admin.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/Panel-Admin/services/admin.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/confirm-modal/confirm-modal.component.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/confirm-modal/confirm-modal.component.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/confirm-modal/confirm-modal.component.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/confirm-modal/confirm-modal.component.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/login/login.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/login/login.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/components/menu-principal/menuprincipal.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/components/menu-principal/menuprincipal.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/interceptors/auth.interceptor.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/interceptors/auth.interceptor.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/interceptors/http-error.interceptor.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/interceptors/http-error.interceptor.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/services/auth.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/services/auth.service.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/app/services/confirm.service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/app/services/confirm.service.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,12 +84,12 @@
     &quot;assignee&quot;: &quot;JeremyJaramillo72&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/JeremyJaramillo72/BolsaDeEmpleoWeb.git",
-    "accountId": "17637dc0-91ae-4921-bb94-e6dcc80be755"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/JeremyJaramillo72/BolsaDeEmpleoWeb.git&quot;,
+    &quot;accountId&quot;: &quot;17637dc0-91ae-4921-bb94-e6dcc80be755&quot;
   }
-}]]></component>
+}</component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
   &quot;isMigrated&quot;: true
@@ -70,36 +106,36 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "Spring Boot.DemoApplication.executor": "Run",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "junie.onboarding.icon.badge.shown": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/Usuario/Documents/PROYECTORC/BolsaDeEmpleoWeb",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.lookFeel",
-    "to.speed.mode.migration.done": "true",
-    "ts.external.directory.path": "C:\\Users\\Usuario\\Desktop\\feria\\frontend\\node_modules\\typescript\\lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;Spring Boot.DemoApplication.executor&quot;: &quot;Run&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Usuario/Documents/PROYECTORC/BolsaDeEmpleoWeb&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\Usuario\\Desktop\\feria\\frontend\\node_modules\\typescript\\lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\ASUS\Documents\BolsaDeEmpleoWeb\frontend\src\app" />
@@ -172,6 +208,7 @@
       <workItem from="1771870615227" duration="170000" />
       <workItem from="1771978894101" duration="38269000" />
       <workItem from="1780011775524" duration="2328000" />
+      <workItem from="1780203457460" duration="2565000" />
     </task>
     <task id="LOCAL-00001" summary="cambios">
       <option name="closed" value="true" />
@@ -205,7 +242,15 @@
       <option name="project" value="LOCAL" />
       <updated>1771999548578</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Cambios_Kenny">
+      <option name="closed" value="true" />
+      <created>1780203581500</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1780203581500</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -231,7 +276,8 @@
     <MESSAGE value="Cambios Reportes Version Prueba" />
     <MESSAGE value="Agregación de Dtos" />
     <MESSAGE value="Cambios y reportes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Cambios y reportes" />
+    <MESSAGE value="Cambios_Kenny" />
+    <option name="LAST_COMMIT_MESSAGE" value="Cambios_Kenny" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

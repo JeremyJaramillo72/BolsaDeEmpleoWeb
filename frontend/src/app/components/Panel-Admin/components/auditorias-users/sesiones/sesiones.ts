@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-// Ajusta la ruta a tu servicio si marca error
 import { AdminService } from '../../../services/admin.service';
+import { ConfirmService } from '../../../../../services/confirm.service';
+import { UiNotificationService } from '../../../../../services/ui-notification.service';
 
 export interface Sesion {
   idSesion?: number;
@@ -21,47 +22,70 @@ export interface Sesion {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './sesiones.html',
-  styleUrls: ['./sesiones.css']
+  styleUrls: ['./sesiones.css', '../auditorias-responsive.css']
 })
-export class SesionesComponent implements OnInit {
+export class SesionesComponent implements OnInit, OnDestroy {
   sesiones: Sesion[] = [];
   sesionesFiltradas: Sesion[] = [];
   cargandoSesiones = false;
   mensajeError = '';
+  cerrandoSesionId: number | null = null;
 
   filtroBusquedaSesiones = '';
-  filtroAccionSesion = '';
+  filtroAccionSesion = 'ACTIVA';
 
   paginaSesiones = 1;
   itemsPorPaginaSesiones = 10;
 
-  constructor(private adminService: AdminService) {}
+  private refreshInterval?: ReturnType<typeof setInterval>;
+
+  constructor(
+    private adminService: AdminService,
+    private confirmService: ConfirmService,
+    private ui: UiNotificationService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
+  ) {}
 
   ngOnInit() {
     this.cargarSesiones();
+    this.refreshInterval = setInterval(() => this.cargarSesiones(true), 15000);
   }
 
-  cargarSesiones(): void {
-    this.cargandoSesiones = true;
-    this.adminService.getSesiones().subscribe({
+  ngOnDestroy() {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
+  }
+
+  cargarSesiones(silencioso = false): void {
+    if (!silencioso) {
+      this.cargandoSesiones = true;
+    }
+
+    const estadoApi = this.filtroAccionSesion || 'ALL';
+
+    this.adminService.getSesiones(estadoApi).subscribe({
       next: (data: Sesion[]) => {
-        this.sesiones = data;
-        this.aplicarFiltrosSesiones();
-        this.cargandoSesiones = false;
+        this.ngZone.run(() => {
+          this.sesiones = data;
+          this.aplicarFiltrosSesiones();
+          this.cargandoSesiones = false;
+          this.cdr.detectChanges();
+        });
       },
-      error: (err) => {
-        console.error('Error al cargar sesiones:', err);
-        this.cargandoSesiones = false;
-        this.mensajeError = 'Error al cargar sesiones';
+      error: () => {
+        this.ngZone.run(() => {
+          this.cargandoSesiones = false;
+          this.mensajeError = 'Error al cargar sesiones';
+          this.cdr.detectChanges();
+        });
       }
     });
   }
 
   aplicarFiltrosSesiones(): void {
     let resultado = [...this.sesiones];
-    if (this.filtroAccionSesion) {
-      resultado = resultado.filter(s => s.accion === this.filtroAccionSesion);
-    }
     if (this.filtroBusquedaSesiones.trim()) {
       const busqueda = this.filtroBusquedaSesiones.toLowerCase();
       resultado = resultado.filter(s =>
@@ -74,10 +98,14 @@ export class SesionesComponent implements OnInit {
     this.paginaSesiones = 1;
   }
 
+  onCambioFiltroEstado(): void {
+    this.cargarSesiones();
+  }
+
   limpiarFiltrosSesiones(): void {
     this.filtroBusquedaSesiones = '';
-    this.filtroAccionSesion = '';
-    this.aplicarFiltrosSesiones();
+    this.filtroAccionSesion = 'ACTIVA';
+    this.cargarSesiones();
   }
 
   get sesionesPaginadas(): Sesion[] {
@@ -87,29 +115,12 @@ export class SesionesComponent implements OnInit {
   }
 
   get totalPaginasSesiones(): number {
-    return Math.ceil(this.sesionesFiltradas.length / this.itemsPorPaginaSesiones);
+    return Math.ceil(this.sesionesFiltradas.length / this.itemsPorPaginaSesiones) || 1;
   }
 
   cambiarPaginaSesiones(pagina: number): void {
     if (pagina >= 1 && pagina <= this.totalPaginasSesiones) {
       this.paginaSesiones = pagina;
-    }
-  }
-
-  getAccionSesionClass(accion: string): string {
-    switch(accion?.toUpperCase()) {
-      case 'ACTIVA':   return 'sesion-activa';
-      case 'CERRADA':  return 'sesion-cerrada';
-      default:         return 'sesion-inactiva';
-    }
-  }
-
-  getEstadoClass(estado: string): string {
-    switch(estado.toLowerCase()) {
-      case 'activo': return 'estado-activo';
-      case 'inactivo': return 'estado-inactivo';
-      case 'bloqueado': return 'estado-bloqueado';
-      default: return '';
     }
   }
 
@@ -123,28 +134,42 @@ export class SesionesComponent implements OnInit {
     });
   }
 
-  // Cambiamos el nombre del método para que sea coherente con lo que hace
-  expulsarUsuario(sesion: any): void {
-    const idReal = sesion.idSesion || sesion.id_sesion || sesion.id;
+  expulsarUsuario(sesion: Sesion): void {
+    const idReal = sesion.idSesion;
     if (!idReal) return;
 
-    if (window.confirm(`⚠️ ¿Desea cerrar la sesión activa de ${sesion.loginName}? El usuario no será bloqueado, solo se cerrará su conexión actual.`)) {
-      // Mandamos la petición al backend
+    this.confirmService.abrir(
+      `¿Cerrar la sesión activa de ${sesion.loginName}? El usuario será desconectado inmediatamente.`,
+      'Cerrar sesión',
+      'advertencia'
+    ).then((acepto: boolean) => {
+      if (!acepto) return;
+
+      this.ngZone.run(() => {
+        this.cerrandoSesionId = idReal;
+        this.cdr.detectChanges();
+      });
+
       this.adminService.cambiarEstadoCuentaYSesion(idReal, 'CERRADA').subscribe({
         next: () => {
-          // Actualizamos solo el estado de la sesión en la tabla de Angular
-          sesion.accion = 'CERRADA';
-          sesion.fechaCierre = new Date().toISOString();
-         // this.mostrarExito('Sesión finalizada correctamente.');
+          this.ngZone.run(() => {
+            this.cerrandoSesionId = null;
+            this.sesiones = this.sesiones.filter(s => s.idSesion !== idReal);
+            this.aplicarFiltrosSesiones();
+            this.ui.exito(`Sesión de ${sesion.loginName} cerrada. El usuario fue desconectado.`);
+            this.cdr.detectChanges();
+          });
         },
-        error: (err) => {
-          this.mensajeError = 'No se pudo finalizar la sesión.';
+        error: () => {
+          this.ngZone.run(() => {
+            this.cerrandoSesionId = null;
+            this.ui.error('No se pudo cerrar la sesión.');
+            this.cdr.detectChanges();
+          });
         }
       });
-    }
+    });
   }
-
-
 
   exportarSesionesExcel(): void {
     this.adminService.exportarSesionesExcel(this.sesionesFiltradas).subscribe({
@@ -156,9 +181,8 @@ export class SesionesComponent implements OnInit {
         link.click();
         window.URL.revokeObjectURL(url);
       },
-      error: (err) => {
-        console.error('Error al exportar sesiones:', err);
-        this.mensajeError = 'Error al exportar sesiones';
+      error: () => {
+        this.ui.error('Error al exportar sesiones');
       }
     });
   }

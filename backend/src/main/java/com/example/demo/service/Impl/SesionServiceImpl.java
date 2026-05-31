@@ -46,8 +46,8 @@ public class SesionServiceImpl implements ISesionService {
     @Override
     @Transactional
     public Long registrarLogin(Integer idSeguridad, String userAgent, String dispositivo) {
+        sesionRepository.cerrarSesionesActivasPorSeguridad(idSeguridad);
 
-        // ✅ Extraemos el navegador real antes de guardar
         String navegador = extractBrowser(userAgent);
 
         Object result = entityManager.createNativeQuery(
@@ -79,9 +79,18 @@ public class SesionServiceImpl implements ISesionService {
         Sesion sesion = sesionRepository.findById(idSesion)
                 .orElseThrow(() -> new RuntimeException("Sesión no encontrada con ID: " + idSesion));
 
+        if (!"ACTIVA".equalsIgnoreCase(sesion.getAccion())) {
+            throw new RuntimeException("La sesión ya está cerrada.");
+        }
+
         sesion.setAccion("CERRADA");
         sesion.setFechaCierre(LocalDateTime.now());
-
         sesionRepository.save(sesion);
+    }
+
+    @Override
+    @Transactional
+    public void normalizarSesionesActivasDuplicadas() {
+        sesionRepository.cerrarSesionesActivasDuplicadas();
     }
 }

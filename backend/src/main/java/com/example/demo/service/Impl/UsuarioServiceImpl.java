@@ -16,7 +16,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.dto.ActualizarUsuarioDTO;
+import com.example.demo.dto.UsuarioDetalleDTO;
 import com.example.demo.dto.UsuarioTablaDTO;
+import com.example.demo.model.Ciudad;
+import com.example.demo.model.Roles;
+import com.example.demo.repository.RolesRepository;
+import com.example.demo.repository.CiudadRepository;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -43,6 +49,10 @@ public class UsuarioServiceImpl implements IUsuarioService {
     private final NotificacionService notificacionService;
 
     private final EmailService emailService;
+
+    private final RolesRepository rolesRepository;
+
+    private final CiudadRepository ciudadRepository;
 
 
     private static final String CLAVE_UNICA_BD = "Uteq_2026_Secure";
@@ -381,5 +391,115 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Override
     public List<UsuarioTablaDTO> obtenerUsuariosGenerales() {
         return usuarioRepository.obtenerUsuariosTablaNativa("{}");
+    }
+
+    @Override
+    public UsuarioDetalleDTO obtenerUsuarioPorId(Long idUsuario) {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        return UsuarioDetalleDTO.builder()
+                .idUsuario(usuario.getIdUsuario())
+                .nombre(usuario.getNombre())
+                .apellido(usuario.getApellido())
+                .correo(usuario.getCorreo())
+                .telefono(usuario.getTelefono())
+                .idRol(usuario.getRol() != null ? usuario.getRol().getIdRol() : null)
+                .nombreRol(usuario.getRol() != null ? usuario.getRol().getNombreRol() : null)
+                .idCiudad(usuario.getCiudad() != null ? usuario.getCiudad().getIdCiudad() : null)
+                .nombreCiudad(usuario.getCiudad() != null ? usuario.getCiudad().getNombreCiudad() : null)
+                .estadoValidacion(usuario.getEstadoValidacion())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public void actualizarUsuario(Long idUsuario, ActualizarUsuarioDTO dto) {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (dto.getCorreo() != null && !dto.getCorreo().isBlank()) {
+            String correoNuevo = dto.getCorreo().trim();
+            if (!correoNuevo.equalsIgnoreCase(usuario.getCorreo())) {
+                usuarioRepository.findByCorreo(correoNuevo).ifPresent(existing -> {
+                    if (!existing.getIdUsuario().equals(idUsuario)) {
+                        throw new RuntimeException("El correo " + correoNuevo + " ya está registrado.");
+                    }
+                });
+                usuario.setCorreo(correoNuevo);
+            }
+        }
+
+        if (dto.getNombre() != null && !dto.getNombre().isBlank()) {
+            usuario.setNombre(dto.getNombre().trim());
+        }
+        if (dto.getApellido() != null && !dto.getApellido().isBlank()) {
+            usuario.setApellido(dto.getApellido().trim());
+        }
+        if (dto.getTelefono() != null) {
+            usuario.setTelefono(dto.getTelefono().trim());
+        }
+        if (dto.getRolId() != null) {
+            Roles rol = rolesRepository.findById(dto.getRolId())
+                    .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+            usuario.setRol(rol);
+        }
+        if (dto.getIdCiudad() != null) {
+            Ciudad ciudad = ciudadRepository.findById(dto.getIdCiudad())
+                    .orElseThrow(() -> new RuntimeException("Ciudad no encontrada"));
+            usuario.setCiudad(ciudad);
+        }
+        if (dto.getContrasena() != null && !dto.getContrasena().isBlank()) {
+            usuario.setContrasena(passwordEncoder.encode(dto.getContrasena()));
+        }
+
+        usuarioRepository.save(usuario);
+    }
+
+    @Override
+    @Transactional
+    public void eliminarUsuario(Long idUsuario) {
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (usuario.getRol() != null && usuario.getRol().getIdRol() == 1) {
+            throw new RuntimeException("No se puede eliminar un usuario con rol Administrador.");
+        }
+
+        Long empresaCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM empresas.usuario_empresa WHERE id_usuario = ?",
+                Long.class, idUsuario);
+        if (empresaCount != null && empresaCount > 0) {
+            throw new RuntimeException("No se puede eliminar: el usuario tiene perfil de empresa asociado.");
+        }
+
+        Long postulacionesCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM postulaciones.postulacion WHERE id_usuario = ?",
+                Long.class, idUsuario);
+        if (postulacionesCount != null && postulacionesCount > 0) {
+            throw new RuntimeException("No se puede eliminar: el usuario tiene postulaciones registradas.");
+        }
+
+        jdbcTemplate.update("DELETE FROM usuarios.notificacion WHERE id_usuario = ?", idUsuario);
+        jdbcTemplate.update("DELETE FROM usuarios.usuario_imagen WHERE id_usuario = ?", idUsuario);
+        jdbcTemplate.update("DELETE FROM usuarios.cursos WHERE id_usuario = ?", idUsuario);
+        jdbcTemplate.update("DELETE FROM usuarios.exp_laboral WHERE id_usuario = ?", idUsuario);
+        jdbcTemplate.update("DELETE FROM usuarios.perfil_academico WHERE id_usuario = ?", idUsuario);
+        jdbcTemplate.update("DELETE FROM usuarios.usuario_idioma WHERE id_usuario = ?", idUsuario);
+        jdbcTemplate.update("DELETE FROM ofertas.ofertas_favoritas WHERE id_usuario = ?", idUsuario);
+
+        Integer idSeguridad = jdbcTemplate.query(
+                "SELECT id_seguridad FROM seguridad.seguridad WHERE id_usuario = ?",
+                rs -> rs.next() ? rs.getInt("id_seguridad") : null,
+                idUsuario
+        );
+
+        if (idSeguridad != null) {
+            jdbcTemplate.update("UPDATE seguridad.auditoria SET id_seguridad = NULL WHERE id_seguridad = ?", idSeguridad);
+            jdbcTemplate.update("UPDATE ofertas.historial_oferta SET id_seguridad = NULL WHERE id_seguridad = ?", idSeguridad);
+            jdbcTemplate.update("DELETE FROM seguridad.seguridad WHERE id_usuario = ?", idUsuario);
+        }
+
+        usuarioRepository.delete(usuario);
     }
 }

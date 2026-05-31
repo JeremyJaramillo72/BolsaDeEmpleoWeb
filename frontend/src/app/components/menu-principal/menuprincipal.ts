@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { UsuarioEmpresaService } from '../../services/usuario-empresa.service';
@@ -9,6 +9,7 @@ import { SistemaConfigService } from '../Panel-Admin/services/sistema-config.ser
 import { PerfilAdminService }    from '../Panel-Admin/services/perfil-admin.service';
 
 import { NotificationService } from '../../services/notification.service';
+import { SesionExpiradaService } from '../../services/sesion-expirada.service';
 import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
 import {PerfilEmpresaComponent} from '../perfil-empresa/perfil-empresa';
 // 1. ACTUALIZAMOS LAS INTERFACES CON LOS NUEVOS CAMPOS VISUALES
@@ -43,11 +44,12 @@ export interface StatCard {
   templateUrl: './menuprincipal.html',
   styleUrls: ['./menuprincipal.css']
 })
-export class MenuprincipalComponent implements OnInit {
+export class MenuprincipalComponent implements OnInit, OnDestroy {
   isSidebarOpen: boolean = true;
   nombreUsuario: string = '';
   rolUsuario: string = '';
   fotoMenu: string = '';
+  private validacionSesionInterval?: ReturnType<typeof setInterval>;
 
   // ✅ Logo y nombre del SISTEMA (sidebar brand) — separado de fotoMenu del usuario
   logoSistema:   string = '';
@@ -67,7 +69,8 @@ export class MenuprincipalComponent implements OnInit {
     private usuarioEmpresaService: UsuarioEmpresaService,
     public notificationService: NotificationService,
     private sistemaConfigService: SistemaConfigService,  // ✅ logo/nombre del sistema para todos los roles
-    private perfilAdminService:   PerfilAdminService    // ✅ foto perfil admin en tiempo real,
+    private perfilAdminService:   PerfilAdminService,
+    private sesionExpiradaService: SesionExpiradaService
   ) {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
@@ -157,6 +160,29 @@ export class MenuprincipalComponent implements OnInit {
       this.isDarkMode = true;
       document.body.classList.add('dark-mode');
     }
+
+    if (localStorage.getItem('token')) {
+      this.validacionSesionInterval = setInterval(() => this.verificarSesionRemota(), 12000);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.validacionSesionInterval) {
+      clearInterval(this.validacionSesionInterval);
+    }
+  }
+
+  private verificarSesionRemota(): void {
+    if (!localStorage.getItem('token')) return;
+
+    this.authService.validarSesionActiva().subscribe({
+      next: (res) => {
+        if (res && res.valida === false) {
+          void this.sesionExpiradaService.notificar();
+        }
+      },
+      error: () => void this.sesionExpiradaService.notificar()
+    });
   }
 
 

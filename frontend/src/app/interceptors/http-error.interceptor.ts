@@ -1,12 +1,12 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { UiNotificationService } from '../services/ui-notification.service';
+import { SesionExpiradaService } from '../services/sesion-expirada.service';
 
 export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
-  const ui     = inject(UiNotificationService);
-  const router = inject(Router);
+  const ui              = inject(UiNotificationService);
+  const sesionExpirada  = inject(SesionExpiradaService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
@@ -18,10 +18,8 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
           break;
 
         case 401:
-          // No mostrar toast en el login, el componente ya lo maneja
           if (!req.url.includes('/api/auth/login')) {
-            ui.advertencia('Tu sesión ha expirado. Inicia sesión nuevamente.');
-            router.navigate(['/login']);
+            void sesionExpirada.notificar();
           }
           break;
 

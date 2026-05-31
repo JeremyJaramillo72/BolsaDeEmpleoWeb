@@ -611,18 +611,48 @@ public class AuditoriaServiceImpl implements IAuditoriaService {
     }
 
     @Override
-    public List<Map<String, Object>> getSesiones() {
-        List<Object[]> rows = entityManager.createNativeQuery("SELECT * FROM seguridad.fn_obtener_sesiones()").getResultList();
+    public List<Map<String, Object>> getSesiones(String estado) {
+        String filtroEstado = (estado == null || estado.isBlank()) ? "ACTIVA" : estado.trim().toUpperCase();
+
+        String sql = """
+                SELECT s.id_sesion,
+                       g.login_name::TEXT,
+                       s.fecha_inicio,
+                       s.fecha_cierre,
+                       s.ip_address,
+                       s.navegador,
+                       s.accion,
+                       u.estado_validacion,
+                       s.dispositivo
+                FROM seguridad.sesiones s
+                JOIN seguridad.seguridad g ON s.id_seguridad = g.id_seguridad
+                JOIN usuarios.usuario u ON g.id_usuario = u.id_usuario
+                """;
+
+        if (!"ALL".equals(filtroEstado)) {
+            sql += " WHERE s.accion = :estado ";
+        }
+
+        sql += " ORDER BY s.fecha_inicio DESC ";
+
+        var query = entityManager.createNativeQuery(sql);
+        if (!"ALL".equals(filtroEstado)) {
+            query.setParameter("estado", filtroEstado);
+        }
+
+        List<Object[]> rows = query.getResultList();
+
         return rows.stream().map(row -> {
             Map<String, Object> map = new LinkedHashMap<>();
-            map.put("idSesion",    row[0]);
-            map.put("loginName",   row[1]);
+            map.put("idSesion", row[0]);
+            map.put("loginName", row[1]);
             map.put("fechaInicio", row[2]);
             map.put("fechaCierre", row[3]);
-            map.put("ipAddress",   row[4]);
-            map.put("navegador",   row[5]);
-            map.put("accion",      row[6]);
+            map.put("ipAddress", row[4]);
+            map.put("navegador", row[5]);
+            map.put("accion", row[6]);
             map.put("estadoValidacion", row[7]);
+            map.put("dispositivo", row[8]);
             return map;
         }).toList();
     }

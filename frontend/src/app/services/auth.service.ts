@@ -47,9 +47,13 @@ export class AuthService {
 
 
   logout() {
-
     return this.http.post('http://localhost:8080/api/auth/logout', {}, { withCredentials: true });
   }
+
+  validarSesionActiva(): Observable<{ valida: boolean; error?: string }> {
+    return this.http.get<{ valida: boolean; error?: string }>('http://localhost:8080/api/auth/validar-sesion');
+  }
+
   obtenerFotoPerfil(idUsuario: string): Observable<{url: string}> {
     return this.http.get<{url: string}>(`http://localhost:8080/api/auth/foto-perfil/${idUsuario}`);
   }

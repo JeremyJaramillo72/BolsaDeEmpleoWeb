@@ -32,7 +32,7 @@ export interface Auditoria {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './usuarios.html',
-  styleUrls: ['./usuarios.css']
+  styleUrls: ['./usuarios.css', '../auditorias-responsive.css']
 })
 export class UsuariosComponent implements OnInit {
   usuarios: Usuario[] = [];

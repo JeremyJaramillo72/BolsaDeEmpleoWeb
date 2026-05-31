@@ -97,6 +97,13 @@ export class LoginComponent implements OnInit {
 
           localStorage.setItem('rol', rolNombre.trim().toUpperCase());
 
+          if (res.token) {
+            localStorage.setItem('token', res.token);
+          }
+          if (res.idSesion) {
+            localStorage.setItem('idSesion', String(res.idSesion));
+          }
+
           console.log('estado final del localstorage:');
           console.log('  idusuario:', localStorage.getItem('idUsuario'));
           console.log('  idempresa:', localStorage.getItem('idEmpresa'));

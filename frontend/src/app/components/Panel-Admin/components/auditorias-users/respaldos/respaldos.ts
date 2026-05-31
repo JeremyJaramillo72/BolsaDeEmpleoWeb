@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../services/admin.service';
@@ -11,16 +11,18 @@ import autoTable from 'jspdf-autotable';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './respaldos.html',
-  styleUrls: ['./respaldos.css']
+  styleUrls: ['./respaldos.css', '../auditorias-responsive.css']
 })
 export class RespaldosComponent implements OnInit {
 
   private adminService        = inject(AdminService);
   private sistemaConfigService = inject(SistemaConfigService);
   private cdr                 = inject(ChangeDetectorRef);
+  private ngZone              = inject(NgZone);
 
   textoBusqueda: string = '';
   resumenBackups: any[] = [];
+  cargandoResumen = false;
 
   modalAbierto: boolean = false;
   usuarioSeleccionado: string = '';
@@ -41,9 +43,24 @@ export class RespaldosComponent implements OnInit {
   }
 
   cargarResumen(): void {
+    this.cargandoResumen = true;
+    this.cdr.detectChanges();
+
     this.adminService.obtenerResumenRespaldos().subscribe({
-      next: (data) => { this.resumenBackups = data; },
-      error: (err) => { console.error('Error al cargar el resumen:', err); }
+      next: (data) => {
+        this.ngZone.run(() => {
+          this.resumenBackups = data;
+          this.cargandoResumen = false;
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        this.ngZone.run(() => {
+          console.error('Error al cargar el resumen:', err);
+          this.cargandoResumen = false;
+          this.cdr.detectChanges();
+        });
+      }
     });
   }
 

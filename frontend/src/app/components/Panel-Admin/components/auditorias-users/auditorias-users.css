@@ -16,17 +16,42 @@
 .truncate-text { max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: bottom; }
 
 /* Contenedor y Encabezado */
-.page-container { max-width: 1400px; margin: 0 auto; padding: 1rem; }
+.page-container { max-width: 1400px; width: 100%; margin: 0 auto; padding: 1rem; box-sizing: border-box; overflow-x: hidden; }
 .page-header-pro { background: white; padding: 1.5rem 2rem; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-.header-content { display: flex; align-items: center; gap: 1.2rem; }
-.icon-box { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.header-content { display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; }
+.icon-box { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .icon-box .material-icons { font-size: 28px; }
 
 /* Pestañas (Pills) */
-.nav-pills-container { display: flex; gap: 0.5rem; background: #f3f4f6; padding: 0.5rem; border-radius: 10px; display: inline-flex;}
-.nav-pill { background: transparent; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; color: #6b7280; display: flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: all 0.2s; }
+.nav-pills-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  background: #f3f4f6;
+  padding: 0.5rem;
+  border-radius: 10px;
+}
+.nav-pill {
+  background: transparent;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1 1 auto;
+  min-width: 0;
+}
 .nav-pill:hover { color: #374151; background: #e5e7eb; }
 .nav-pill.active { background: white; color: #4f46e5; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+.tab-content { width: 100%; min-width: 0; overflow-x: hidden; box-sizing: border-box; }
 
 /* Pro Cards y Tablas */
 .pro-card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 1.5rem; margin-bottom: 1.5rem; }
@@ -34,11 +59,13 @@
 .border-top { border-top: 1px solid #e5e7eb; }
 
 /* Inputs y Selects */
-.search-wrapper, .select-wrapper { position: relative; flex: 1; min-width: 250px;}
+.search-wrapper, .select-wrapper { position: relative; flex: 1 1 200px; min-width: 0; }
 .search-icon, .select-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; pointer-events: none; }
 .pro-input, .pro-select { width: 100%; padding: 0.6rem 1rem 0.6rem 2.5rem; border: 1px solid #d1d5db; border-radius: 8px; outline: none; transition: border-color 0.2s; }
 .pro-input:focus, .pro-select:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
-.actions-wrapper { display: flex; gap: 0.75rem; align-items: center; }
+.actions-wrapper { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+.filters-bar { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+.filters-bar.flex-between { justify-content: space-between; }
 
 /* Badges Específicos */
 .user-profile { display: flex; align-items: center; gap: 0.75rem; }
@@ -69,7 +96,8 @@
 .btn-link:hover { text-decoration: underline; }
 
 /* Tabla Custom (Asegura consistencia) */
-.table-custom { width: 100%; border-collapse: collapse; text-align: left; }
+.table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-custom { width: 100%; border-collapse: collapse; text-align: left; min-width: 640px; }
 .table-custom th { padding: 1rem; color: #6b7280; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid #e5e7eb; }
 .table-custom td { padding: 1rem; border-bottom: 1px solid #e5e7eb; vertical-align: middle; }
 .hover-row:hover { background-color: #f9fafb; }
@@ -100,6 +128,7 @@
 .filters-bar {
   margin-bottom: 2rem !important;
   padding-bottom: 1.5rem !important;
+  flex-wrap: wrap;
 }
 
 /* 3. Asegurar que los botones y selects no se peguen entre sí */
@@ -119,8 +148,10 @@
 }
 
 /* 5. Separación en el buscador si está muy pegado */
-.search-wrapper {
-  margin-right: 1.5rem !important;
+@media (min-width: 769px) {
+  .search-wrapper {
+    margin-right: 1.5rem !important;
+  }
 }
 /* Diff Table (Detalles) */
 .deletion-text { text-decoration: line-through; opacity: 0.8; }

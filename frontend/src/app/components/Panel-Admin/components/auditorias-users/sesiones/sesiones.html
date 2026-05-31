@@ -9,10 +9,10 @@
     <div class="actions-wrapper">
       <div class="select-wrapper">
         <span class="material-icons select-icon">filter_list</span>
-        <select [(ngModel)]="filtroAccionSesion" (ngModelChange)="aplicarFiltrosSesiones()" class="form-control pro-select">
-          <option value="">Todos los estados</option>
-          <option value="ACTIVA">Sesión Activa</option>
-          <option value="CERRADA">Sesión Cerrada</option>
+        <select [(ngModel)]="filtroAccionSesion" (ngModelChange)="onCambioFiltroEstado()" class="form-control pro-select">
+          <option value="ACTIVA" selected>Sesiones conectadas</option>
+          <option value="CERRADA">Sesiones cerradas</option>
+          <option value="">Historial completo</option>
         </select>
       </div>
 
@@ -42,7 +42,7 @@
         <td>
           <div class="user-profile">
             <div class="avatar-circle bg-indigo-light text-indigo">
-              {{ sesion.loginName?.charAt(0)?.toUpperCase() || '?' }}
+              {{ sesion.loginName ? sesion.loginName.charAt(0).toUpperCase() : '?' }}
             </div>
             <div>
               <span class="font-medium d-block">{{ sesion.loginName }}</span>
@@ -87,8 +87,10 @@
           <button class="btn-action-pill btn-danger-outline"
                   *ngIf="sesion.accion === 'ACTIVA'"
                   (click)="expulsarUsuario(sesion)"
+                  [disabled]="cerrandoSesionId === sesion.idSesion"
                   title="Finalizar esta sesión">
-            <span class="material-icons">power_settings_new</span> Cerrar Sesión
+            <span class="material-icons">{{ cerrandoSesionId === sesion.idSesion ? 'hourglass_top' : 'power_settings_new' }}</span>
+            {{ cerrandoSesionId === sesion.idSesion ? 'Cerrando...' : 'Cerrar Sesión' }}
           </button>
 
           <span class="text-muted text-sm d-flex align-items-center justify-content-center" *ngIf="sesion.accion === 'CERRADA'">
