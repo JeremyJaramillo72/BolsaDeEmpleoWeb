@@ -69,25 +69,28 @@ public class AuthController {
                     // 1. Validar contraseña del aplicativo
                     if (passwordEncoder.matches(loginRequest.getContrasena(), usuario.getContrasena())) {
 
-                        // 👇 VALIDACIÓN DE ESTADO Y ENVÍO DE CORREO 👇
-                        String estado = usuario.getEstadoValidacion();
-                        String estadoActual = (estado != null && !estado.isEmpty()) ? estado : "Pendiente";
+                        // Solo las empresas requieren aprobación manual del administrador.
+                        // Los postulantes ya validaron su correo en el registro.
+                        String nombreRolLogin = usuario.getRol() != null ? usuario.getRol().getNombreRol() : "";
+                        if (nombreRolLogin != null && nombreRolLogin.equalsIgnoreCase("EMPRESA")) {
+                            String estado = usuario.getEstadoValidacion();
+                            String estadoActual = (estado != null && !estado.isEmpty()) ? estado : "Pendiente";
 
-                        if (!estadoActual.equalsIgnoreCase("Aprobado") && !estadoActual.equalsIgnoreCase("Activo")) {
-                            try {
-                                emailService.enviarCorreoCuentaNoAprobada(usuario.getCorreo(), usuario.getNombre(), estadoActual);
-                            } catch (Exception e) {
-                                System.out.println("aviso: no se pudo enviar el correo de bloqueo: " + e.getMessage());
+                            if (!estadoActual.equalsIgnoreCase("Aprobado") && !estadoActual.equalsIgnoreCase("Activo")) {
+                                try {
+                                    emailService.enviarCorreoCuentaNoAprobada(usuario.getCorreo(), usuario.getNombre(), estadoActual);
+                                } catch (Exception e) {
+                                    System.out.println("aviso: no se pudo enviar el correo de bloqueo: " + e.getMessage());
+                                }
+
+                                String msjFront = estadoActual.equalsIgnoreCase("Rechazado")
+                                        ? "Tu solicitud de cuenta fue rechazada. Comunícate con el administrador."
+                                        : "Tu cuenta aún está en revisión. No puedes iniciar sesión hasta ser aprobada.";
+
+                                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                        .body(Collections.singletonMap("error", msjFront));
                             }
-
-                            String msjFront = estadoActual.equalsIgnoreCase("Rechazado")
-                                    ? "tu solicitud de cuenta fue rechazada. comunícate con el administrador."
-                                    : "tu cuenta aún está en revisión. no puedes iniciar sesión hasta ser aprobado.";
-
-                            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                                    .body(Collections.singletonMap("error", msjFront));
                         }
-                        // 👆 FIN DE LA VALIDACIÓN 👆
 
                         // 2. BUSCAR CREDENCIALES DE BASE DE DATOS EN ENTIDAD SEGURIDAD
                         Seguridad seguridad = seguridadRepository.findByUsuario(usuario);

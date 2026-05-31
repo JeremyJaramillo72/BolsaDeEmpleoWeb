@@ -22,19 +22,12 @@ public class ValidacionCurso {
     @JoinColumn(name = "id_curso", nullable = false)
     private Cursos curso;
 
-    @Column(
-            name = "estado_validacion",
-            nullable = false,
-            columnDefinition = "VARCHAR(15) DEFAULT 'Pendiente'"
-    )
-    private String estadoValidacion = "Pendiente"; // Ej: "Aprobado", "Rechazado", "Pendiente"
+    @Column(name = "estado_validacion", nullable = false, length = 15)
+    private String estadoValidacion = "Pendiente";
 
     @Column(name = "observaciones", columnDefinition = "TEXT")
-    private String observaciones; // TEXT para detallar por qué se aprobó o rechazó
+    private String observaciones;
 
-    @Column(
-            name = "fecha_revision",
-            columnDefinition = "DATE DEFAULT CURRENT_DATE"
-    )
-    private LocalDate fechaRevision  ;
+    @Column(name = "fecha_revision")
+    private LocalDate fechaRevision;
 }

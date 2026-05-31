@@ -70,6 +70,12 @@ public class UsuarioServiceImpl implements IUsuarioService {
         Usuario usuarioGuardado = usuarioRepository.findByCorreo(usuario.getCorreo())
                 .orElseThrow(() -> new RuntimeException("Error al recuperar usuario registrado."));
 
+        // Postulante: activo tras verificar correo (no requiere aprobación de admin)
+        if (idRolParaGuardar == 3) {
+            usuarioRepository.actualizarEstadoUsuario(usuarioGuardado.getIdUsuario(), "Aprobado");
+            usuarioGuardado.setEstadoValidacion("Aprobado");
+        }
+
         String usernameUnico = generarUsernameBD(
                 usuarioGuardado.getNombre(),
                 usuarioGuardado.getApellido(),

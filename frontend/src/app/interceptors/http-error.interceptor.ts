@@ -25,9 +25,17 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
           }
           break;
 
-        case 403:
-          ui.error('No tienes permisos para realizar esta acción.');
+        case 403: {
+          const mensaje403 =
+            error.error?.error ||
+            error.error?.message ||
+            'No tienes permisos para realizar esta acción.';
+          // El login ya muestra el mensaje del backend (cuenta pendiente, etc.)
+          if (!req.url.includes('/api/auth/login')) {
+            ui.error(mensaje403);
+          }
           break;
+        }
 
         case 500: {
           // Captura errores de permisos de PostgreSQL que llegan como 500

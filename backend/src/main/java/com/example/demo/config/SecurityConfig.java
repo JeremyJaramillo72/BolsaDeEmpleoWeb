@@ -1,13 +1,15 @@
 package com.example.demo.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; // IMPORTANTE
-import org.springframework.security.crypto.password.PasswordEncoder;     // IMPORTANTE
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -16,7 +18,10 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     // 1. Definimos el codificador de contraseñas (BCrypt)
     @Bean
@@ -29,37 +34,17 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // Login usa sesión + switch de BD, no JWT en /api/auth/login.
+                        // Sin token, cualquier ruta fuera de esta lista responde 403.
                         .requestMatchers(
-                                "/api/usuarios/**",
-                                "/api/usuarios-bd/**",
-                                "/api/auth/**",
-                                "/api/registro-postulante/**",
-                                "/api/registro-empresa/**",
-                                "/api/ubicaciones/**",
-                                "/api/perfil-academico/**",
-                                "/api/perfil/**",
-                                "/api/academico/**",
-                                "/api/perfil-idioma/**",
-                                "/api/exp-laboral/**",
-                                "/api/postulaciones/**",
-                                "/api/empresa-perfil/**",
-                                "/api/ofertas/**",
-                                "/api/admins/**",
-                                "/api/rolesbd",
-                                "/api/academico/roles",
-                                "/api/auditorias",
-                                "/api/auditoria/ofertas/**",
-                                "/api/auth/Email",
-                                "/api/configuracion/correo/**",
-                                "/api/plantilla-notificacion/**",
-                                "/api/GestionUser",
-                                "/api/auditoria/postulantes",
-                                "/auditoria/respaldos"
-
+                                "/api/**",
+                                "/ws-notificaciones/**",
+                                "/auditoria/**"
                         ).permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 );
         return http.build();
     }
