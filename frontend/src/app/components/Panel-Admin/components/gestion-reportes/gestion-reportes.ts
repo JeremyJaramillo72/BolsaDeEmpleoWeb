@@ -6,6 +6,7 @@ import { forkJoin } from 'rxjs';
 import * as XLSX from 'xlsx';
 import { Chart, registerables } from 'chart.js';
 import { AdminService } from '../../services/admin.service';
+import { API_BASE_URL } from '../../../../config/api-base';
 
 // ✅ Registrar todos los componentes de Chart.js una sola vez al cargar el módulo
 Chart.register(...registerables);
@@ -81,7 +82,7 @@ const COLUMNAS_REPORTE: Record<ReporteId, ColumnaReporte[]> = {
 export class GestionReportesComponent implements OnInit, OnDestroy {
 
   // ─── URLs del Backend ───────────────────────────────────────────────────
-  private readonly API_BASE          = 'http://localhost:8080/api';
+  private readonly API_BASE          = API_BASE_URL;
   private readonly API_OFERTAS       = `${this.API_BASE}/reportes/ofertas`;
   private readonly API_POSTULACIONES = `${this.API_BASE}/reportes/postulaciones`;
   private readonly API_CIUDADES      = `${this.API_BASE}/ciudades`;

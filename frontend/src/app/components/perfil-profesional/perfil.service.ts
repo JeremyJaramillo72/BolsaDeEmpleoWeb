@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {BehaviorSubject, Observable} from 'rxjs';
-import {UsuarioEmpresaDTO} from '../../services/usuario-empresa.service';
+import { API_BASE_URL } from '../../config/api-base';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PerfilService {
-  private apiUrl = 'http://localhost:8080/api/perfil';
-  private apiCatalogos = 'http://localhost:8080/api/academico';
+  private apiUrl = `${API_BASE_URL}/perfil`;
+  private apiCatalogos = `${API_BASE_URL}/academico`;
 
   constructor(private http: HttpClient) {
   }
@@ -47,7 +47,7 @@ export class PerfilService {
   }
 
   obtenerProvincias() {
-    return this.http.get<any[]>('http://localhost:8080/api/academico/provincias')
+    return this.http.get<any[]>(`${this.apiCatalogos}/provincias`)
   }
 
   buscarCargosPredictivo(termino: string): Observable<any[]> {
@@ -78,7 +78,7 @@ export class PerfilService {
         endpoint = '/perfil-curso/registrar';
         break;
     }
-    return this.http.post(`http://localhost:8080/api${endpoint}`, formData);
+    return this.http.post(`${API_BASE_URL}${endpoint}`, formData);
   }
 
   actualizarLogo(url: string) {
@@ -89,11 +89,11 @@ export class PerfilService {
     const formData = new FormData();
     formData.append('archivo', archivo);
 
-    return this.http.post(`http://localhost:8080/api/perfil/${id}/foto`, formData);
+    return this.http.post(`${this.apiUrl}/${id}/foto`, formData);
   }
 
   eliminarItemPerfil(idUsuario: number, tipoItem: string, idItem: number): Observable<any> {
-    return this.http.delete(`http://localhost:8080/api/perfil/${idUsuario}/item/${tipoItem}/${idItem}`);
+    return this.http.delete(`${this.apiUrl}/${idUsuario}/item/${tipoItem}/${idItem}`);
   }
 
   crearNuevoCargo(datosCargo: any): Observable<any> {
@@ -105,12 +105,12 @@ export class PerfilService {
   }
 
   obtenerCategorias() {
-    return this.http.get<any[]>('http://localhost:8080/api/academico/categorias');
+    return this.http.get<any[]>(`${this.apiCatalogos}/categorias`);
 
   }
 
   actualizarDatosPersonales(idUsuario: number, datos: any): Observable<any> {
-    return this.http.put(`http://localhost:8080/api/perfil/${idUsuario}/actualizar-personales`, datos);
+    return this.http.put(`${this.apiUrl}/${idUsuario}/actualizar-personales`, datos);
   }
 
   actualizarExperiencia(formData: FormData) {
