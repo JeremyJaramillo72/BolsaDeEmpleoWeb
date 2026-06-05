@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, signal }
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UiNotificationService } from '../../../services/ui-notification.service';
+import { DocumentoPdfRef, refDocumento } from '../../../utils/documento-storage-url';
 @Component({
   selector: 'app-seccion-idiomas',
   standalone: true,
@@ -16,7 +17,7 @@ export class SeccionIdiomasComponent {
 
   @Output() onGuardarIdioma = new EventEmitter<{formData: FormData, idEdicion: number | null}>();
   @Output() onEliminar = new EventEmitter<{index: number, id: number}>();
-  @Output() onVerPdf = new EventEmitter<string>();
+  @Output() onVerPdf = new EventEmitter<DocumentoPdfRef>();
 
   @ViewChild('fileInputIdm') fileInputIdm!: ElementRef;
 
@@ -90,5 +91,10 @@ export class SeccionIdiomasComponent {
 
     this.onGuardarIdioma.emit({ formData: formData, idEdicion: this.idEdicionIdioma });
     this.cerrarModal();
+  }
+
+  verPdfIdioma(item: { nombreArchivo?: string; nombre_idioma?: string }): void {
+    if (!item?.nombreArchivo) return;
+    this.onVerPdf.emit(refDocumento(item.nombreArchivo, `Certificado_${item.nombre_idioma || 'Idioma'}`));
   }
 }

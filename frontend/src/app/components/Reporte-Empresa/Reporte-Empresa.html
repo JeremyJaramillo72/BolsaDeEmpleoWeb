@@ -6,7 +6,7 @@
       <span class="material-icons text-primary" style="vertical-align:middle;">business_center</span>
       Reporte de Ofertas Laborales
     </h1>
-    <p class="page-description">Visualice, filtre y exporte sus ofertas con estadísticas de postulaciones</p>
+    <p class="page-description">Filtre sus ofertas, consulte métricas de postulaciones y exporte un resumen claro (tabla, gráficos, PDF y Excel)</p>
   </div>
 
   <!-- ═══════════════ ALERTAS ═══════════════ -->
@@ -217,12 +217,12 @@
       </button>
       <div class="btn-group-right">
         <button class="btn-action btn-preview" (click)="vistaPrevia()" [disabled]="cargando">
-          <span class="material-icons">{{ cargando ? 'hourglass_empty' : 'table_view' }}</span>
-          {{ cargando ? 'Consultando...' : 'Vista Previa' }}
+          <span class="material-icons">{{ cargando ? 'hourglass_empty' : 'insights' }}</span>
+          {{ cargando ? 'Generando...' : 'Generar reporte' }}
         </button>
-        <button class="btn-action btn-stats" (click)="mostrandoGrafico ? verTabla() : verEstadisticas()">
+        <button class="btn-action btn-stats" *ngIf="reporteGenerado" (click)="mostrandoGrafico ? verTabla() : verEstadisticas()">
           <span class="material-icons">{{ mostrandoGrafico ? 'table_rows' : 'bar_chart' }}</span>
-          {{ mostrandoGrafico ? 'Ver Tabla' : 'Estadísticas' }}
+          {{ mostrandoGrafico ? 'Ver tabla' : 'Ver gráficos' }}
         </button>
         <button class="btn-action btn-excel" (click)="exportarExcel()">
           <span class="material-icons">grid_on</span> Excel
@@ -240,18 +240,54 @@
       <h3>
         <span class="material-icons">table_view</span>
         Resultados
-        <span class="results-badge">{{ resultados.length }} registros</span>
+        <span class="results-badge">{{ resultados.length }} ofertas · {{ columnasReporte.length }} columnas</span>
         <span class="results-badge results-badge-top" *ngIf="filtros.top">{{ labelTopSeleccionado }}</span>
       </h3>
     </div>
-    <div class="table-wrapper">
+
+    <div class="stats-summary-grid stats-summary-grid--inline" *ngIf="reporteGenerado">
+      <div class="summary-card summary-primary">
+        <span class="material-icons summary-icon">work</span>
+        <div class="summary-info">
+          <span class="summary-value">{{ resultados.length }}</span>
+          <span class="summary-label">Ofertas</span>
+        </div>
+      </div>
+      <div class="summary-card summary-purple">
+        <span class="material-icons summary-icon">people</span>
+        <div class="summary-info">
+          <span class="summary-value">{{ totalPostulaciones }}</span>
+          <span class="summary-label">Postulaciones</span>
+        </div>
+      </div>
+      <div class="summary-card summary-teal">
+        <span class="material-icons summary-icon">check_circle</span>
+        <div class="summary-info">
+          <span class="summary-value">{{ totalAceptadas }}</span>
+          <span class="summary-label">Aceptadas</span>
+        </div>
+      </div>
+      <div class="summary-card summary-slate">
+        <span class="material-icons summary-icon">cancel</span>
+        <div class="summary-info">
+          <span class="summary-value">{{ totalCanceladas }}</span>
+          <span class="summary-label">Canceladas</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrapper table-wrapper--compact">
       <table>
         <thead>
-        <tr><th *ngFor="let col of columnas">{{ formatearColumna(col) }}</th></tr>
+        <tr><th *ngFor="let col of columnasReporte">{{ col.etiqueta }}</th></tr>
         </thead>
         <tbody>
         <tr *ngFor="let fila of resultadosPaginados; let i = index" [class.row-even]="i % 2 === 0">
-          <td *ngFor="let col of columnas">{{ formatearValor(fila[col]) }}</td>
+          <td *ngFor="let col of columnasReporte"
+              [class.col-titulo]="col.campo === 'titulo'"
+              [title]="formatearValor(fila[col.campo], col.campo)">
+            {{ formatearValor(fila[col.campo], col.campo) }}
+          </td>
         </tr>
         </tbody>
       </table>
@@ -362,8 +398,8 @@
   <div class="section-card empty-state"
        *ngIf="!mostrandoResultados && !mostrandoGrafico && !cargando">
     <span class="material-icons empty-icon">insert_chart_outlined</span>
-    <p class="empty-title">Seleccione los filtros y presione <strong>Vista Previa</strong></p>
-    <p class="empty-sub">O presione directamente <strong>Vista Previa</strong> para ver todas sus ofertas</p>
+    <p class="empty-title">Configure filtros (opcional) y pulse <strong>Generar reporte</strong></p>
+    <p class="empty-sub">Verá un resumen con KPIs, gráficos de postulaciones y una tabla con las columnas más relevantes</p>
   </div>
 
   <!-- ═══════════════ LOADING ═══════════════ -->

@@ -12,6 +12,8 @@ import { FormsModule } from '@angular/forms';
 import { UiNotificationService } from '../../services/ui-notification.service';
 import { ConfirmService } from '../../services/confirm.service';
 import {AuthService} from '../../services/auth.service';
+import { DocumentoPdfService } from '../../services/documento-pdf.service';
+import { DocumentoPdfRef } from '../../utils/documento-storage-url';
 
 @Component({
   selector: 'app-perfil-profesional',
@@ -55,7 +57,8 @@ export class PerfilProfesionalComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private notif: UiNotificationService,
     private confirmSvc: ConfirmService,
-    private authService: AuthService
+    private authService: AuthService,
+    private documentoPdf: DocumentoPdfService
   ) {}
 
   ngOnInit(): void {
@@ -189,10 +192,17 @@ export class PerfilProfesionalComponent implements OnInit {
     this.completitudPerfil = Math.round((camposCompletados / total) * 100);
   }
 
-  verPdf(urlArchivo: string): void {
-    if (urlArchivo && urlArchivo.startsWith('http')) { window.open(urlArchivo, '_blank'); }
-    else if (urlArchivo) { this.notif.advertencia('El archivo no tiene un formato de URL válido.'); }
-    else { this.notif.advertencia('No hay ningún documento adjunto para mostrar.'); }
+  verPdf(ref: DocumentoPdfRef | string): void {
+    const url = typeof ref === 'string' ? ref : ref?.url;
+    if (!url) {
+      this.notif.advertencia('No hay ningún documento adjunto para mostrar.');
+      return;
+    }
+    if (!url.startsWith('http')) {
+      this.notif.advertencia('El archivo no tiene un formato de URL válido.');
+      return;
+    }
+    this.documentoPdf.abrirVistaPrevia(ref);
   }
 
 

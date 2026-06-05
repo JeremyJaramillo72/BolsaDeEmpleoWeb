@@ -37,7 +37,7 @@
   margin-bottom: 30px;
 }
 .page-header h1 {
-  font-size: 26px;
+  font-size: clamp(1.25rem, 4vw, 26px);
   font-weight: 700;
   color: #1e293b;
   display: flex;
@@ -231,4 +231,20 @@
 @keyframes rotation {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 1rem;
+  }
+
+  .form-card,
+  .security-card {
+    padding: 1.25rem;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
 }

@@ -21,6 +21,25 @@ interface GraficoData {
 
 interface TopOpcion { label: string; valor: number | null; }
 
+interface ColumnaReporte {
+  campo: string;
+  etiqueta: string;
+}
+
+/** Columnas visibles en tabla, PDF y Excel (sin saturar con todos los campos del API). */
+const COLUMNAS_OFERTAS_EMPRESA: ColumnaReporte[] = [
+  { campo: 'titulo', etiqueta: 'Título' },
+  { campo: 'nombreCategoria', etiqueta: 'Categoría' },
+  { campo: 'nombreModalidad', etiqueta: 'Modalidad' },
+  { campo: 'nombreCiudad', etiqueta: 'Ciudad' },
+  { campo: 'salarioMin', etiqueta: 'Salario mín. ($)' },
+  { campo: 'salarioMax', etiqueta: 'Salario máx. ($)' },
+  { campo: 'estadoOferta', etiqueta: 'Estado' },
+  { campo: 'fechaCierre', etiqueta: 'Fecha cierre' },
+  { campo: 'totalPostulaciones', etiqueta: 'Postulaciones' },
+  { campo: 'postulacionesAceptadas', etiqueta: 'Aceptadas' }
+];
+
 @Component({
   selector: 'app-reporte-empresa',
   standalone: true,
@@ -46,7 +65,9 @@ export class ReporteEmpresaComponent implements OnInit, OnDestroy {
 
   resultados:  any[]         = [];
   columnas:    string[]      = [];
+  columnasReporte: ColumnaReporte[] = [];
   graficos:    GraficoData[] = [];
+  reporteGenerado = false;
 
   cargando            = false;
   mostrandoResultados = false;
@@ -216,7 +237,9 @@ export class ReporteEmpresaComponent implements OnInit, OnDestroy {
     this.destruirCharts();
     this.resultados          = [];
     this.columnas            = [];
+    this.columnasReporte     = [];
     this.graficos            = [];
+    this.reporteGenerado     = false;
     this.mostrandoResultados = false;
     this.mostrandoGrafico    = false;
     this.cargando            = false;
@@ -277,11 +300,13 @@ export class ReporteEmpresaComponent implements OnInit, OnDestroy {
         this.ngZone.run(() => {
           this.resultados = Array.isArray(data) ? data : [];
           if (this.resultados.length > 0) {
-            this.columnas            = Object.keys(this.resultados[0]);
+            this.aplicarColumnasPuntuales();
             this.generarGraficos(this.resultados);
+            this.reporteGenerado     = true;
             this.mostrandoResultados = true;
+            this.mostrandoGrafico    = false;
             this.paginaActual        = 1;
-            this.mostrarExito(`Se encontraron ${this.resultados.length} registros.`);
+            this.mostrarExito(`Reporte generado: ${this.resultados.length} ofertas.`);
           } else {
             this.mostrarError('No se encontraron datos para los filtros seleccionados.');
           }
@@ -495,6 +520,36 @@ export class ReporteEmpresaComponent implements OnInit, OnDestroy {
     });
   }
 
+  private aplicarColumnasPuntuales(): void {
+    const keysDisponibles = this.resultados.length > 0 ? Object.keys(this.resultados[0]) : [];
+    this.columnasReporte = COLUMNAS_OFERTAS_EMPRESA.filter(c => keysDisponibles.includes(c.campo));
+    if (this.columnasReporte.length === 0 && keysDisponibles.length > 0) {
+      this.columnasReporte = keysDisponibles.slice(0, 8).map(campo => ({
+        campo,
+        etiqueta: this.etiquetaDesdeCampo(campo)
+      }));
+    }
+    this.columnas = this.columnasReporte.map(c => c.campo);
+  }
+
+  private filasParaExportacion(): Record<string, unknown>[] {
+    return this.resultados.map(f => {
+      const out: Record<string, unknown> = {};
+      for (const col of this.columnasReporte) {
+        out[col.etiqueta] = this.formatearValor(f[col.campo], col.campo);
+      }
+      return out;
+    });
+  }
+
+  private etiquetaDesdeCampo(campo: string): string {
+    return campo
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, c => c.toUpperCase())
+      .trim();
+  }
+
   private generarGraficos(data: any[]): void {
     this.graficos = [];
 
@@ -692,13 +747,20 @@ export class ReporteEmpresaComponent implements OnInit, OnDestroy {
         : null;
 
       // ── Calcular anchos mínimos ────────────────────────────────────────────
+      const colsPdf = this.columnasReporte;
+      const filasPdf = this.filasParaExportacion();
+      if (colsPdf.length === 0) {
+        this.mostrarError('No hay columnas configuradas para exportar.');
+        return;
+      }
+
       const calcWidths = (fs: number): { widths: number[]; total: number } => {
         const ratio = (fs / 8) * CHAR_W_RATIO;
-        const widths = this.columnas.map(col => {
-          const hLen = this.formatearColumna(col).length;
+        const widths = colsPdf.map(col => {
+          const hLen = col.etiqueta.length;
           const dLen = Math.min(
-            this.resultados.reduce((mx, row) =>
-              Math.max(mx, row[col] != null ? String(row[col]).length : 0), 0),
+            filasPdf.reduce((mx, row) =>
+              Math.max(mx, row[col.etiqueta] != null ? String(row[col.etiqueta]).length : 0), 0),
             MAX_CHARS
           );
           return (Math.max(hLen, dLen) + COL_PAD * 2) * ratio;
@@ -706,7 +768,7 @@ export class ReporteEmpresaComponent implements OnInit, OnDestroy {
         return { widths, total: widths.reduce((a, b) => a + b, 0) };
       };
 
-      let fontSize = 8;
+      let fontSize = colsPdf.length <= 8 ? 9 : 8;
       let { widths: colWidths, total: totalW } = calcWidths(fontSize);
       for (let f = 7; f >= 5; f--) {
         if (totalW <= USABLE_W) break;
@@ -764,8 +826,8 @@ export class ReporteEmpresaComponent implements OnInit, OnDestroy {
         doc.setFontSize(fontSize);
         doc.setTextColor(55, 65, 81);
         let x = MARGIN;
-        this.columnas.forEach((col, i) => {
-          const label = this.formatearColumna(col);
+        colsPdf.forEach((col, i) => {
+          const label = col.etiqueta;
           const maxC  = Math.floor((colWidths[i] - COL_PAD * 2) / ((fontSize / 8) * CHAR_W_RATIO));
           const txt   = label.length > maxC ? label.substring(0, Math.max(maxC - 1, 1)) + '…' : label;
           doc.text(txt, x + COL_PAD, yPos);
@@ -810,8 +872,8 @@ export class ReporteEmpresaComponent implements OnInit, OnDestroy {
         doc.setFontSize(fontSize);
         doc.setTextColor(55, 65, 81);
         let x = MARGIN;
-        this.columnas.forEach((col, i) => {
-          const raw  = fila[col] != null ? String(fila[col]) : '—';
+        colsPdf.forEach((col, i) => {
+          const raw  = filasPdf[idx][col.etiqueta] != null ? String(filasPdf[idx][col.etiqueta]) : '—';
           const maxC = Math.floor((colWidths[i] - COL_PAD * 2) / ((fontSize / 8) * CHAR_W_RATIO));
           const txt  = raw.length > maxC ? raw.substring(0, Math.max(maxC - 1, 1)) + '…' : raw;
           doc.text(txt, x + COL_PAD, y);
@@ -919,9 +981,11 @@ export class ReporteEmpresaComponent implements OnInit, OnDestroy {
     if (this.resultados.length === 0) { this.mostrarError('No hay datos para exportar.'); return; }
     try {
       const wb     = XLSX.utils.book_new();
-      const wsData = XLSX.utils.json_to_sheet(this.resultados);
-      wsData['!cols'] = this.columnas.map(col => ({
-        wch: Math.max(col.length, ...this.resultados.map(r => String(r[col] ?? '').length))
+      const filasExcel = this.filasParaExportacion();
+      const wsData = XLSX.utils.json_to_sheet(filasExcel);
+      const headersExcel = this.columnasReporte.map(c => c.etiqueta);
+      wsData['!cols'] = headersExcel.map(etq => ({
+        wch: Math.max(etq.length, ...filasExcel.map(r => String(r[etq] ?? '').length)) + 2
       }));
       XLSX.utils.book_append_sheet(wb, wsData, 'Ofertas');
       if (this.graficos.length > 0) {
@@ -1020,12 +1084,21 @@ export class ReporteEmpresaComponent implements OnInit, OnDestroy {
   }
 
   formatearColumna(col: string): string {
-    return col.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim();
+    const meta = this.columnasReporte.find(c => c.campo === col);
+    return meta ? meta.etiqueta : this.etiquetaDesdeCampo(col);
   }
-  formatearValor(val: any): string {
-    if (val == null) return '—';
-    if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val)) return new Date(val).toLocaleDateString('es-EC');
-    if (typeof val === 'number' && val > 100) return `$${val.toFixed(2)}`;
+  formatearValor(val: any, campo?: string): string {
+    if (val == null || val === '') return '—';
+    if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val)) {
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? val : d.toLocaleDateString('es-EC');
+    }
+    if (typeof val === 'number') {
+      if (campo === 'salarioMin' || campo === 'salarioMax') {
+        return `$${val.toLocaleString('es-EC', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+      }
+      return String(val);
+    }
     return String(val);
   }
   mostrarExito(msg: string): void {

@@ -189,12 +189,28 @@ public class PostulacionServiceImpl implements IPostulacionService {
 
     @Override
     public PerfilPostulanteDTO obtenerPerfilDelCandidato(Long idPostulacion) {
-        return postulacionCustomRepository.obtenerPerfilCompleto(idPostulacion);
+        PerfilPostulanteDTO dto = postulacionCustomRepository.obtenerPerfilCompleto(idPostulacion);
+        if (dto != null && dto.getArchivoCv() != null && !dto.getArchivoCv().isBlank()) {
+            try {
+                dto.setArchivoCv(azureStorageConfig.resolverUrlAcceso(dto.getArchivoCv()));
+            } catch (Exception ignored) {
+                // El frontend puede usar /api/storage/ver como respaldo
+            }
+        }
+        return dto;
     }
 
     @Override
     public String obtenerUrlCV(Integer idPostulacion) {
-        return postulacionRepository.obtenerUrlCvFn(idPostulacion);
+        String url = postulacionRepository.obtenerUrlCvFn(idPostulacion);
+        if (url == null || url.isBlank()) {
+            return url;
+        }
+        try {
+            return azureStorageConfig.resolverUrlAcceso(url);
+        } catch (Exception e) {
+            return url;
+        }
     }
 
     @Override

@@ -330,3 +330,25 @@
 :host-context(.dark-mode) .ver-todas {
   color: #a0aec0;
 }
+
+@media (max-width: 768px) {
+  .dropdown-menu {
+    width: min(420px, calc(100vw - 16px));
+    right: -8px;
+    max-height: calc(100dvh - 80px);
+  }
+
+  .notif-list {
+    max-height: calc(100dvh - 200px);
+  }
+}
+
+@media (max-width: 480px) {
+  .dropdown-menu {
+    position: fixed;
+    top: 64px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+  }
+}

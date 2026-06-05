@@ -359,3 +359,44 @@ input:focus, select:focus, textarea:focus { border-color: #3b82f6; box-shadow: 0
   transition: background 0.2s;
 }
 .btn-cancel:hover { background: #f1f5f9; }
+
+@media (max-width: 992px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .sticky-card {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 1rem;
+  }
+
+  .custom-card {
+    padding: 1.25rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .logo-circle {
+    width: 120px;
+    height: 120px;
+  }
+
+  .document-item-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}

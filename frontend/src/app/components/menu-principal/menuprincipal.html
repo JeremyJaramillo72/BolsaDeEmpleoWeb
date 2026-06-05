@@ -1,19 +1,21 @@
 <div class="layout-container">
 
-  <aside class="sidebar" [class.collapsed]="!isSidebarOpen">
+  <div class="sidebar-overlay" *ngIf="isMobileMenuOpen" (click)="closeMobileMenu()" aria-hidden="true"></div>
+
+  <aside class="sidebar" [class.collapsed]="!isSidebarOpen && !isMobileView" [class.mobile-open]="isMobileMenuOpen">
 
     <div class="sidebar-header">
       <div class="brand-logo">
         <img *ngIf="logoSistema" [src]="logoSistema" alt="Logo" class="brand-logo-img">
         <span *ngIf="!logoSistema" class="material-icons">shield</span>
       </div>
-      <div class="brand-text" *ngIf="isSidebarOpen">
+      <div class="brand-text" *ngIf="isSidebarOpen || isMobileView">
         <h2>{{ nombreSistema }}</h2>
         <p>UTEQ</p>
       </div>
     </div>
 
-    <div class="sidebar-profile" *ngIf="isSidebarOpen">
+    <div class="sidebar-profile" *ngIf="isSidebarOpen || isMobileView">
       <div class="sp-avatar" *ngIf="!fotoMenu">{{ nombreUsuario.charAt(0) | uppercase }}</div>
       <img *ngIf="fotoMenu" [src]="fotoMenu" class="sp-avatar sp-avatar-img" alt="Foto perfil">
       <div class="sp-info">
@@ -28,28 +30,29 @@
 
     <nav class="sidebar-nav">
 
-      <div class="menu-label" *ngIf="isSidebarOpen">MENÚ PRINCIPAL</div>
+      <div class="menu-label" *ngIf="isSidebarOpen || isMobileView">MENÚ PRINCIPAL</div>
 
-      <a (click)="irAInicio()" class="nav-item" style="cursor: pointer;">
+      <a (click)="irAInicio(); closeMobileMenu()" class="nav-item" style="cursor: pointer;">
         <span class="material-icons nav-icon">grid_view</span>
-        <span class="nav-text" *ngIf="isSidebarOpen">Inicio</span>
+        <span class="nav-text" *ngIf="isSidebarOpen || isMobileView">Inicio</span>
       </a>
       <a *ngFor="let item of menuItems"
          [routerLink]="item.route"
          routerLinkActive="active"
+         (click)="closeMobileMenu()"
          class="nav-item">
 
         <span class="material-icons nav-icon" [ngStyle]="{'color': item.colorHex || '#64748b'}">{{ item.icon }}</span>
-        <span class="nav-text" *ngIf="isSidebarOpen">{{ item.title }}</span>
+        <span class="nav-text" *ngIf="isSidebarOpen || isMobileView">{{ item.title }}</span>
 
-        <div class="badge" *ngIf="isSidebarOpen && item.badge">{{ item.badge }}</div>
+        <div class="badge" *ngIf="(isSidebarOpen || isMobileView) && item.badge">{{ item.badge }}</div>
       </a>
     </nav>
 
     <div class="sidebar-footer">
-      <a (click)="cerrarSesion()" class="nav-item logout">
+      <a (click)="cerrarSesion(); closeMobileMenu()" class="nav-item logout">
         <span class="material-icons nav-icon">logout</span>
-        <span class="nav-text" *ngIf="isSidebarOpen">Cerrar Sesión</span>
+        <span class="nav-text" *ngIf="isSidebarOpen || isMobileView">Cerrar Sesión</span>
       </a>
     </div>
   </aside>
@@ -58,8 +61,13 @@
 
     <header class="topbar">
       <div class="topbar-left">
-        <h2>Panel de Control</h2>
-        <p>Bienvenido al sistema de administración UTEQ</p>
+        <button type="button" class="mobile-menu-btn" (click)="toggleMobileMenu()" aria-label="Abrir menú">
+          <span class="material-icons">{{ isMobileMenuOpen ? 'close' : 'menu' }}</span>
+        </button>
+        <div class="topbar-titles">
+          <h2>Panel de Control</h2>
+          <p>Bienvenido al sistema de administración UTEQ</p>
+        </div>
       </div>
 
       <div class="topbar-right">

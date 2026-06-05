@@ -1,10 +1,12 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { SafeResourceUrl } from '@angular/platform-browser';
 import { PostulacionService } from '../../../services/postulacion.service';
 import { UiNotificationService } from '../../../services/ui-notification.service';
+import { DocumentoPdfService } from '../../../services/documento-pdf.service';
+import { refDocumento, sanitizarNombreArchivo } from '../../../utils/documento-storage-url';
 
 @Component({
   selector: 'app-perfil-candidato',
@@ -13,15 +15,17 @@ import { UiNotificationService } from '../../../services/ui-notification.service
   templateUrl: './perfil-candidato.html',
   styleUrl: './perfil-candidato.css',
 })
-export class PerfilCandidatoComponent implements OnInit {
+export class PerfilCandidatoComponent implements OnInit, OnDestroy {
 
   idPostulacion!: number;
   cargando: boolean = true;
   enviando: boolean = false;
+  cargandoPdf = false;
 
   mensajeEvaluacion: string = '';
   perfil: any = null;
-  cvUrlSegura!: SafeResourceUrl;
+  cvUrlSegura: SafeResourceUrl | null = null;
+  nombreCv = 'Curriculum.pdf';
 
   experienciaList: any[] = [];
   cursosList: any[] = [];
@@ -32,10 +36,14 @@ export class PerfilCandidatoComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private postulacionService: PostulacionService,
-    private sanitizer: DomSanitizer,
+    private documentoPdf: DocumentoPdfService,
     private cdr: ChangeDetectorRef,
     private ui: UiNotificationService
   ) {}
+
+  ngOnDestroy(): void {
+    this.documentoPdf.revokeAll();
+  }
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -59,7 +67,11 @@ export class PerfilCandidatoComponent implements OnInit {
         this.formacionList = JSON.parse(data.formacionAcademica || '[]');
 
         if (data.archivoCv) {
-          this.cvUrlSegura = this.sanitizer.bypassSecurityTrustResourceUrl(data.archivoCv);
+          const candidato = (data.nombrePostulante || data.nombre || 'Candidato').trim();
+          this.nombreCv = sanitizarNombreArchivo(`CV_${candidato}`);
+          this.cargarVistaPreviaCv(data.archivoCv);
+        } else {
+          this.cvUrlSegura = null;
         }
 
         this.cargando = false;
@@ -196,5 +208,32 @@ export class PerfilCandidatoComponent implements OnInit {
 
   volver(): void {
     this.router.navigate(['/menu-principal/revision-postulantes']);
+  }
+
+  private cargarVistaPreviaCv(urlAzure: string): void {
+    this.cargandoPdf = true;
+    this.documentoPdf.obtenerUrlIframe(urlAzure, this.nombreCv).subscribe({
+      next: safeUrl => {
+        this.cvUrlSegura = safeUrl;
+        this.cargandoPdf = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.cargandoPdf = false;
+        this.cvUrlSegura = null;
+        this.ui.advertencia('No se pudo cargar la vista previa del CV.');
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  descargarCv(): void {
+    if (!this.perfil?.archivoCv) return;
+    this.documentoPdf.descargar({ url: this.perfil.archivoCv, nombre: this.nombreCv });
+  }
+
+  verDocumento(url: string, nombreLegible: string): void {
+    if (!url) return;
+    this.documentoPdf.abrirVistaPrevia(refDocumento(url, nombreLegible));
   }
 }

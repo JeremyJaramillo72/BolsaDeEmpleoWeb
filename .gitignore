@@ -3,3 +3,4 @@ desktop.ini
 .idea/workspace.xml
 .idea/dataSources.local.xml
 /backend/target
+backend/src/main/resources/application-local.properties

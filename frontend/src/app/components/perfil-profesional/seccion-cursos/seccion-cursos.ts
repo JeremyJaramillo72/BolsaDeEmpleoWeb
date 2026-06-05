@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, ChangeDe
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UiNotificationService } from '../../../services/ui-notification.service';
+import { DocumentoPdfRef, refDocumento } from '../../../utils/documento-storage-url';
 
 @Component({
   selector: 'app-seccion-cursos',
@@ -15,7 +16,7 @@ export class SeccionCursosComponent {
 
   @Output() onGuardarCurso = new EventEmitter<{formData: FormData, idEdicion: number | null}>();
   @Output() onEliminar = new EventEmitter<{index: number, id: number}>();
-  @Output() onVerPdf = new EventEmitter<string>();
+  @Output() onVerPdf = new EventEmitter<DocumentoPdfRef>();
 
   @ViewChild('fileInputCurso') fileInputCurso!: ElementRef;
 
@@ -97,5 +98,10 @@ export class SeccionCursosComponent {
 
     this.onGuardarCurso.emit({ formData: formData, idEdicion: this.idEdicionCurso });
     this.cerrarModal();
+  }
+
+  verPdfCurso(item: { nombreArchivo?: string; nombre_curso?: string }): void {
+    if (!item?.nombreArchivo) return;
+    this.onVerPdf.emit(refDocumento(item.nombreArchivo, item.nombre_curso || 'Certificado_Curso'));
   }
 }

@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, signal }
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UiNotificationService } from '../../../services/ui-notification.service';
+import { DocumentoPdfRef, refDocumento } from '../../../utils/documento-storage-url';
 
 @Component({
   selector: 'app-seccion-academica',
@@ -17,7 +18,7 @@ export class SeccionAcademicaComponent {
 
   @Output() onGuardarAcademica = new EventEmitter<{formData: FormData, idEdicion: number | null}>();
   @Output() onEliminar = new EventEmitter<{index: number, id: number}>();
-  @Output() onVerPdf = new EventEmitter<string>();
+  @Output() onVerPdf = new EventEmitter<DocumentoPdfRef>();
   @Output() onCambioFacultad = new EventEmitter<number>();
 
   @ViewChild('fileInputAcad') fileInputAcad!: ElementRef;
@@ -146,5 +147,10 @@ export class SeccionAcademicaComponent {
 
     this.onGuardarAcademica.emit({ formData: formData, idEdicion: this.idEdicionAcademica });
     this.cerrarModal();
+  }
+
+  verPdfTitulo(titulo: { nombreArchivo?: string; nombreCarrera?: string }): void {
+    if (!titulo?.nombreArchivo) return;
+    this.onVerPdf.emit(refDocumento(titulo.nombreArchivo, titulo.nombreCarrera || 'Titulo_Academico'));
   }
 }

@@ -20,7 +20,7 @@
         <p>{{ item.institucion }} | Duración: {{ item.horas_duracion }} horas</p>
       </div>
       <div class="card-actions">
-        <button class="btn-ver-pdf" (click)="onVerPdf.emit(item.nombreArchivo)" *ngIf="item.nombreArchivo">
+        <button class="btn-ver-pdf" (click)="verPdfCurso(item)" *ngIf="item.nombreArchivo">
           <span class="material-icons">description</span> Ver PDF
         </button>
         <button class="btn-eliminar" (click)="editar(item)" title="Editar">

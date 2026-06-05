@@ -1,15 +1,29 @@
 /* You can add global styles to this file, and also import other style files */
 @import 'material-icons/iconfont/material-icons.css';
-/* Esta es la nueva forma de cargar Tailwind v4 */
 @import "tailwindcss";
 @import 'ngx-toastr/toastr';
-@import "tailwindcss/preflight";
+@import "./responsive-shared.css";
 
+/* Base app shell — evita pantalla en blanco */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+app-root {
+  display: block;
+  min-height: 100%;
+}
+
+app-root main {
+  display: block;
+  min-height: 100%;
+}
 /* ── Toastr – diseño profesional ───────────────────────────────────────── */
 
 #toast-container > div {
-  min-width: 340px !important;
-  max-width: 440px !important;
+  min-width: min(340px, calc(100vw - 24px)) !important;
+  max-width: min(440px, calc(100vw - 24px)) !important;
   padding: 14px 44px 18px 64px !important;
   border-radius: 12px !important;
   border: none !important;

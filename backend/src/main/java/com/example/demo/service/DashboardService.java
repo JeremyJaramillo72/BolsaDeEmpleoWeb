@@ -10,14 +10,12 @@ import com.example.demo.dto.DashboardDTO.GraficoMultiDatasetDTO;
 import com.example.demo.dto.DashboardDTO.GraficoDataset;
 import com.example.demo.repository.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 @Service
 public class DashboardService {
@@ -39,38 +37,35 @@ public class DashboardService {
 
     private final AuditoriaRepository auditoriaRepository;
 
+    @Cacheable(value = "dashboardAdmin", key = "'stats'", sync = true)
     public AdminStats getAdminStats() {
+        CompletableFuture<KpiItem> pendientes = CompletableFuture.supplyAsync(this::crearKpiPendientesAdmin);
+        CompletableFuture<KpiItem> empresas = CompletableFuture.supplyAsync(this::crearKpiEmpresasNuevasAdmin);
+        CompletableFuture<KpiItem> usuarios = CompletableFuture.supplyAsync(this::crearKpiUsuariosTotalesAdmin);
+        CompletableFuture<KpiItem> reportes = CompletableFuture.supplyAsync(this::crearKpiReportesHoyAdmin);
+        CompletableFuture<GraficoMultiDatasetDTO> graficoTop = CompletableFuture.supplyAsync(
+                () -> procesarAuditoriaTopUsuarios(auditoriaRepository.getTopUsersAuditHistoric())
+        );
+
+        CompletableFuture.allOf(pendientes, empresas, usuarios, reportes, graficoTop).join();
+
         AdminStats stats = new AdminStats();
-
-        // Crear KPIs con estructura nueva
         Map<String, KpiItem> kpis = new LinkedHashMap<>();
-
-        // KPI: Ofertas Pendientes
-        kpis.put("pendientes", crearKpiPendientesAdmin());
-
-        // KPI: Nuevas Empresas
-        kpis.put("empresasNuevas", crearKpiEmpresasNuevasAdmin());
-
-        // KPI: Usuarios Totales
-        kpis.put("usuariosTotales", crearKpiUsuariosTotalesAdmin());
-
-        // KPI: Reportes Hoy
-        kpis.put("reportesHoy", crearKpiReportesHoyAdmin());
-
+        kpis.put("pendientes", pendientes.join());
+        kpis.put("empresasNuevas", empresas.join());
+        kpis.put("usuariosTotales", usuarios.join());
+        kpis.put("reportesHoy", reportes.join());
         stats.setKpis(kpis);
 
-        // Gráfico principal: Tendencia de Auditorías (multi-línea con top 4-5 usuarios)
-        // Note: Using GraficoDTO wrapper with special handling on frontend for multi-dataset
         GraficoDTO grafico = new GraficoDTO();
         grafico.setLabels(generarLabelsHistoricos());
-        // We'll pass multi-dataset data as string in the data field and let frontend parse it
-        // For now, this is a placeholder - frontend will receive graficoMultiDataset instead
         stats.setGrafico(grafico);
-        stats.setGraficoMultiDataset(procesarAuditoriaTopUsuarios(auditoriaRepository.getTopUsersAuditHistoric()));
+        stats.setGraficoMultiDataset(graficoTop.join());
 
         return stats;
     }
 
+    @Cacheable(value = "dashboardEmpresa", key = "#idEmpresa", sync = true)
     public EmpresaStats getEmpresaStats(Long idEmpresa) {
         EmpresaStats stats = new EmpresaStats();
 
@@ -106,6 +101,7 @@ public class DashboardService {
         return stats;
     }
 
+    @Cacheable(value = "dashboardPostulante", key = "#idUsuario", sync = true)
     public PostulanteStats getPostulanteStats(Long idUsuario) {
         PostulanteStats stats = new PostulanteStats();
 

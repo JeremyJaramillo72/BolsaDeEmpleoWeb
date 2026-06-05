@@ -2,8 +2,6 @@ package com.example.demo.service;
 
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
-import com.azure.storage.blob.BlobServiceClient;
-import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.models.BlobItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,14 +39,9 @@ public class DatabaseBackupService {
     @Value("${spring.datasource.password}")
     private String dbPassword;
 
-    @Value("${azure.storage.connection-string}")
-    private String azureConnectionString;
-
-    @Value("${azure.storage.container-name.backups}")
-    private String containerNameBackups;
-
     private final JdbcTemplate jdbcTemplate;
     private final com.zaxxer.hikari.HikariDataSource dataSource;
+    private final AzureBlobStorageService azureBlobStorageService;
 
 
     public static class BackupResult {
@@ -175,8 +168,7 @@ public class DatabaseBackupService {
 
         String tempZipPath = Paths.get(System.getProperty("java.io.tmpdir"), zipFileName).toString();
 
-        BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().connectionString(azureConnectionString).buildClient();
-        BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerNameBackups);
+        BlobContainerClient containerClient = azureBlobStorageService.obtenerContenedorBackups();
         BlobClient blobClient = containerClient.getBlobClient(zipFileName);
 
         if (!blobClient.exists()) throw new RuntimeException("El backup no existe en Azure: " + zipFileName);
@@ -266,11 +258,7 @@ public class DatabaseBackupService {
     public ByteArrayResource descargarDeAzure(String encodedFileName) {
         try {
             String fileName = URLDecoder.decode(encodedFileName, StandardCharsets.UTF_8.name());
-            BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
-                    .connectionString(azureConnectionString)
-                    .buildClient();
-
-            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerNameBackups);
+            BlobContainerClient containerClient = azureBlobStorageService.obtenerContenedorBackups();
             BlobClient blobClient = containerClient.getBlobClient(fileName);
 
             if (!blobClient.exists()) throw new RuntimeException("El archivo no existe en Azure: " + fileName);
@@ -285,13 +273,7 @@ public class DatabaseBackupService {
 
     private String subirAAzure(String filePath, String fileName) {
         try {
-            BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
-                    .connectionString(azureConnectionString)
-                    .buildClient();
-
-            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerNameBackups);
-            if (!containerClient.exists()) containerClient.create();
-
+            BlobContainerClient containerClient = azureBlobStorageService.obtenerContenedorBackups();
             BlobClient blobClient = containerClient.getBlobClient(fileName);
             blobClient.uploadFromFile(filePath, true);
             return blobClient.getBlobUrl();
@@ -320,10 +302,7 @@ public class DatabaseBackupService {
     public List<Map<String, Object>> listarBackupsDirectoDeAzure() {
         List<Map<String, Object>> listaBackups = new ArrayList<>();
 
-        BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
-                .connectionString(azureConnectionString)
-                .buildClient();
-        BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerNameBackups);
+        BlobContainerClient containerClient = azureBlobStorageService.obtenerContenedorBackups();
 
         for (BlobItem blobItem : containerClient.listBlobs()) {
             Map<String, Object> backupInfo = new HashMap<>();
@@ -345,8 +324,7 @@ public class DatabaseBackupService {
         System.out.println("🚨 INICIANDO PROTOCOLO DE EMERGENCIA. Restaurando: " + zipFileName);
 
         String tempZipPath = Paths.get(System.getProperty("java.io.tmpdir"), zipFileName).toString();
-        BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().connectionString(azureConnectionString).buildClient();
-        BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerNameBackups);
+        BlobContainerClient containerClient = azureBlobStorageService.obtenerContenedorBackups();
         BlobClient blobClient = containerClient.getBlobClient(zipFileName);
 
         if (!blobClient.exists()) throw new RuntimeException("El archivo no existe en Azure: " + zipFileName);

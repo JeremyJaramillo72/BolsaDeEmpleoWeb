@@ -406,6 +406,25 @@
   border: 2px solid #e2e8f0;
 }
 
+.table-wrapper--compact {
+  overflow-x: visible;
+}
+
+.table-wrapper--compact table {
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.table-wrapper--compact .col-titulo {
+  white-space: normal;
+  max-width: none;
+  min-width: 140px;
+}
+
+.stats-summary-grid--inline {
+  margin-bottom: 24px;
+}
+
 table { width: 100%; border-collapse: collapse; min-width: 600px; }
 thead tr { background: linear-gradient(135deg, #667eea, #764ba2); }
 

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 
 
 import { UiNotificationService } from '../../../services/ui-notification.service';
+import { DocumentoPdfRef, refDocumento } from '../../../utils/documento-storage-url';
 
 @Component({
   selector: 'app-seccion-experiencia',
@@ -23,7 +24,7 @@ export class SeccionExperienciaComponent {
 
   @Output() onGuardarExperiencia = new EventEmitter<{formData: FormData, idEdicion: number | null}>();
   @Output() onEliminar = new EventEmitter<{index: number, id: number}>();
-  @Output() onVerPdf = new EventEmitter<string>();
+  @Output() onVerPdf = new EventEmitter<DocumentoPdfRef>();
 
   @Output() onBuscarCargo = new EventEmitter<string>();
   @Output() onBuscarEmpresa = new EventEmitter<string>();
@@ -241,5 +242,10 @@ export class SeccionExperienciaComponent {
 
     this.onGuardarExperiencia.emit({ formData: formData, idEdicion: this.idEdicionExperiencia });
     this.cerrarModal();
+  }
+
+  verPdfExperiencia(item: { nombreArchivo?: string; nombre_empresa?: string }): void {
+    if (!item?.nombreArchivo) return;
+    this.onVerPdf.emit(refDocumento(item.nombreArchivo, item.nombre_empresa || 'Experiencia_Laboral'));
   }
 }

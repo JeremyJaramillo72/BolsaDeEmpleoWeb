@@ -1,6 +1,20 @@
 /* Contenedor Principal bloqueado a la pantalla */
-.login-wrapper { display: flex; height: 100vh; font-family: 'Inter', system-ui, sans-serif; background-color: #f8fafc; overflow: hidden; }
+:host {
+  display: block;
+  min-height: 100vh;
+  width: 100%;
+}
 
+.login-wrapper {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #f8fafc;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
 /* PANEL IZQUIERDO */
 .panel-izquierdo { width: 50%; position: relative; background-image: url('https://images.unsplash.com/photo-1769092992447-18050cf9bd26?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080'); background-size: cover; background-position: center; display: none; }
 @media (min-width: 1024px) { .panel-izquierdo { display: block; } }
@@ -93,4 +107,34 @@
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .panel-derecho {
+    padding: 1.25rem 1rem !important;
+  }
+
+  .formulario-container {
+    max-width: 100% !important;
+  }
+
+  .cabecera-form h1 {
+    font-size: 1.5rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .panel-derecho {
+    padding: 1rem 0.75rem !important;
+  }
+
+  .registro-opciones .grid-opciones {
+    flex-direction: column !important;
+  }
+
+  .opciones-login {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
 }

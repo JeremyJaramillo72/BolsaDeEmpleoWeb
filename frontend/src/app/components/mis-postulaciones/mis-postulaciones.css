@@ -307,3 +307,41 @@
 
 .modal-empty { display: flex; align-items: center; gap: 8px; color: #94a3b8; font-size: 0.9rem; justify-content: center; padding: 1.5rem 0; margin: 0; }
 
+@media (max-width: 768px) {
+  .modal-overlay {
+    padding: 12px;
+    align-items: flex-end;
+  }
+
+  .modal-container {
+    width: 100%;
+    max-width: 100%;
+    max-height: 92dvh;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .modal-header,
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .item-val-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .item-val-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .card-actions {
+    flex-direction: column;
+  }
+
+  .card-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+

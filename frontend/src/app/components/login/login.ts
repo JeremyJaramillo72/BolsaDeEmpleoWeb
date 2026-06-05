@@ -36,21 +36,31 @@ export class LoginComponent implements OnInit {
 
   // 4. Este método se dispara automáticamente al entrar a la vista del Login
   ngOnInit(): void {
+    this.restaurarEstadoPagina();
     this.limpiarSesion();
   }
 
+  /** Quita estilos del menú principal que pueden dejar la pantalla en blanco. */
+  private restaurarEstadoPagina(): void {
+    if (typeof document === 'undefined') return;
+    document.body.style.overflow = '';
+    document.body.classList.remove('dark-mode');
+  }
+
   /**
-   * Cierra cualquier sesión que haya quedado colgada en el backend
-   * y limpia el almacenamiento del navegador.
+   * Limpia sesión anterior sin bloquear la UI del login.
    */
   limpiarSesion(): void {
-    // Limpiamos el localStorage por seguridad en el frontend
-    localStorage.clear();
+    const clavesSesion = [
+      'token', 'idUsuario', 'idRol', 'rol', 'nombre', 'permisosUi',
+      'idEmpresa', 'idSesion', 'urlFoto'
+    ];
+    clavesSesion.forEach(k => localStorage.removeItem(k));
+    sessionStorage.clear();
 
-    // Llamamos al método logout de tu AuthService
     this.authService.logout().subscribe({
-      next: () => console.log("⏪ Conexión de BD reseteada al default y sesión cerrada"),
-      error: (err) => console.log('Nota: No había sesión activa en el backend o ya estaba cerrada.')
+      next: () => {},
+      error: () => {}
     });
   }
 
@@ -76,16 +86,13 @@ export class LoginComponent implements OnInit {
           const nombreCompleto = `${res.nombre || ''} ${res.apellido || ''}`.trim();
           localStorage.setItem('nombre', nombreCompleto);
 
-          // ¡AQUÍ ESTÁ LA MAGIA! 👇 Buscamos en el Rol
           const permisosDelRol = res.rol?.permisosUi || '';
           localStorage.setItem('permisosUi', permisosDelRol);
 
           if (res.empresa && res.empresa.idEmpresa) {
             localStorage.setItem('idEmpresa', res.empresa.idEmpresa.toString());
-            console.log('✅ idempresa guardado (desde objeto):', res.empresa.idEmpresa);
           } else if (res.idEmpresa) {
             localStorage.setItem('idEmpresa', res.idEmpresa.toString());
-            console.log('✅ idempresa guardado (desde raíz):', res.idEmpresa);
           }
 
           let rolNombre = '';
@@ -104,54 +111,26 @@ export class LoginComponent implements OnInit {
             localStorage.setItem('idSesion', String(res.idSesion));
           }
 
-          console.log('estado final del localstorage:');
-          console.log('  idusuario:', localStorage.getItem('idUsuario'));
-          console.log('  idempresa:', localStorage.getItem('idEmpresa'));
-          console.log('  rol:', localStorage.getItem('rol'));
-
-          /*this.router.navigate(['/menu-principal']).then((success) => {
-            if (success) {
-              console.log('¡navegación exitosa al menú!');
-            } else {
-              console.error('la navegación falló.');
-            }
-          });*/
-
-          // aqui se define a donde va de los 3 componetes , si algun día se pierden.
-          // 1. Obtenemos el rol limpio
           const rolLimpio = rolNombre.trim().toUpperCase();
-
-          // 2. Determinamos la ruta del dashboard correspondiente
-          let rutaDashboard = '/menu-principal';
-          if (rolLimpio === 'ADMINISTRADOR' || rolLimpio === 'SUPERVISOR' || rolLimpio === 'GERENTE') {
+          let rutaDashboard = '/menu-principal/dashboard-postulante';
+          if (['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'].includes(rolLimpio)) {
             rutaDashboard = '/menu-principal/dashboard-admin';
           } else if (rolLimpio === 'EMPRESA') {
             rutaDashboard = '/menu-principal/dashboard-empresa';
-          } else if (rolLimpio === 'POSTULANTE') {
-            rutaDashboard = '/menu-principal/dashboard-postulante';
           }
 
-          // 3. Navegamos al dashboard específico
+          this.isLoading = false;
           this.router.navigate([rutaDashboard]).then((success) => {
-            if (success) {
-              console.log(`¡Navegación exitosa al dashboard de ${rolLimpio}!`);
-            } else {
-              console.error('La navegación falló.');
+            if (!success) {
+              this.ui.error('No se pudo abrir el panel. Recarga la página.');
             }
           });
         },
         error: (err) => {
           const msg = err.error?.error || 'Error de conexión con el servidor.';
-
-          // toast inmediato (ya está dentro de Zone.js, no causa NG0100)
           this.ui.error(msg);
-
-          // diferimos la asignación al template al siguiente tick para evitar NG0100
-          setTimeout(() => {
-            this.errorMsg = msg;
-            this.isLoading = false;
-          }, 0);
-
+          this.errorMsg = msg;
+          this.isLoading = false;
           console.error('detalle del error:', err);
         }
       });

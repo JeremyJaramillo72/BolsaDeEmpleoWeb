@@ -46,6 +46,8 @@ export interface StatCard {
 })
 export class MenuprincipalComponent implements OnInit, OnDestroy {
   isSidebarOpen: boolean = true;
+  isMobileMenuOpen: boolean = false;
+  isMobileView: boolean = false;
   nombreUsuario: string = '';
   rolUsuario: string = '';
   fotoMenu: string = '';
@@ -76,7 +78,36 @@ export class MenuprincipalComponent implements OnInit, OnDestroy {
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
         this.verificarRutaActual();
+        this.closeMobileMenu();
       });
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.updateMobileView();
+  }
+
+  private updateMobileView(): void {
+    const mobile = typeof window !== 'undefined' && window.innerWidth < 992;
+    if (!mobile) {
+      this.isMobileMenuOpen = false;
+    }
+    this.isMobileView = mobile;
+  }
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+    this.syncBodyScrollLock();
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen = false;
+    this.syncBodyScrollLock();
+  }
+
+  private syncBodyScrollLock(): void {
+    if (typeof document === 'undefined') return;
+    document.body.style.overflow = this.isMobileMenuOpen ? 'hidden' : '';
   }
 
   toggleUserDropdown(): void {
@@ -97,8 +128,9 @@ export class MenuprincipalComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const idUsuario = localStorage.getItem('idUsuario');
-    if (!idUsuario) {
-      this.cerrarSesion();
+    const token = localStorage.getItem('token');
+    if (!idUsuario && !token) {
+      this.router.navigate(['/login']);
       return;
     }
 
@@ -119,7 +151,7 @@ export class MenuprincipalComponent implements OnInit, OnDestroy {
     });
 
 
-    if (!this.fotoMenu || this.fotoMenu === '') {
+    if (idUsuario && (!this.fotoMenu || this.fotoMenu === '')) {
       this.authService.obtenerFotoPerfil(idUsuario).subscribe({
         next: (res: any) => {
           if (res.url) {
@@ -164,11 +196,16 @@ export class MenuprincipalComponent implements OnInit, OnDestroy {
     if (localStorage.getItem('token')) {
       this.validacionSesionInterval = setInterval(() => this.verificarSesionRemota(), 12000);
     }
+
+    this.updateMobileView();
   }
 
   ngOnDestroy(): void {
     if (this.validacionSesionInterval) {
       clearInterval(this.validacionSesionInterval);
+    }
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = '';
     }
   }
 
@@ -465,6 +502,10 @@ export class MenuprincipalComponent implements OnInit, OnDestroy {
   }
 
   toggleSidebar(): void {
+    if (this.isMobileView) {
+      this.toggleMobileMenu();
+      return;
+    }
     this.isSidebarOpen = !this.isSidebarOpen;
   }
 
