@@ -5,7 +5,7 @@ import { catchError } from 'rxjs/operators';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { ToastrService } from 'ngx-toastr';
-import { BACKEND_ORIGIN } from '../config/api-base';
+import { API_BASE_URL, BACKEND_ORIGIN } from '../config/api-base';
 // import { environment } from '../../environments/environment';
 export interface NotificacionDTO {
   idNotificacion: number;
@@ -23,7 +23,7 @@ export interface NotificacionDTO {
   providedIn: 'root'
 })
 export class NotificationService {
-  private apiUrl = 'http://localhost:8080/api/notificaciones'; // ya queda aqui q chch
+  private apiUrl = `${API_BASE_URL}/notificaciones`;
   private stompClient: Client | null = null;
 
   // BehaviorSubject mantiene el estado global de las notificaciones para que cualquier componente lo lea

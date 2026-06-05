@@ -1,15 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { RouterModule, Router } from '@angular/router';
 import { UiNotificationService } from '../../services/ui-notification.service';
+import { API_BASE_URL } from '../../config/api-base';
 
 
 @Component({
   selector: 'app-registro-empresa',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, HttpClientModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule],
   templateUrl: './registro-empresa.html',
   styleUrl: './registro-empresa.css'
 })
@@ -43,7 +44,7 @@ export class RegistroEmpresaComponent implements OnInit {
   }
 
   cargarProvincias() {
-    this.http.get<any[]>('http://localhost:8080/api/ubicaciones/provincias')
+    this.http.get<any[]>(`${API_BASE_URL}/ubicaciones/provincias`)
       .subscribe({
         next: (data) => this.provincias = data,
         error: (err) => console.error('Error al cargar provincias', err)
@@ -53,7 +54,7 @@ export class RegistroEmpresaComponent implements OnInit {
 
   onProvinciaChange() {
     if (this.idProvinciaSeleccionada) {
-      this.http.get<any[]>(`http://localhost:8080/api/ubicaciones/ciudades/${this.idProvinciaSeleccionada}`)
+      this.http.get<any[]>(`${API_BASE_URL}/ubicaciones/ciudades/${this.idProvinciaSeleccionada}`)
         .subscribe({
           next: (data) => {
             this.ciudades = data;
@@ -78,11 +79,11 @@ export class RegistroEmpresaComponent implements OnInit {
       // codigoIngresado: this.codigoVerificacion // Descomenta si tu backend lo valida aquí
     };
 
-    this.http.post('http://localhost:8080/api/registro-empresa/crear', payload)
+    this.http.post(`${API_BASE_URL}/registro-empresa/crear`, payload)
       .subscribe({
         next: (res: any) => {
           this.ui.exito(res.mensaje || '¡Empresa registrada con éxito!');
-          this.router.navigate(['/api/auth/login']);
+          this.router.navigate(['/login']);
           this.registrando = false;
         },
         error: (err) => {

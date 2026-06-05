@@ -45,7 +45,8 @@ public class CorsConfig {
     private List<String> resolveAllowedOriginPatterns() {
         List<String> patterns = new ArrayList<>(List.of(
                 "http://localhost:4200",
-                "https://*.azurewebsites.net"
+                "https://*.azurewebsites.net",
+                "https://*.vercel.app"
         ));
         if (corsAllowedOrigins != null && !corsAllowedOrigins.isBlank()) {
             Arrays.stream(corsAllowedOrigins.split(","))

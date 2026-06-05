@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef, NgZone } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { API_BASE_URL } from '../../config/api-base';
 import * as XLSX from 'xlsx';
 import { Chart, registerables } from 'chart.js';
 
@@ -43,13 +44,13 @@ const COLUMNAS_OFERTAS_EMPRESA: ColumnaReporte[] = [
 @Component({
   selector: 'app-reporte-empresa',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './Reporte-Empresa.html',
   styleUrls: ['./Reporte-Empresa.css']
 })
 export class ReporteEmpresaComponent implements OnInit, OnDestroy {
 
-  private readonly API_BASE        = 'http://localhost:8080/api';
+  private readonly API_BASE        = API_BASE_URL;
   private readonly API_REPORTE      = `${this.API_BASE}/reportes-empresa/ofertas`;
   private readonly API_CIUDADES     = `${this.API_BASE}/ciudades`;
   private readonly API_CATEGORIAS   = `${this.API_BASE}/categorias`;

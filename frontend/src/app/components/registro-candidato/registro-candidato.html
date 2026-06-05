@@ -66,21 +66,40 @@
           </div>
         </div>
 
+        <label class="checkbox-verificacion">
+          <input
+            type="checkbox"
+            name="verificacionCorreo"
+            [(ngModel)]="verificacionCorreoObligatoria"
+            (ngModelChange)="onToggleVerificacionCorreo()"
+          >
+          <span>Verificar correo electrónico (obligatorio)</span>
+        </label>
+        <p class="hint-verificacion" *ngIf="!verificacionCorreoObligatoria">
+          Modo prueba: puedes usar un correo ficticio sin enviar código.
+        </p>
+
         <div class="form-group">
           <label>Correo Electrónico</label>
-          <div class="input-con-boton">
+          <div class="input-con-boton" [class.solo-correo]="!verificacionCorreoObligatoria">
             <div class="input-icon-wrapper">
               <span class="material-icons icono-input">mail</span>
               <input type="email" name="correo" [(ngModel)]="correo" placeholder="usuario@uteq.edu.ec" class="input-moderno con-icono" required>
             </div>
-            <button type="button" class="btn-enviar-codigo" (click)="enviarCodigo()" [disabled]="enviandoCodigo">
+            <button
+              *ngIf="verificacionCorreoObligatoria"
+              type="button"
+              class="btn-enviar-codigo"
+              (click)="enviarCodigo()"
+              [disabled]="enviandoCodigo"
+            >
               <span class="material-icons btn-icon">{{ enviandoCodigo ? 'hourglass_empty' : 'send' }}</span>
               {{ enviandoCodigo ? 'Enviando...' : 'Enviar Código' }}
             </button>
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" *ngIf="verificacionCorreoObligatoria">
           <label>Código de Verificación</label>
           <input type="text" name="codigo" [(ngModel)]="codigoVerificacion" (input)="validarCodigoVisual()" maxlength="6"
                  class="input-moderno" [class.is-valid]="codigoValido" [class.is-invalid]="codigoInvalido"
@@ -151,7 +170,7 @@
           </div>
         </div>
 
-        <button type="submit" class="btn-registrar" [disabled]="!correoVerificado || !registroForm.form.valid || registrando">
+        <button type="submit" class="btn-registrar" [disabled]="botonRegistrarDeshabilitado || !registroForm.form.valid">
 
           <ng-container *ngIf="!registrando">
             Registrar <span class="material-icons">arrow_forward</span>

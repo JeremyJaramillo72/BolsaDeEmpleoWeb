@@ -60,6 +60,32 @@ button:disabled:hover,
 .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
 .form-group label { font-size: 0.78rem; font-weight: 600; color: #374151; }
 
+.checkbox-verificacion {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  user-select: none;
+}
+.checkbox-verificacion input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #10b981;
+  cursor: pointer;
+}
+.hint-verificacion {
+  margin: -0.5rem 0 0;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-style: italic;
+}
+.input-con-boton.solo-correo .input-icon-wrapper {
+  flex: 1;
+}
+
 .input-moderno { width: 100%; padding: 0.65rem 1rem; border: 1.5px solid #e5e7eb; border-radius: 12px; font-size: 0.875rem; background-color: #f8fafc; outline: none; transition: all 0.2s; box-sizing: border-box; color: #0f172a; }
 .input-moderno:focus { border-color: #10b981; background-color: white; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1); }
 .input-icon-wrapper { position: relative; width: 100%; display: flex; }
