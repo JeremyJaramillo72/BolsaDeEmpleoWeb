@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:8080/api';
+import { API_BASE_URL } from '../config/api-base';
 
 export interface DocumentoPdfRef {
   url: string;
@@ -34,14 +34,14 @@ function buildStorageQuery(urlAzure: string, nombre?: string): string {
 export function urlVerDocumento(urlAzure: string | null | undefined, nombre?: string): string {
   if (!urlAzure) return '';
   if (!esUrlAzure(urlAzure)) return urlAzure;
-  return `${API_BASE}/storage/ver?${buildStorageQuery(urlAzure, nombre)}`;
+  return `${API_BASE_URL}/storage/ver?${buildStorageQuery(urlAzure, nombre)}`;
 }
 
 /** URL para forzar descarga con nombre de archivo. */
 export function urlDescargarDocumento(urlAzure: string | null | undefined, nombre?: string): string {
   if (!urlAzure) return '';
   if (!esUrlAzure(urlAzure)) return urlAzure;
-  return `${API_BASE}/storage/descargar?${buildStorageQuery(urlAzure, nombre)}`;
+  return `${API_BASE_URL}/storage/descargar?${buildStorageQuery(urlAzure, nombre)}`;
 }
 
 export function resolverUrlDocumento(ref: string | DocumentoPdfRef): string {

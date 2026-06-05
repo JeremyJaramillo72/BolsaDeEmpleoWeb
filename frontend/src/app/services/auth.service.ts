@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {Observable} from 'rxjs';
 import { BehaviorSubject } from 'rxjs';
+import { API_BASE_URL } from '../config/api-base';
 
 @Injectable({
   providedIn: 'root'
@@ -47,14 +48,14 @@ export class AuthService {
 
 
   logout() {
-    return this.http.post('http://localhost:8080/api/auth/logout', {}, { withCredentials: true });
+    return this.http.post(`${API_BASE_URL}/auth/logout`, {}, { withCredentials: true });
   }
 
   validarSesionActiva(): Observable<{ valida: boolean; error?: string }> {
-    return this.http.get<{ valida: boolean; error?: string }>('http://localhost:8080/api/auth/validar-sesion');
+    return this.http.get<{ valida: boolean; error?: string }>(`${API_BASE_URL}/auth/validar-sesion`);
   }
 
   obtenerFotoPerfil(idUsuario: string): Observable<{url: string}> {
-    return this.http.get<{url: string}>(`http://localhost:8080/api/auth/foto-perfil/${idUsuario}`);
+    return this.http.get<{url: string}>(`${API_BASE_URL}/auth/foto-perfil/${idUsuario}`);
   }
 }

@@ -5,6 +5,7 @@ import { catchError } from 'rxjs/operators';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { ToastrService } from 'ngx-toastr';
+import { BACKEND_ORIGIN } from '../config/api-base';
 // import { environment } from '../../environments/environment';
 export interface NotificacionDTO {
   idNotificacion: number;
@@ -61,7 +62,7 @@ export class NotificationService {
   // 2. CONECTAR WEBSOCKET
   conectarWebSocket(idUsuario: number): void {
     this.stompClient = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws-notificaciones'),
+      webSocketFactory: () => new SockJS(`${BACKEND_ORIGIN}/ws-notificaciones`),
       reconnectDelay: 5000,
     });
 

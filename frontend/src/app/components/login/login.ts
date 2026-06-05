@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router, RouterModule } from '@angular/router';
+import { API_BASE_URL } from '../../config/api-base';
 
 // 1. Importamos tu servicio de autenticación
 import { AuthService } from '../../services/auth.service';
@@ -76,7 +77,7 @@ export class LoginComponent implements OnInit {
     this.isLoading = true;
     const loginData = { correo: this.correo, contrasena: this.contrasena };
 
-    this.http.post('http://localhost:8080/api/auth/login', loginData , { withCredentials: true })
+    this.http.post(`${API_BASE_URL}/auth/login`, loginData , { withCredentials: true })
       .subscribe({
         next: (res: any) => {
           console.log('respuesta completa del backend:', res);

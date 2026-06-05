@@ -11,6 +11,7 @@ import { SocialAuthServiceConfig, GoogleLoginProvider, SocialAuthService } from 
 
 
 import { dbErrorInterceptor } from '././components/Panel-Admin/components/configuracion-sistema/respaldos-bd/db-error.interceptor';
+import { backendUrlInterceptor } from './interceptors/backend-url.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -18,7 +19,7 @@ export const appConfig: ApplicationConfig = {
 
     provideHttpClient(
 
-      withInterceptors([dbErrorInterceptor, httpErrorInterceptor]),
+      withInterceptors([backendUrlInterceptor, dbErrorInterceptor, httpErrorInterceptor]),
       withInterceptorsFromDi()
     ),
 
