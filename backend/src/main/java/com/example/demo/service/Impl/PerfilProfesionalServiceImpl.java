@@ -7,7 +7,8 @@ import com.example.demo.service.AzureStorageConfig;
 import com.example.demo.service.IPerfilProfesionalService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,7 +20,10 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class PerfilProfesionalServiceImpl implements IPerfilProfesionalService {
-private final PerfilProfesionalRepository perfilProfesionalRepository;
+
+    private static final Logger log = LoggerFactory.getLogger(PerfilProfesionalServiceImpl.class);
+
+    private final PerfilProfesionalRepository perfilProfesionalRepository;
     private final ObjectMapper objectMapper;
     private final AzureStorageConfig azureStorageConfig;
     private final PerfilAcademicoRepository perfilAcademicoRepository;
@@ -34,7 +38,7 @@ private final PerfilProfesionalRepository perfilProfesionalRepository;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void procesarYRegistrar(Long idUsuario, String tipoItem, Map<String, Object> datos, MultipartFile archivo) {
+    public String procesarYRegistrar(Long idUsuario, String tipoItem, Map<String, Object> datos, MultipartFile archivo) {
 
         String jsonDatos;
 
@@ -45,17 +49,22 @@ private final PerfilProfesionalRepository perfilProfesionalRepository;
         }
 
         String urlArchivo = null;
-
+        String advertenciaArchivo = null;
 
         if (archivo != null && !archivo.isEmpty()) {
             try {
                 urlArchivo = azureStorageConfig.subirDocumento(archivo);
             } catch (Exception e) {
-                throw new RuntimeException("Error grave de comunicación con Azure. El archivo es muy pesado o el servidor falló.", e);
+                log.warn("No se pudo subir el archivo a Azure para usuario {} ({}): {}",
+                        idUsuario, tipoItem, e.getMessage());
+                advertenciaArchivo =
+                        "Los datos se guardaron, pero el PDF no se pudo subir a la nube. "
+                                + "Vuelve a intentarlo más tarde o guarda sin adjunto.";
             }
         }
 
         perfilProfesionalRepository.registrarItemPerfil(idUsuario, tipoItem, jsonDatos, urlArchivo);
+        return advertenciaArchivo;
     }
 
     @Override

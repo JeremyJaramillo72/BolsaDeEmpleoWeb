@@ -52,14 +52,18 @@ public class PerfilController {
             @RequestParam("fechaGraduacion") String fechaGraduacion,
             @RequestParam(value = "numeroSenescyt", required = false) String registroSenescyt,
             @RequestParam(value = "archivo", required = false) MultipartFile archivo) {
+        try {
+            Map<String, Object> datos = new HashMap<>();
+            datos.put("id_carrera", idCarrera);
+            datos.put("fecha_graduacion", fechaGraduacion);
+            datos.put("registro_senescyt", registroSenescyt);
 
-        Map<String, Object> datos = new HashMap<>();
-        datos.put("id_carrera", idCarrera);
-        datos.put("fecha_graduacion", fechaGraduacion);
-        datos.put("registro_senescyt", registroSenescyt);
-
-        iPerfilProfesionalService.procesarYRegistrar(idUsuario, "academico", datos, archivo);
-        return ResponseEntity.ok(Map.of("mensaje", "Formación académica guardada"));
+            String advertencia = iPerfilProfesionalService.procesarYRegistrar(idUsuario, "academico", datos, archivo);
+            return respuestaRegistro("Formación académica guardada", advertencia);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("error", "Error al guardar formación: " + e.getMessage()));
+        }
     }
 
     @PostMapping("/perfil-idioma/registrars")
@@ -77,8 +81,8 @@ public class PerfilController {
         datos.put("nivel", nivel);
         datos.put("codigo_certificado", codigoCertificado);
 
-        iPerfilProfesionalService.procesarYRegistrar(idUsuario, "idioma", datos, archivo);
-        return ResponseEntity.ok(Map.of("mensaje", "Idioma guardado exitosamente"));
+        String advertencia = iPerfilProfesionalService.procesarYRegistrar(idUsuario, "idioma", datos, archivo);
+        return respuestaRegistro("Idioma guardado exitosamente", advertencia);
         }
         catch (Exception e){
             e.printStackTrace();
@@ -95,20 +99,28 @@ public class PerfilController {
             @RequestParam("idEmpresaCatalogo") Integer idEmpresaCatalogo,
             @RequestParam("fechaInicio") String fechaInicio,
             @RequestParam(value = "fechaFin", required = false) String fechaFin,
-            @RequestParam("descripcion") String descripcion,
+            @RequestParam(value = "descripcion", required = false, defaultValue = "") String descripcion,
             @RequestParam("idCiudad") Integer idCiudad,
             @RequestParam(value = "archivo", required = false) MultipartFile archivo) {
+        try {
+            if (cargosIds == null || cargosIds.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Debe incluir al menos un cargo."));
+            }
 
-        Map<String, Object> datos = new HashMap<>();
-        datos.put("cargos_ids", cargosIds);
-        datos.put("id_empresa_catalogo", idEmpresaCatalogo);
-        datos.put("fecha_inicio", fechaInicio);
-        datos.put("fecha_fin", fechaFin);
-        datos.put("descripcion", descripcion);
-        datos.put("id_ciudad", idCiudad);
+            Map<String, Object> datos = new HashMap<>();
+            datos.put("cargos_ids", cargosIds);
+            datos.put("id_empresa_catalogo", idEmpresaCatalogo);
+            datos.put("fecha_inicio", fechaInicio);
+            datos.put("fecha_fin", fechaFin);
+            datos.put("descripcion", descripcion != null ? descripcion : "");
+            datos.put("id_ciudad", idCiudad);
 
-        iPerfilProfesionalService.procesarYRegistrar(idUsuario, "experiencia", datos, archivo);
-        return ResponseEntity.ok(Map.of("mensaje", "Experiencia laboral guardada"));
+            String advertencia = iPerfilProfesionalService.procesarYRegistrar(idUsuario, "experiencia", datos, archivo);
+            return respuestaRegistro("Experiencia laboral guardada", advertencia);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("error", "Error al guardar experiencia: " + e.getMessage()));
+        }
     }
 
     @PostMapping("/perfil-curso/registrar")
@@ -118,14 +130,27 @@ public class PerfilController {
             @RequestParam("institucion") String institucion,
             @RequestParam(value = "horasDuracion", required = false) Integer horasDuracion,
             @RequestParam(value = "archivo", required = false) MultipartFile archivo) {
+        try {
+            Map<String, Object> datos = new HashMap<>();
+            datos.put("nombre_curso", nombreCurso);
+            datos.put("institucion", institucion);
+            datos.put("horas_duracion", horasDuracion);
 
-        Map<String, Object> datos = new HashMap<>();
-        datos.put("nombre_curso", nombreCurso);
-        datos.put("institucion", institucion);
-        datos.put("horas_duracion", horasDuracion);
+            String advertencia = iPerfilProfesionalService.procesarYRegistrar(idUsuario, "curso", datos, archivo);
+            return respuestaRegistro("Curso guardado exitosamente", advertencia);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of("error", "Error al guardar curso: " + e.getMessage()));
+        }
+    }
 
-        iPerfilProfesionalService.procesarYRegistrar(idUsuario, "curso", datos, archivo);
-        return ResponseEntity.ok(Map.of("mensaje", "Curso guardado exitosamente"));
+    private ResponseEntity<Map<String, String>> respuestaRegistro(String mensaje, String advertencia) {
+        Map<String, String> body = new HashMap<>();
+        body.put("mensaje", mensaje);
+        if (advertencia != null && !advertencia.isBlank()) {
+            body.put("advertencia", advertencia);
+        }
+        return ResponseEntity.ok(body);
     }
 
     @PostMapping("/perfil/{id}/foto")

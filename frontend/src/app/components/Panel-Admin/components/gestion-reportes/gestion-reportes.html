@@ -3,10 +3,12 @@
   <header class="page-header">
     <div class="header-text">
       <h1>
-        <span class="material-icons header-icon-main">analytics</span>
-        Gestión de Reportes
+        <span class="material-icons header-icon-main">insights</span>
+        Centro de Reportes
       </h1>
-      <p class="page-description">Visualice, filtre y exporte datos en tiempo real de ofertas y postulaciones.</p>
+      <p class="page-description">
+        Elija el tipo de reporte, aplique filtros opcionales y obtenga gráficos y tablas listos para exportar.
+      </p>
     </div>
   </header>
 
@@ -17,324 +19,343 @@
     <span class="material-icons">error_outline</span> {{ mensajeError }}
   </div>
 
-  <div class="tabs-container">
-    <button class="tab-button" [class.active]="tipoReporte === 'ofertas'" (click)="cambiarTipoReporte('ofertas')">
-      <span class="material-icons">work_outline</span> Ofertas Laborales
-    </button>
-    <button class="tab-button" [class.active]="tipoReporte === 'postulaciones'" (click)="cambiarTipoReporte('postulaciones')">
-      <span class="material-icons">people_alt</span> Postulaciones
-    </button>
-  </div>
+  <!-- ═══ PASO 1: Catálogo de reportes ═══ -->
+  <section class="catalog-section" *ngIf="!reporteActivo">
+    <h2 class="catalog-title">¿Qué reporte desea generar?</h2>
+    <p class="catalog-sub">Seleccione un informe. Solo verá los reportes disponibles para su rol de administrador.</p>
 
-  <div class="section-card filters-panel">
-    <div class="section-header">
-      <div class="header-title-wrapper">
-        <span class="material-icons text-blue">filter_alt</span>
-        <h3>Filtros de búsqueda</h3>
+    <div class="report-catalog">
+      <button
+        type="button"
+        class="report-card"
+        *ngFor="let r of catalogoReportes"
+        (click)="seleccionarReporte(r.id)"
+        [style.--accent]="r.color">
+        <div class="report-card-icon" [style.background]="r.color + '18'" [style.color]="r.color">
+          <span class="material-icons">{{ r.icon }}</span>
+        </div>
+        <div class="report-card-body">
+          <h3>{{ r.titulo }}</h3>
+          <p>{{ r.descripcion }}</p>
+          <span class="report-card-tag">{{ r.etiqueta }}</span>
+        </div>
+        <span class="material-icons report-card-arrow">arrow_forward</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══ PASO 2: Configuración y resultados ═══ -->
+  <section class="workspace-section fade-in" *ngIf="reporteActivo">
+
+    <button type="button" class="btn-back" (click)="volverCatalogo()">
+      <span class="material-icons">arrow_back</span> Elegir otro reporte
+    </button>
+
+    <div class="workspace-hero" [style.borderColor]="reporteActivoConfig?.color + '40'">
+      <div class="workspace-hero-icon" [style.background]="reporteActivoConfig?.color + '15'" [style.color]="reporteActivoConfig?.color">
+        <span class="material-icons">{{ reporteActivoConfig?.icon }}</span>
       </div>
-      <p class="filters-hint">Todos los filtros son opcionales — déjelos vacíos para ver todos los registros.</p>
+      <div>
+        <h2>{{ reporteActivoConfig?.titulo }}</h2>
+        <p>{{ reporteActivoConfig?.descripcion }}</p>
+      </div>
     </div>
 
-    <div class="filters-grid">
+    <!-- Filtros (solo ofertas / postulaciones) -->
+    <div class="section-card filters-panel" *ngIf="reporteActivo !== 'usuarios'">
+      <div class="section-header compact">
+        <div class="header-title-wrapper">
+          <span class="material-icons text-blue">tune</span>
+          <h3>Filtros opcionales</h3>
+        </div>
+        <p class="filters-hint">Déjelos vacíos para incluir todos los registros del período.</p>
+      </div>
 
-      <div class="form-group">
-        <label><span class="material-icons text-blue text-sm">location_on</span> Ciudad</label>
-        <div class="custom-select">
-          <div class="input-wrapper">
-            <input type="text" class="form-control" [(ngModel)]="ciudadSearch" (focus)="ciudadOpen = true" (ngModelChange)="ciudadOpen = true" placeholder="Buscar ciudad...">
-            <button class="select-clear" *ngIf="ciudadSeleccionada" (click)="limpiarCiudad(); $event.stopPropagation()">
-              <span class="material-icons">close</span>
-            </button>
-            <span class="material-icons chevron">{{ ciudadOpen ? 'expand_less' : 'expand_more' }}</span>
-          </div>
-          <div class="select-dropdown slide-down" *ngIf="ciudadOpen">
-            <div class="dropdown-item" [class.item-selected]="!ciudadSeleccionada" (click)="limpiarCiudad(); ciudadOpen = false; $event.stopPropagation()">
-              <span class="material-icons item-check">check</span>
-              <span class="item-main text-blue" style="font-style:italic;">Todos</span>
+      <div class="filters-grid">
+        <div class="form-group" *ngIf="reporteActivo === 'ofertas' || reporteActivo === 'postulaciones'">
+          <label><span class="material-icons text-blue text-sm">location_on</span> Ciudad</label>
+          <div class="custom-select">
+            <div class="input-wrapper">
+              <input type="text" class="form-control" [(ngModel)]="ciudadSearch" (focus)="ciudadOpen = true" placeholder="Todas las ciudades">
+              <button class="select-clear" *ngIf="ciudadSeleccionada" (click)="limpiarCiudad(); $event.stopPropagation()">
+                <span class="material-icons">close</span>
+              </button>
+              <span class="material-icons chevron">{{ ciudadOpen ? 'expand_less' : 'expand_more' }}</span>
             </div>
-            <div class="dropdown-item" *ngFor="let c of ciudadesFiltradas" [class.item-selected]="ciudadSeleccionada?.idCiudad === c.idCiudad" (click)="selectCiudad(c); $event.stopPropagation()">
-              <span class="material-icons item-check">check</span>
-              <div class="item-text-group">
+            <div class="select-dropdown slide-down" *ngIf="ciudadOpen">
+              <div class="dropdown-item" (click)="limpiarCiudad(); ciudadOpen = false; $event.stopPropagation()">
+                <span class="item-main" style="font-style:italic;">Todas</span>
+              </div>
+              <div class="dropdown-item" *ngFor="let c of ciudadesFiltradas" (click)="selectCiudad(c); $event.stopPropagation()">
                 <span class="item-main">{{ c.nombreCiudad }}</span>
                 <span class="item-sub">{{ c.nombreProvincia }}</span>
               </div>
             </div>
-            <div *ngIf="ciudadesFiltradas.length === 0 && ciudadSearch !== 'Todos' && ciudadSearch !== ''" class="dropdown-empty">No se encontraron resultados</div>
           </div>
+        </div>
+
+        <div class="form-group" *ngIf="reporteActivo === 'ofertas'">
+          <label><span class="material-icons text-purple text-sm">category</span> Categoría</label>
+          <div class="input-wrapper select-wrapper-native">
+            <select class="form-control" [(ngModel)]="filtrosOfertas.idCategoria">
+              <option [ngValue]="null">Todas</option>
+              <option *ngFor="let c of categorias" [ngValue]="c.idCategoria">{{ c.nombreCategoria }}</option>
+            </select>
+            <span class="material-icons chevron">expand_more</span>
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="reporteActivo === 'postulaciones'">
+          <label><span class="material-icons text-purple text-sm">category</span> Categoría</label>
+          <div class="input-wrapper select-wrapper-native">
+            <select class="form-control" [(ngModel)]="filtrosPostulaciones.idCategoria">
+              <option [ngValue]="null">Todas</option>
+              <option *ngFor="let c of categorias" [ngValue]="c.idCategoria">{{ c.nombreCategoria }}</option>
+            </select>
+            <span class="material-icons chevron">expand_more</span>
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="reporteActivo === 'ofertas'">
+          <label><span class="material-icons text-teal text-sm">computer</span> Modalidad</label>
+          <div class="input-wrapper select-wrapper-native">
+            <select class="form-control" [(ngModel)]="filtrosOfertas.idModalidad">
+              <option [ngValue]="null">Todas</option>
+              <option *ngFor="let m of modalidades" [ngValue]="m.idModalidad">{{ m.nombreModalidad }}</option>
+            </select>
+            <span class="material-icons chevron">expand_more</span>
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="reporteActivo === 'postulaciones'">
+          <label><span class="material-icons text-teal text-sm">computer</span> Modalidad</label>
+          <div class="input-wrapper select-wrapper-native">
+            <select class="form-control" [(ngModel)]="filtrosPostulaciones.idModalidad">
+              <option [ngValue]="null">Todas</option>
+              <option *ngFor="let m of modalidades" [ngValue]="m.idModalidad">{{ m.nombreModalidad }}</option>
+            </select>
+            <span class="material-icons chevron">expand_more</span>
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="reporteActivo === 'ofertas'">
+          <label><span class="material-icons text-orange text-sm">schedule</span> Jornada</label>
+          <div class="input-wrapper select-wrapper-native">
+            <select class="form-control" [(ngModel)]="filtrosOfertas.idJornada">
+              <option [ngValue]="null">Todas</option>
+              <option *ngFor="let j of jornadas" [ngValue]="j.idJornada">{{ j.nombreJornada }}</option>
+            </select>
+            <span class="material-icons chevron">expand_more</span>
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="reporteActivo === 'ofertas'">
+          <label>Estado de oferta</label>
+          <div class="input-wrapper select-wrapper-native">
+            <select class="form-control" [(ngModel)]="filtrosOfertas.estadoOferta">
+              <option value="">Todos</option>
+              <option *ngFor="let e of estadosOfertas" [value]="e">{{ e | titlecase }}</option>
+            </select>
+            <span class="material-icons chevron">expand_more</span>
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="reporteActivo === 'postulaciones'">
+          <label>Estado de postulación</label>
+          <div class="input-wrapper select-wrapper-native">
+            <select class="form-control" [(ngModel)]="filtrosPostulaciones.estadoValidacion">
+              <option value="">Todos</option>
+              <option *ngFor="let e of estadosPostulacion" [value]="e">{{ e }}</option>
+            </select>
+            <span class="material-icons chevron">expand_more</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Fecha desde</label>
+          <input *ngIf="reporteActivo === 'ofertas'" type="date" class="form-control" [(ngModel)]="filtrosOfertas.fechaInicio" [max]="filtrosOfertas.fechaFin || hoyISO">
+          <input *ngIf="reporteActivo === 'postulaciones'" type="date" class="form-control" [(ngModel)]="filtrosPostulaciones.fechaInicio" [max]="filtrosPostulaciones.fechaFin || hoyISO">
+        </div>
+
+        <div class="form-group">
+          <label>Fecha hasta</label>
+          <input *ngIf="reporteActivo === 'ofertas'" type="date" class="form-control" [(ngModel)]="filtrosOfertas.fechaFin" [min]="filtrosOfertas.fechaInicio" [max]="hoyISO">
+          <input *ngIf="reporteActivo === 'postulaciones'" type="date" class="form-control" [(ngModel)]="filtrosPostulaciones.fechaFin" [min]="filtrosPostulaciones.fechaInicio" [max]="hoyISO">
+        </div>
+
+        <div class="form-group" *ngIf="reporteActivo === 'ofertas'">
+          <label>Salario mínimo</label>
+          <input type="number" class="form-control" [(ngModel)]="filtrosOfertas.salarioMin" min="0" step="50" placeholder="Opcional">
+        </div>
+
+        <div class="form-group" *ngIf="reporteActivo === 'ofertas'">
+          <label>Salario máximo</label>
+          <input type="number" class="form-control" [(ngModel)]="filtrosOfertas.salarioMax" min="0" step="50" placeholder="Opcional">
         </div>
       </div>
 
-      <div class="form-group">
-        <label><span class="material-icons text-purple text-sm">category</span> Categoría</label>
-        <div class="custom-select">
-          <div class="input-wrapper">
-            <input type="text" class="form-control" [(ngModel)]="categoriaSearch" (focus)="categoriaOpen = true" (ngModelChange)="categoriaOpen = true" placeholder="Buscar categoría...">
-            <button class="select-clear" *ngIf="categoriaSeleccionada" (click)="limpiarCategoria(); $event.stopPropagation()">
-              <span class="material-icons">close</span>
-            </button>
-            <span class="material-icons chevron">{{ categoriaOpen ? 'expand_less' : 'expand_more' }}</span>
-          </div>
-          <div class="select-dropdown slide-down" *ngIf="categoriaOpen">
-            <div class="dropdown-item" [class.item-selected]="!categoriaSeleccionada" (click)="limpiarCategoria(); categoriaOpen = false; $event.stopPropagation()">
-              <span class="material-icons item-check">check</span>
-              <span class="item-main text-purple" style="font-style:italic;">Todos</span>
-            </div>
-            <div class="dropdown-item" *ngFor="let c of categoriasFiltradas" [class.item-selected]="categoriaSeleccionada?.idCategoria === c.idCategoria" (click)="selectCategoria(c); $event.stopPropagation()">
-              <span class="material-icons item-check">check</span>
-              <span class="item-main">{{ c.nombreCategoria }}</span>
-            </div>
-            <div *ngIf="categoriasFiltradas.length === 0 && categoriaSearch !== 'Todos' && categoriaSearch !== ''" class="dropdown-empty">No se encontraron resultados</div>
-          </div>
+      <div class="validation-errors fade-in" *ngIf="erroresFiltros.length > 0">
+        <div class="error-item" *ngFor="let err of erroresFiltros">
+          <span class="material-icons">warning</span> {{ err }}
         </div>
-      </div>
-
-      <div class="form-group">
-        <label><span class="material-icons text-teal text-sm">computer</span> Modalidad</label>
-        <div class="custom-select">
-          <div class="input-wrapper">
-            <input type="text" class="form-control" [(ngModel)]="modalidadSearch" (focus)="modalidadOpen = true" (ngModelChange)="modalidadOpen = true" placeholder="Buscar modalidad...">
-            <button class="select-clear" *ngIf="modalidadSeleccionada" (click)="limpiarModalidad(); $event.stopPropagation()">
-              <span class="material-icons">close</span>
-            </button>
-            <span class="material-icons chevron">{{ modalidadOpen ? 'expand_less' : 'expand_more' }}</span>
-          </div>
-          <div class="select-dropdown slide-down" *ngIf="modalidadOpen">
-            <div class="dropdown-item" [class.item-selected]="!modalidadSeleccionada" (click)="limpiarModalidad(); modalidadOpen = false; $event.stopPropagation()">
-              <span class="material-icons item-check">check</span>
-              <span class="item-main text-teal" style="font-style:italic;">Todos</span>
-            </div>
-            <div class="dropdown-item" *ngFor="let m of modalidadesFiltradas" [class.item-selected]="modalidadSeleccionada?.idModalidad === m.idModalidad" (click)="selectModalidad(m); $event.stopPropagation()">
-              <span class="material-icons item-check">check</span>
-              <span class="item-main">{{ m.nombreModalidad }}</span>
-            </div>
-            <div *ngIf="modalidadesFiltradas.length === 0 && modalidadSearch !== 'Todos' && modalidadSearch !== ''" class="dropdown-empty">No se encontraron resultados</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-group" *ngIf="tipoReporte === 'ofertas'">
-        <label><span class="material-icons text-orange text-sm">schedule</span> Jornada</label>
-        <div class="custom-select">
-          <div class="input-wrapper">
-            <input type="text" class="form-control" [(ngModel)]="jornadaSearch" (focus)="jornadaOpen = true" (ngModelChange)="jornadaOpen = true" placeholder="Buscar jornada...">
-            <button class="select-clear" *ngIf="jornadaSeleccionada" (click)="limpiarJornada(); $event.stopPropagation()">
-              <span class="material-icons">close</span>
-            </button>
-            <span class="material-icons chevron">{{ jornadaOpen ? 'expand_less' : 'expand_more' }}</span>
-          </div>
-          <div class="select-dropdown slide-down" *ngIf="jornadaOpen">
-            <div class="dropdown-item" [class.item-selected]="!jornadaSeleccionada" (click)="limpiarJornada(); jornadaOpen = false; $event.stopPropagation()">
-              <span class="material-icons item-check">check</span>
-              <span class="item-main text-orange" style="font-style:italic;">Todos</span>
-            </div>
-            <div class="dropdown-item" *ngFor="let j of jornadasFiltradas" [class.item-selected]="jornadaSeleccionada?.idJornada === j.idJornada" (click)="selectJornada(j); $event.stopPropagation()">
-              <span class="material-icons item-check">check</span>
-              <span class="item-main">{{ j.nombreJornada }}</span>
-            </div>
-            <div *ngIf="jornadasFiltradas.length === 0 && jornadaSearch !== 'Todos' && jornadaSearch !== ''" class="dropdown-empty">No se encontraron resultados</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-group" *ngIf="tipoReporte === 'ofertas'">
-        <label><span class="material-icons text-muted text-sm">toggle_on</span> Estado de Oferta</label>
-        <div class="input-wrapper select-wrapper-native">
-          <select class="form-control" [(ngModel)]="filtrosOfertas.estadoOferta">
-            <option value="">Todos los estados</option>
-            <option *ngFor="let e of estadosOfertas" [value]="e">{{ e | titlecase }}</option>
-          </select>
-          <span class="material-icons chevron">expand_more</span>
-        </div>
-      </div>
-
-      <div class="form-group" *ngIf="tipoReporte === 'postulaciones'">
-        <label><span class="material-icons text-muted text-sm">fact_check</span> Estado de Validación</label>
-        <div class="input-wrapper select-wrapper-native">
-          <select class="form-control" [(ngModel)]="filtrosPostulaciones.estadoValidacion">
-            <option value="">Todos los estados</option>
-            <option *ngFor="let e of estadosPostulacion" [value]="e">{{ e | titlecase }}</option>
-          </select>
-          <span class="material-icons chevron">expand_more</span>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label><span class="material-icons text-muted text-sm">event</span> Fecha Inicio</label>
-        <input *ngIf="tipoReporte === 'ofertas'" type="date" class="form-control" [(ngModel)]="filtrosOfertas.fechaInicio" [max]="filtrosOfertas.fechaFin || hoyISO">
-        <input *ngIf="tipoReporte === 'postulaciones'" type="date" class="form-control" [(ngModel)]="filtrosPostulaciones.fechaInicio" [max]="filtrosPostulaciones.fechaFin || hoyISO">
-      </div>
-
-      <div class="form-group">
-        <label><span class="material-icons text-muted text-sm">event_busy</span> Fecha Fin</label>
-        <input *ngIf="tipoReporte === 'ofertas'" type="date" class="form-control" [(ngModel)]="filtrosOfertas.fechaFin" [min]="filtrosOfertas.fechaInicio" [max]="hoyISO">
-        <input *ngIf="tipoReporte === 'postulaciones'" type="date" class="form-control" [(ngModel)]="filtrosPostulaciones.fechaFin" [min]="filtrosPostulaciones.fechaInicio" [max]="hoyISO">
-      </div>
-
-      <div class="form-group" *ngIf="tipoReporte === 'ofertas'">
-        <label><span class="material-icons text-green text-sm">payments</span> Salario Mínimo</label>
-        <input type="number" class="form-control" [(ngModel)]="filtrosOfertas.salarioMin" [max]="filtrosOfertas.salarioMax !== null ? filtrosOfertas.salarioMax : ''" min="0" step="50" placeholder="Ej: 500">
-      </div>
-
-      <div class="form-group" *ngIf="tipoReporte === 'ofertas'">
-        <label><span class="material-icons text-green text-sm">payments</span> Salario Máximo</label>
-        <input type="number" class="form-control" [(ngModel)]="filtrosOfertas.salarioMax" [min]="filtrosOfertas.salarioMin !== null ? filtrosOfertas.salarioMin : 0" min="0" step="50" placeholder="Ej: 2000">
-      </div>
-
-    </div>
-
-    <div class="validation-errors fade-in" *ngIf="erroresFiltros.length > 0">
-      <div class="error-item" *ngFor="let err of erroresFiltros">
-        <span class="material-icons">warning</span> {{ err }}
       </div>
     </div>
 
-    <div class="filter-divider"></div>
+    <div class="section-card filters-panel usuarios-hint" *ngIf="reporteActivo === 'usuarios'">
+      <div class="usuarios-hint-content">
+        <span class="material-icons">groups</span>
+        <p>Este reporte muestra el panorama actual de usuarios registrados: totales por rol, estado de validación y listado detallado.</p>
+      </div>
+    </div>
 
-    <div class="action-bar">
-      <button class="btn-secondary" (click)="limpiar()">
-        <span class="material-icons">refresh</span> Limpiar
+    <div class="generate-bar">
+      <button type="button" class="btn-secondary" (click)="limpiarFiltros()">
+        <span class="material-icons">filter_alt_off</span> Limpiar filtros
       </button>
-
-      <div class="btn-group-right">
-        <button class="btn-action btn-preview" (click)="vistaPrevia()" [disabled]="cargando">
-          <span class="material-icons">{{ cargando ? 'sync' : 'table_view' }}</span>
-          {{ cargando ? 'Consultando...' : 'Vista Previa' }}
-        </button>
-        <button class="btn-action btn-stats" (click)="mostrandoGrafico ? verTabla() : verEstadisticas()">
-          <span class="material-icons">{{ mostrandoGrafico ? 'table_rows' : 'insert_chart' }}</span>
-          {{ mostrandoGrafico ? 'Ver Tabla' : 'Estadísticas' }}
-        </button>
-        <button class="btn-action btn-excel" (click)="exportarExcel()">
-          <span class="material-icons">download</span> Excel
-        </button>
-        <button class="btn-action btn-pdf" (click)="exportarPDF()">
-          <span class="material-icons">picture_as_pdf</span> PDF
-        </button>
-      </div>
+      <button type="button" class="btn-generar" (click)="generarReporte()" [disabled]="cargando">
+        <span class="material-icons">{{ cargando ? 'sync' : 'play_circle' }}</span>
+        {{ cargando ? 'Generando...' : 'Generar reporte' }}
+      </button>
     </div>
 
-  </div>
+    <!-- Resultados -->
+    <ng-container *ngIf="reporteGenerado && !cargando">
 
-  <div class="section-card fade-in" *ngIf="mostrandoResultados && !mostrandoGrafico">
-    <div class="section-header">
-      <div class="header-title-wrapper">
-        <span class="material-icons text-blue">table_chart</span>
-        <h3>Resultados de la Búsqueda</h3>
-        <span class="results-badge">{{ resultados.length }} registros</span>
+      <div class="kpi-strip" *ngIf="reporteActivo === 'usuarios' && statsUsuarios">
+        <div class="kpi-card">
+          <span class="kpi-value">{{ statsUsuarios['totalUsuarios'] }}</span>
+          <span class="kpi-label">Total usuarios</span>
+        </div>
+        <div class="kpi-card kpi-green">
+          <span class="kpi-value">{{ statsUsuarios['usuariosActivos'] }}</span>
+          <span class="kpi-label">Activos</span>
+        </div>
+        <div class="kpi-card kpi-purple">
+          <span class="kpi-value">{{ statsUsuarios['administradores'] }}</span>
+          <span class="kpi-label">Administradores</span>
+        </div>
+        <div class="kpi-card kpi-blue">
+          <span class="kpi-value">{{ statsUsuarios['empresas'] }}</span>
+          <span class="kpi-label">Empresas</span>
+        </div>
+        <div class="kpi-card kpi-teal">
+          <span class="kpi-value">{{ statsUsuarios['usuariosNormales'] }}</span>
+          <span class="kpi-label">Postulantes</span>
+        </div>
+        <div class="kpi-card kpi-orange">
+          <span class="kpi-value">{{ statsUsuarios['registrosHoy'] }}</span>
+          <span class="kpi-label">Registros hoy</span>
+        </div>
       </div>
-    </div>
 
-    <div class="table-responsive">
-      <table class="modern-table">
-        <thead>
-        <tr>
-          <th *ngFor="let col of columnas">{{ formatearColumna(col) }}</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr *ngFor="let fila of resultadosPaginados" class="table-row">
-          <td *ngFor="let col of columnas" [title]="formatearValor(fila[col])">
-            {{ formatearValor(fila[col]) }}
+      <div class="kpi-strip" *ngIf="reporteActivo !== 'usuarios'">
+        <div class="kpi-card kpi-primary">
+          <span class="kpi-value">{{ resultados.length }}</span>
+          <span class="kpi-label">Registros encontrados</span>
+        </div>
+        <div class="kpi-card kpi-purple">
+          <span class="kpi-value">{{ graficos[0]?.datos?.length ?? 0 }}</span>
+          <span class="kpi-label">Categorías / estados</span>
+        </div>
+        <div class="kpi-card kpi-pink">
+          <span class="kpi-value">{{ graficos[1]?.datos?.length ?? 0 }}</span>
+          <span class="kpi-label">Ciudades</span>
+        </div>
+      </div>
+
+      <div class="results-toolbar">
+        <div class="view-toggle">
+          <button type="button" [class.active]="vistaResultado === 'graficos'" (click)="mostrarVista('graficos')">
+            <span class="material-icons">bar_chart</span> Gráficos
+          </button>
+          <button type="button" [class.active]="vistaResultado === 'tabla'" (click)="mostrarVista('tabla')">
+            <span class="material-icons">table_rows</span> Tabla detalle
+          </button>
+        </div>
+        <div class="export-group">
+          <button type="button" class="btn-export btn-excel" (click)="exportarExcel()">
+            <span class="material-icons">download</span> Excel
+          </button>
+          <button type="button" class="btn-export btn-pdf" (click)="exportarPDF()">
+            <span class="material-icons">picture_as_pdf</span> PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- Gráficos -->
+      <div class="section-card" *ngIf="vistaResultado === 'graficos'" id="charts-export-area">
+        <div class="charts-grid" *ngIf="graficos.length > 0">
+          <div class="chart-card">
+            <h4 class="chart-title"><span class="material-icons">donut_large</span> {{ graficos[0]?.titulo }}</h4>
+            <div class="chart-canvas-wrapper chart-canvas-wrapper--doughnut">
+              <canvas id="chart-0"></canvas>
+            </div>
+          </div>
+          <div class="chart-card" *ngIf="graficos.length > 2">
+            <h4 class="chart-title"><span class="material-icons">leaderboard</span> {{ graficos[2]?.titulo }}</h4>
+            <div class="chart-canvas-wrapper chart-canvas-wrapper--vbar">
+              <canvas id="chart-2"></canvas>
+            </div>
+          </div>
+          <div class="chart-card chart-full-width" *ngIf="graficos.length > 1">
+            <h4 class="chart-title"><span class="material-icons">location_on</span> {{ graficos[1]?.titulo }}</h4>
+            <div class="chart-canvas-wrapper chart-canvas-wrapper--hbar">
+              <canvas id="chart-1"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="section-card" *ngIf="vistaResultado === 'tabla'">
+        <div class="section-header compact">
+          <div class="header-title-wrapper">
+            <span class="material-icons text-blue">table_chart</span>
+            <h3>Detalle del reporte</h3>
+            <span class="results-badge">{{ resultados.length }} filas · {{ columnas.length }} columnas</span>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th *ngFor="let col of columnas">{{ formatearColumna(col) }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let fila of resultadosPaginados">
+          <td *ngFor="let col of columnas" [title]="formatearValor(fila[col], col)">
+            {{ formatearValor(fila[col], col) }}
           </td>
-        </tr>
-        </tbody>
-      </table>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination-wrapper" *ngIf="totalPaginas > 1">
+          <span class="pagination-info">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+          <div class="pagination-controls">
+            <button class="btn-page" (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">
+              <span class="material-icons">chevron_left</span>
+            </button>
+            <button class="btn-page" (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">
+              <span class="material-icons">chevron_right</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <div class="empty-state fade-in" *ngIf="!reporteGenerado && !cargando">
+      <div class="empty-icon-box">
+        <span class="material-icons">analytics</span>
+      </div>
+      <h3>Configure y genere el reporte</h3>
+      <p>Ajuste los filtros si lo desea y pulse <strong>Generar reporte</strong> para ver gráficos y datos.</p>
     </div>
 
-    <div class="pagination-wrapper" *ngIf="totalPaginas > 1">
-      <span class="pagination-info">Página {{ paginaActual }} de {{ totalPaginas }}</span>
-      <div class="pagination-controls">
-        <button class="btn-page" (click)="cambiarPagina(1)" [disabled]="paginaActual === 1"><span class="material-icons">keyboard_double_arrow_left</span></button>
-        <button class="btn-page" (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1"><span class="material-icons">chevron_left</span></button>
-        <button class="btn-page" (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas"><span class="material-icons">chevron_right</span></button>
-        <button class="btn-page" (click)="cambiarPagina(totalPaginas)" [disabled]="paginaActual === totalPaginas"><span class="material-icons">keyboard_double_arrow_right</span></button>
-      </div>
+    <div class="loading-container" *ngIf="cargando">
+      <div class="spinner"></div>
+      <p>Preparando su reporte...</p>
     </div>
-  </div>
-
-  <div class="section-card fade-in" *ngIf="mostrandoGrafico" id="charts-export-area">
-    <div class="section-header">
-      <div class="header-title-wrapper">
-        <span class="material-icons text-indigo">bar_chart</span>
-        <h3>Análisis Gráfico</h3>
-        <span class="results-badge badge-indigo">{{ resultados.length }} registros analizados</span>
-      </div>
-    </div>
-
-    <div class="stats-summary-grid">
-      <div class="summary-card summary-primary">
-        <div class="summary-info">
-          <span class="summary-value">{{ resultados.length }}</span>
-          <span class="summary-label">{{ tipoReporte === 'ofertas' ? 'Total Ofertas' : 'Total Postulaciones' }}</span>
-        </div>
-        <span class="material-icons summary-icon">analytics</span>
-      </div>
-      <div class="summary-card summary-purple">
-        <div class="summary-info">
-          <span class="summary-value">{{ graficos[0]?.datos?.length ?? 0 }}</span>
-          <span class="summary-label">{{ tipoReporte === 'ofertas' ? 'Categorías' : 'Estados distintos' }}</span>
-        </div>
-        <span class="material-icons summary-icon">donut_small</span>
-      </div>
-      <div class="summary-card summary-pink">
-        <div class="summary-info">
-          <span class="summary-value">{{ graficos[1]?.datos?.length ?? 0 }}</span>
-          <span class="summary-label">Ciudades</span>
-        </div>
-        <span class="material-icons summary-icon">location_city</span>
-      </div>
-      <div class="summary-card summary-teal">
-        <div class="summary-info">
-          <span class="summary-value">{{ graficos[2]?.datos?.length ?? 0 }}</span>
-          <span class="summary-label">{{ tipoReporte === 'ofertas' ? 'Modalidades' : 'Categorías' }}</span>
-        </div>
-        <span class="material-icons summary-icon">{{ tipoReporte === 'ofertas' ? 'computer' : 'folder_open' }}</span>
-      </div>
-    </div>
-
-    <div class="charts-grid" *ngIf="graficos.length > 0">
-
-      <div class="chart-card">
-        <div class="chart-header">
-          <h4 class="chart-title"><span class="material-icons text-purple text-sm">donut_large</span> {{ graficos[0]?.titulo }}</h4>
-        </div>
-        <div class="chart-canvas-wrapper chart-canvas-wrapper--doughnut">
-          <canvas id="chart-0"></canvas>
-        </div>
-      </div>
-
-      <div class="chart-card" *ngIf="graficos.length > 2">
-        <div class="chart-header">
-          <h4 class="chart-title"><span class="material-icons text-teal text-sm">leaderboard</span> {{ graficos[2]?.titulo }}</h4>
-        </div>
-        <div class="chart-canvas-wrapper chart-canvas-wrapper--vbar">
-          <canvas id="chart-2"></canvas>
-        </div>
-      </div>
-
-      <div class="chart-card chart-full-width" *ngIf="graficos.length > 1">
-        <div class="chart-header">
-          <h4 class="chart-title"><span class="material-icons text-pink text-sm">location_on</span> {{ graficos[1]?.titulo }}</h4>
-        </div>
-        <div class="chart-canvas-wrapper chart-canvas-wrapper--hbar">
-          <canvas id="chart-1"></canvas>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <div class="empty-state fade-in" *ngIf="!mostrandoResultados && !mostrandoGrafico && !cargando">
-    <div class="empty-icon-box">
-      <span class="material-icons">travel_explore</span>
-    </div>
-    <h3 class="empty-title">Lista para consultar</h3>
-    <p class="empty-sub">Seleccione los filtros que necesite y presione <strong>Vista Previa</strong> para explorar los datos.</p>
-  </div>
-
-  <div class="loading-container" *ngIf="cargando">
-    <div class="spinner"></div>
-    <p>Consultando la base de datos...</p>
-  </div>
-
+  </section>
 </div>

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, ChangeDetectorRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UiNotificationService } from '../../../services/ui-notification.service';
@@ -8,7 +8,7 @@ import { UiNotificationService } from '../../../services/ui-notification.service
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './seccion-cursos.html',
-  styleUrls: ['./seccion-cursos.css']
+  styleUrls: ['./seccion-cursos.css', '../perfil-secciones-shared.css']
 })
 export class SeccionCursosComponent {
   @Input() cursos: any[] = [];
@@ -19,18 +19,21 @@ export class SeccionCursosComponent {
 
   @ViewChild('fileInputCurso') fileInputCurso!: ElementRef;
 
-  modalCurso: boolean = false;
+  modalCurso = signal(false);
   idEdicionCurso: number | null = null;
   nuevoCurso: any = {nombre_curso: '', institucion: '', horas_duracion: null, archivo: null, nombreArchivo: ''};
 
   constructor(private cdr: ChangeDetectorRef, private ui: UiNotificationService) {}
 
   abrirModal() {
-    this.modalCurso = true;
+    if (!this.idEdicionCurso) {
+      this.nuevoCurso = { nombre_curso: '', institucion: '', horas_duracion: null, archivo: null, nombreArchivo: '' };
+    }
+    this.modalCurso.set(true);
   }
 
   cerrarModal() {
-    this.modalCurso = false;
+    this.modalCurso.set(false);
     this.idEdicionCurso = null;
     this.nuevoCurso = {nombre_curso: '', institucion: '', horas_duracion: null, archivo: null, nombreArchivo: ''};
   }

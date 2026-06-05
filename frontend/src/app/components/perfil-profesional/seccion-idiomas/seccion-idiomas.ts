@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UiNotificationService } from '../../../services/ui-notification.service';
@@ -7,7 +7,7 @@ import { UiNotificationService } from '../../../services/ui-notification.service
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './seccion-idiomas.html',
-  styleUrls: ['./seccion-idiomas.css']
+  styleUrls: ['./seccion-idiomas.css', '../perfil-secciones-shared.css']
 })
 export class SeccionIdiomasComponent {
   @Input() idiomas: any[] = [];
@@ -20,7 +20,7 @@ export class SeccionIdiomasComponent {
 
   @ViewChild('fileInputIdm') fileInputIdm!: ElementRef;
 
-  modalIdioma: boolean = false;
+  modalIdioma = signal(false);
   idEdicionIdioma: number | null = null;
   nuevoIdioma: any = {id_idioma: null, nivel: null, archivo: null, nombreArchivo: ''};
 
@@ -28,11 +28,14 @@ export class SeccionIdiomasComponent {
   constructor(private ui: UiNotificationService) {}
 
   abrirModal() {
-    this.modalIdioma = true;
+    if (!this.idEdicionIdioma) {
+      this.nuevoIdioma = { id_idioma: null, nivel: null, archivo: null, nombreArchivo: '' };
+    }
+    this.modalIdioma.set(true);
   }
 
   cerrarModal() {
-    this.modalIdioma = false;
+    this.modalIdioma.set(false);
     this.idEdicionIdioma = null;
     this.nuevoIdioma = {id_idioma: null, nivel: null, archivo: null, nombreArchivo: ''};
   }

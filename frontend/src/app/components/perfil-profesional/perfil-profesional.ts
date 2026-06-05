@@ -114,32 +114,32 @@ export class PerfilProfesionalComponent implements OnInit {
 
         try {
           const idiomasArray = parsearJsonSeguro(data.idiomas);
-          this.perfil.idiomas = idiomasArray.map((i: any) => ({
+          this.perfil.idiomas = [...idiomasArray.map((i: any) => ({
             id_usuario_idioma: i.id_usuario_idioma, id_idioma: i.id_idioma, nombre_idioma: i.idioma,
             nivel: i.nivel, archivo: null, nombreArchivo: i.archivo_certificado || ''
-          }));
+          }))];
 
           const expArray = parsearJsonSeguro(data.experienciaLaboral);
-          this.perfil.experiencias = expArray.map((e: any) => ({
+          this.perfil.experiencias = [...expArray.map((e: any) => ({
             id_exp_laboral: e.id_exp_laboral, id_cargo: e.id_cargo, id_empresa_catalogo: e.id_empresa_catalogo,
             nombre_cargo: e.cargo, nombre_empresa: e.empresa, descripcion: e.descripcion,
             fecha_inicio: e.fecha_inicio, fecha_fin: e.fecha_fin, id_ciudad: e.id_ciudad,
             nombre_ciudad: e.nombre_ciudad, id_provincia: e.id_provincia, nombre_provincia: e.nombre_provincia,
             nombreArchivo: e.archivo_comprobante || '', cargos: e.cargos || []
-          }));
+          }))];
 
           const titulosArray = parsearJsonSeguro(data.formacionAcademica);
-          this.perfil.titulos = titulosArray.map((t: any) => ({
+          this.perfil.titulos = [...titulosArray.map((t: any) => ({
             id_academico: t.id_academico, id_facultad: t.id_facultad, id_carrera: t.id_carrera,
             nombreFacultad: t.facultad, nombreCarrera: t.carrera, fechaGraduacion: t.fecha_graduacion,
             registroSenescyt: t.registro_senescyt, archivoReferencia: null, nombreArchivo: t.archivo_referencia || ''
-          }));
+          }))];
 
           const cursosArray = parsearJsonSeguro(data.cursosRealizados);
-          this.perfil.cursos = cursosArray.map((c: any) => ({
+          this.perfil.cursos = [...cursosArray.map((c: any) => ({
             id_curso: c.id_curso, nombre_curso: c.curso, institucion: c.institucion,
             horas_duracion: c.duracion_horas, archivo: null, nombreArchivo: c.archivo_certificado || ''
-          }));
+          }))];
 
         } catch (error) {
           console.error('Error general al mapear las listas del perfil:', error);
@@ -287,17 +287,29 @@ export class PerfilProfesionalComponent implements OnInit {
   }
 
 
+  private mensajeErrorHttp(err: any, fallback: string): string {
+    return err?.error?.error || err?.error?.mensaje || fallback;
+  }
+
+  private alGuardarItemOk(res: any, mensajePorDefecto: string): void {
+    this.notif.exito(res?.mensaje || mensajePorDefecto);
+    if (res?.advertencia) {
+      this.notif.advertencia(res.advertencia);
+    }
+    this.cargarDatosDesdeBackend();
+  }
+
   guardarAcademicaDesdeHijo(evento: {formData: FormData, idEdicion: number | null}): void {
     if (evento.idEdicion) {
       evento.formData.append('idAcademico', evento.idEdicion.toString());
       this.perfilService.actualizarAcademico(evento.formData).subscribe({
-        next: () => { this.notif.exito('Título actualizado.'); this.cargarDatosDesdeBackend(); },
-        error: (err) => this.notif.error('Error al actualizar el título.')
+        next: (res) => this.alGuardarItemOk(res, 'Título actualizado.'),
+        error: (err) => this.notif.error(this.mensajeErrorHttp(err, 'Error al actualizar el título.'))
       });
     } else {
       this.perfilService.registrarItemPerfil(this.idUsuarioLogueado, 'academico', evento.formData).subscribe({
-        next: () => { this.notif.exito('Título guardado.'); this.cargarDatosDesdeBackend(); },
-        error: (err) => this.notif.error('Error al guardar el título.')
+        next: (res) => this.alGuardarItemOk(res, 'Título guardado.'),
+        error: (err) => this.notif.error(this.mensajeErrorHttp(err, 'Error al guardar el título.'))
       });
     }
   }
@@ -306,13 +318,13 @@ export class PerfilProfesionalComponent implements OnInit {
     if (evento.idEdicion) {
       evento.formData.append('idUsuarioIdioma', evento.idEdicion.toString());
       this.perfilService.actualizarIdioma(evento.formData).subscribe({
-        next: () => { this.notif.exito('Idioma actualizado.'); this.cargarDatosDesdeBackend(); },
-        error: (err) => this.notif.error('Error al actualizar el idioma.')
+        next: (res) => this.alGuardarItemOk(res, 'Idioma actualizado.'),
+        error: (err) => this.notif.error(this.mensajeErrorHttp(err, 'Error al guardar el idioma.'))
       });
     } else {
       this.perfilService.registrarItemPerfil(this.idUsuarioLogueado, 'idioma', evento.formData).subscribe({
-        next: () => { this.notif.exito('Idioma guardado.'); this.cargarDatosDesdeBackend(); },
-        error: (err) => this.notif.error('Error al guardar el idioma.')
+        next: (res) => this.alGuardarItemOk(res, 'Idioma guardado.'),
+        error: (err) => this.notif.error(this.mensajeErrorHttp(err, 'Error al guardar el idioma.'))
       });
     }
   }
@@ -321,13 +333,13 @@ export class PerfilProfesionalComponent implements OnInit {
     if (evento.idEdicion) {
       evento.formData.append('idExpLaboral', evento.idEdicion.toString());
       this.perfilService.actualizarExperiencia(evento.formData).subscribe({
-        next: () => { this.notif.exito('Experiencia actualizada.'); this.cargarDatosDesdeBackend(); },
-        error: (err) => this.notif.error('Error al actualizar la experiencia.')
+        next: (res) => this.alGuardarItemOk(res, 'Experiencia actualizada.'),
+        error: (err) => this.notif.error(this.mensajeErrorHttp(err, 'Error al guardar la experiencia.'))
       });
     } else {
       this.perfilService.registrarItemPerfil(this.idUsuarioLogueado, 'experiencia', evento.formData).subscribe({
-        next: () => { this.notif.exito('Experiencia guardada.'); this.cargarDatosDesdeBackend(); },
-        error: (err) => this.notif.error('Error al guardar la experiencia.')
+        next: (res) => this.alGuardarItemOk(res, 'Experiencia guardada.'),
+        error: (err) => this.notif.error(this.mensajeErrorHttp(err, 'Error al guardar la experiencia.'))
       });
     }
   }
@@ -336,13 +348,13 @@ export class PerfilProfesionalComponent implements OnInit {
     if (evento.idEdicion) {
       evento.formData.append('idCurso', evento.idEdicion.toString());
       this.perfilService.actualizarCurso(evento.formData).subscribe({
-        next: () => { this.notif.exito('Curso actualizado.'); this.cargarDatosDesdeBackend();this.cdr.detectChanges();},
-        error: (err) => this.notif.error('Error al actualizar el curso.')
+        next: (res) => this.alGuardarItemOk(res, 'Curso actualizado.'),
+        error: (err) => this.notif.error(this.mensajeErrorHttp(err, 'Error al actualizar el curso.'))
       });
     } else {
       this.perfilService.registrarItemPerfil(this.idUsuarioLogueado, 'curso', evento.formData).subscribe({
-        next: () => { this.notif.exito('Curso guardado.'); this.cargarDatosDesdeBackend(); },
-        error: (err) => this.notif.error('Error al guardar el curso.')
+        next: (res) => this.alGuardarItemOk(res, 'Curso guardado.'),
+        error: (err) => this.notif.error(this.mensajeErrorHttp(err, 'Error al guardar el curso.'))
       });
     }
   }

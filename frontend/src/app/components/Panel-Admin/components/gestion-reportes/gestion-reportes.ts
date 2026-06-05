@@ -2,8 +2,10 @@ import { Component, OnInit, OnDestroy, HostListener, ChangeDetectorRef, NgZone }
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule, HttpParams } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 import * as XLSX from 'xlsx';
 import { Chart, registerables } from 'chart.js';
+import { AdminService } from '../../services/admin.service';
 
 // ✅ Registrar todos los componentes de Chart.js una sola vez al cargar el módulo
 Chart.register(...registerables);
@@ -19,6 +21,55 @@ interface GraficoData {
   titulo: string;
   datos: { etiqueta: string; cantidad: number; porcentaje: number; color: string }[];
 }
+
+type ReporteId = 'ofertas' | 'postulaciones' | 'usuarios';
+
+interface ReporteCatalogoItem {
+  id: ReporteId;
+  titulo: string;
+  descripcion: string;
+  icon: string;
+  color: string;
+  etiqueta: string;
+}
+
+/** Columnas visibles en tabla y exportaciones (evita saturar el PDF) */
+interface ColumnaReporte {
+  campo: string;
+  etiqueta: string;
+}
+
+const COLUMNAS_REPORTE: Record<ReporteId, ColumnaReporte[]> = {
+  ofertas: [
+    { campo: 'titulo', etiqueta: 'Título de la oferta' },
+    { campo: 'nombreEmpresa', etiqueta: 'Empresa' },
+    { campo: 'nombreCiudad', etiqueta: 'Ciudad' },
+    { campo: 'nombreModalidad', etiqueta: 'Modalidad' },
+    { campo: 'nombreCategoria', etiqueta: 'Categoría' },
+    { campo: 'salarioMin', etiqueta: 'Salario mín. ($)' },
+    { campo: 'salarioMax', etiqueta: 'Salario máx. ($)' },
+    { campo: 'cantidadVacantes', etiqueta: 'Vacantes' },
+    { campo: 'estadoOferta', etiqueta: 'Estado' },
+    { campo: 'fechaCierre', etiqueta: 'Fecha cierre' }
+  ],
+  postulaciones: [
+    { campo: 'tituloOferta', etiqueta: 'Oferta' },
+    { campo: 'nombreEmpresa', etiqueta: 'Empresa' },
+    { campo: 'nombrePostulante', etiqueta: 'Postulante' },
+    { campo: 'nombreCiudad', etiqueta: 'Ciudad' },
+    { campo: 'nombreCategoria', etiqueta: 'Categoría' },
+    { campo: 'estadoValidacion', etiqueta: 'Estado' },
+    { campo: 'fechaPostulacion', etiqueta: 'Fecha postulación' }
+  ],
+  usuarios: [
+    { campo: 'nombre', etiqueta: 'Nombre' },
+    { campo: 'correo', etiqueta: 'Correo' },
+    { campo: 'rol', etiqueta: 'Rol' },
+    { campo: 'estadoValidacion', etiqueta: 'Estado' },
+    { campo: 'ultimoAcceso', etiqueta: 'Último acceso' },
+    { campo: 'totalAuditorias', etiqueta: 'Auditorías' }
+  ]
+};
 
 @Component({
   selector: 'app-gestion-reportes',
@@ -37,11 +88,44 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
   private readonly API_CATEGORIAS    = `${this.API_BASE}/categorias`;
   private readonly API_MODALIDADES   = `${this.API_BASE}/modalidades`;
   private readonly API_JORNADAS      = `${this.API_BASE}/jornadas`;
+  private readonly API_AUDITORIAS    = `${this.API_BASE}/auditorias`;
+
+  readonly catalogoReportes: ReporteCatalogoItem[] = [
+    {
+      id: 'ofertas',
+      titulo: 'Ofertas laborales',
+      descripcion: 'Vacantes publicadas, estados, salarios y distribución por ciudad y categoría.',
+      icon: 'work_outline',
+      color: '#4f46e5',
+      etiqueta: 'Bolsa de empleo'
+    },
+    {
+      id: 'postulaciones',
+      titulo: 'Postulaciones',
+      descripcion: 'Seguimiento de candidatos por oferta, estado de validación y ubicación.',
+      icon: 'how_to_reg',
+      color: '#0d9488',
+      etiqueta: 'Proceso de selección'
+    },
+    {
+      id: 'usuarios',
+      titulo: 'Usuarios del sistema',
+      descripcion: 'Resumen de cuentas registradas: roles, estados y actividad general.',
+      icon: 'groups',
+      color: '#7c3aed',
+      etiqueta: 'Administración'
+    }
+  ];
 
   // ─── Estado Principal ───────────────────────────────────────────────────
-  tipoReporte: 'ofertas' | 'postulaciones' = 'ofertas';
+  reporteActivo: ReporteId | null = null;
+  reporteGenerado = false;
+  vistaResultado: 'graficos' | 'tabla' = 'graficos';
+  statsUsuarios: Record<string, number> | null = null;
+
   resultados:  any[]         = [];
   columnas:    string[]      = [];
+  columnasReporte: ColumnaReporte[] = [];
   graficos:    GraficoData[] = [];
 
   cargando            = false;
@@ -138,15 +222,20 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
   // ─── Getters: paginación ────────────────────────────────────────────────
   get resultadosPaginados(): any[] {
     const inicio = (this.paginaActual - 1) * this.itemsPorPagina;
-    return this.resultados.slice(inicio, inicio + this.itemsPorPagina);
+    return this.resultados.slice(inicio, inicio + this.itemsPorPagina).map(f => this.filaParaVista(f));
   }
   get totalPaginas(): number {
     return Math.max(1, Math.ceil(this.resultados.length / this.itemsPorPagina));
   }
   get hoyISO(): string { return new Date().toISOString().split('T')[0]; }
 
+  get reporteActivoConfig(): ReporteCatalogoItem | undefined {
+    return this.catalogoReportes.find(r => r.id === this.reporteActivo);
+  }
+
   constructor(
     private http:   HttpClient,
+    private adminService: AdminService,
     private cdr:    ChangeDetectorRef,
     private ngZone: NgZone
   ) {}
@@ -182,25 +271,40 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // CONTROL DE TIPO DE REPORTE Y LIMPIEZA
+  // NAVEGACIÓN Y LIMPIEZA
   // ═══════════════════════════════════════════════════════════════════════════
-  cambiarTipoReporte(tipo: 'ofertas' | 'postulaciones'): void {
-    this.tipoReporte = tipo;
-    this.limpiar();
+  seleccionarReporte(id: ReporteId): void {
+    this.reporteActivo = id;
+    this.limpiarResultados();
+    this.cdr.detectChanges();
   }
 
-  limpiar(): void {
+  volverCatalogo(): void {
+    this.reporteActivo = null;
+    this.limpiarResultados();
+    this.cdr.detectChanges();
+  }
+
+  limpiarResultados(): void {
     this.destruirCharts();
     this.resultados          = [];
     this.columnas            = [];
+    this.columnasReporte     = [];
     this.graficos            = [];
+    this.statsUsuarios       = null;
+    this.reporteGenerado     = false;
     this.mostrandoResultados = false;
     this.mostrandoGrafico    = false;
+    this.vistaResultado      = 'graficos';
     this.cargando            = false;
     this.paginaActual        = 1;
     this.erroresFiltros      = [];
     this.mensajeExito        = '';
     this.mensajeError        = '';
+  }
+
+  limpiarFiltros(): void {
+    this.erroresFiltros = [];
 
     this.filtrosOfertas = {
       idCiudad: null, idCategoria: null, idModalidad: null, idJornada: null,
@@ -220,12 +324,27 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  mostrarVista(vista: 'graficos' | 'tabla'): void {
+    this.vistaResultado = vista;
+    if (vista === 'graficos') {
+      this.mostrandoGrafico    = true;
+      this.mostrandoResultados = false;
+      this.cdr.detectChanges();
+      setTimeout(() => this.crearCharts(), 120);
+    } else {
+      this.destruirCharts();
+      this.mostrandoGrafico    = false;
+      this.mostrandoResultados = true;
+      this.cdr.detectChanges();
+    }
+  }
+
   // ═══════════════════════════════════════════════════════════════════════════
   // VALIDACIONES
   // ═══════════════════════════════════════════════════════════════════════════
   private validarFiltros(): boolean {
     this.erroresFiltros = [];
-    const f = this.tipoReporte === 'ofertas' ? this.filtrosOfertas : this.filtrosPostulaciones;
+    const f = this.reporteActivo === 'ofertas' ? this.filtrosOfertas : this.filtrosPostulaciones;
 
     if (f.fechaInicio && f.fechaFin && new Date(f.fechaFin) < new Date(f.fechaInicio))
       this.erroresFiltros.push('La fecha fin no puede ser anterior a la fecha inicio.');
@@ -234,7 +353,7 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
     if (f.fechaFin && f.fechaFin > this.hoyISO)
       this.erroresFiltros.push('La fecha fin no puede ser una fecha futura.');
 
-    if (this.tipoReporte === 'ofertas') {
+    if (this.reporteActivo === 'ofertas') {
       const fo = this.filtrosOfertas;
       if (fo.salarioMin !== null && fo.salarioMin < 0)
         this.erroresFiltros.push('El salario mínimo no puede ser negativo.');
@@ -247,19 +366,24 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // VISTA PREVIA
+  // GENERAR REPORTE
   // ═══════════════════════════════════════════════════════════════════════════
-  vistaPrevia(): void {
-    if (!this.validarFiltros()) return;
+  generarReporte(): void {
+    if (!this.reporteActivo) return;
+    if (this.reporteActivo !== 'usuarios' && !this.validarFiltros()) return;
 
     this.destruirCharts();
-    this.cargando            = true;
-    this.mostrandoResultados = false;
-    this.mostrandoGrafico    = false;
+    this.cargando        = true;
+    this.reporteGenerado = false;
     this.cdr.detectChanges();
 
-    const url    = this.tipoReporte === 'ofertas' ? this.API_OFERTAS : this.API_POSTULACIONES;
-    const filtro = this.tipoReporte === 'ofertas' ? this.filtrosOfertas : this.filtrosPostulaciones;
+    if (this.reporteActivo === 'usuarios') {
+      this.cargarReporteUsuarios();
+      return;
+    }
+
+    const url    = this.reporteActivo === 'ofertas' ? this.API_OFERTAS : this.API_POSTULACIONES;
+    const filtro = this.reporteActivo === 'ofertas' ? this.filtrosOfertas : this.filtrosPostulaciones;
 
     let params = new HttpParams();
     Object.keys(filtro).forEach(key => {
@@ -269,63 +393,106 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
     });
 
     this.http.get<any[]>(url, { params }).subscribe({
-      next: data => {
-        this.ngZone.run(() => {
-          this.resultados = Array.isArray(data) ? data : [];
-          if (this.resultados.length > 0) {
-            this.columnas            = Object.keys(this.resultados[0]);
-            this.generarGraficos(this.resultados);
-            this.mostrandoResultados = true;
-            this.paginaActual        = 1;
-            this.mostrarExito(`Se encontraron ${this.resultados.length} registros.`);
-          } else {
-            this.mostrarError('No se encontraron datos para los filtros seleccionados.');
-          }
-          this.cargando = false;
-          this.cdr.detectChanges();
-        });
-      },
-      error: err => {
-        this.ngZone.run(() => {
-          const msg = err.error?.error || err.error?.message || 'Error al conectar con el servidor.';
-          this.mostrarError(msg);
-          console.error(err);
-          this.cargando = false;
-          this.cdr.detectChanges();
-        });
-      }
+      next: data => this.ngZone.run(() => this.finalizarCargaReporte(Array.isArray(data) ? data : [])),
+      error: err => this.ngZone.run(() => {
+        const msg = err.error?.error || err.error?.message || 'Error al conectar con el servidor.';
+        this.mostrarError(msg);
+        this.cargando = false;
+        this.cdr.detectChanges();
+      })
     });
   }
 
-  verEstadisticas(): void {
-    if (this.resultados.length === 0) {
-      this.vistaPrevia();
-      const check = setInterval(() => {
-        if (!this.cargando) {
-          clearInterval(check);
-          if (this.resultados.length > 0) {
-            this.ngZone.run(() => {
-              this.mostrandoGrafico    = true;
-              this.mostrandoResultados = false;
-              this.cdr.detectChanges();
-              setTimeout(() => this.crearCharts(), 100);
-            });
-          }
-        }
-      }, 200);
-      return;
-    }
-    this.mostrandoGrafico    = true;
-    this.mostrandoResultados = false;
-    this.cdr.detectChanges();
-    // ✅ Esperar que Angular renderice los canvas antes de inicializar Chart.js
-    setTimeout(() => this.crearCharts(), 100);
+  private cargarReporteUsuarios(): void {
+    forkJoin({
+      stats: this.adminService.getEstadisticasUsuarios(),
+      usuarios: this.adminService.obtenerTodosUsuarios()
+    }).subscribe({
+      next: ({ stats, usuarios }) => {
+        this.ngZone.run(() => {
+          this.statsUsuarios = stats;
+          const filas = (usuarios || []).map((u: any) => ({
+            idUsuario: u.idUsuario,
+            nombre: `${u.nombre || ''} ${u.apellido || ''}`.trim(),
+            correo: u.correo,
+            rol: u.rol?.nombreRol || u.rol || '—',
+            estadoValidacion: u.estadoValidacion || '—',
+            ultimoAcceso: u.ultimoAcceso || '—',
+            totalAuditorias: u.totalAuditorias ?? 0
+          }));
+          this.finalizarCargaReporte(filas);
+        });
+      },
+      error: err => this.ngZone.run(() => {
+        this.mostrarError('No se pudo cargar el reporte de usuarios.');
+        console.error(err);
+        this.cargando = false;
+        this.cdr.detectChanges();
+      })
+    });
   }
 
-  verTabla(): void {
-    this.destruirCharts();
-    this.mostrandoGrafico    = false;
-    this.mostrandoResultados = true;
+  private aplicarColumnasPuntuales(): void {
+    if (!this.reporteActivo) {
+      this.columnasReporte = [];
+      this.columnas = [];
+      return;
+    }
+    const definidas = COLUMNAS_REPORTE[this.reporteActivo];
+    const keysDisponibles = this.resultados.length > 0 ? Object.keys(this.resultados[0]) : [];
+    this.columnasReporte = definidas.filter(c => keysDisponibles.includes(c.campo));
+    if (this.columnasReporte.length === 0 && keysDisponibles.length > 0) {
+      this.columnasReporte = keysDisponibles.slice(0, 8).map(campo => ({
+        campo,
+        etiqueta: this.etiquetaDesdeCampo(campo)
+      }));
+    }
+    this.columnas = this.columnasReporte.map(c => c.campo);
+  }
+
+  private filaParaVista(fila: any): Record<string, unknown> {
+    const out: Record<string, unknown> = {};
+    for (const col of this.columnasReporte) {
+      out[col.campo] = fila[col.campo];
+    }
+    return out;
+  }
+
+  private filasParaExportacion(): Record<string, unknown>[] {
+    return this.resultados.map(f => {
+      const out: Record<string, unknown> = {};
+      for (const col of this.columnasReporte) {
+        out[col.etiqueta] = this.formatearValor(f[col.campo], col.campo);
+      }
+      return out;
+    });
+  }
+
+  private etiquetaDesdeCampo(campo: string): string {
+    return campo
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, c => c.toUpperCase())
+      .trim();
+  }
+
+  private finalizarCargaReporte(data: any[]): void {
+    this.resultados = data;
+    if (this.resultados.length > 0) {
+      this.aplicarColumnasPuntuales();
+      this.generarGraficos(this.resultados);
+      this.reporteGenerado     = true;
+      this.paginaActual       = 1;
+      this.vistaResultado     = 'graficos';
+      this.mostrandoGrafico   = true;
+      this.mostrandoResultados = false;
+      this.mostrarExito(`Reporte generado: ${this.resultados.length} registros.`);
+      this.cdr.detectChanges();
+      setTimeout(() => this.crearCharts(), 150);
+    } else {
+      this.mostrarError('No se encontraron datos para este reporte.');
+    }
+    this.cargando = false;
     this.cdr.detectChanges();
   }
 
@@ -371,8 +538,9 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
 
       // Determinar tipo según índice y tipo de reporte
       const esHorizontal =
-        (this.tipoReporte === 'ofertas'       && index === 1) ||
-        (this.tipoReporte === 'postulaciones' && index === 2);
+        (this.reporteActivo === 'ofertas'       && index === 1) ||
+        (this.reporteActivo === 'postulaciones' && index === 2) ||
+        (this.reporteActivo === 'usuarios'      && index === 1);
       const esDoughnut = index === 0;
 
       let chart: Chart;
@@ -573,14 +741,29 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
       };
     };
 
-    if (this.tipoReporte === 'ofertas') {
-      this.graficos.push(crearGrafico('Ofertas por Categoría', 'nombreCategoria'));
-      this.graficos.push(crearGrafico('Ofertas por Ciudad',    'nombreCiudad'));
-      this.graficos.push(crearGrafico('Ofertas por Modalidad', 'nombreModalidad'));
-    } else {
-      this.graficos.push(crearGrafico('Postulaciones por Estado',    'estadoValidacion'));
-      this.graficos.push(crearGrafico('Postulaciones por Categoría', 'nombreCategoria'));
-      this.graficos.push(crearGrafico('Postulaciones por Ciudad',    'nombreCiudad'));
+    if (this.reporteActivo === 'ofertas') {
+      this.graficos.push(crearGrafico('Ofertas por categoría', 'nombreCategoria'));
+      this.graficos.push(crearGrafico('Ofertas por ciudad', 'nombreCiudad'));
+      this.graficos.push(crearGrafico('Ofertas por modalidad', 'nombreModalidad'));
+    } else if (this.reporteActivo === 'postulaciones') {
+      this.graficos.push(crearGrafico('Postulaciones por estado', 'estadoValidacion'));
+      this.graficos.push(crearGrafico('Postulaciones por ciudad', 'nombreCiudad'));
+      this.graficos.push(crearGrafico('Postulaciones por categoría', 'nombreCategoria'));
+    } else if (this.reporteActivo === 'usuarios') {
+      this.graficos.push(crearGrafico('Usuarios por rol', 'rol'));
+      this.graficos.push(crearGrafico('Usuarios por estado', 'estadoValidacion'));
+      if (this.statsUsuarios) {
+        const resumen: GraficoData = {
+          titulo: 'Distribución por tipo de cuenta',
+          datos: [
+            { etiqueta: 'Activos', cantidad: this.statsUsuarios['usuariosActivos'] || 0, porcentaje: 100, color: colores[2] },
+            { etiqueta: 'Empresas', cantidad: this.statsUsuarios['empresas'] || 0, porcentaje: 80, color: colores[4] },
+            { etiqueta: 'Postulantes', cantidad: this.statsUsuarios['usuariosNormales'] || 0, porcentaje: 60, color: colores[6] },
+            { etiqueta: 'Administradores', cantidad: this.statsUsuarios['administradores'] || 0, porcentaje: 40, color: colores[1] }
+          ].filter(d => d.cantidad > 0)
+        };
+        if (resumen.datos.length > 0) this.graficos.push(resumen);
+      }
     }
   }
 
@@ -598,7 +781,7 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
   //   8. Última página: gráficos estadísticos
   // ═══════════════════════════════════════════════════════════════════════════
   async exportarPDF(): Promise<void> {
-    if (this.resultados.length === 0) await this.ejecutarVistaPreviaAsync();
+    if (this.resultados.length === 0) await this.ejecutarGenerarAsync();
     if (this.resultados.length === 0) { this.mostrarError('No hay datos para exportar.'); return; }
 
     try {
@@ -614,12 +797,16 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
       const HEADER_H     = 26;
       const FOOTER_H     = 8;
       const COL_PAD      = 1.5;
-      const MAX_CHARS    = 32;
-      const CHAR_W_RATIO = 1.75;                  // mm por carácter a 8pt (Helvetica)
+      const MAX_CHARS    = 42;
+      const CHAR_W_RATIO = 1.75;
 
-      const titulo = this.tipoReporte === 'ofertas'
-        ? 'Reporte de Ofertas Laborales'
-        : 'Reporte de Postulaciones';
+      const titulo = this.reporteActivoConfig?.titulo || 'Reporte';
+      const colsPdf = this.columnasReporte;
+      const filasPdf = this.filasParaExportacion();
+      if (colsPdf.length === 0) {
+        this.mostrarError('No hay columnas configuradas para exportar.');
+        return;
+      }
 
       // ── Nombre admin desde localStorage ────────────────────────────────
       const nombreAdmin =
@@ -635,11 +822,11 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
       // ── Calcular anchos mínimos para una fuente dada ────────────────────
       const calcWidths = (fs: number): { widths: number[]; total: number } => {
         const ratio = (fs / 8) * CHAR_W_RATIO;
-        const widths = this.columnas.map(col => {
-          const hLen = this.formatearColumna(col).length;
+        const widths = colsPdf.map(col => {
+          const hLen = col.etiqueta.length;
           const dLen = Math.min(
-            this.resultados.reduce((mx, row) =>
-              Math.max(mx, row[col] != null ? String(row[col]).length : 0), 0),
+            filasPdf.reduce((mx, row) =>
+              Math.max(mx, row[col.etiqueta] != null ? String(row[col.etiqueta]).length : 0), 0),
             MAX_CHARS
           );
           return (Math.max(hLen, dLen) + COL_PAD * 2) * ratio;
@@ -647,8 +834,7 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
         return { widths, total: widths.reduce((a, b) => a + b, 0) };
       };
 
-      // ── Fuente óptima: reducir hasta que todas las columnas quepan ───────
-      let fontSize = 8;
+      let fontSize = colsPdf.length <= 8 ? 9 : 8;
       let { widths: colWidths, total: totalW } = calcWidths(fontSize);
       for (let f = 7; f >= 5; f--) {
         if (totalW <= USABLE_W) break;
@@ -711,8 +897,8 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
         doc.setFontSize(fontSize);
         doc.setTextColor(55, 65, 81);
         let x = MARGIN;
-        this.columnas.forEach((col, i) => {
-          const label = this.formatearColumna(col);
+        colsPdf.forEach((col, i) => {
+          const label = col.etiqueta;
           const maxC  = Math.floor((colWidths[i] - COL_PAD * 2) / ((fontSize / 8) * CHAR_W_RATIO));
           const txt   = label.length > maxC ? label.substring(0, Math.max(maxC - 1, 1)) + '…' : label;
           doc.text(txt, x + COL_PAD, yPos);
@@ -740,7 +926,7 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
       y += rowH;
 
       doc.setFont('helvetica', 'normal');
-      this.resultados.forEach((fila, idx) => {
+      filasPdf.forEach((fila, idx) => {
         const maxY = PAGE_H - FOOTER_H - rowH - 1;
         if (y > maxY) {
           dibujarFooterBase();
@@ -760,8 +946,8 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
         doc.setTextColor(55, 65, 81);
 
         let x = MARGIN;
-        this.columnas.forEach((col, i) => {
-          const raw  = fila[col] != null ? String(fila[col]) : '—';
+        colsPdf.forEach((col, i) => {
+          const raw  = fila[col.etiqueta] != null ? String(fila[col.etiqueta]) : '—';
           const maxC = Math.floor((colWidths[i] - COL_PAD * 2) / ((fontSize / 8) * CHAR_W_RATIO));
           const txt  = raw.length > maxC ? raw.substring(0, Math.max(maxC - 1, 1)) + '…' : raw;
           doc.text(txt, x + COL_PAD, y);
@@ -774,14 +960,10 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
       // ── Página de estadísticas ─────────────────────────────────────────────
       if (this.graficos.length > 0) {
         // Si los gráficos no están visibles, mostrarlos temporalmente
-        const eraTabla = this.mostrandoResultados && !this.mostrandoGrafico;
+        const eraTabla = this.vistaResultado === 'tabla';
         if (eraTabla) {
-          this.mostrandoGrafico    = true;
-          this.mostrandoResultados = false;
-          this.cdr.detectChanges();
-          await new Promise(r => setTimeout(r, 150));
-          this.crearCharts();
-          await new Promise(r => setTimeout(r, 450));
+          this.mostrarVista('graficos');
+          await new Promise(r => setTimeout(r, 500));
         }
 
         const chartEl = document.getElementById('charts-export-area');
@@ -836,10 +1018,7 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
 
         // Restaurar vista tabla si corresponde
         if (eraTabla) {
-          this.destruirCharts();
-          this.mostrandoGrafico    = false;
-          this.mostrandoResultados = true;
-          this.cdr.detectChanges();
+          this.mostrarVista('tabla');
         }
       }
 
@@ -868,16 +1047,21 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
   // EXPORTAR EXCEL
   // ═══════════════════════════════════════════════════════════════════════════
   async exportarExcel(): Promise<void> {
-    if (this.resultados.length === 0) await this.ejecutarVistaPreviaAsync();
+    if (this.resultados.length === 0) await this.ejecutarGenerarAsync();
     if (this.resultados.length === 0) { this.mostrarError('No hay datos para exportar.'); return; }
 
     try {
       const wb     = XLSX.utils.book_new();
-      const titulo = this.tipoReporte === 'ofertas' ? 'Ofertas' : 'Postulaciones';
+      const titulo = this.reporteActivoConfig?.titulo?.replace(/\s+/g, '_') || 'Reporte';
 
-      const wsData    = XLSX.utils.json_to_sheet(this.resultados);
-      wsData['!cols'] = this.columnas.map(col => ({
-        wch: Math.max(col.length, ...this.resultados.map(r => String(r[col] ?? '').length))
+      const filasExcel = this.filasParaExportacion();
+      const wsData    = XLSX.utils.json_to_sheet(filasExcel);
+      const headersExcel = this.columnasReporte.map(c => c.etiqueta);
+      wsData['!cols'] = headersExcel.map(etq => ({
+        wch: Math.max(
+          etq.length,
+          ...filasExcel.map(r => String(r[etq] ?? '').length)
+        )
       }));
       XLSX.utils.book_append_sheet(wb, wsData, titulo);
 
@@ -902,9 +1086,9 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
     }
   }
 
-  private ejecutarVistaPreviaAsync(): Promise<void> {
+  private ejecutarGenerarAsync(): Promise<void> {
     return new Promise(resolve => {
-      this.vistaPrevia();
+      this.generarReporte();
       const check = setInterval(() => { if (!this.cargando) { clearInterval(check); resolve(); } }, 200);
     });
   }
@@ -996,12 +1180,21 @@ export class GestionReportesComponent implements OnInit, OnDestroy {
   // UTILIDADES DE FORMATO
   // ═══════════════════════════════════════════════════════════════════════════
   formatearColumna(col: string): string {
-    return col.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim();
+    const meta = this.columnasReporte.find(c => c.campo === col);
+    return meta?.etiqueta ?? this.etiquetaDesdeCampo(col);
   }
-  formatearValor(val: any): string {
-    if (val == null) return '—';
-    if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val)) return new Date(val).toLocaleDateString('es-EC');
-    if (typeof val === 'number' && val > 100) return `$${val.toFixed(2)}`;
+  formatearValor(val: any, campo?: string): string {
+    if (val == null || val === '') return '—';
+    if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}/.test(val)) {
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? val : d.toLocaleDateString('es-EC');
+    }
+    if (typeof val === 'number') {
+      if (campo === 'salarioMin' || campo === 'salarioMax') {
+        return `$${val.toLocaleString('es-EC', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+      }
+      return String(val);
+    }
     return String(val);
   }
   mostrarExito(msg: string): void {
