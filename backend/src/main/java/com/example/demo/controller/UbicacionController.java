@@ -16,7 +16,6 @@ import com.example.demo.repository.CiudadRepository;
 
 @RestController
 @RequestMapping("/api/ubicaciones")
-@CrossOrigin(origins = "http://localhost:4200")
 @RequiredArgsConstructor
 public class UbicacionController {
 

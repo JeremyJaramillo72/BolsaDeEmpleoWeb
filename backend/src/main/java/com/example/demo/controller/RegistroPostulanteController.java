@@ -6,7 +6,7 @@ import com.example.demo.repository.CiudadRepository;
 import com.example.demo.service.AuthService;
 import com.example.demo.service.IUsuarioService; // Cambiado a la Interfaz
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -33,18 +33,24 @@ public class RegistroPostulanteController {
 
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
+    @Value("${registro.permitir-omitir-verificacion:false}")
+    private boolean permitirOmitirVerificacion;
+
     @PostMapping("/crear")
     public ResponseEntity<?> registrarPostulante(@RequestBody Map<String, Object> payload) {
         try {
             // 1. EXTRAER DATOS BÁSICOS DEL PAYLOAD (PascalCase como en tu Angular)
             String correo = (String) payload.get("Correo");
             String codigoIngresado = (String) payload.get("codigoIngresado");
-            // 2. VALIDACIÓN DE SEGURIDAD: Código de Verificación
-            // Comprobamos si el código que envió Angular coincide con el generado en el Backend
-           boolean esValido = authService.validarCodigo(correo, codigoIngresado);
-            if (!esValido) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("error", "El código de verificación es incorrecto o ya expiró."));
+            boolean omitirVerificacion = permitirOmitirVerificacion
+                    && esVerdadero(payload.get("omitirVerificacionCorreo"));
+
+            if (!omitirVerificacion) {
+                boolean esValido = authService.validarCodigo(correo, codigoIngresado);
+                if (!esValido) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(Map.of("error", "El código de verificación es incorrecto o ya expiró."));
+                }
             }
 
             // 3. MAPEO HACIA LA ENTIDAD USUARIO
@@ -78,9 +84,9 @@ public class RegistroPostulanteController {
             // Se ejecuta sp_registrar_postulante a través del Service
             usuarioService.registrarUsuarioNormal(postulante);
 
-            // 6. LIMPIEZA POST-REGISTRO
-            // Borramos el código de verificación una vez usado con éxito
-            authService.borrarCodigo(correo);
+            if (!omitirVerificacion) {
+                authService.borrarCodigo(correo);
+            }
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of("mensaje", "¡Registro completado con éxito! Bienvenido a la Bolsa de Empleo."));
@@ -92,6 +98,15 @@ public class RegistroPostulanteController {
         }
     }
 
+    private boolean esVerdadero(Object valor) {
+        if (valor == null) {
+            return false;
+        }
+        if (valor instanceof Boolean bool) {
+            return bool;
+        }
+        return "true".equalsIgnoreCase(valor.toString().trim());
+    }
 
     private final UsuarioRepository usuarioRepository;
     @PutMapping("/actualizar/{id}")
