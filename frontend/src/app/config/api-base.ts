@@ -4,15 +4,20 @@ const LOCAL_BACKEND_ORIGIN = 'http://localhost:8080';
 
 function resolveBackendOrigin(): string {
   if (typeof window === 'undefined') {
-    return AZURE_BACKEND_ORIGIN;
+    return LOCAL_BACKEND_ORIGIN;
   }
 
-  // Modo prueba con backend en IntelliJ (localhost:8080)
+  // Si estamos en localhost o 127.0.0.1, usar siempre el backend local
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return LOCAL_BACKEND_ORIGIN;
+  }
+
+  // Si el usuario forzó explícitamente backend local
   if (localStorage.getItem('USE_LOCAL_BACKEND') === 'true') {
     return LOCAL_BACKEND_ORIGIN;
   }
 
-  // Por defecto: Azure (aunque el frontend corra en localhost:4200)
+  // En producción (ej. Vercel)
   return AZURE_BACKEND_ORIGIN;
 }
 
