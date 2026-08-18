@@ -1,45 +1,64 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
+import { UiNotificationService } from '../services/ui-notification.service';
+import { SesionExpiradaService } from '../services/sesion-expirada.service';
 
-export const dbErrorInterceptor: HttpInterceptorFn = (req, next) => {
-  const router = inject(Router);
+export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
+  const ui              = inject(UiNotificationService);
+  const sesionExpirada  = inject(SesionExpiradaService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      const errorString = JSON.stringify(error.error || error.message || '').toLowerCase();
 
-      const isServerDead = (error.status === 0);
+      switch (error.status) {
 
-      const isDatabaseFatal = (error.status === 500) && (
-        errorString.includes('hikaripool') ||
-        errorString.includes('connection is not available') ||
-        errorString.includes('terminating connection') ||
-        errorString.includes('database "bolsa-empleo-azure" does not exist')
-      );
+        case 0:
+          ui.error('Sin conexión con el servidor.');
+          break;
 
-
-      const isCodingError = errorString.includes('does not exist') &&
-        (errorString.includes('column') || errorString.includes('relation'));
-
-      if ((isServerDead || isDatabaseFatal) && !isCodingError) {
-
-        if (!req.url.includes('/backups-disponibles') && !req.url.includes('/restaurar')) {
-
-          const rolUsuario = localStorage.getItem('rol');
-
-          if (rolUsuario === 'ADMINISTRADOR') {
-            console.error('🚨 INFRAESTRUCTURA CAÍDA. Modo Emergencia activado para Admin.');
-            router.navigate(['/emergencia-db']);
-          } else {
-            console.error('🚨 SISTEMA EN MANTENIMIENTO. Redirigiendo usuario.');
-            router.navigate(['/mantenimiento']);
+        case 401:
+          if (!req.url.includes('/api/auth/login')) {
+            void sesionExpirada.notificar();
           }
+          break;
+
+        case 403: {
+          const mensaje403 =
+            error.error?.error ||
+            error.error?.message ||
+            'No tienes permisos para realizar esta acción.';
+          // El login ya muestra el mensaje del backend (cuenta pendiente, etc.)
+          if (!req.url.includes('/api/auth/login')) {
+            ui.error(mensaje403);
+          }
+          break;
+        }
+
+        case 500: {
+          // Captura errores de permisos de PostgreSQL que llegan como 500
+          const mensaje = (
+            error.error?.message  ||
+            error.error?.error    ||
+            error.error?.detail   ||
+            error.message         ||
+            ''
+          ).toLowerCase();
+
+          const esPermisoBD =
+            mensaje.includes('permission denied') ||
+            mensaje.includes('access denied')     ||
+            mensaje.includes('insufficient privilege');
+
+          if (esPermisoBD) {
+            ui.error('Sin permisos de base de datos para esta acción.');
+          }
+          // Otros 500 los maneja el error: de cada componente
+          break;
         }
       }
 
-
+      // Siempre re-lanza el error para que el error: del subscribe también lo reciba
       return throwError(() => error);
     })
   );

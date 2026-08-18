@@ -100,6 +100,7 @@
 .action-buttons { display: flex; gap: 5px; justify-content: center; }
 .btn-action-icon { background: transparent; border: 1px solid transparent; width: 36px; height: 36px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
 .btn-action-icon:hover { background: #f1f5f9; transform: translateY(-1px);}
+.btn-action-icon:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
 /* ===== PAGINACIÓN ===== */
 .pagination-wrapper { display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; margin-top: 1rem; border-top: 1px solid #e2e8f0; flex-wrap: wrap; gap: 1rem;}
@@ -152,6 +153,7 @@
 .text-xs { font-size: 1rem !important; }
 .text-center { text-align: center !important; }
 .text-blue { color: #3b82f6; }
+.text-indigo { color: #4f46e5; }
 .text-rose { color: #e11d48; }
 .text-green { color: #16a34a; }
 .text-muted { color: #94a3b8; }
@@ -169,4 +171,28 @@
   .section-header { flex-direction: column; align-items: flex-start; }
   .search-box { width: 100%; }
   .pagination-wrapper { flex-direction: column; align-items: center; }
+  .modal-card { width: 95%; }
 }
+
+/* ===== MODAL EDITAR ===== */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 1rem;
+}
+.modal-card {
+  background: white; border-radius: 16px; width: min(640px, 100%);
+  max-height: 90vh; overflow-y: auto; border: 1px solid #e2e8f0;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+}
+.modal-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 1.5rem 1.5rem 0.5rem; border-bottom: 1px solid #f1f5f9;
+}
+.modal-header h3 { margin: 0 0 4px; font-size: 1.25rem; font-weight: 800; color: #0f172a; }
+.modal-body { padding: 1.5rem; }
+.modal-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 1rem 1.5rem 1.5rem; border-top: 1px solid #f1f5f9;
+}
+.text-sm { font-size: 0.875rem; }

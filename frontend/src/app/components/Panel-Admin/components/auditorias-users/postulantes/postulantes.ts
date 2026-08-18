@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../services/admin.service';
@@ -32,7 +32,7 @@ export interface TrazabilidadPostulante {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './postulantes.html',
-  styleUrls: ['./postulantes.css']
+  styleUrls: ['./postulantes.css', '../auditorias-responsive.css']
 })
 export class PostulantesComponent implements OnInit {
 
@@ -59,7 +59,8 @@ export class PostulantesComponent implements OnInit {
   constructor(
     private adminService: AdminService,
     private sistemaConfigService: SistemaConfigService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit() {
@@ -92,16 +93,24 @@ export class PostulantesComponent implements OnInit {
 
   cargarPostulantes(): void {
     this.cargandoPostulantes = true;
+    this.cdr.detectChanges();
+
     this.adminService.getPostulantesAuditoria().subscribe({
       next: (data: AuditoriaPostulante[]) => {
-        this.postulantesList = data;
-        this.aplicarFiltros();
-        this.cargandoPostulantes = false;
+        this.ngZone.run(() => {
+          this.postulantesList = data;
+          this.aplicarFiltros();
+          this.cargandoPostulantes = false;
+          this.cdr.detectChanges();
+        });
       },
       error: (err) => {
-        console.error('Error al cargar historial de postulantes:', err);
-        this.mensajeError = 'Error al cargar los registros.';
-        this.cargandoPostulantes = false;
+        this.ngZone.run(() => {
+          console.error('Error al cargar historial de postulantes:', err);
+          this.mensajeError = 'Error al cargar los registros.';
+          this.cargandoPostulantes = false;
+          this.cdr.detectChanges();
+        });
       }
     });
   }

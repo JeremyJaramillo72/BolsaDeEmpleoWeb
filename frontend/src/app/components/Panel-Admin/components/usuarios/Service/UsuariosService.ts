@@ -42,8 +42,23 @@ export class UsuariosService {
   }
 
   crearUsuario(usuario: any): Observable<any> {
-    // Aquí sí usamos la ruta específica de registro
     return this.http.post(`${this.apiUsuarios}/registrar-completo`, usuario, { responseType: 'text' });
+  }
+
+  obtenerUsuario(idUsuario: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUsuariosUrl}/${idUsuario}`);
+  }
+
+  actualizarUsuario(idUsuario: number, datos: any): Observable<any> {
+    return this.http.put(`${this.apiUsuariosUrl}/${idUsuario}`, datos);
+  }
+
+  eliminarUsuario(idUsuario: number): Observable<any> {
+    return this.http.delete(`${this.apiUsuariosUrl}/${idUsuario}`);
+  }
+
+  obtenerCiudades(): Observable<any[]> {
+    return this.http.get<any[]>('http://localhost:8080/api/academico/ciudades');
   }
 
   // ==========================================

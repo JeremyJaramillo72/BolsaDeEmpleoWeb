@@ -1,13 +1,14 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UiNotificationService } from '../../../services/ui-notification.service';
+import { DocumentoPdfRef, refDocumento } from '../../../utils/documento-storage-url';
 @Component({
   selector: 'app-seccion-idiomas',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './seccion-idiomas.html',
-  styleUrls: ['./seccion-idiomas.css']
+  styleUrls: ['./seccion-idiomas.css', '../perfil-secciones-shared.css']
 })
 export class SeccionIdiomasComponent {
   @Input() idiomas: any[] = [];
@@ -16,11 +17,11 @@ export class SeccionIdiomasComponent {
 
   @Output() onGuardarIdioma = new EventEmitter<{formData: FormData, idEdicion: number | null}>();
   @Output() onEliminar = new EventEmitter<{index: number, id: number}>();
-  @Output() onVerPdf = new EventEmitter<string>();
+  @Output() onVerPdf = new EventEmitter<DocumentoPdfRef>();
 
   @ViewChild('fileInputIdm') fileInputIdm!: ElementRef;
 
-  modalIdioma: boolean = false;
+  modalIdioma = signal(false);
   idEdicionIdioma: number | null = null;
   nuevoIdioma: any = {id_idioma: null, nivel: null, archivo: null, nombreArchivo: ''};
 
@@ -28,11 +29,14 @@ export class SeccionIdiomasComponent {
   constructor(private ui: UiNotificationService) {}
 
   abrirModal() {
-    this.modalIdioma = true;
+    if (!this.idEdicionIdioma) {
+      this.nuevoIdioma = { id_idioma: null, nivel: null, archivo: null, nombreArchivo: '' };
+    }
+    this.modalIdioma.set(true);
   }
 
   cerrarModal() {
-    this.modalIdioma = false;
+    this.modalIdioma.set(false);
     this.idEdicionIdioma = null;
     this.nuevoIdioma = {id_idioma: null, nivel: null, archivo: null, nombreArchivo: ''};
   }
@@ -87,5 +91,10 @@ export class SeccionIdiomasComponent {
 
     this.onGuardarIdioma.emit({ formData: formData, idEdicion: this.idEdicionIdioma });
     this.cerrarModal();
+  }
+
+  verPdfIdioma(item: { nombreArchivo?: string; nombre_idioma?: string }): void {
+    if (!item?.nombreArchivo) return;
+    this.onVerPdf.emit(refDocumento(item.nombreArchivo, `Certificado_${item.nombre_idioma || 'Idioma'}`));
   }
 }

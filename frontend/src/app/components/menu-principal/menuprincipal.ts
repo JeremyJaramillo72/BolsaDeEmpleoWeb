@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { UsuarioEmpresaService } from '../../services/usuario-empresa.service';
@@ -9,6 +9,7 @@ import { SistemaConfigService } from '../Panel-Admin/services/sistema-config.ser
 import { PerfilAdminService }    from '../Panel-Admin/services/perfil-admin.service';
 
 import { NotificationService } from '../../services/notification.service';
+import { SesionExpiradaService } from '../../services/sesion-expirada.service';
 import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
 import {PerfilEmpresaComponent} from '../perfil-empresa/perfil-empresa';
 // 1. ACTUALIZAMOS LAS INTERFACES CON LOS NUEVOS CAMPOS VISUALES
@@ -16,15 +17,16 @@ export interface MenuItem {
   icon: string;
   title: string;
   description: string;
-  color?: string; // (Mantenido por compatibilidad)
-  colorHex?: string; // Nuevo: Color principal (Ej: #2563EB)
-  bgHex?: string;    // Nuevo: Color de fondo suavizado (Ej: #EFF6FF)
-  badge?: number | string; // Nuevo: Para mostrar notitas numéricas
+  color?: string;
+  colorHex?: string;
+  bgHex?: string;
+  badge?: number | string;
   roles?: string[];
   path?: string;
-  route?: string;    // Nuevo: Ruta completa para el routerLink
+  route?: string;
   permiso?: string;
   disabled?: boolean;
+  ocultoParaIds?: number[];
 }
 
 export interface StatCard {
@@ -43,11 +45,14 @@ export interface StatCard {
   templateUrl: './menuprincipal.html',
   styleUrls: ['./menuprincipal.css']
 })
-export class MenuprincipalComponent implements OnInit {
+export class MenuprincipalComponent implements OnInit, OnDestroy {
   isSidebarOpen: boolean = true;
+  isMobileMenuOpen: boolean = false;
+  isMobileView: boolean = false;
   nombreUsuario: string = '';
   rolUsuario: string = '';
   fotoMenu: string = '';
+  private validacionSesionInterval?: ReturnType<typeof setInterval>;
 
   // ✅ Logo y nombre del SISTEMA (sidebar brand) — separado de fotoMenu del usuario
   logoSistema:   string = '';
@@ -67,13 +72,43 @@ export class MenuprincipalComponent implements OnInit {
     private usuarioEmpresaService: UsuarioEmpresaService,
     public notificationService: NotificationService,
     private sistemaConfigService: SistemaConfigService,  // ✅ logo/nombre del sistema para todos los roles
-    private perfilAdminService:   PerfilAdminService    // ✅ foto perfil admin en tiempo real,
+    private perfilAdminService:   PerfilAdminService,
+    private sesionExpiradaService: SesionExpiradaService
   ) {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
         this.verificarRutaActual();
+        this.closeMobileMenu();
       });
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.updateMobileView();
+  }
+
+  private updateMobileView(): void {
+    const mobile = typeof window !== 'undefined' && window.innerWidth < 992;
+    if (!mobile) {
+      this.isMobileMenuOpen = false;
+    }
+    this.isMobileView = mobile;
+  }
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+    this.syncBodyScrollLock();
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen = false;
+    this.syncBodyScrollLock();
+  }
+
+  private syncBodyScrollLock(): void {
+    if (typeof document === 'undefined') return;
+    document.body.style.overflow = this.isMobileMenuOpen ? 'hidden' : '';
   }
 
   toggleUserDropdown(): void {
@@ -94,8 +129,9 @@ export class MenuprincipalComponent implements OnInit {
 
   ngOnInit(): void {
     const idUsuario = localStorage.getItem('idUsuario');
-    if (!idUsuario) {
-      this.cerrarSesion();
+    const token = localStorage.getItem('token');
+    if (!idUsuario && !token) {
+      this.router.navigate(['/login']);
       return;
     }
 
@@ -116,7 +152,7 @@ export class MenuprincipalComponent implements OnInit {
     });
 
 
-    if (!this.fotoMenu || this.fotoMenu === '') {
+    if (idUsuario && (!this.fotoMenu || this.fotoMenu === '')) {
       this.authService.obtenerFotoPerfil(idUsuario).subscribe({
         next: (res: any) => {
           if (res.url) {
@@ -157,6 +193,34 @@ export class MenuprincipalComponent implements OnInit {
       this.isDarkMode = true;
       document.body.classList.add('dark-mode');
     }
+
+    if (localStorage.getItem('token')) {
+      this.validacionSesionInterval = setInterval(() => this.verificarSesionRemota(), 12000);
+    }
+
+    this.updateMobileView();
+  }
+
+  ngOnDestroy(): void {
+    if (this.validacionSesionInterval) {
+      clearInterval(this.validacionSesionInterval);
+    }
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = '';
+    }
+  }
+
+  private verificarSesionRemota(): void {
+    if (!localStorage.getItem('token')) return;
+
+    this.authService.validarSesionActiva().subscribe({
+      next: (res) => {
+        if (res && res.valida === false) {
+          void this.sesionExpiradaService.notificar();
+        }
+      },
+      error: () => void this.sesionExpiradaService.notificar()
+    });
   }
 
 
@@ -186,7 +250,8 @@ export class MenuprincipalComponent implements OnInit {
   }
 
   inicializarMenuPorRol(): void {
-    // 2. ASIGNAMOS LOS COLORES MODERNOS DEL DISEÑO DE FIGMA
+    const idUsuarioStr = localStorage.getItem('idUsuario');
+    const idUsuarioActual = idUsuarioStr ? Number(idUsuarioStr) : 0;
     const todasLasOpciones: MenuItem[] = [
       // --- MÓDULOS DE EMPRESA ---
       {
@@ -281,7 +346,8 @@ export class MenuprincipalComponent implements OnInit {
         path: '/perfil-x',
         route: '/menu-principal/perfil-x',
         permiso: 'Perfil_X',
-        disabled: false
+        disabled: false,
+        ocultoParaIds: [3, 9]
       },
       {
         icon: 'manage_accounts',
@@ -385,15 +451,19 @@ export class MenuprincipalComponent implements OnInit {
     ];
 
     this.menuItems = todasLasOpciones.filter(item => {
-      // 1. Si el ítem tiene un 'permiso' asignado, evaluamos ÚNICAMENTE si tiene el permiso.
-      // Así ya no dependemos del nombre exacto del rol (útil para roles personalizados).
+      // 2. Si el ID del usuario actual está en la lista bloqueada, lo ocultamos
+      if (item.ocultoParaIds && item.ocultoParaIds.includes(idUsuarioActual)) {
+        return false;
+      }
+
+      // 3. Tu lógica de permisos intacta
       if (item.permiso) {
         return this.authService.tienePermiso(item.permiso);
       }
 
-      // 2. Si el ítem NO tiene permiso (menús genéricos), validamos por el nombre del rol.
       return item.roles?.includes(this.rolUsuario);
     });
+
     this.cdr.detectChanges();
     /*// 3. ACTUALIZAMOS LOS KPIs SUPERIORES CON SUS ICONOS Y COLORES
     if (this.rolUsuario === 'EMPRESA') {
@@ -438,6 +508,10 @@ export class MenuprincipalComponent implements OnInit {
   }
 
   toggleSidebar(): void {
+    if (this.isMobileView) {
+      this.toggleMobileMenu();
+      return;
+    }
     this.isSidebarOpen = !this.isSidebarOpen;
   }
 

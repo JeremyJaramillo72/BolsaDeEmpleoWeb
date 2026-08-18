@@ -1,14 +1,15 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UiNotificationService } from '../../../services/ui-notification.service';
+import { DocumentoPdfRef, refDocumento } from '../../../utils/documento-storage-url';
 
 @Component({
   selector: 'app-seccion-academica',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './seccion-academica.html',
-  styleUrls: ['./seccion-academica.css']
+  styleUrls: ['./seccion-academica.css', '../perfil-secciones-shared.css']
 })
 export class SeccionAcademicaComponent {
   @Input() titulos: any[] = [];
@@ -17,12 +18,12 @@ export class SeccionAcademicaComponent {
 
   @Output() onGuardarAcademica = new EventEmitter<{formData: FormData, idEdicion: number | null}>();
   @Output() onEliminar = new EventEmitter<{index: number, id: number}>();
-  @Output() onVerPdf = new EventEmitter<string>();
+  @Output() onVerPdf = new EventEmitter<DocumentoPdfRef>();
   @Output() onCambioFacultad = new EventEmitter<number>();
 
   @ViewChild('fileInputAcad') fileInputAcad!: ElementRef;
 
-  modalAcademica: boolean = false;
+  modalAcademica = signal(false);
   idEdicionAcademica: number | null = null;
 
   nuevoTitulo: any = {
@@ -37,11 +38,14 @@ export class SeccionAcademicaComponent {
   constructor(private ui: UiNotificationService) {}
 
   abrirModal() {
-    this.modalAcademica = true;
+    if (!this.idEdicionAcademica) {
+      this.resetFormulario();
+    }
+    this.modalAcademica.set(true);
   }
 
   cerrarModal() {
-    this.modalAcademica = false;
+    this.modalAcademica.set(false);
     this.idEdicionAcademica = null;
     this.resetFormulario();
   }
@@ -143,5 +147,10 @@ export class SeccionAcademicaComponent {
 
     this.onGuardarAcademica.emit({ formData: formData, idEdicion: this.idEdicionAcademica });
     this.cerrarModal();
+  }
+
+  verPdfTitulo(titulo: { nombreArchivo?: string; nombreCarrera?: string }): void {
+    if (!titulo?.nombreArchivo) return;
+    this.onVerPdf.emit(refDocumento(titulo.nombreArchivo, titulo.nombreCarrera || 'Titulo_Academico'));
   }
 }

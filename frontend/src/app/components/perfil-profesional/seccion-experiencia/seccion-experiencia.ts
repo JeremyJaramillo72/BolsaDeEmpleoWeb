@@ -1,16 +1,17 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, ChangeDetectorRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 
 import { UiNotificationService } from '../../../services/ui-notification.service';
+import { DocumentoPdfRef, refDocumento } from '../../../utils/documento-storage-url';
 
 @Component({
   selector: 'app-seccion-experiencia',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './seccion-experiencia.html',
-  styleUrls: ['./seccion-experiencia.css']
+  styleUrls: ['./seccion-experiencia.css', '../perfil-secciones-shared.css']
 })
 export class SeccionExperienciaComponent {
 
@@ -23,7 +24,7 @@ export class SeccionExperienciaComponent {
 
   @Output() onGuardarExperiencia = new EventEmitter<{formData: FormData, idEdicion: number | null}>();
   @Output() onEliminar = new EventEmitter<{index: number, id: number}>();
-  @Output() onVerPdf = new EventEmitter<string>();
+  @Output() onVerPdf = new EventEmitter<DocumentoPdfRef>();
 
   @Output() onBuscarCargo = new EventEmitter<string>();
   @Output() onBuscarEmpresa = new EventEmitter<string>();
@@ -33,7 +34,7 @@ export class SeccionExperienciaComponent {
 
   @ViewChild('fileInputExp') fileInputExp!: ElementRef;
 
-  modalExperiencia: boolean = false;
+  modalExperiencia = signal(false);
   idEdicionExperiencia: number | null = null;
   mostrarNuevoCargo: boolean = false;
   mostrarNuevaEmpresa: boolean = false;
@@ -52,10 +53,24 @@ export class SeccionExperienciaComponent {
 
   constructor(private cdr: ChangeDetectorRef, private ui: UiNotificationService) {}
 
-  abrirModal() { this.modalExperiencia = true; }
+  abrirModal() {
+    if (!this.idEdicionExperiencia) {
+      this.mostrarNuevoCargo = false;
+      this.mostrarNuevaEmpresa = false;
+      this.busquedaCargoTexto = '';
+      this.busquedaEmpresaTexto = '';
+      this.cargosTemporales = [];
+      this.nuevaEmpresaObj = { nombre_empresa: '', ruc: '', id_categoria: null };
+      this.nuevaExperiencia = {
+        id_empresa_catalogo: null, id_provincia: null, id_ciudad: null,
+        fecha_inicio: '', fecha_fin: '', descripcion: '', archivo_comprobante: null, nombreArchivo: ''
+      };
+    }
+    this.modalExperiencia.set(true);
+  }
 
   cerrarModal() {
-    this.modalExperiencia = false;
+    this.modalExperiencia.set(false);
     this.idEdicionExperiencia = null;
     this.mostrarNuevoCargo = false;
     this.mostrarNuevaEmpresa = false;
@@ -215,17 +230,22 @@ export class SeccionExperienciaComponent {
     }
 
     const formData = new FormData();
-    const idsUnidos = this.cargosTemporales.map(cargo => cargo.id_cargo).join(',');
-
-    formData.append('cargosIds', idsUnidos);
+    this.cargosTemporales.forEach(cargo => {
+      formData.append('cargosIds', String(cargo.id_cargo));
+    });
     formData.append('idEmpresaCatalogo', this.nuevaExperiencia.id_empresa_catalogo.toString());
     formData.append('fechaInicio', this.nuevaExperiencia.fecha_inicio);
     if (this.nuevaExperiencia.fecha_fin) formData.append('fechaFin', this.nuevaExperiencia.fecha_fin);
-    formData.append('descripcion', this.nuevaExperiencia.descripcion);
+    formData.append('descripcion', this.nuevaExperiencia.descripcion || '');
     formData.append('idCiudad', this.nuevaExperiencia.id_ciudad.toString());
     if (this.nuevaExperiencia.archivo_comprobante) formData.append('archivo', this.nuevaExperiencia.archivo_comprobante);
 
     this.onGuardarExperiencia.emit({ formData: formData, idEdicion: this.idEdicionExperiencia });
     this.cerrarModal();
+  }
+
+  verPdfExperiencia(item: { nombreArchivo?: string; nombre_empresa?: string }): void {
+    if (!item?.nombreArchivo) return;
+    this.onVerPdf.emit(refDocumento(item.nombreArchivo, item.nombre_empresa || 'Experiencia_Laboral'));
   }
 }

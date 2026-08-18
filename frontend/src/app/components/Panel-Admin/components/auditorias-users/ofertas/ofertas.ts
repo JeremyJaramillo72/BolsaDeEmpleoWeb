@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../services/admin.service';
@@ -31,7 +31,7 @@ export interface TrazabilidadOferta {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './ofertas.html',
-  styleUrls: ['./ofertas.css']
+  styleUrls: ['./ofertas.css', '../auditorias-responsive.css']
 })
 export class OfertasComponent implements OnInit {
   ofertasList: AuditoriaOferta[] = [];
@@ -54,7 +54,11 @@ export class OfertasComponent implements OnInit {
   trazabilidadSeleccionada: TrazabilidadOferta | null = null;
   tipoModalDetalle: 'INSERT' | 'UPDATE' | 'DELETE' = 'UPDATE';
 
-  constructor(private adminService: AdminService) {}
+  constructor(
+    private adminService: AdminService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
+  ) {}
 
   ngOnInit() {
     this.cargarOfertas();
@@ -62,16 +66,24 @@ export class OfertasComponent implements OnInit {
 
   cargarOfertas(): void {
     this.cargandoOfertas = true;
+    this.cdr.detectChanges();
+
     this.adminService.getOfertasParaAuditoria().subscribe({
       next: (data: AuditoriaOferta[]) => {
-        this.ofertasList = data;
-        this.aplicarFiltrosOfertas();
-        this.cargandoOfertas = false;
+        this.ngZone.run(() => {
+          this.ofertasList = data;
+          this.aplicarFiltrosOfertas();
+          this.cargandoOfertas = false;
+          this.cdr.detectChanges();
+        });
       },
       error: (err) => {
-        console.error('Error al cargar historial de ofertas:', err);
-        this.mensajeError = 'Error al cargar el registro de ofertas';
-        this.cargandoOfertas = false;
+        this.ngZone.run(() => {
+          console.error('Error al cargar historial de ofertas:', err);
+          this.mensajeError = 'Error al cargar el registro de ofertas';
+          this.cargandoOfertas = false;
+          this.cdr.detectChanges();
+        });
       }
     });
   }

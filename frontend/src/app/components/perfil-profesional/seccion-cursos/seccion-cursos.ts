@@ -1,36 +1,40 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, ChangeDetectorRef, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UiNotificationService } from '../../../services/ui-notification.service';
+import { DocumentoPdfRef, refDocumento } from '../../../utils/documento-storage-url';
 
 @Component({
   selector: 'app-seccion-cursos',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './seccion-cursos.html',
-  styleUrls: ['./seccion-cursos.css']
+  styleUrls: ['./seccion-cursos.css', '../perfil-secciones-shared.css']
 })
 export class SeccionCursosComponent {
   @Input() cursos: any[] = [];
 
   @Output() onGuardarCurso = new EventEmitter<{formData: FormData, idEdicion: number | null}>();
   @Output() onEliminar = new EventEmitter<{index: number, id: number}>();
-  @Output() onVerPdf = new EventEmitter<string>();
+  @Output() onVerPdf = new EventEmitter<DocumentoPdfRef>();
 
   @ViewChild('fileInputCurso') fileInputCurso!: ElementRef;
 
-  modalCurso: boolean = false;
+  modalCurso = signal(false);
   idEdicionCurso: number | null = null;
   nuevoCurso: any = {nombre_curso: '', institucion: '', horas_duracion: null, archivo: null, nombreArchivo: ''};
 
   constructor(private cdr: ChangeDetectorRef, private ui: UiNotificationService) {}
 
   abrirModal() {
-    this.modalCurso = true;
+    if (!this.idEdicionCurso) {
+      this.nuevoCurso = { nombre_curso: '', institucion: '', horas_duracion: null, archivo: null, nombreArchivo: '' };
+    }
+    this.modalCurso.set(true);
   }
 
   cerrarModal() {
-    this.modalCurso = false;
+    this.modalCurso.set(false);
     this.idEdicionCurso = null;
     this.nuevoCurso = {nombre_curso: '', institucion: '', horas_duracion: null, archivo: null, nombreArchivo: ''};
   }
@@ -94,5 +98,10 @@ export class SeccionCursosComponent {
 
     this.onGuardarCurso.emit({ formData: formData, idEdicion: this.idEdicionCurso });
     this.cerrarModal();
+  }
+
+  verPdfCurso(item: { nombreArchivo?: string; nombre_curso?: string }): void {
+    if (!item?.nombreArchivo) return;
+    this.onVerPdf.emit(refDocumento(item.nombreArchivo, item.nombre_curso || 'Certificado_Curso'));
   }
 }

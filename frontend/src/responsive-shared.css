@@ -1,0 +1,396 @@
+/* =============================================================================
+   RESPONSIVE GLOBAL — Bolsa de Empleo UTEQ
+   Breakpoints: 992px (tablet), 768px (móvil), 480px (móvil pequeño)
+   ============================================================================= */
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+img, video, iframe {
+  max-width: 100%;
+}
+
+/* ── Tablet y móvil (≤992px) ─────────────────────────────────────────────── */
+@media (max-width: 992px) {
+  .content-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
+  }
+
+  .sticky-card {
+    position: static !important;
+  }
+
+  .profile-layout {
+    flex-direction: column !important;
+  }
+
+  .pdf-column {
+    position: static !important;
+    width: 100% !important;
+    height: 55vh !important;
+    min-height: 320px;
+  }
+
+  .info-column {
+    width: 100% !important;
+  }
+}
+
+/* ── Móvil (≤768px) ─────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem !important;
+  }
+
+  .scroll-area {
+    padding: 1rem !important;
+  }
+
+  .profile-container,
+  .page-container,
+  .dashboard-container {
+    padding: 1rem !important;
+  }
+
+  /* Layout sidebar filtros → columna */
+  .layout-wrapper {
+    flex-direction: column !important;
+    gap: 1rem !important;
+    align-items: stretch !important;
+  }
+
+  .sidebar-filters {
+    width: 100% !important;
+    flex-shrink: 1 !important;
+    position: static !important;
+    top: auto !important;
+  }
+
+  .main-offers-content {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Barras de acción */
+  .action-bar,
+  .form-header-bar,
+  .form-actions,
+  .button-group {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+
+  .action-bar .btn-primary,
+  .form-actions .btn-primary,
+  .form-actions .btn-save {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Tarjetas de ofertas */
+  .offer-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 1rem !important;
+    padding: 1.25rem !important;
+  }
+
+  .card-action,
+  .review-actions {
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+  }
+
+  .btn-manage,
+  .btn-disabled {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .applicant-count {
+    flex-direction: row !important;
+    gap: 8px;
+    align-items: baseline !important;
+  }
+
+  /* Grids de formularios */
+  .grid-3-cols,
+  .grid-2-cols,
+  .form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .flex-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  /* Headers de página */
+  .page-header,
+  .header-section,
+  .page-header h1 {
+    flex-wrap: wrap;
+  }
+
+  .page-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+
+  .header-section {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+  }
+
+  .welcome-header {
+    padding: 1.25rem !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  .welcome-header h1 {
+    font-size: 1.5rem !important;
+  }
+
+  .page-title {
+    font-size: 1.35rem !important;
+  }
+
+  .page-header h2,
+  .header-section h1 {
+    font-size: 1.25rem !important;
+  }
+
+  /* Tarjetas modernas */
+  .modern-card {
+    padding: 1rem 1.25rem !important;
+  }
+
+  .card-actions {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+  }
+
+  .card-actions button,
+  .card-actions .btn-ver-mas,
+  .card-actions .btn-validacion {
+    flex: 1 1 auto;
+    min-width: calc(50% - 0.5rem);
+    justify-content: center;
+  }
+
+  /* Perfil profesional — secciones */
+  .document-item-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .document-item-card .card-actions {
+    width: 100%;
+  }
+
+  .card-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .btn-add-section {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .custom-card {
+    padding: 1.25rem !important;
+  }
+
+  /* Perfil candidato */
+  .grid-2-col {
+    grid-template-columns: 1fr !important;
+  }
+
+  .evaluation-actions {
+    flex-direction: column !important;
+  }
+
+  .evaluation-actions button {
+    width: 100%;
+  }
+
+  .item-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+
+  .timeline-item .item-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Tablas */
+  .table-responsive,
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modern-table {
+    min-width: 560px;
+  }
+
+  .modern-table th,
+  .modern-table td {
+    padding: 0.75rem 1rem !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* Modales */
+  .modal-overlay {
+    padding: 12px !important;
+    align-items: center !important;
+  }
+
+  .modal-content,
+  .modal-container {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - 24px) !important;
+    margin: 0 !important;
+  }
+
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse !important;
+  }
+
+  .modal-footer button,
+  .modal-footer .btn-cancel,
+  .modal-footer .btn-save-item {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Roles y admin */
+  .roles-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .page-header .btn-primary,
+  .action-bar .btn-primary {
+    width: 100%;
+  }
+
+  /* Tabs horizontales con scroll */
+  .tabs-container,
+  .tabs-nav,
+  .tabs-estados,
+  .sub-tabs,
+  .source-toggle {
+    flex-wrap: wrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Paginación */
+  .pagination,
+  .pagination-container {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 8px !important;
+  }
+
+  /* Logo perfil más pequeño en móvil */
+  .logo-circle {
+    width: 120px !important;
+    height: 120px !important;
+  }
+
+  /* Topbar interno de páginas */
+  .topbar {
+    margin-bottom: 1rem !important;
+  }
+
+  .welcome-text h2 {
+    font-size: 1.2rem !important;
+  }
+}
+
+/* ── Móvil pequeño (≤480px) ─────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .scroll-area,
+  .main-content,
+  .profile-container {
+    padding: 0.75rem !important;
+  }
+
+  .welcome-header h1 {
+    font-size: 1.2rem !important;
+  }
+
+  .welcome-header p {
+    font-size: 0.85rem !important;
+  }
+
+  .custom-card {
+    padding: 1rem !important;
+    border-radius: 12px !important;
+  }
+
+  .modern-card {
+    padding: 0.875rem 1rem !important;
+  }
+
+  .header-row h3,
+  .card-header-row h3 {
+    font-size: 1rem !important;
+  }
+
+  .card-actions button,
+  .card-actions .btn-ver-mas {
+    min-width: 100%;
+  }
+
+  .details-row {
+    gap: 0.75rem !important;
+  }
+
+  .badge-count {
+    align-self: flex-start;
+  }
+
+  .pdf-column {
+    height: 45vh !important;
+    min-height: 280px;
+  }
+
+  .stat-value {
+    font-size: 1.5rem !important;
+  }
+
+  .chart-section {
+    padding: 1rem !important;
+  }
+
+  .canvas-container {
+    height: 220px !important;
+  }
+}

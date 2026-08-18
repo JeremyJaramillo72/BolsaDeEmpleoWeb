@@ -27,7 +27,7 @@
       </div>
 
       <div class="card-actions">
-        <button class="btn-ver-pdf" (click)="onVerPdf.emit(item.nombreArchivo)" *ngIf="item.nombreArchivo">
+        <button class="btn-ver-pdf" (click)="verPdfExperiencia(item)" *ngIf="item.nombreArchivo">
           <span class="material-icons">description</span> Ver PDF
         </button>
         <button class="btn-eliminar" (click)="editar(item)" title="Editar">
@@ -46,7 +46,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="modalExperiencia">
+<div class="modal-overlay" *ngIf="modalExperiencia()">
   <div class="modal-content" style="max-width: 700px; width: 90%;">
     <div class="modal-header">
       <h2>{{ idEdicionExperiencia ? 'Editar' : 'Añadir' }} Experiencia Laboral</h2>

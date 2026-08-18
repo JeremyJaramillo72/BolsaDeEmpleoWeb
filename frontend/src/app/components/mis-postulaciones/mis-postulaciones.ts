@@ -6,6 +6,8 @@ import { forkJoin, of, catchError } from 'rxjs';
 import { OfertaService, OfertaDetalladaDTO } from '../../services/oferta.service';
 import { UiNotificationService } from '../../services/ui-notification.service';
 import { ConfirmService } from '../../services/confirm.service';
+import { DocumentoPdfService } from '../../services/documento-pdf.service';
+import { refDocumento, sanitizarNombreArchivo } from '../../utils/documento-storage-url';
 
 @Component({
   selector: 'app-mis-postulaciones',
@@ -32,7 +34,8 @@ export class MisPostulacionesComponent implements OnInit {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private ui: UiNotificationService,
-    private confirmService: ConfirmService
+    private confirmService: ConfirmService,
+    private documentoPdf: DocumentoPdfService
   ) {}
 
   ngOnInit(): void {
@@ -207,8 +210,18 @@ export class MisPostulacionesComponent implements OnInit {
     this.perfilModal = null;
   }
 
-  abrirDocumento(url: string): void {
-    if (url) window.open(url, '_blank');
+  abrirDocumento(url: string, nombreLegible?: string): void {
+    if (!url) return;
+    const nombre = nombreLegible ? sanitizarNombreArchivo(nombreLegible) : undefined;
+    this.documentoPdf.abrirVistaPrevia(nombre ? refDocumento(url, nombre) : url);
+  }
+
+  abrirCvModal(): void {
+    if (!this.perfilModal?.archivoCv) return;
+    const nombre = sanitizarNombreArchivo(
+      `CV_${this.perfilModal.nombrePostulante || this.perfilModal.nombre || 'Postulante'}`
+    );
+    this.documentoPdf.abrirVistaPrevia(refDocumento(this.perfilModal.archivoCv, nombre));
   }
 
   // ── Cancelar postulación ────────────────────────────────────────────────

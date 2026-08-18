@@ -1,8 +1,10 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.UsuarioTablaDTO; // <-- Importamos tu nuevo DTO
+import com.example.demo.dto.ActualizarUsuarioDTO;
+import com.example.demo.dto.UsuarioDetalleDTO;
+import com.example.demo.dto.UsuarioTablaDTO;
 import com.example.demo.model.Usuario;
-import java.util.List; // <-- Importamos List
+import java.util.List;
 
 public interface IUsuarioService {
     // Definimos qué puede hacer nuestro servicio
@@ -17,5 +19,8 @@ public interface IUsuarioService {
     // ==========================================
     List<UsuarioTablaDTO> obtenerUsuariosGenerales();
     void cambiarContrasena(Long idUsuario, String claveActual, String nuevaClave);
+    UsuarioDetalleDTO obtenerUsuarioPorId(Long idUsuario);
+    void actualizarUsuario(Long idUsuario, ActualizarUsuarioDTO dto);
+    void eliminarUsuario(Long idUsuario);
 
 }

@@ -56,6 +56,16 @@ export class DashboardAdminComponent implements OnInit {
   ngOnInit(): void {
     this.dashboardService.getAdminStats().subscribe({
       next: (res) => {
+        this.aplicarDatosDashboard(res);
+      },
+      error: (err) => {
+        console.error('Error cargando estadísticas del dashboard', err);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private aplicarDatosDashboard(res: any): void {
         this.datos = res;
 
         // Verificar si tenemos grafico multi-dataset (auditorías por usuario)
@@ -115,13 +125,6 @@ export class DashboardAdminComponent implements OnInit {
 
         this.isLoading = false;
         this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error("Error cargando estadísticas del dashboard", err);
-       // this.ui.error("Error cargando estadisticas ")
-        this.isLoading = false;
-      }
-    });
   }
 
   // no vale xd

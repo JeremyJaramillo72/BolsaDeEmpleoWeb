@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <div class="table-responsive">
+    <div class="table-responsive" *ngIf="!cargandoResumen">
       <table class="table-custom">
         <thead>
         <tr>
@@ -43,7 +43,7 @@
           </td>
         </tr>
 
-        <tr *ngIf="resumenBackups.length === 0">
+        <tr *ngIf="resumenBackups.length === 0 && !cargandoResumen">
           <td colspan="4" class="empty-state-pro py-5">
             <div class="empty-icon"><span class="material-icons">inbox</span></div>
             <p class="text-dark">No hay registros de respaldos en la base de datos.</p>
@@ -51,6 +51,11 @@
         </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="loading-state-pro py-5" *ngIf="cargandoResumen">
+      <span class="material-icons icon-spin text-indigo">sync</span>
+      <p class="mt-2">Cargando registros de respaldos...</p>
     </div>
   </div>
 </div>

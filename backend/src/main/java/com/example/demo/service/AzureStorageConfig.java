@@ -14,6 +14,8 @@ import java.util.UUID;
 @Service
 public class AzureStorageConfig {
 
+    private final AzureBlobStorageService azureBlobStorageService;
+
     @Value("${supabase.url:https://kkfcuzruwninlanwgmvf.supabase.co}")
     private String supabaseUrl;
 
@@ -25,7 +27,16 @@ public class AzureStorageConfig {
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
+    public AzureStorageConfig(AzureBlobStorageService azureBlobStorageService) {
+        this.azureBlobStorageService = azureBlobStorageService;
+    }
+
     public String subirDocumento(MultipartFile archivo) throws IOException {
+        if (azureBlobStorageService.estaConfigurado()) {
+            return azureBlobStorageService.subirDocumento(archivo);
+        }
+
+        // Fallback to Supabase Storage if Azure is not configured
         String nombreOriginal = archivo.getOriginalFilename();
         String extension = "";
         if (nombreOriginal != null && nombreOriginal.contains(".")) {
@@ -55,5 +66,12 @@ public class AzureStorageConfig {
             Thread.currentThread().interrupt();
             throw new IOException("Subida interrumpida: " + e.getMessage(), e);
         }
+    }
+
+    public String resolverUrlAcceso(String urlGuardada) {
+        if (azureBlobStorageService.estaConfigurado()) {
+            return azureBlobStorageService.resolverUrlAcceso(urlGuardada);
+        }
+        return urlGuardada;
     }
 }

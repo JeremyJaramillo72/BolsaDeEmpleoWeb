@@ -363,8 +363,10 @@ export class AdminService {
 
   // auditorias para sessiones
   // Obtener todas las sesiones
-  getSesiones(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiauditoriasUrl}/sesiones`);
+  getSesiones(estado: string = 'ACTIVA'): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiauditoriasUrl}/sesiones`, {
+      params: { estado: estado || 'ACTIVA' }
+    });
   }
 
   //http://localhost:8080/api/auditorias/sesiones

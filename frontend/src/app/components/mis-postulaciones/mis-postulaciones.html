@@ -204,7 +204,7 @@
             </p>
           </div>
           <div class="cv-wrap" *ngIf="perfilModal.archivoCv">
-            <button class="btn-ver-cv" (click)="abrirDocumento(perfilModal.archivoCv)">
+            <button class="btn-ver-cv" (click)="abrirCvModal()">
               <span class="material-icons">picture_as_pdf</span> Ver CV
             </button>
           </div>
@@ -233,7 +233,7 @@
                 <strong>{{ f.nombre }}</strong>
               </div>
               <div class="item-val-actions">
-                <button class="btn-doc-mini" *ngIf="f.archivo" (click)="abrirDocumento(f.archivo)" title="Ver título">
+                <button class="btn-doc-mini" *ngIf="f.archivo" (click)="abrirDocumento(f.archivo, f.nombre)" title="Ver título">
                   <span class="material-icons">picture_as_pdf</span>
                 </button>
                 <span class="estado-chip" [ngClass]="getEstadoItemClass(f.estadoV)">
@@ -261,7 +261,7 @@
                 <strong>{{ e.nombre }}</strong>
               </div>
               <div class="item-val-actions">
-                <button class="btn-doc-mini" *ngIf="e.archivo" (click)="abrirDocumento(e.archivo)" title="Ver comprobante">
+                <button class="btn-doc-mini" *ngIf="e.archivo" (click)="abrirDocumento(e.archivo, e.nombre)" title="Ver comprobante">
                   <span class="material-icons">picture_as_pdf</span>
                 </button>
                 <span class="estado-chip" [ngClass]="getEstadoItemClass(e.estadoV)">
@@ -289,7 +289,7 @@
                 <strong>{{ c.nombre }}</strong>
               </div>
               <div class="item-val-actions">
-                <button class="btn-doc-mini" *ngIf="c.archivo" (click)="abrirDocumento(c.archivo)" title="Ver certificado">
+                <button class="btn-doc-mini" *ngIf="c.archivo" (click)="abrirDocumento(c.archivo, c.nombre)" title="Ver certificado">
                   <span class="material-icons">picture_as_pdf</span>
                 </button>
                 <span class="estado-chip" [ngClass]="getEstadoItemClass(c.estadoV)">
@@ -317,7 +317,7 @@
                 <strong>{{ i.nombre }}</strong>
               </div>
               <div class="item-val-actions">
-                <button class="btn-doc-mini" *ngIf="i.archivo" (click)="abrirDocumento(i.archivo)" title="Ver certificado">
+                <button class="btn-doc-mini" *ngIf="i.archivo" (click)="abrirDocumento(i.archivo, i.nombre)" title="Ver certificado">
                   <span class="material-icons">picture_as_pdf</span>
                 </button>
                 <span class="estado-chip" [ngClass]="getEstadoItemClass(i.estadoV)">

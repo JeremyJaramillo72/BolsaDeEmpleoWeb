@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } 
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { RouterLink, Router } from '@angular/router';
 import { UiNotificationService } from '../../services/ui-notification.service';
+import { API_BASE_URL } from '../../config/api-base';
 
 import { SocialAuthService, GoogleSigninButtonModule } from '@abacritt/angularx-social-login';
 
@@ -20,6 +21,7 @@ export class RegistroCandidatoComponent implements OnInit {
   codigoValido: boolean = false;
   codigoInvalido: boolean = false;
   correoVerificado: boolean = false;
+  verificacionCorreoObligatoria = true;
   fechaMaxima: string = '';
   registrando: boolean = false;
   provincias: any[] = [];
@@ -53,7 +55,7 @@ export class RegistroCandidatoComponent implements OnInit {
       if (user) {
         this.ui.info('Verificando cuenta con el servidor...');
 
-        this.http.post<any>('http://localhost:8080/api/auth/email/google', {
+        this.http.post<any>(`${API_BASE_URL}/auth/email/google`, {
           token: user.idToken
         }).subscribe({
           next: (res) => {
@@ -99,7 +101,7 @@ export class RegistroCandidatoComponent implements OnInit {
   }
 
   cargarProvincias() {
-    this.http.get<any[]>('http://localhost:8080/api/ubicaciones/provincias')
+    this.http.get<any[]>(`${API_BASE_URL}/ubicaciones/provincias`)
       .subscribe({
         next: (data) => {
           this.provincias = data;
@@ -111,7 +113,7 @@ export class RegistroCandidatoComponent implements OnInit {
 
   onProvinciaChange() {
     if (this.idProvinciaSeleccionada) {
-      this.http.get<any[]>(`http://localhost:8080/api/ubicaciones/ciudades/${this.idProvinciaSeleccionada}`)
+      this.http.get<any[]>(`${API_BASE_URL}/ubicaciones/ciudades/${this.idProvinciaSeleccionada}`)
         .subscribe({
           next: (data) => {
             this.ciudades = data;
@@ -123,13 +125,34 @@ export class RegistroCandidatoComponent implements OnInit {
     }
   }
 
+  onToggleVerificacionCorreo() {
+    if (!this.verificacionCorreoObligatoria) {
+      this.codigoVerificacion = '';
+      this.codigoValido = false;
+      this.codigoInvalido = false;
+    } else {
+      this.correoVerificado = false;
+    }
+    setTimeout(() => this.cdr.detectChanges());
+  }
+
+  get botonRegistrarDeshabilitado(): boolean {
+    if (this.registrando) {
+      return true;
+    }
+    return this.verificacionCorreoObligatoria && !this.correoVerificado;
+  }
+
   enviarCodigo() {
+    if (!this.verificacionCorreoObligatoria) {
+      return;
+    }
     if (!this.correo) {
       this.ui.advertencia('Por favor, ingresa un correo válido');
       return;
     }
     this.enviandoCodigo = true;
-    this.http.post('http://localhost:8080/api/auth/enviar-codigo', {Correo: this.correo})
+    this.http.post(`${API_BASE_URL}/auth/enviar-codigo`, {Correo: this.correo})
       .subscribe({
         next: () => {
           this.enviandoCodigo = false;
@@ -143,6 +166,9 @@ export class RegistroCandidatoComponent implements OnInit {
   }
 
   validarCodigoVisual() {
+    if (!this.verificacionCorreoObligatoria) {
+      return;
+    }
     if (this.codigoVerificacion.length === 6) {
       this.codigoValido = true;
       this.codigoInvalido = false;
@@ -163,6 +189,10 @@ export class RegistroCandidatoComponent implements OnInit {
       this.ui.advertencia('Por favor, selecciona tu ubicación.');
       return;
     }
+    if (this.verificacionCorreoObligatoria && !this.correoVerificado) {
+      this.ui.advertencia('Debes verificar tu correo antes de registrarte.');
+      return;
+    }
     this.registrando = true;
     const payload = {
       Nombre: this.nombre,
@@ -173,10 +203,11 @@ export class RegistroCandidatoComponent implements OnInit {
       Genero: this.genero,
       FechaNacimiento: this.fechaNac,
       idCiudad: this.idCiudadSeleccionada,
-      codigoIngresado: this.codigoVerificacion
+      codigoIngresado: this.verificacionCorreoObligatoria ? this.codigoVerificacion : '',
+      omitirVerificacionCorreo: !this.verificacionCorreoObligatoria
     };
 
-    this.http.post('http://localhost:8080/api/registro-postulante/crear', payload)
+    this.http.post(`${API_BASE_URL}/registro-postulante/crear`, payload)
       .subscribe({
         next: (res) => {
           this.ui.exito('¡Postulante registrado con éxito!');

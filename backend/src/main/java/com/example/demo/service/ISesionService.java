@@ -6,4 +6,6 @@ public interface ISesionService {
 
     void registrarLogout(Integer idSeguridad);
     void actualizarEstadoCuentaYSesion(Long idSesion, String estadoCuenta);
+
+    void normalizarSesionesActivasDuplicadas();
 }

@@ -5,9 +5,14 @@ import com.example.demo.model.Seguridad;
 import com.example.demo.model.UsuarioEmpresa;
 import com.example.demo.repository.Impl.PerfilProfesionalRepository;
 import com.example.demo.repository.SeguridadRepository;
+import com.example.demo.repository.SesionRepository;
 import com.example.demo.repository.UsuarioEmpresaRepository;
 import com.example.demo.repository.UsuarioRepository;
-import com.example.demo.service.*;
+import com.example.demo.service.AuthService;
+import com.example.demo.service.DbSwitchService;
+import com.example.demo.service.EmailService;
+import com.example.demo.service.ISesionService;
+import com.example.demo.service.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -34,6 +39,8 @@ public class AuthController {
     private final DbSwitchService dbSwitchService;
     private final SeguridadRepository seguridadRepository;
     private final ISesionService sesionService;
+    private final JwtService jwtService;
+    private final SesionRepository sesionRepository;
 
     @PostMapping("/enviar-codigo")
     public ResponseEntity<?> solicitarCodigo(
@@ -69,25 +76,28 @@ public class AuthController {
                     // 1. Validar contraseña del aplicativo
                     if (passwordEncoder.matches(loginRequest.getContrasena(), usuario.getContrasena())) {
 
-                        // 👇 VALIDACIÓN DE ESTADO Y ENVÍO DE CORREO 👇
-                        String estado = usuario.getEstadoValidacion();
-                        String estadoActual = (estado != null && !estado.isEmpty()) ? estado : "Pendiente";
+                        // Solo las empresas requieren aprobación manual del administrador.
+                        // Los postulantes ya validaron su correo en el registro.
+                        String nombreRolLogin = usuario.getRol() != null ? usuario.getRol().getNombreRol() : "";
+                        if (nombreRolLogin != null && nombreRolLogin.equalsIgnoreCase("EMPRESA")) {
+                            String estado = usuario.getEstadoValidacion();
+                            String estadoActual = (estado != null && !estado.isEmpty()) ? estado : "Pendiente";
 
-                        if (!estadoActual.equalsIgnoreCase("Aprobado") && !estadoActual.equalsIgnoreCase("Activo")) {
-                            try {
-                                emailService.enviarCorreoCuentaNoAprobada(usuario.getCorreo(), usuario.getNombre(), estadoActual);
-                            } catch (Exception e) {
-                                System.out.println("aviso: no se pudo enviar el correo de bloqueo: " + e.getMessage());
+                            if (!estadoActual.equalsIgnoreCase("Aprobado") && !estadoActual.equalsIgnoreCase("Activo")) {
+                                try {
+                                    emailService.enviarCorreoCuentaNoAprobada(usuario.getCorreo(), usuario.getNombre(), estadoActual);
+                                } catch (Exception e) {
+                                    System.out.println("aviso: no se pudo enviar el correo de bloqueo: " + e.getMessage());
+                                }
+
+                                String msjFront = estadoActual.equalsIgnoreCase("Rechazado")
+                                        ? "Tu solicitud de cuenta fue rechazada. Comunícate con el administrador."
+                                        : "Tu cuenta aún está en revisión. No puedes iniciar sesión hasta ser aprobada.";
+
+                                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                                        .body(Collections.singletonMap("error", msjFront));
                             }
-
-                            String msjFront = estadoActual.equalsIgnoreCase("Rechazado")
-                                    ? "tu solicitud de cuenta fue rechazada. comunícate con el administrador."
-                                    : "tu cuenta aún está en revisión. no puedes iniciar sesión hasta ser aprobado.";
-
-                            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                                    .body(Collections.singletonMap("error", msjFront));
                         }
-                        // 👆 FIN DE LA VALIDACIÓN 👆
 
                         // 2. BUSCAR CREDENCIALES DE BASE DE DATOS EN ENTIDAD SEGURIDAD
                         Seguridad seguridad = seguridadRepository.findByUsuario(usuario);
@@ -101,23 +111,31 @@ public class AuthController {
 
                         String nombreRol = usuario.getRol().getNombreRol();
 
-                        // 4. Registrar inicio de sesión (auditoría)
+                        Long idSesionGenerado = null;
                         if (seguridad != null) {
                             try {
                                 String navegador = httpRequest.getHeader("User-Agent");
                                 String dispositivo = navegador != null && navegador.contains("Mobile") ? "Mobile" : "Desktop";
-                                sesionService.registrarLogin(seguridad.getIdSeguridad(), navegador, dispositivo);
+                                idSesionGenerado = sesionService.registrarLogin(seguridad.getIdSeguridad(), navegador, dispositivo);
                             } catch (Exception e) {
                                 System.out.println("Aviso: No se pudo registrar auditoria de login: " + e.getMessage());
                             }
                         }
 
-                        httpResponse.addHeader("X-Auth-Token", UUID.randomUUID().toString());
+                        String tokenSistema = jwtService.generarToken(
+                                usuario.getCorreo(),
+                                nombreRol,
+                                idSesionGenerado
+                        );
+
+                        httpResponse.addHeader("X-Auth-Token", tokenSistema);
                         httpResponse.addHeader("X-UTEQ-Session", "Active");
 
                         // 5. Respuesta al Frontend
                         Map<String, Object> response = new HashMap<>();
                         response.put("mensaje", "¡bienvenido de nuevo!");
+                        response.put("token", tokenSistema);
+                        response.put("idSesion", idSesionGenerado);
                         response.put("idUsuario", usuario.getIdUsuario());
                         response.put("rol", usuario.getRol());
                         response.put("nombre", usuario.getNombre());
@@ -176,6 +194,36 @@ public class AuthController {
             }
         }
         return ResponseEntity.ok(Map.of("mensaje", "Conexión de BD cerrada y sesión finalizada"));
+    }
+
+    @GetMapping("/validar-sesion")
+    public ResponseEntity<?> validarSesion(
+            @RequestHeader(value = "Authorization", required = false) String authHeader
+    ) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("valida", false, "error", "Sin token de sesion"));
+        }
+
+        try {
+            String jwt = authHeader.substring(7);
+            Long idSesion = jwtService.extractIdSesion(jwt);
+
+            if (idSesion == null) {
+                return ResponseEntity.ok(Map.of("valida", true));
+            }
+
+            var sesionOpt = sesionRepository.findById(idSesion);
+            if (sesionOpt.isEmpty() || !"ACTIVA".equalsIgnoreCase(sesionOpt.get().getAccion())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("valida", false, "error", "Sesion finalizada por el administrador"));
+            }
+
+            return ResponseEntity.ok(Map.of("valida", true, "idSesion", idSesion));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("valida", false, "error", "Token invalido"));
+        }
     }
 
     @GetMapping("/perfil-resumen")

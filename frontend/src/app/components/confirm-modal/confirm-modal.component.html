@@ -1,4 +1,4 @@
-<div class="overlay" *ngIf="visible" (click)="responder(false)">
+<div class="overlay" *ngIf="visible" (click)="!bloqueante && responder(false)">
   <div class="modal-card" (click)="$event.stopPropagation()">
 
     <div class="modal-icon" [ngClass]="{'icon-exito': tipo === 'exito', 'icon-warning': tipo !== 'exito'}">

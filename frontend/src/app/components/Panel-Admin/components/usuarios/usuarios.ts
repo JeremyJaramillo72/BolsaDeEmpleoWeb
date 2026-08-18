@@ -1,8 +1,9 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UsuariosService } from './Service/UsuariosService';
 import { ConfirmService } from '../../../../services/confirm.service';
+import { UiNotificationService } from '../../../../services/ui-notification.service';
 
 @Component({
   selector: 'app-usuarios',
@@ -16,6 +17,7 @@ export class UsuariosComponent implements OnInit {
   // --- CONTROL DE VISTAS ---
   vistaActual: 'LISTA' | 'CREAR' = 'LISTA';
   isLoading: boolean = false;
+  eliminandoId: number | null = null;
 
   // --- DATOS DE TABLA Y BÚSQUEDA ---
   usuarios: any[] = [];
@@ -35,6 +37,20 @@ export class UsuariosComponent implements OnInit {
     apellido: ''
   };
   rolesDisponibles: any[] = [];
+  ciudadesDisponibles: any[] = [];
+
+  mostrarModalEditar = false;
+  guardandoEdicion = false;
+  formularioEdicion = {
+    idUsuario: null as number | null,
+    nombre: '',
+    apellido: '',
+    correo: '',
+    telefono: '',
+    rolId: null as number | null,
+    idCiudad: null as number | null,
+    contrasena: ''
+  };
 
   // --- MENSAJES ---
   mensajeExito = '';
@@ -43,12 +59,15 @@ export class UsuariosComponent implements OnInit {
   constructor(
     private usuariosService: UsuariosService,
     private cdr: ChangeDetectorRef,
-    private confirmService: ConfirmService
+    private confirmService: ConfirmService,
+    private ui: UiNotificationService,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit() {
     this.cargarUsuarios();
     this.cargarRolesInternos();
+    this.cargarCiudades();
   }
 
   // ==========================================
@@ -112,16 +131,139 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
+  abrirEditar(usr: any): void {
+    this.isLoading = true;
+    this.usuariosService.obtenerUsuario(usr.id_usuario).subscribe({
+      next: (data) => {
+        this.formularioEdicion = {
+          idUsuario: data.idUsuario,
+          nombre: data.nombre || '',
+          apellido: data.apellido || '',
+          correo: data.correo || '',
+          telefono: data.telefono || '',
+          rolId: data.idRol ?? null,
+          idCiudad: data.idCiudad ?? null,
+          contrasena: ''
+        };
+        this.asegurarRolEnLista(data.idRol, data.nombreRol);
+        this.mostrarModalEditar = true;
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.mostrarError('No se pudo cargar los datos del usuario');
+        this.isLoading = false;
+      }
+    });
+  }
+
+  cerrarModalEditar(): void {
+    this.mostrarModalEditar = false;
+    this.formularioEdicion = {
+      idUsuario: null,
+      nombre: '',
+      apellido: '',
+      correo: '',
+      telefono: '',
+      rolId: null,
+      idCiudad: null,
+      contrasena: ''
+    };
+  }
+
+  guardarEdicion(): void {
+    if (!this.formularioEdicion.idUsuario) return;
+
+    if (!this.formularioEdicion.nombre?.trim() || !this.formularioEdicion.correo?.trim()) {
+      this.mostrarError('Nombre y correo son obligatorios.');
+      return;
+    }
+
+    const payload: any = {
+      nombre: this.formularioEdicion.nombre.trim(),
+      apellido: this.formularioEdicion.apellido.trim(),
+      correo: this.formularioEdicion.correo.trim(),
+      telefono: this.formularioEdicion.telefono?.trim() || '',
+      rolId: this.formularioEdicion.rolId,
+      idCiudad: this.formularioEdicion.idCiudad
+    };
+
+    if (this.formularioEdicion.contrasena?.trim()) {
+      payload.contrasena = this.formularioEdicion.contrasena.trim();
+    }
+
+    this.guardandoEdicion = true;
+    this.usuariosService.actualizarUsuario(this.formularioEdicion.idUsuario, payload).subscribe({
+      next: () => {
+        this.mostrarExito('Usuario actualizado correctamente.');
+        this.guardandoEdicion = false;
+        this.cerrarModalEditar();
+        this.cargarUsuarios();
+      },
+      error: (err) => {
+        const msg = err.error?.error || 'Error al actualizar el usuario';
+        this.mostrarError(msg);
+        this.guardandoEdicion = false;
+      }
+    });
+  }
+
+  confirmarEliminar(usr: any): void {
+    const nombreVisible = (usr.nombre || usr.correo || 'Usuario').trim();
+
+    this.confirmService.abrir(
+      `¿Eliminar permanentemente a ${nombreVisible} (${usr.correo})? Esta acción no se puede deshacer.`,
+      'Eliminar Usuario',
+      'advertencia'
+    ).then(acepto => {
+      if (!acepto) return;
+
+      this.ngZone.run(() => {
+        this.eliminandoId = usr.id_usuario;
+        this.cdr.detectChanges();
+      });
+
+      this.usuariosService.eliminarUsuario(usr.id_usuario).subscribe({
+        next: () => {
+          this.ngZone.run(() => {
+            this.usuarios = this.usuarios.filter(u => u.id_usuario !== usr.id_usuario);
+            this.usuariosFiltrados = this.usuariosFiltrados.filter(u => u.id_usuario !== usr.id_usuario);
+            this.eliminandoId = null;
+
+            if (this.currentPage > this.totalPages) {
+              this.currentPage = this.totalPages;
+            }
+
+            this.ui.exito(`Usuario "${nombreVisible}" eliminado correctamente.`);
+            this.cdr.detectChanges();
+          });
+        },
+        error: (err) => {
+          this.ngZone.run(() => {
+            this.eliminandoId = null;
+            const msg = err.error?.error || 'No se pudo eliminar el usuario';
+            this.ui.error(msg);
+            this.cdr.detectChanges();
+          });
+        }
+      });
+    });
+  }
+
+  puedeEliminar(usr: any): boolean {
+    const rol = (usr.nombre_rol || '').toLowerCase();
+    return rol !== 'administrador';
+  }
+
   // ==========================================
   // LÓGICA DE CREACIÓN DE USUARIOS
   // ==========================================
 
   cargarRolesInternos() {
-    // NOTA: Asegúrate de tener este método en tu UsuariosService
     this.usuariosService.obtenerRolesDeBD().subscribe({
       next: (data: any) => {
         this.rolesDisponibles = data
-          .filter((rol: any) => rol.idRol !== 2 && rol.idRol !== 3 && rol.idRol !== 1)
+          .filter((rol: any) => rol.idRol !== 1 && rol.idRol !== 2 && rol.idRol !== 3)
           .map((rol: any) => ({
             id: rol.idRol,
             etiqueta: rol.nombreRol
@@ -129,6 +271,26 @@ export class UsuariosComponent implements OnInit {
       },
       error: (e: any) => console.error('Error cargando roles', e)
     });
+  }
+
+  cargarCiudades() {
+    this.usuariosService.obtenerCiudades().subscribe({
+      next: (data) => {
+        this.ciudadesDisponibles = data.map((c: any) => ({
+          id: c.idCiudad ?? c.id_ciudad,
+          nombre: c.nombreCiudad ?? c.nombre_ciudad
+        }));
+      },
+      error: () => console.error('Error cargando ciudades')
+    });
+  }
+
+  private asegurarRolEnLista(idRol: number | null, nombreRol: string | null) {
+    if (idRol == null) return;
+    const existe = this.rolesDisponibles.some(r => r.id === idRol);
+    if (!existe && nombreRol) {
+      this.rolesDisponibles = [{ id: idRol, etiqueta: nombreRol }, ...this.rolesDisponibles];
+    }
   }
 
   iniciarCreacion() {

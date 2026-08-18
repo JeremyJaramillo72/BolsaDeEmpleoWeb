@@ -114,8 +114,12 @@ public class AuditoriasController {
     }
 
     @GetMapping("/sesiones")
-    public ResponseEntity<List<Map<String, Object>>> getSesiones() {
-        return ResponseEntity.ok(auditoriaService.getSesiones());
+    public ResponseEntity<List<Map<String, Object>>> getSesiones(
+            @RequestParam(defaultValue = "ACTIVA") String estado) {
+        if ("ACTIVA".equalsIgnoreCase(estado)) {
+            sesionService.normalizarSesionesActivasDuplicadas();
+        }
+        return ResponseEntity.ok(auditoriaService.getSesiones(estado));
     }
 
 

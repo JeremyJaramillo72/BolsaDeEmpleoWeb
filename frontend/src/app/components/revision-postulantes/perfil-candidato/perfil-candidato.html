@@ -82,9 +82,10 @@
                   <p class="date-text">{{ exp.fecha_inicio | date:'MMM yyyy' }} - {{ exp.fecha_fin ? (exp.fecha_fin | date:'MMM yyyy') : 'Actualidad' }}</p>
                 </div>
                 <div class="item-actions">
-                  <a *ngIf="exp.archivo_comprobante" [href]="exp.archivo_comprobante" target="_blank" class="btn-ver-pdf">
+                  <button *ngIf="exp.archivo_comprobante" type="button" class="btn-ver-pdf"
+                    (click)="verDocumento(exp.archivo_comprobante, exp.empresa || exp.cargo || 'Experiencia')">
                     <span class="material-icons">description</span> Ver PDF
-                  </a>
+                  </button>
                   <div class="eval-group">
                     <button class="btn-eval approve" [ngClass]="{'active-green': exp.estado_v === 'Aprobado'}" (click)="evaluarItem('experiencia', exp.id_exp_laboral, 'Aprobado')" title="Aprobar"><span class="material-icons">check</span></button>
                     <button class="btn-eval reject" [ngClass]="{'active-red': exp.estado_v === 'Rechazado'}" (click)="evaluarItem('experiencia', exp.id_exp_laboral, 'Rechazado')" title="Rechazar"><span class="material-icons">close</span></button>
@@ -135,7 +136,8 @@
                 <span class="text-muted">{{ curso.institucion }} • {{ curso.duracion_horas }}h</span>
               </div>
               <div class="item-actions">
-                <a *ngIf="curso.archivo_certificado" [href]="curso.archivo_certificado" target="_blank" class="btn-ver-pdf">Ver PDF</a>
+                <button *ngIf="curso.archivo_certificado" type="button" class="btn-ver-pdf"
+                  (click)="verDocumento(curso.archivo_certificado, curso.curso || 'Curso')">Ver PDF</button>
                 <div class="eval-group">
                   <button class="btn-eval approve" [ngClass]="{'active-green': curso.estado_v === 'Aprobado'}" (click)="evaluarItem('curso', curso.id_curso, 'Aprobado')"><span class="material-icons">check</span></button>
                   <button class="btn-eval reject" [ngClass]="{'active-red': curso.estado_v === 'Rechazado'}" (click)="evaluarItem('curso', curso.id_curso, 'Rechazado')"><span class="material-icons">close</span></button>
@@ -155,7 +157,8 @@
                 <span class="badge-level">{{ idioma.nivel }}</span>
               </div>
               <div class="item-actions">
-                <a *ngIf="idioma.archivo_certificado" [href]="idioma.archivo_certificado" target="_blank" class="btn-ver-pdf">Ver PDF</a>
+                <button *ngIf="idioma.archivo_certificado" type="button" class="btn-ver-pdf"
+                  (click)="verDocumento(idioma.archivo_certificado, idioma.idioma || 'Idioma')">Ver PDF</button>
                 <div class="eval-group">
                   <button class="btn-eval approve" [ngClass]="{'active-green': idioma.estado_v === 'Aprobado'}" (click)="evaluarItem('idioma', idioma.id_usuario_idioma, 'Aprobado')"><span class="material-icons">check</span></button>
                   <button class="btn-eval reject" [ngClass]="{'active-red': idioma.estado_v === 'Rechazado'}" (click)="evaluarItem('idioma', idioma.id_usuario_idioma, 'Rechazado')"><span class="material-icons">close</span></button>
@@ -181,12 +184,18 @@
       <div class="card pdf-card">
         <div class="pdf-header">
           <h3 class="section-title"><span class="material-icons">picture_as_pdf</span> Currículum Principal</h3>
-          <a *ngIf="perfil.archivoCv" [href]="perfil.archivoCv" target="_blank" class="btn-download">Descargar</a>
+          <button *ngIf="perfil.archivoCv" type="button" class="btn-download" (click)="descargarCv()">
+            Descargar {{ nombreCv }}
+          </button>
         </div>
-        <div class="iframe-container" *ngIf="cvUrlSegura">
-          <iframe [src]="cvUrlSegura" width="100%" height="100%"></iframe>
+        <div class="iframe-container iframe-loading" *ngIf="cargandoPdf">
+          <span class="material-icons spin">hourglass_empty</span>
+          <p>Cargando vista previa...</p>
         </div>
-        <div *ngIf="!cvUrlSegura" class="empty-state-pdf">
+        <div class="iframe-container" *ngIf="cvUrlSegura && !cargandoPdf">
+          <iframe [src]="cvUrlSegura" width="100%" height="100%" [title]="nombreCv"></iframe>
+        </div>
+        <div *ngIf="!cvUrlSegura && !cargandoPdf" class="empty-state-pdf">
           <span class="material-icons">description</span>
           <p>El candidato no subió CV en PDF.</p>
         </div>

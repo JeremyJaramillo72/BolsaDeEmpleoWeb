@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UsuariosComponent } from './usuarios/usuarios';
 import { SesionesComponent } from './sesiones/sesiones';
@@ -18,12 +18,16 @@ import { RespaldosComponent } from './respaldos/respaldos';
     RespaldosComponent
   ],
   templateUrl: './auditorias-users.html',
-  styleUrls: ['./auditorias-users.css']
+  styleUrls: ['./auditorias-users.css', './auditorias-responsive.css']
 })
 export class AdminUsuariosComponent {
   tabPrincipal: 'usuarios' | 'sesiones' | 'ofertas' | 'postulantes' | 'respaldos' = 'usuarios';
   mensajeError = '';
+
+  constructor(private cdr: ChangeDetectorRef) {}
+
   cambiarTabPrincipal(tab: 'usuarios' | 'sesiones' | 'ofertas' | 'postulantes' | 'respaldos'): void {
     this.tabPrincipal = tab;
+    this.cdr.detectChanges();
   }
 }

@@ -15,7 +15,7 @@ public interface IAuditoriaService {
     ResumenAuditoriaDTO getResumenAuditoria(Integer idUsuario);
 
     List<AuditoriaDTO> getAuditoriasUsuarioPorTipo(Integer idUsuario, String tipo);
-    List<Map<String, Object>> getSesiones();
+    List<Map<String, Object>> getSesiones(String estado);
 
     // Exportar
     byte[] exportarUsuariosExcel(Map<String, Object> body);

@@ -10,14 +10,12 @@ import com.example.demo.dto.DashboardDTO.GraficoMultiDatasetDTO;
 import com.example.demo.dto.DashboardDTO.GraficoDataset;
 import com.example.demo.repository.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 @Service
 public class DashboardService {
@@ -39,37 +37,34 @@ public class DashboardService {
 
     private final AuditoriaRepository auditoriaRepository;
 
+    @Cacheable(value = "dashboardAdmin", key = "'stats'", sync = true)
     public AdminStats getAdminStats() {
+        CompletableFuture<KpiItem> pendientes = CompletableFuture.supplyAsync(this::crearKpiPendientesAdmin);
+        CompletableFuture<KpiItem> empresas = CompletableFuture.supplyAsync(this::crearKpiEmpresasNuevasAdmin);
+        CompletableFuture<KpiItem> usuarios = CompletableFuture.supplyAsync(this::crearKpiUsuariosTotalesAdmin);
+        CompletableFuture<KpiItem> reportes = CompletableFuture.supplyAsync(this::crearKpiReportesHoyAdmin);
+        CompletableFuture<GraficoMultiDatasetDTO> graficoTop = CompletableFuture.supplyAsync(
+                () -> procesarAuditoriaTopUsuarios(auditoriaRepository.getTopUsersAuditHistoric())
+        );
+        CompletableFuture.allOf(pendientes, empresas, usuarios, reportes, graficoTop).join();
+
         AdminStats stats = new AdminStats();
-
-        var pendientesFuture = java.util.concurrent.CompletableFuture.supplyAsync(this::crearKpiPendientesAdmin);
-        var empresasFuture = java.util.concurrent.CompletableFuture.supplyAsync(this::crearKpiEmpresasNuevasAdmin);
-        var usuariosFuture = java.util.concurrent.CompletableFuture.supplyAsync(this::crearKpiUsuariosTotalesAdmin);
-        var reportesFuture = java.util.concurrent.CompletableFuture.supplyAsync(this::crearKpiReportesHoyAdmin);
-        var auditoriasFuture = java.util.concurrent.CompletableFuture.supplyAsync(auditoriaRepository::getTopUsersAuditHistoric);
-
-        java.util.concurrent.CompletableFuture.allOf(pendientesFuture, empresasFuture, usuariosFuture, reportesFuture, auditoriasFuture).join();
-
         Map<String, KpiItem> kpis = new LinkedHashMap<>();
-        try {
-            kpis.put("pendientes", pendientesFuture.get());
-            kpis.put("empresasNuevas", empresasFuture.get());
-            kpis.put("usuariosTotales", usuariosFuture.get());
-            kpis.put("reportesHoy", reportesFuture.get());
+        kpis.put("pendientes", pendientes.join());
+        kpis.put("empresasNuevas", empresas.join());
+        kpis.put("usuariosTotales", usuarios.join());
+        kpis.put("reportesHoy", reportes.join());
+        stats.setKpis(kpis);
 
-            stats.setKpis(kpis);
-
-            GraficoDTO grafico = new GraficoDTO();
-            grafico.setLabels(generarLabelsHistoricos());
-            stats.setGrafico(grafico);
-            stats.setGraficoMultiDataset(procesarAuditoriaTopUsuarios(auditoriasFuture.get()));
-        } catch (Exception e) {
-            throw new RuntimeException("Error en paralelo de dashboard", e);
-        }
+        GraficoDTO grafico = new GraficoDTO();
+        grafico.setLabels(generarLabelsHistoricos());
+        stats.setGrafico(grafico);
+        stats.setGraficoMultiDataset(graficoTop.join());
 
         return stats;
     }
 
+    @Cacheable(value = "dashboardEmpresa", key = "#idEmpresa", sync = true)
     public EmpresaStats getEmpresaStats(Long idEmpresa) {
         EmpresaStats stats = new EmpresaStats();
 
@@ -106,6 +101,7 @@ public class DashboardService {
         return stats;
     }
 
+    @Cacheable(value = "dashboardPostulante", key = "#idUsuario", sync = true)
     public PostulanteStats getPostulanteStats(Long idUsuario) {
         PostulanteStats stats = new PostulanteStats();
 

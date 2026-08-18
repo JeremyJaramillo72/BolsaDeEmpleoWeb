@@ -123,7 +123,7 @@ public class PostulacionServiceImpl implements IPostulacionService {
                     if (rawCarrera.contains("[")) {
                         carreraLimpia = rawCarrera.replaceAll(".*?\"carrera\":\\s*\"([^\"]+)\".*?", "$1, ")
                                 .replaceAll(", $", "") // Quita la última coma
-                                .replaceAll("(\\[|\\{).*?(\\]|\\})", "");  
+                                .replaceAll("(\\[|\\{).*?(\\]|\\})", "");
 
                           carreraLimpia = "Múltiples carreras (Ver detalles en perfil)";
                     } else {
@@ -139,6 +139,9 @@ public class PostulacionServiceImpl implements IPostulacionService {
                         "person_add"
                 );
 
+                // --- EMAIL DETALLADO (El hack se encarga de que sea solo email) ---
+                // Usamos 'perfilUsuario' que ya consultaste arriba en el paso 3
+
                 notificacionService.crearYEnviarNotificacion(
                         idUsuarioEmpresa,
                         "email_postulacion_recibida",
@@ -152,8 +155,7 @@ public class PostulacionServiceImpl implements IPostulacionService {
                                 // USA LA VARIABLE LIMPIA AQUÍ
                                 "candidatoCarrera", carreraLimpia,
 
-                                "resumenCV", "Match de IA: " + porcentajeMatch + "%. El candidato posee formación en el área requerida.",
-                                "enlacePerfil", "https://tudominio.com/menu-principal/gestion-ofertas"
+                                "resumenCV", "Match de IA: " + porcentajeMatch + "%. El candidato posee formación en el área requerida."
                         ),
                         Map.of("idOferta", idOferta),
                         "/menu-principal/gestion-ofertas",
@@ -187,12 +189,28 @@ public class PostulacionServiceImpl implements IPostulacionService {
 
     @Override
     public PerfilPostulanteDTO obtenerPerfilDelCandidato(Long idPostulacion) {
-        return postulacionCustomRepository.obtenerPerfilCompleto(idPostulacion);
+        PerfilPostulanteDTO dto = postulacionCustomRepository.obtenerPerfilCompleto(idPostulacion);
+        if (dto != null && dto.getArchivoCv() != null && !dto.getArchivoCv().isBlank()) {
+            try {
+                dto.setArchivoCv(azureStorageConfig.resolverUrlAcceso(dto.getArchivoCv()));
+            } catch (Exception ignored) {
+                // El frontend puede usar /api/storage/ver como respaldo
+            }
+        }
+        return dto;
     }
 
     @Override
     public String obtenerUrlCV(Integer idPostulacion) {
-        return postulacionRepository.obtenerUrlCvFn(idPostulacion);
+        String url = postulacionRepository.obtenerUrlCvFn(idPostulacion);
+        if (url == null || url.isBlank()) {
+            return url;
+        }
+        try {
+            return azureStorageConfig.resolverUrlAcceso(url);
+        } catch (Exception e) {
+            return url;
+        }
     }
 
     @Override
