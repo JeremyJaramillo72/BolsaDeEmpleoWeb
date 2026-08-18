@@ -11,6 +11,18 @@ public class MutableDataSource extends AbstractDataSource {
     private final AtomicReference<DataSource> current = new AtomicReference<>();
     public MutableDataSource(DataSource initial) { this.current.set(initial); }
     public void switchTo(DataSource newDataSource) { this.current.set(newDataSource); }
+    public void closeCurrent() throws SQLException {
+        DataSource currentDataSource = current.get();
+        if (currentDataSource instanceof AutoCloseable closeable) {
+            try {
+                closeable.close();
+            } catch (SQLException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new SQLException(e);
+            }
+        }
+    }
     @Override
     public Connection getConnection() throws SQLException { return current.get().getConnection(); }
     @Override
