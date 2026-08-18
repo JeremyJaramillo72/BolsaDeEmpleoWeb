@@ -40,7 +40,7 @@ public class DatabaseBackupService {
     private String dbPassword;
 
     private final JdbcTemplate jdbcTemplate;
-    private final com.zaxxer.hikari.HikariDataSource dataSource;
+    private final javax.sql.DataSource dataSource;
     private final AzureBlobStorageService azureBlobStorageService;
 
 
@@ -354,8 +354,10 @@ public class DatabaseBackupService {
         String masterJdbcUrl = "jdbc:postgresql://bolsa-empleo-dbpg.postgres.database.azure.com:5432/postgres?sslmode=require";
 
         try {
-            if (dataSource instanceof com.zaxxer.hikari.HikariDataSource ds && !ds.isClosed()) {
-                ds.close();
+            if (dataSource instanceof com.zaxxer.hikari.HikariDataSource hds && !hds.isClosed()) {
+                hds.close();
+            } else if (dataSource instanceof com.example.demo.config.MutableDataSource mds) {
+                mds.closeCurrent();
             }
 
             try (java.sql.Connection conn = java.sql.DriverManager.getConnection(masterJdbcUrl, dbUser, dbPassword);
