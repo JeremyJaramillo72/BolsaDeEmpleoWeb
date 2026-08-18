@@ -1,27 +1,24 @@
 import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
-import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { provideHttpClient, withInterceptors, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { routes } from './app.routes';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
-import { httpErrorInterceptor } from './interceptors/http-error.interceptor';
+
+import { dbErrorInterceptor } from './interceptors/http-error.interceptor';
+
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { SocialAuthServiceConfig, GoogleLoginProvider, SocialAuthService } from '@abacritt/angularx-social-login';
-
-
-import { dbErrorInterceptor } from '././components/Panel-Admin/components/configuracion-sistema/respaldos-bd/db-error.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
 
     provideHttpClient(
-
-      withInterceptors([dbErrorInterceptor, httpErrorInterceptor]),
+      // 🔥 2. ARREGLO CORREGIDO (Solo un dbErrorInterceptor)
+      withInterceptors([dbErrorInterceptor]),
       withInterceptorsFromDi()
     ),
-
 
     {
       provide: HTTP_INTERCEPTORS,

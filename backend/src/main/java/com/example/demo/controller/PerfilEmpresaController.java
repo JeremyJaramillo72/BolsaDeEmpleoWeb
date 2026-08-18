@@ -13,7 +13,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/empresa-perfil")
-@CrossOrigin(origins = "htpp://localhost:4200")
+@CrossOrigin(origins = "http://localhost:4200")
 @RequiredArgsConstructor
 public class PerfilEmpresaController {
 

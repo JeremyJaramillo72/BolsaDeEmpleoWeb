@@ -3,3 +3,6 @@ desktop.ini
 .idea/workspace.xml
 .idea/dataSources.local.xml
 /backend/target
+node_modules
+.angular/
+.vscode/

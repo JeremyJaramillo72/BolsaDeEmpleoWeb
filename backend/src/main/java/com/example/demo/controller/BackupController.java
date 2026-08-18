@@ -126,20 +126,25 @@ public class BackupController {
     }
 
     @PostMapping("/restaurar")
-    public ResponseEntity<?> ejecutarResurreccion(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<?> ejecutarResurreccion(@RequestBody Map<String, Object> payload) { // 🔥 CAMBIO CLAVE A Object
+
+        System.out.println("👉 ¡LLEGÓ LA PETICIÓN DE RESTAURAR DESDE ANGULAR!");
+
         try {
-            String zipFileName = payload.get("nombreArchivo");
+            String zipFileName = String.valueOf(payload.get("nombreArchivo"));
             Long idUsuario = Long.valueOf(payload.get("idUsuario").toString());
-            if (zipFileName == null || zipFileName.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Debe enviar el nombreArchivo exacto de Azure"));
+
+            if (zipFileName == null || zipFileName.isEmpty() || zipFileName.equals("null")) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Debe enviar el nombreArchivo exacto"));
             }
 
             String mensaje = backupService.restaurarEmergenciaDesdeAzure(zipFileName);
 
-            backupAutomatizacionService.registrarAuditoria("RESURRECCION", "EXITO", 0L, "Desde: " + zipFileName, null, idUsuario);
+            System.out.println("✅ ¡RESTAURACIÓN FINALIZADA CON ÉXITO!");
             return ResponseEntity.ok(Map.of("mensaje", mensaje));
 
         } catch (Exception e) {
+            System.err.println("❌ ERROR DENTRO DEL METODO RESTAURAR:");
             e.printStackTrace();
             return ResponseEntity.internalServerError().body(Map.of("error", "Fallo al restaurar: " + e.getMessage()));
         }

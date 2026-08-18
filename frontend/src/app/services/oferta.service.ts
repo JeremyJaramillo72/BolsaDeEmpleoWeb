@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import {HttpClient, HttpParams} from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 export interface OfertaHabilidadDTO {
   idHabilidad: number;
@@ -135,28 +136,52 @@ export class OfertaService {
     return this.http.get<any[]>(`${this.apiUrl}/empresa/${idEmpresa}`);
   }
 
-  obtenerCategorias() {
-    return this.http.get<any[]>('http://localhost:8080/api/academico/categorias');
+  private categoriasCache: any[] | null = null;
+  private modalidadesCache: any[] | null = null;
+  private jornadasCache: any[] | null = null;
+  private provinciasCache: any[] | null = null;
+  private tiposHabilidadCache: any[] | null = null;
+
+  obtenerCategorias(): Observable<any[]> {
+    if (this.categoriasCache) return of(this.categoriasCache);
+    return this.http.get<any[]>('http://localhost:8080/api/academico/categorias').pipe(
+      tap(res => this.categoriasCache = res)
+    );
   }
 
-  obtenerModalidades() {
-    return this.http.get<any[]>('http://localhost:8080/api/academico/modalidades');
+  obtenerModalidades(): Observable<any[]> {
+    if (this.modalidadesCache) return of(this.modalidadesCache);
+    return this.http.get<any[]>('http://localhost:8080/api/academico/modalidades').pipe(
+      tap(res => this.modalidadesCache = res)
+    );
   }
 
-  obtenerJornadas() {
-    return this.http.get<any[]>('http://localhost:8080/api/academico/jornadas');
-  }
-  obtenerProvincias(){
-    return this.http.get<any[]>('http://localhost:8080/api/academico/provincias')
-  }
-  obtenerProvinciasPorCiudad(idProvincia: Number){
-    return this.http.get<any[]>(`http://localhost:8080/api/academico/ciudades/${idProvincia}`)
-  }
-  obtenerTiposHabilidad() {
-    return this.http.get<any[]>('http://localhost:8080/api/academico/tipos-habilidad');
+  obtenerJornadas(): Observable<any[]> {
+    if (this.jornadasCache) return of(this.jornadasCache);
+    return this.http.get<any[]>('http://localhost:8080/api/academico/jornadas').pipe(
+      tap(res => this.jornadasCache = res)
+    );
   }
 
-  obtenerHabilidadesPorTipo(idTipo: number) {
+  obtenerProvincias(): Observable<any[]> {
+    if (this.provinciasCache) return of(this.provinciasCache);
+    return this.http.get<any[]>('http://localhost:8080/api/academico/provincias').pipe(
+      tap(res => this.provinciasCache = res)
+    );
+  }
+
+  obtenerProvinciasPorCiudad(idProvincia: Number): Observable<any[]> {
+    return this.http.get<any[]>(`http://localhost:8080/api/academico/ciudades/${idProvincia}`);
+  }
+
+  obtenerTiposHabilidad(): Observable<any[]> {
+    if (this.tiposHabilidadCache) return of(this.tiposHabilidadCache);
+    return this.http.get<any[]>('http://localhost:8080/api/academico/tipos-habilidad').pipe(
+      tap(res => this.tiposHabilidadCache = res)
+    );
+  }
+
+  obtenerHabilidadesPorTipo(idTipo: number): Observable<any[]> {
     return this.http.get<any[]>(`http://localhost:8080/api/academico/habilidades/${idTipo}`);
   }
   obtenerPostulantesPorOferta(idOferta: number): Observable<any[]> {

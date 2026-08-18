@@ -34,16 +34,25 @@
         <span class="material-icons nav-icon">grid_view</span>
         <span class="nav-text" *ngIf="isSidebarOpen">Inicio</span>
       </a>
-      <a *ngFor="let item of menuItems"
-         [routerLink]="item.route"
-         routerLinkActive="active"
-         class="nav-item">
+      <ng-container *ngFor="let item of menuItems">
+        <!-- ITEM HABILITADO -->
+        <a *ngIf="!item.disabled"
+           [routerLink]="item.route"
+           routerLinkActive="active"
+           class="nav-item">
+          <span class="material-icons nav-icon" [ngStyle]="{'color': item.colorHex || '#64748b'}">{{ item.icon }}</span>
+          <span class="nav-text" *ngIf="isSidebarOpen">{{ item.title }}</span>
+          <div class="badge" *ngIf="isSidebarOpen && item.badge">{{ item.badge }}</div>
+        </a>
 
-        <span class="material-icons nav-icon" [ngStyle]="{'color': item.colorHex || '#64748b'}">{{ item.icon }}</span>
-        <span class="nav-text" *ngIf="isSidebarOpen">{{ item.title }}</span>
-
-        <div class="badge" *ngIf="isSidebarOpen && item.badge">{{ item.badge }}</div>
-      </a>
+        <!-- ITEM DESHABILITADO (GRIS / NO ACCESIBLE) -->
+        <div *ngIf="item.disabled"
+             class="nav-item nav-item-disabled"
+             (click)="$event.preventDefault(); $event.stopPropagation();">
+          <span class="material-icons nav-icon disabled-icon">{{ item.icon }}</span>
+          <span class="nav-text disabled-text" *ngIf="isSidebarOpen">{{ item.title }}</span>
+        </div>
+      </ng-container>
     </nav>
 
     <div class="sidebar-footer">

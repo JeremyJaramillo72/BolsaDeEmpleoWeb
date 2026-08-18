@@ -42,31 +42,30 @@ public class DashboardService {
     public AdminStats getAdminStats() {
         AdminStats stats = new AdminStats();
 
-        // Crear KPIs con estructura nueva
+        var pendientesFuture = java.util.concurrent.CompletableFuture.supplyAsync(this::crearKpiPendientesAdmin);
+        var empresasFuture = java.util.concurrent.CompletableFuture.supplyAsync(this::crearKpiEmpresasNuevasAdmin);
+        var usuariosFuture = java.util.concurrent.CompletableFuture.supplyAsync(this::crearKpiUsuariosTotalesAdmin);
+        var reportesFuture = java.util.concurrent.CompletableFuture.supplyAsync(this::crearKpiReportesHoyAdmin);
+        var auditoriasFuture = java.util.concurrent.CompletableFuture.supplyAsync(auditoriaRepository::getTopUsersAuditHistoric);
+
+        java.util.concurrent.CompletableFuture.allOf(pendientesFuture, empresasFuture, usuariosFuture, reportesFuture, auditoriasFuture).join();
+
         Map<String, KpiItem> kpis = new LinkedHashMap<>();
+        try {
+            kpis.put("pendientes", pendientesFuture.get());
+            kpis.put("empresasNuevas", empresasFuture.get());
+            kpis.put("usuariosTotales", usuariosFuture.get());
+            kpis.put("reportesHoy", reportesFuture.get());
 
-        // KPI: Ofertas Pendientes
-        kpis.put("pendientes", crearKpiPendientesAdmin());
+            stats.setKpis(kpis);
 
-        // KPI: Nuevas Empresas
-        kpis.put("empresasNuevas", crearKpiEmpresasNuevasAdmin());
-
-        // KPI: Usuarios Totales
-        kpis.put("usuariosTotales", crearKpiUsuariosTotalesAdmin());
-
-        // KPI: Reportes Hoy
-        kpis.put("reportesHoy", crearKpiReportesHoyAdmin());
-
-        stats.setKpis(kpis);
-
-        // Gráfico principal: Tendencia de Auditorías (multi-línea con top 4-5 usuarios)
-        // Note: Using GraficoDTO wrapper with special handling on frontend for multi-dataset
-        GraficoDTO grafico = new GraficoDTO();
-        grafico.setLabels(generarLabelsHistoricos());
-        // We'll pass multi-dataset data as string in the data field and let frontend parse it
-        // For now, this is a placeholder - frontend will receive graficoMultiDataset instead
-        stats.setGrafico(grafico);
-        stats.setGraficoMultiDataset(procesarAuditoriaTopUsuarios(auditoriaRepository.getTopUsersAuditHistoric()));
+            GraficoDTO grafico = new GraficoDTO();
+            grafico.setLabels(generarLabelsHistoricos());
+            stats.setGrafico(grafico);
+            stats.setGraficoMultiDataset(procesarAuditoriaTopUsuarios(auditoriasFuture.get()));
+        } catch (Exception e) {
+            throw new RuntimeException("Error en paralelo de dashboard", e);
+        }
 
         return stats;
     }
@@ -74,34 +73,35 @@ public class DashboardService {
     public EmpresaStats getEmpresaStats(Long idEmpresa) {
         EmpresaStats stats = new EmpresaStats();
 
+        var aprobadasFuture = java.util.concurrent.CompletableFuture.supplyAsync(() -> crearKpiOfertasAprobadas(idEmpresa));
+        var postulacionesFuture = java.util.concurrent.CompletableFuture.supplyAsync(() -> crearKpiTotalPostulaciones(idEmpresa));
+        var enRevisionFuture = java.util.concurrent.CompletableFuture.supplyAsync(() -> crearKpiEnRevision(idEmpresa));
+        var notificacionesFuture = java.util.concurrent.CompletableFuture.supplyAsync(() -> crearKpiNotificacionesEmpresa(idEmpresa));
+        var categoriasFuture = java.util.concurrent.CompletableFuture.supplyAsync(() -> postulacionRepository.getCategoriasByEmpresa(idEmpresa));
+        var historicFuture = java.util.concurrent.CompletableFuture.supplyAsync(() -> postulacionRepository.getHistoric12MonthsByEmpresa(idEmpresa));
+
+        java.util.concurrent.CompletableFuture.allOf(aprobadasFuture, postulacionesFuture, enRevisionFuture, notificacionesFuture, categoriasFuture, historicFuture).join();
+
         Map<String, KpiItem> kpis = new LinkedHashMap<>();
+        try {
+            kpis.put("aprobadas", aprobadasFuture.get());
+            kpis.put("postulaciones", postulacionesFuture.get());
+            kpis.put("enRevision", enRevisionFuture.get());
+            kpis.put("notificaciones", notificacionesFuture.get());
 
-        // KPI: Ofertas Aprobadas
-        kpis.put("aprobadas", crearKpiOfertasAprobadas(idEmpresa));
+            stats.setKpis(kpis);
 
-        // KPI: Total Postulaciones
-        kpis.put("postulaciones", crearKpiTotalPostulaciones(idEmpresa));
-
-        // KPI: En Revisión
-        kpis.put("enRevision", crearKpiEnRevision(idEmpresa));
-
-        // KPI: Notificaciones
-        kpis.put("notificaciones", crearKpiNotificacionesEmpresa(idEmpresa));
-
-        stats.setKpis(kpis);
-
-        // Gráfico principal: Postulaciones por categoría de oferta
-        GraficoDTO grafico = new GraficoDTO();
-
-        // Obtener categorías distintas de las ofertas de la empresa
-        List<String> categorias = postulacionRepository.getCategoriasByEmpresa(idEmpresa);
-        if (categorias.isEmpty()) {
-            categorias = Arrays.asList("Sin ofertas");
+            GraficoDTO grafico = new GraficoDTO();
+            List<String> categorias = categoriasFuture.get();
+            if (categorias.isEmpty()) {
+                categorias = Arrays.asList("Sin ofertas");
+            }
+            grafico.setLabels(categorias);
+            grafico.setData(procesarHistoric12Months(historicFuture.get()));
+            stats.setGrafico(grafico);
+        } catch (Exception e) {
+            throw new RuntimeException("Error en paralelo de dashboard empresa", e);
         }
-
-        grafico.setLabels(categorias);
-        grafico.setData(procesarHistoric12Months(postulacionRepository.getHistoric12MonthsByEmpresa(idEmpresa)));
-        stats.setGrafico(grafico);
 
         return stats;
     }
@@ -109,27 +109,30 @@ public class DashboardService {
     public PostulanteStats getPostulanteStats(Long idUsuario) {
         PostulanteStats stats = new PostulanteStats();
 
+        var misPostFuture = java.util.concurrent.CompletableFuture.supplyAsync(() -> crearKpiMisPostulaciones(idUsuario));
+        var enProcesoFuture = java.util.concurrent.CompletableFuture.supplyAsync(() -> crearKpiEnProceso(idUsuario));
+        var guardadasFuture = java.util.concurrent.CompletableFuture.supplyAsync(() -> crearKpiGuardadas(idUsuario));
+        var alertasFuture = java.util.concurrent.CompletableFuture.supplyAsync(() -> crearKpiAlertas(idUsuario));
+        var historicFuture = java.util.concurrent.CompletableFuture.supplyAsync(() -> postulacionRepository.getHistoric12MonthsByUsuario(idUsuario));
+
+        java.util.concurrent.CompletableFuture.allOf(misPostFuture, enProcesoFuture, guardadasFuture, alertasFuture, historicFuture).join();
+
         Map<String, KpiItem> kpis = new LinkedHashMap<>();
+        try {
+            kpis.put("misPostulaciones", misPostFuture.get());
+            kpis.put("enProceso", enProcesoFuture.get());
+            kpis.put("guardadas", guardadasFuture.get());
+            kpis.put("alertas", alertasFuture.get());
 
-        // KPI: Mis Postulaciones
-        kpis.put("misPostulaciones", crearKpiMisPostulaciones(idUsuario));
+            stats.setKpis(kpis);
 
-        // KPI: En Proceso
-        kpis.put("enProceso", crearKpiEnProceso(idUsuario));
-
-        // KPI: Guardadas
-        kpis.put("guardadas", crearKpiGuardadas(idUsuario));
-
-        // KPI: Alertas
-        kpis.put("alertas", crearKpiAlertas(idUsuario));
-
-        stats.setKpis(kpis);
-
-        // Gráfico principal: Línea de postulaciones a lo largo del tiempo
-        GraficoDTO grafico = new GraficoDTO();
-        grafico.setLabels(generarLabelsHistoricos());
-        grafico.setData(procesarHistoric12Months(postulacionRepository.getHistoric12MonthsByUsuario(idUsuario)));
-        stats.setGrafico(grafico);
+            GraficoDTO grafico = new GraficoDTO();
+            grafico.setLabels(generarLabelsHistoricos());
+            grafico.setData(procesarHistoric12Months(historicFuture.get()));
+            stats.setGrafico(grafico);
+        } catch (Exception e) {
+            throw new RuntimeException("Error en paralelo de dashboard postulante", e);
+        }
 
         return stats;
     }

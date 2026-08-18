@@ -52,6 +52,5 @@ export class RespaldosDbService {
       nombreArchivo: nombreArchivo,
       idUsuario: this.getUserId()
     };
-    return this.http.post('http://localhost:8080/api/seguridad/restaurar-emergencia', payload);
-  }
+    return this.http.post('http://localhost:8080/api/seguridad/restaurar', payload);  }
 }

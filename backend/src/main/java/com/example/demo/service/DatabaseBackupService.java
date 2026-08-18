@@ -41,14 +41,14 @@ public class DatabaseBackupService {
     @Value("${spring.datasource.password}")
     private String dbPassword;
 
-    @Value("${azure.storage.connection-string}")
+    @Value("${azure.storage.connection-string:}")
     private String azureConnectionString;
 
-    @Value("${azure.storage.container-name.backups}")
+    @Value("${azure.storage.container-name.backups:respaldos-db}")
     private String containerNameBackups;
 
     private final JdbcTemplate jdbcTemplate;
-    private final com.zaxxer.hikari.HikariDataSource dataSource;
+    private final javax.sql.DataSource dataSource;
 
 
     public static class BackupResult {
@@ -189,52 +189,70 @@ public class DatabaseBackupService {
     }
 
     private void ejecutarPgRestoreYPermisos(String tempUnzippedPath, String targetDb) throws Exception {
-        String tempGrantsPath = Paths.get(System.getProperty("java.io.tmpdir"), "grants_extraidos.sql").toString();
+        String pgRestorePath = pgDumpPath.replace("pg_dump", "pg_restore");
 
-        try {
-            ProcessBuilder pbData = new ProcessBuilder(
-                    "pg_restore", "-U", dbUser,
-                    "-h", "bolsa-empleo-dbpg.postgres.database.azure.com",
-                    "-p", "5432", "-d", targetDb,
-                    "--no-owner", "--no-privileges",
-                    tempUnzippedPath
-            );
-            pbData.environment().put("PGPASSWORD", dbPassword);
-            pbData.environment().put("PGSSLMODE", "require");
-            pbData.redirectErrorStream(true);
+        System.out.println("Iniciando pg_restore en la base de datos: " + targetDb);
 
-            Process procesoData = pbData.start();
-            try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(procesoData.getInputStream()))) {
-                while (reader.readLine() != null) { }
+        ProcessBuilder pbData = new ProcessBuilder(
+                pgRestorePath, "-U", dbUser,
+                "-h", "bolsa-empleo-dbpg.postgres.database.azure.com",
+                "-p", "5432", "-d", targetDb,
+                "--no-owner", // 🔥 Mantiene esto para que no pelee por el dueño original
+                tempUnzippedPath
+        );
+
+        pbData.environment().put("PGPASSWORD", dbPassword);
+        pbData.environment().put("PGSSLMODE", "require");
+        pbData.redirectErrorStream(true);
+
+        Process procesoData = pbData.start();
+        StringBuilder outputMessage = new StringBuilder();
+
+        try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(procesoData.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                outputMessage.append(line).append("\n");
             }
-            procesoData.waitFor();
-
-            ProcessBuilder pbGrants = new ProcessBuilder("pg_restore", "-s", "-f", tempGrantsPath, tempUnzippedPath);
-            pbGrants.start().waitFor();
-
-            if (Files.exists(Paths.get(tempGrantsPath))) {
-                java.util.List<String> todasLasLineas = Files.readAllLines(Paths.get(tempGrantsPath), java.nio.charset.StandardCharsets.UTF_8);
-                StringBuilder sqlSoloGrants = new StringBuilder();
-
-                for (String linea : todasLasLineas) {
-                    if (linea.trim().toUpperCase().startsWith("GRANT ") || linea.trim().toUpperCase().startsWith("ALTER DEFAULT PRIVILEGES")) {
-                        sqlSoloGrants.append(linea).append("\n");
-                    }
-                }
-
-                if (sqlSoloGrants.length() > 0) {
-                    String jdbcUrl = "jdbc:postgresql://bolsa-empleo-dbpg.postgres.database.azure.com:5432/" + targetDb + "?sslmode=require";
-                    try (java.sql.Connection conn = java.sql.DriverManager.getConnection(jdbcUrl, dbUser, dbPassword);
-                         java.sql.Statement stmt = conn.createStatement()) {
-                        stmt.execute(sqlSoloGrants.toString());
-                    }
-                }
-            }
-            System.out.println("✅ Restauración y permisos aplicados exitosamente.");
-
-        } finally {
-            Files.deleteIfExists(Paths.get(tempGrantsPath));
         }
+
+        int exitCode = procesoData.waitFor();
+
+        if (exitCode != 0 && exitCode != 1) {
+            System.err.println(" Error crítico en pg_restore:\n" + outputMessage);
+            throw new RuntimeException("Falló la restauración de datos. Código: " + exitCode);
+        } else if (exitCode == 1) {
+            System.out.println("pg_restore finalizó con advertencias menores (Normal en Azure):\n" + outputMessage);
+        }
+
+
+        System.out.println("Aplicando parche nuclear de permisos...");
+        String masterJdbcUrl = "jdbc:postgresql://bolsa-empleo-dbpg.postgres.database.azure.com:5432/" + targetDb + "?sslmode=require";
+
+        try (java.sql.Connection conn = java.sql.DriverManager.getConnection(masterJdbcUrl, dbUser, dbPassword);
+             java.sql.Statement stmt = conn.createStatement()) {
+
+            String sqlPermisos =
+                    "GRANT ALL PRIVILEGES ON DATABASE \"" + targetDb + "\" TO " + dbUser + ";\n" +
+                            "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO " + dbUser + ";\n" +
+                            "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO " + dbUser + ";\n" +
+                            "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA usuarios TO " + dbUser + ";\n" +
+                            "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA usuarios TO " + dbUser + ";\n" +
+                            "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA ofertas TO " + dbUser + ";\n" +
+                            "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA ofertas TO " + dbUser + ";\n" +
+                            "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA empresas TO " + dbUser + ";\n" +
+                            "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA empresas TO " + dbUser + ";\n" +
+                            "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA catalogos TO " + dbUser + ";\n" +
+                            "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA catalogos TO " + dbUser + ";\n" +
+                            "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA seguridad TO " + dbUser + ";\n" +
+                            "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA seguridad TO " + dbUser + ";";
+
+            stmt.execute(sqlPermisos);
+            System.out.println("✅ Parche nuclear de permisos aplicado correctamente.");
+        } catch (Exception e) {
+            System.err.println("⚠️ Falló el parche nuclear de permisos: " + e.getMessage());
+        }
+
+        System.out.println("✅ Restauración de datos y permisos finalizada totalmente.");
     }
 
     private Date obtenerFechaBackup(Long idBackup) {
@@ -358,8 +376,8 @@ public class DatabaseBackupService {
         String masterJdbcUrl = "jdbc:postgresql://bolsa-empleo-dbpg.postgres.database.azure.com:5432/postgres?sslmode=require";
 
         try {
-            if (dataSource != null && !dataSource.isClosed()) {
-                dataSource.close();
+            if (dataSource instanceof com.zaxxer.hikari.HikariDataSource ds && !ds.isClosed()) {
+                ds.close();
             }
 
             try (java.sql.Connection conn = java.sql.DriverManager.getConnection(masterJdbcUrl, dbUser, dbPassword);
@@ -373,6 +391,8 @@ public class DatabaseBackupService {
                 stmt.execute("DROP DATABASE IF EXISTS \"" + nombreBaseDatos + "\"");
                 stmt.execute("CREATE DATABASE \"" + nombreBaseDatos + "\"");
             }
+
+            Thread.sleep(3000);
 
             System.out.println("Inyectando el respaldo de emergencia...");
             ejecutarPgRestoreYPermisos(tempUnzippedPath, nombreBaseDatos);

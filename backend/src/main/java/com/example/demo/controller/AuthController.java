@@ -91,16 +91,8 @@ public class AuthController {
 
                         // 2. BUSCAR CREDENCIALES DE BASE DE DATOS EN ENTIDAD SEGURIDAD
                         Seguridad seguridad = seguridadRepository.findByUsuario(usuario);
-                        if (seguridad != null) {
-                            try {
-                                dbSwitchService.switchToUser(seguridad.getLoginName(), seguridad.getClaveName());
-                            } catch (Exception e) {
-                                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                        .body(Collections.singletonMap("error", "No se pudo establecer conexión con sus credenciales de BD"));
-                            }
-                        }
 
-                        // 3. Guardar en sesión
+                        // 3. Guardar en sesion
                         session.setAttribute("nombre_usuario", usuario.getNombre());
                         session.setAttribute("idUsuario", usuario.getIdUsuario());
                         if (seguridad != null) {
@@ -110,11 +102,14 @@ public class AuthController {
                         String nombreRol = usuario.getRol().getNombreRol();
 
                         // 4. Registrar inicio de sesión (auditoría)
-                        // ✅ Ya no pasamos IP — PostgreSQL la captura con inet_client_addr()
                         if (seguridad != null) {
-                            String navegador = httpRequest.getHeader("User-Agent");
-                            String dispositivo = navegador != null && navegador.contains("Mobile") ? "Mobile" : "Desktop";
-                            sesionService.registrarLogin(seguridad.getIdSeguridad(), navegador, dispositivo);
+                            try {
+                                String navegador = httpRequest.getHeader("User-Agent");
+                                String dispositivo = navegador != null && navegador.contains("Mobile") ? "Mobile" : "Desktop";
+                                sesionService.registrarLogin(seguridad.getIdSeguridad(), navegador, dispositivo);
+                            } catch (Exception e) {
+                                System.out.println("Aviso: No se pudo registrar auditoria de login: " + e.getMessage());
+                            }
                         }
 
                         httpResponse.addHeader("X-Auth-Token", UUID.randomUUID().toString());

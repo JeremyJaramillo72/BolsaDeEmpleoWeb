@@ -1,11 +1,10 @@
 package com.example.demo.config;
-import com.example.demo.config.MutableDataSource;
+
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-
 
 @Configuration
 public class DataSourceConfig {
@@ -23,6 +22,12 @@ public class DataSourceConfig {
         base.setJdbcUrl(url);
         base.setUsername(username);
         base.setPassword(password);
+        base.setMaximumPoolSize(10);
+        base.setMinimumIdle(10);
+        base.setIdleTimeout(600000);
+        base.setMaxLifetime(1800000);
+        base.setConnectionTimeout(10000);
+        base.setPoolName("PrimaryHikariPool");
         return new MutableDataSource(base);
     }
 }

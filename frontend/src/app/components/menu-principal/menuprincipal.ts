@@ -24,6 +24,7 @@ export interface MenuItem {
   path?: string;
   route?: string;    // Nuevo: Ruta completa para el routerLink
   permiso?: string;
+  disabled?: boolean;
 }
 
 export interface StatCard {
@@ -195,7 +196,8 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#2563EB', bgHex: '#EFF6FF',
         roles: ['EMPRESA'],
         path: '/empresa/perfil',
-        route: '/menu-principal/empresa/perfil'
+        route: '/menu-principal/empresa/perfil',
+        disabled: false
       },
       {
         icon: 'work',
@@ -204,7 +206,8 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#0891b2', bgHex: '#ecfeff',
         roles: ['EMPRESA'],
         path: '/gestion-ofertas',
-        route: '/menu-principal/gestion-ofertas'
+        route: '/menu-principal/gestion-ofertas',
+        disabled: false
       },
       {
         icon: 'groups',
@@ -213,16 +216,18 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#10b981', bgHex: '#ecfdf5',
         roles: ['EMPRESA'],
         path: '/revision-postulantes',
-        route: '/menu-principal/revision-postulantes'
+        route: '/menu-principal/revision-postulantes',
+        disabled: false
       },
       {
-        icon: 'work',
+        icon: 'bar_chart',
         title: 'Reportes de Empresa',
         description: 'Métricas y análisis del sistema',
-        colorHex: '#059669', bgHex: '#ecfdf5',
+        colorHex: '#94a3b8', bgHex: '#f1f5f9',
         roles: ['EMPRESA'],
         path: 'Reportes-Empresa',
-        route: '/menu-principal/Reporte-Empresa'
+        route: '/menu-principal/Reporte-Empresa',
+        disabled: true
       },
       // --- MÓDULOS DE POSTULANTE ---
       {
@@ -233,7 +238,7 @@ export class MenuprincipalComponent implements OnInit {
         roles: ['POSTULANTE'],
         path: '/perfil-profesional',
         route: '/menu-principal/perfil-profesional',
-        //permiso: 'PERFIL_X'
+        disabled: false
       },
       {
         icon: 'search',
@@ -242,7 +247,8 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#0891b2', bgHex: '#ecfeff',
         roles: ['POSTULANTE'],
         path: '/Busqueda/empleo',
-        route: '/menu-principal/busqueda-empleo'
+        route: '/menu-principal/busqueda-empleo',
+        disabled: false
       },
       {
         icon: 'assignment',
@@ -251,7 +257,8 @@ export class MenuprincipalComponent implements OnInit {
         colorHex: '#10b981', bgHex: '#ecfdf5',
         roles: ['POSTULANTE'],
         path: '/postulacion/empleo',
-        route: '/menu-principal/mis-postulaciones'
+        route: '/menu-principal/mis-postulaciones',
+        disabled: false
       },
 
       // --- COMPARTIDO ---
@@ -259,10 +266,11 @@ export class MenuprincipalComponent implements OnInit {
         icon: 'notifications',
         title: 'Notificaciones',
         description: 'Revisa tus notificaciones y alertas',
-        colorHex: '#8b5cf6', bgHex: '#f5f3ff',
+        colorHex: '#94a3b8', bgHex: '#f1f5f9',
         roles: ['EMPRESA', 'POSTULANTE'],
         path: '/notificaciones',
-        route: '/menu-principal/notificaciones'
+        route: '/menu-principal/notificaciones',
+        disabled: true
       },
       // --- MÓDULOS DE ADMINISTRADOR ---
       {
@@ -270,10 +278,10 @@ export class MenuprincipalComponent implements OnInit {
         title: 'Perfil',
         description: 'Crea y Gestiona tu Perfil',
         colorHex: '#0f172a', bgHex: '#f1f5f9',
-        //roles: ['ADMINISTRADOR'],
         path: '/perfil-x',
         route: '/menu-principal/perfil-x',
-        permiso: 'Perfil_X'
+        permiso: 'Perfil_X',
+        disabled: false
       },
       {
         icon: 'manage_accounts',
@@ -283,17 +291,8 @@ export class MenuprincipalComponent implements OnInit {
         roles: ['ADMINISTRADOR'],
         path: '/menu-principal/gestion/users',
         route: '/menu-principal/gestion/users',
-        permiso: 'GESTION_USERS'
-      },
-      {
-        icon: 'admin_panel_settings',
-        title: 'Auditorias',
-        description: 'Control de empresas y graduados',
-        colorHex: '#2563EB', bgHex: '#EFF6FF', badge: 4,
-        roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
-        path: '/PanelAuditorias/auditorias-users',
-        route: '/menu-principal/PanelAuditorias/auditorias-users',
-        permiso: 'USERS'
+        permiso: 'GESTION_USERS',
+        disabled: false
       },
       {
         icon: 'settings_suggest',
@@ -303,7 +302,8 @@ export class MenuprincipalComponent implements OnInit {
         roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
         path: '/PanelAdmi/GestionCatalogos',
         route: '/menu-principal/PanelAdmi/GestionCatalogos',
-        permiso: 'CATALOGOS'
+        permiso: 'CATALOGOS',
+        disabled: false
       },
       {
         icon: 'note_add',
@@ -313,7 +313,8 @@ export class MenuprincipalComponent implements OnInit {
         roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
         path: '/PanelAdmi/RegistroOfertas',
         route: '/menu-principal/PanelAdmi/RegistroOfertas',
-        permiso: 'REGISTRO_OFERTAS'
+        permiso: 'REGISTRO_OFERTAS',
+        disabled: false
       },
       {
         icon: 'fact_check',
@@ -323,27 +324,8 @@ export class MenuprincipalComponent implements OnInit {
         roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
         path: '/PanelAdmi/ValidarOfertas',
         route: '/menu-principal/PanelAdmi/ValidarOfertas',
-        permiso: 'VALIDACION_O'
-      },
-      /*{
-        icon: 'manage_accounts',
-        title: 'Gestión Administradores',
-        description: 'Crear y gestionar administradores secundarios',
-        colorHex: '#7c3aed', bgHex: '#f5f3ff',
-        roles: ['ADMINISTRADOR'],
-        path: '/PanelAdmi/admin-MiniAdmi',
-        route: '/menu-principal/PanelAdmi/admin-MiniAdmi'
-      },*/
-
-      {
-        icon: 'bar_chart',
-        title: 'Reportes y Estadísticas',
-        description: 'Métricas y análisis del sistema',
-        colorHex: '#059669', bgHex: '#ecfdf5',
-        roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
-        path: '/PanelAdmi/GestionReportes',
-        route: '/menu-principal/PanelAdmi/GestionReportes',
-        permiso: 'REPORTES'
+        permiso: 'VALIDACION_O',
+        disabled: false
       },
       {
         icon: 'domain_verification',
@@ -353,28 +335,52 @@ export class MenuprincipalComponent implements OnInit {
         roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
         path: '/PanelAdmi/ValidarEmpresa',
         route: '/menu-principal/PanelAdmi/ValidarEmpresa',
-        permiso: 'VALIDACION_E'
+        permiso: 'VALIDACION_E',
+        disabled: false
+      },
+      {
+        icon: 'admin_panel_settings',
+        title: 'Auditorias',
+        description: 'Control de empresas y graduados',
+        colorHex: '#94a3b8', bgHex: '#f1f5f9',
+        roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
+        path: '/PanelAuditorias/auditorias-users',
+        route: '/menu-principal/PanelAuditorias/auditorias-users',
+        permiso: 'USERS',
+        disabled: true
+      },
+      {
+        icon: 'bar_chart',
+        title: 'Reportes y Estadísticas',
+        description: 'Métricas y análisis del sistema',
+        colorHex: '#94a3b8', bgHex: '#f1f5f9',
+        roles: ['ADMINISTRADOR', 'SUPERVISOR', 'GERENTE'],
+        path: '/PanelAdmi/GestionReportes',
+        route: '/menu-principal/PanelAdmi/GestionReportes',
+        permiso: 'REPORTES',
+        disabled: true
       },
       {
         icon: 'settings',
         title: 'Gestión Roles BD',
         description: 'Crea y gestiona tus Roles de Base de Dato',
-        colorHex: '#0f172a', bgHex: '#f1f5f9',
+        colorHex: '#94a3b8', bgHex: '#f1f5f9',
         roles: ['ADMINISTRADOR'],
         path: '/GestionRolesbd',
         route: '/menu-principal/GestionRolesbd',
-        permiso: 'ROLES_BD'
+        permiso: 'ROLES_BD',
+        disabled: true
       },
-
       {
         icon: 'settings_backup_restore',
         title: 'Configuración del Sistema',
         description: 'Gestiona configuración de correo, plantillas y más',
-        colorHex: '#7c3aed', bgHex: '#f5f3ff',
+        colorHex: '#94a3b8', bgHex: '#f1f5f9',
         roles: ['ADMINISTRADOR'],
         path: '/configuracion-sistema',
         route: '/menu-principal/configuracion-sistema',
-        permiso:'CONFIG_SISTEMA'
+        permiso:'CONFIG_SISTEMA',
+        disabled: true
       }
     ];
 
