@@ -256,11 +256,15 @@ export class PerfilProfesionalComponent implements OnInit {
   }
 
 
-  async eliminarTitulo(index: number, idItem: number): Promise<void> {
+  async eliminarTitulo(_index: number, idItem: number): Promise<void> {
     const confirmado = await this.confirmSvc.abrir('¿Estás seguro de eliminar esta formación académica?', 'Eliminar título');
     if (confirmado) {
       this.perfilService.eliminarItemPerfil(this.idUsuarioLogueado, 'academico', idItem).subscribe({
-        next: () => { this.perfil.titulos.splice(index, 1); this.actualizarProgreso(); this.cdr.detectChanges(); },
+        next: () => {
+          this.perfil.titulos = this.perfil.titulos.filter((t: any) => t.id_academico !== idItem);
+          this.actualizarProgreso();
+          this.cdr.detectChanges();
+        },
         error: (err) => this.notif.error('Error al eliminar en la base de datos')
       });
     }

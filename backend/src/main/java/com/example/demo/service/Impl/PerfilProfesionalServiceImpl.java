@@ -89,11 +89,7 @@ public class PerfilProfesionalServiceImpl implements IPerfilProfesionalService {
     @Transactional
     @Override
     public void eliminarItem(Long idUsuario, String tipoItem, Integer idItem) {
-        try {
-            perfilProfesionalRepository.eliminarItemPerfil(idUsuario, tipoItem, idItem);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        perfilProfesionalRepository.eliminarItemPerfil(idUsuario, tipoItem, idItem);
     }
 
     @Transactional
